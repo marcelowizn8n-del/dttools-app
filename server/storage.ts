@@ -45,11 +45,13 @@ export interface IStorage {
 
   // Phase 2: Define
   getPovStatements(projectId: string): Promise<PovStatement[]>;
+  getPovStatement(id: string): Promise<PovStatement | undefined>;
   createPovStatement(pov: InsertPovStatement): Promise<PovStatement>;
   updatePovStatement(id: string, pov: Partial<InsertPovStatement>): Promise<PovStatement | undefined>;
   deletePovStatement(id: string): Promise<boolean>;
 
   getHmwQuestions(projectId: string): Promise<HmwQuestion[]>;
+  getHmwQuestion(id: string): Promise<HmwQuestion | undefined>;
   createHmwQuestion(hmw: InsertHmwQuestion): Promise<HmwQuestion>;
   updateHmwQuestion(id: string, hmw: Partial<InsertHmwQuestion>): Promise<HmwQuestion | undefined>;
   deleteHmwQuestion(id: string): Promise<boolean>;
@@ -398,6 +400,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.povStatements.values()).filter(pov => pov.projectId === projectId);
   }
 
+  async getPovStatement(id: string): Promise<PovStatement | undefined> {
+    return this.povStatements.get(id);
+  }
+
   async createPovStatement(insertPov: InsertPovStatement): Promise<PovStatement> {
     const id = randomUUID();
     const pov: PovStatement = {
@@ -426,6 +432,10 @@ export class MemStorage implements IStorage {
   // Phase 2: Define - HMW Questions
   async getHmwQuestions(projectId: string): Promise<HmwQuestion[]> {
     return Array.from(this.hmwQuestions.values()).filter(hmw => hmw.projectId === projectId);
+  }
+
+  async getHmwQuestion(id: string): Promise<HmwQuestion | undefined> {
+    return this.hmwQuestions.get(id);
   }
 
   async createHmwQuestion(insertHmw: InsertHmwQuestion): Promise<HmwQuestion> {

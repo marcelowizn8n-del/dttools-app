@@ -291,7 +291,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/pov-statements/:id", async (req, res) => {
     try {
+      // First, check if the POV statement exists
+      const existingPovStatement = await storage.getPovStatement(req.params.id);
+      if (!existingPovStatement) {
+        return res.status(404).json({ error: "POV statement not found" });
+      }
+
+      // Validate the update data
       const validatedData = insertPovStatementSchema.omit({ projectId: true }).partial().parse(req.body);
+      
+      // Perform the update
       const povStatement = await storage.updatePovStatement(req.params.id, validatedData);
       if (!povStatement) {
         return res.status(404).json({ error: "POV statement not found" });
@@ -304,6 +313,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/pov-statements/:id", async (req, res) => {
     try {
+      // First, check if the POV statement exists
+      const existingPovStatement = await storage.getPovStatement(req.params.id);
+      if (!existingPovStatement) {
+        return res.status(404).json({ error: "POV statement not found" });
+      }
+
+      // Perform the deletion
       const success = await storage.deletePovStatement(req.params.id);
       if (!success) {
         return res.status(404).json({ error: "POV statement not found" });
@@ -339,7 +355,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/hmw-questions/:id", async (req, res) => {
     try {
+      // First, check if the HMW question exists
+      const existingHmwQuestion = await storage.getHmwQuestion(req.params.id);
+      if (!existingHmwQuestion) {
+        return res.status(404).json({ error: "HMW question not found" });
+      }
+
+      // Validate the update data
       const validatedData = insertHmwQuestionSchema.omit({ projectId: true }).partial().parse(req.body);
+      
+      // Perform the update
       const hmwQuestion = await storage.updateHmwQuestion(req.params.id, validatedData);
       if (!hmwQuestion) {
         return res.status(404).json({ error: "HMW question not found" });
@@ -352,6 +377,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/hmw-questions/:id", async (req, res) => {
     try {
+      // First, check if the HMW question exists
+      const existingHmwQuestion = await storage.getHmwQuestion(req.params.id);
+      if (!existingHmwQuestion) {
+        return res.status(404).json({ error: "HMW question not found" });
+      }
+
+      // Perform the deletion
       const success = await storage.deleteHmwQuestion(req.params.id);
       if (!success) {
         return res.status(404).json({ error: "HMW question not found" });
