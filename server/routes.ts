@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
@@ -18,6 +18,47 @@ import {
   insertArticleSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
+
+// Extend Request interface to include session user
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: {
+      id: string;
+      username: string;
+      role: string;
+      createdAt: Date;
+    };
+  }
+}
+
+// Authentication middleware
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (!req.session?.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  
+  // Set user data on request for easy access
+  if (req.session.user) {
+    req.user = req.session.user;
+  }
+  
+  next();
+}
+
+// Admin authorization middleware  
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.session?.userId || !req.session?.user) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  
+  if (req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  
+  // Set user data on request
+  req.user = req.session.user;
+  next();
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Projects routes
@@ -42,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects", async (req, res) => {
+  app.post("/api/projects", requireAuth, async (req, res) => {
     try {
       const validatedData = insertProjectSchema.parse(req.body);
       const project = await storage.createProject(validatedData);
@@ -52,7 +93,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/projects/:id", async (req, res) => {
+  app.put("/api/projects/:id", requireAuth, async (req, res) => {
     try {
       const validatedData = insertProjectSchema.partial().parse(req.body);
       const project = await storage.updateProject(req.params.id, validatedData);
@@ -65,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/projects/:id", async (req, res) => {
+  app.delete("/api/projects/:id", requireAuth, async (req, res) => {
     try {
       const success = await storage.deleteProject(req.params.id);
       if (!success) {
@@ -595,7 +636,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/articles", async (req, res) => {
+  app.post("/api/articles", requireAdmin, async (req, res) => {
     try {
       const validatedData = insertArticleSchema.parse(req.body);
       const article = await storage.createArticle(validatedData);
@@ -605,7 +646,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/articles/:id", async (req, res) => {
+  app.put("/api/articles/:id", requireAdmin, async (req, res) => {
     try {
       const validatedData = insertArticleSchema.partial().parse(req.body);
       const article = await storage.updateArticle(req.params.id, validatedData);
@@ -618,7 +659,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/articles/:id", async (req, res) => {
+  app.delete("/api/articles/:id", requireAdmin, async (req, res) => {
     try {
       const success = await storage.deleteArticle(req.params.id);
       if (!success) {
@@ -648,24 +689,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      // Return user without password
+      // Create session
       const { password: _, ...userWithoutPassword } = user;
+      req.session.userId = user.id;
+      req.session.user = userWithoutPassword;
+
       res.json({ user: userWithoutPassword });
     } catch (error) {
       res.status(500).json({ error: "Login failed" });
     }
   });
 
-  app.post("/api/auth/logout", async (_req, res) => {
+  app.post("/api/auth/logout", async (req, res) => {
     try {
-      res.json({ message: "Logged out successfully" });
+      // Destroy session
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ error: "Logout failed" });
+        }
+        res.clearCookie('dttools.session');
+        res.json({ message: "Logged out successfully" });
+      });
     } catch (error) {
       res.status(500).json({ error: "Logout failed" });
     }
   });
 
   // User management routes (admin only)
-  app.get("/api/users", async (_req, res) => {
+  app.get("/api/users", requireAdmin, async (_req, res) => {
     try {
       const users = await storage.getUsers();
       // Remove passwords from response
@@ -676,7 +727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/users", async (req, res) => {
+  app.post("/api/users", requireAdmin, async (req, res) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
       const user = await storage.createUser(validatedData);
@@ -688,7 +739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/users/:id", async (req, res) => {
+  app.put("/api/users/:id", requireAdmin, async (req, res) => {
     try {
       const validatedData = insertUserSchema.partial().parse(req.body);
       const user = await storage.updateUser(req.params.id, validatedData);
@@ -703,7 +754,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/users/:id", async (req, res) => {
+  app.delete("/api/users/:id", requireAdmin, async (req, res) => {
     try {
       const success = await storage.deleteUser(req.params.id);
       if (!success) {
@@ -716,7 +767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  app.get("/api/admin/stats", async (_req, res) => {
+  app.get("/api/admin/stats", requireAdmin, async (_req, res) => {
     try {
       const users = await storage.getUsers();
       const projects = await storage.getProjects();
