@@ -170,7 +170,7 @@ export default function Dashboard() {
                   {isEnglish ? "Start Complete Project" : "Iniciar Projeto Completo"}
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-blue-600 text-blue-700 hover:bg-blue-50">
                 {isEnglish ? "Explore Phases" : "Explorar Fases"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
