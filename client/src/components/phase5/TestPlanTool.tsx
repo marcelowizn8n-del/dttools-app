@@ -313,8 +313,8 @@ export default function TestPlanTool({ projectId }: TestPlanToolProps) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className={getStatusColor(testPlan.status)}>
-                      {getStatusLabel(testPlan.status)}
+                    <Badge className={getStatusColor(testPlan.status || "planned")}>
+                      {getStatusLabel(testPlan.status || "planned")}
                     </Badge>
                     <EditTestPlanDialog testPlan={testPlan} />
                   </div>

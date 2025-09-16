@@ -13,8 +13,11 @@ import {
   insertPrototypeSchema,
   insertTestPlanSchema,
   insertTestResultSchema,
-  insertUserProgressSchema
+  insertUserProgressSchema,
+  insertUserSchema,
+  insertArticleSchema
 } from "@shared/schema";
+import bcrypt from "bcrypt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Projects routes
@@ -558,6 +561,198 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch dashboard data" });
+    }
+  });
+
+  // Articles routes
+  app.get("/api/articles", async (_req, res) => {
+    try {
+      const articles = await storage.getArticles();
+      res.json(articles);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch articles" });
+    }
+  });
+
+  app.get("/api/articles/category/:category", async (req, res) => {
+    try {
+      const articles = await storage.getArticlesByCategory(req.params.category);
+      res.json(articles);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch articles by category" });
+    }
+  });
+
+  app.get("/api/articles/:id", async (req, res) => {
+    try {
+      const article = await storage.getArticle(req.params.id);
+      if (!article) {
+        return res.status(404).json({ error: "Article not found" });
+      }
+      res.json(article);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch article" });
+    }
+  });
+
+  app.post("/api/articles", async (req, res) => {
+    try {
+      const validatedData = insertArticleSchema.parse(req.body);
+      const article = await storage.createArticle(validatedData);
+      res.status(201).json(article);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid article data" });
+    }
+  });
+
+  app.put("/api/articles/:id", async (req, res) => {
+    try {
+      const validatedData = insertArticleSchema.partial().parse(req.body);
+      const article = await storage.updateArticle(req.params.id, validatedData);
+      if (!article) {
+        return res.status(404).json({ error: "Article not found" });
+      }
+      res.json(article);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid article data" });
+    }
+  });
+
+  app.delete("/api/articles/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteArticle(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Article not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete article" });
+    }
+  });
+
+  // Authentication routes
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Return user without password
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/logout", async (_req, res) => {
+    try {
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Logout failed" });
+    }
+  });
+
+  // User management routes (admin only)
+  app.get("/api/users", async (_req, res) => {
+    try {
+      const users = await storage.getUsers();
+      // Remove passwords from response
+      const usersWithoutPasswords = users.map(({ password: _, ...user }) => user);
+      res.json(usersWithoutPasswords);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.post("/api/users", async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      const user = await storage.createUser(validatedData);
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+      res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid user data" });
+    }
+  });
+
+  app.put("/api/users/:id", async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.partial().parse(req.body);
+      const user = await storage.updateUser(req.params.id, validatedData);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid user data" });
+    }
+  });
+
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteUser(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
+  // Admin routes
+  app.get("/api/admin/stats", async (_req, res) => {
+    try {
+      const users = await storage.getUsers();
+      const projects = await storage.getProjects();
+      const articles = await storage.getArticles();
+      
+      const stats = {
+        totalUsers: users.length,
+        totalProjects: projects.length,
+        totalArticles: articles.length,
+        projectsByStatus: {
+          in_progress: projects.filter(p => p.status === 'in_progress').length,
+          completed: projects.filter(p => p.status === 'completed').length,
+        },
+        projectsByPhase: {
+          phase1: projects.filter(p => p.currentPhase === 1).length,
+          phase2: projects.filter(p => p.currentPhase === 2).length,
+          phase3: projects.filter(p => p.currentPhase === 3).length,
+          phase4: projects.filter(p => p.currentPhase === 4).length,
+          phase5: projects.filter(p => p.currentPhase === 5).length,
+        },
+        usersByRole: {
+          admin: users.filter(u => u.role === 'admin').length,
+          user: users.filter(u => u.role === 'user').length,
+        },
+        articlesByCategory: {
+          empathize: articles.filter(a => a.category === 'empathize').length,
+          define: articles.filter(a => a.category === 'define').length,
+          ideate: articles.filter(a => a.category === 'ideate').length,
+          prototype: articles.filter(a => a.category === 'prototype').length,
+          test: articles.filter(a => a.category === 'test').length,
+        }
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin stats" });
     }
   });
 

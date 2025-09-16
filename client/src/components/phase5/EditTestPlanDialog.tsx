@@ -152,7 +152,7 @@ export default function EditTestPlanDialog({ testPlan }: EditTestPlanDialogProps
                         <SelectContent>
                           <SelectItem value="">Nenhum protótipo</SelectItem>
                           {prototypes.map((prototype: any) => (
-                            <SelectItem key={prototype.id} value={prototype.id}>
+                            <SelectItem key={prototype.id} value={prototype.id || ""}>
                               {prototype.name}
                             </SelectItem>
                           ))}
@@ -169,7 +169,7 @@ export default function EditTestPlanDialog({ testPlan }: EditTestPlanDialogProps
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || "planned"}>
                         <FormControl>
                           <SelectTrigger data-testid="select-edit-status">
                             <SelectValue />
