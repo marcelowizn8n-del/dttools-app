@@ -16,6 +16,7 @@ import LoginPage from "@/pages/login";
 import PricingPage from "@/pages/pricing";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/contexts/AuthContext";
+import DashboardPage from "@/pages/dashboard";
 
 function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -28,7 +29,7 @@ function HomePage() {
     );
   }
   
-  return isAuthenticated ? <ProjectsPage /> : <LandingPage />;
+  return isAuthenticated ? <DashboardPage /> : <LandingPage />;
 }
 
 function Router() {
