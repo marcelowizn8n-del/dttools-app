@@ -44,31 +44,56 @@ export default function Header() {
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-4">
             <Link href="/empathize">
-              <Button variant="ghost" className="text-sm" data-testid="nav-empathize">
+              <Button 
+                variant="ghost" 
+                className="text-sm text-white hover:opacity-80" 
+                style={{ backgroundColor: '#90C5E0' }}
+                data-testid="nav-empathize"
+              >
                 <Users className="mr-1 h-4 w-4" />
                 Empathize
               </Button>
             </Link>
             <Link href="/define">
-              <Button variant="ghost" className="text-sm" data-testid="nav-define">
+              <Button 
+                variant="ghost" 
+                className="text-sm text-white hover:opacity-80" 
+                style={{ backgroundColor: '#3A5A7E' }}
+                data-testid="nav-define"
+              >
                 <Target className="mr-1 h-4 w-4" />
                 Define
               </Button>
             </Link>
             <Link href="/ideate">
-              <Button variant="ghost" className="text-sm" data-testid="nav-ideate">
+              <Button 
+                variant="ghost" 
+                className="text-sm text-black hover:opacity-80" 
+                style={{ backgroundColor: '#FFD700' }}
+                data-testid="nav-ideate"
+              >
                 <Lightbulb className="mr-1 h-4 w-4" />
                 Ideate
               </Button>
             </Link>
             <Link href="/prototype">
-              <Button variant="ghost" className="text-sm" data-testid="nav-prototype">
+              <Button 
+                variant="ghost" 
+                className="text-sm text-white hover:opacity-80" 
+                style={{ backgroundColor: '#FF8C42' }}
+                data-testid="nav-prototype"
+              >
                 <Wrench className="mr-1 h-4 w-4" />
                 Prototype
               </Button>
             </Link>
             <Link href="/test">
-              <Button variant="ghost" className="text-sm" data-testid="nav-test">
+              <Button 
+                variant="ghost" 
+                className="text-sm text-black hover:opacity-80" 
+                style={{ backgroundColor: '#76D7C4' }}
+                data-testid="nav-test"
+              >
                 <TestTube className="mr-1 h-4 w-4" />
                 Test
               </Button>
