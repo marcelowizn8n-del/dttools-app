@@ -123,7 +123,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : 0;
 
       // Create report
-      const currentWeek = Math.ceil((Date.now() - new Date().getTime()) / (7 * 24 * 60 * 60 * 1000));
+      const startDate = event.startDate ? new Date(event.startDate) : new Date();
+      const currentWeek = Math.max(1, Math.ceil((Date.now() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)));
       const report = await storage.createReport({
         eventId,
         title: `${event.name} - Week ${currentWeek}`,

@@ -8,7 +8,7 @@ import RecentReports from "@/components/RecentReports";
 import AIInsights from "@/components/AIInsights";
 import IntegrationStatus from "@/components/IntegrationStatus";
 import { Button } from "@/components/ui/button";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Bell } from "lucide-react";
 
@@ -55,6 +55,10 @@ export default function Dashboard() {
       await apiRequest("POST", "/api/reports/generate", {
         eventId: activeEvent.id,
       });
+
+      // Invalidate queries to refresh UI
+      queryClient.invalidateQueries({ queryKey: ["/api/reports/recent"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/metrics"] });
 
       // Log user behavior
       await apiRequest("POST", "/api/user-behavior", {
