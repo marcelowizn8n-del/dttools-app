@@ -32,11 +32,25 @@ function HomePage() {
   return isAuthenticated ? <DashboardPage /> : <LandingPage />;
 }
 
+function ProjectsRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? <DashboardPage /> : <ProjectsPage />;
+}
+
 function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/projects" component={ProjectsPage} />
+      <Route path="/projects" component={ProjectsRoute} />
       <Route path="/projects/:id" component={ProjectDetailPage} />
       <Route path="/library" component={LibraryPage} />
       <Route path="/library/article/:id" component={ArticleDetailPage} />
