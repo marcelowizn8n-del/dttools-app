@@ -34,8 +34,10 @@ const phases = [
     description: "Compreenda profundamente seus usuários",
     descriptionEn: "Deeply understand your users",
     icon: Users,
-    color: "bg-blue-50 border-blue-200 hover:bg-blue-100",
-    iconColor: "bg-blue-500 text-white",
+    color: "hover:shadow-lg transition-all duration-300",
+    bgColor: "#90C5E0",
+    hoverColor: "#69A1C5",
+    iconColor: "text-white",
     completed: false
   },
   {
@@ -45,8 +47,10 @@ const phases = [
     description: "Sintetize informações e identifique problemas",
     descriptionEn: "Synthesize information and identify problems",
     icon: Target,
-    color: "bg-green-50 border-green-200 hover:bg-green-100",
-    iconColor: "bg-green-500 text-white",
+    color: "hover:shadow-lg transition-all duration-300",
+    bgColor: "#3A5A7E",
+    hoverColor: "#2A4259",
+    iconColor: "text-white",
     completed: false
   },
   {
@@ -56,8 +60,10 @@ const phases = [
     description: "Gere soluções criativas e inovadoras",
     descriptionEn: "Generate creative and innovative solutions",
     icon: Lightbulb,
-    color: "bg-yellow-50 border-yellow-200 hover:bg-yellow-100",
-    iconColor: "bg-yellow-500 text-white",
+    color: "hover:shadow-lg transition-all duration-300",
+    bgColor: "#FFD700",
+    hoverColor: "#E6C200",
+    iconColor: "text-black",
     completed: false
   },
   {
@@ -67,8 +73,10 @@ const phases = [
     description: "Torne suas ideias tangíveis",
     descriptionEn: "Make your ideas tangible",
     icon: Wrench,
-    color: "bg-orange-50 border-orange-200 hover:bg-orange-100",
-    iconColor: "bg-orange-500 text-white",
+    color: "hover:shadow-lg transition-all duration-300",
+    bgColor: "#FF8C42",
+    hoverColor: "#E0773A",
+    iconColor: "text-white",
     completed: false
   },
   {
@@ -78,8 +86,10 @@ const phases = [
     description: "Valide soluções com usuários reais",
     descriptionEn: "Validate solutions with real users",
     icon: TestTube,
-    color: "bg-purple-50 border-purple-200 hover:bg-purple-100",
-    iconColor: "bg-purple-500 text-white",
+    color: "hover:shadow-lg transition-all duration-300",
+    bgColor: "#76D7C4",
+    hoverColor: "#48A9A6",
+    iconColor: "text-black",
     completed: false
   }
 ];
@@ -233,9 +243,14 @@ export default function Dashboard() {
                     const Icon = phase.icon;
                     return (
                       <div key={phase.id} className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          phase.completed ? phase.iconColor : 'bg-gray-200'
-                        }`}>
+                        <div 
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            phase.completed ? phase.iconColor : 'text-white'
+                          }`}
+                          style={{ 
+                            backgroundColor: phase.completed ? (phase.bgColor) : '#e5e7eb'
+                          }}
+                        >
                           <Icon className="w-4 h-4" />
                         </div>
                         <span className={`text-sm font-medium ${
@@ -311,14 +326,21 @@ export default function Dashboard() {
                     <Card 
                       key={phase.id}
                       className={`cursor-pointer transition-all duration-300 border-2 ${
-                        isHovered ? phase.color + ' shadow-lg scale-105' : 'border-gray-200 hover:shadow-md'
+                        isHovered ? 'shadow-lg scale-105' : 'border-gray-200 hover:shadow-md'
                       }`}
+                      style={{
+                        backgroundColor: isHovered ? phase.hoverColor : phase.bgColor,
+                        borderColor: isHovered ? phase.hoverColor : phase.bgColor
+                      }}
                       onMouseEnter={() => setSelectedPhase(phase.id)}
                       onMouseLeave={() => setSelectedPhase(null)}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${phase.iconColor}`}>
+                          <div 
+                            className={`w-12 h-12 rounded-lg flex items-center justify-center ${phase.iconColor}`}
+                            style={{ backgroundColor: isHovered ? phase.hoverColor : phase.bgColor }}
+                          >
                             <Icon className="w-6 h-6" />
                           </div>
                           <div>
