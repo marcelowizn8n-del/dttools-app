@@ -500,6 +500,7 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
         stripePriceIdYearly: null,
         maxProjects: 2,
         maxPersonasPerProject: 2,
+        maxUsersPerTeam: null,
         aiChatLimit: 10,
         libraryArticlesCount: 3,
         features: [
@@ -534,6 +535,7 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
         stripePriceIdYearly: null,
         maxProjects: null, // unlimited
         maxPersonasPerProject: null, // unlimited
+        maxUsersPerTeam: null,
         aiChatLimit: null, // unlimited
         libraryArticlesCount: null, // all articles
         features: [
@@ -1105,6 +1107,11 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
       id,
       password: hashedPassword,
       role: insertUser.role || "user",
+      stripeCustomerId: insertUser.stripeCustomerId || null,
+      stripeSubscriptionId: insertUser.stripeSubscriptionId || null,
+      subscriptionPlanId: insertUser.subscriptionPlanId || null,
+      subscriptionStatus: insertUser.subscriptionStatus || null,
+      subscriptionEndDate: insertUser.subscriptionEndDate || null,
       createdAt: new Date(),
     };
     
