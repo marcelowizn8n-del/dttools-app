@@ -163,7 +163,7 @@ function PrototypeCard({ prototype, projectId, ideas }: { prototype: Prototype; 
             {prototype.description}
           </p>
           
-          {prototype.materials && (prototype.materials as string[]).length > 0 && (
+          {prototype.materials && (prototype.materials as string[]).length > 0 ? (
             <div>
               <h4 className="text-xs font-medium text-gray-600 mb-1">Materiais:</h4>
               <div className="flex flex-wrap gap-1">
@@ -174,7 +174,7 @@ function PrototypeCard({ prototype, projectId, ideas }: { prototype: Prototype; 
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
 
           {prototype.feedback && (
             <div className="bg-gray-50 rounded-lg p-3">
@@ -337,7 +337,7 @@ export default function PrototypeTool({ projectId }: PrototypeToolProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Ideia Base (Opcional)</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                           <FormControl>
                             <SelectTrigger data-testid="select-prototype-idea">
                               <SelectValue placeholder="Selecionar ideia" />

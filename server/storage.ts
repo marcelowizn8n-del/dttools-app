@@ -10,9 +10,12 @@ import {
   type Prototype, type InsertPrototype,
   type TestPlan, type InsertTestPlan,
   type TestResult, type InsertTestResult,
-  type UserProgress, type InsertUserProgress
+  type UserProgress, type InsertUserProgress,
+  type User, type InsertUser,
+  type Article, type InsertArticle
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import bcrypt from "bcrypt";
 
 export interface IStorage {
   // Projects
@@ -87,6 +90,22 @@ export interface IStorage {
     currentPhase: number;
     completionRate: number;
   }>;
+
+  // Users
+  getUsers(): Promise<User[]>;
+  getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
+  deleteUser(id: string): Promise<boolean>;
+
+  // Articles
+  getArticles(): Promise<Article[]>;
+  getArticlesByCategory(category: string): Promise<Article[]>;
+  getArticle(id: string): Promise<Article | undefined>;
+  createArticle(article: InsertArticle): Promise<Article>;
+  updateArticle(id: string, article: Partial<InsertArticle>): Promise<Article | undefined>;
+  deleteArticle(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -102,6 +121,8 @@ export class MemStorage implements IStorage {
   private testPlans: Map<string, TestPlan>;
   private testResults: Map<string, TestResult>;
   private userProgress: Map<string, UserProgress>;
+  private users: Map<string, User>;
+  private articles: Map<string, Article>;
 
   constructor() {
     this.projects = new Map();
@@ -116,6 +137,8 @@ export class MemStorage implements IStorage {
     this.testPlans = new Map();
     this.testResults = new Map();
     this.userProgress = new Map();
+    this.users = new Map();
+    this.articles = new Map();
     
     this.initializeData();
   }
@@ -201,6 +224,237 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
     };
     this.userProgress.set(`${sampleProgress.userId}_${sampleProject.id}`, sampleProgress);
+
+    // Sample Users
+    const adminUser: User = {
+      id: randomUUID(),
+      username: "admin",
+      password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password"
+      role: "admin",
+      createdAt: new Date(),
+    };
+    this.users.set(adminUser.id, adminUser);
+
+    const regularUser: User = {
+      id: randomUUID(),
+      username: "usuario",
+      password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password" 
+      role: "user",
+      createdAt: new Date(),
+    };
+    this.users.set(regularUser.id, regularUser);
+
+    // Sample Articles
+    const articles = [
+      {
+        id: randomUUID(),
+        title: "Introdução ao Design Thinking",
+        content: `# Introdução ao Design Thinking
+
+O Design Thinking é uma abordagem centrada no ser humano para inovação que integra as necessidades das pessoas, as possibilidades da tecnologia e os requisitos para o sucesso empresarial.
+
+## O que é Design Thinking?
+
+Design Thinking é uma metodologia que usa elementos do kit de ferramentas do designer para integrar as necessidades das pessoas, as possibilidades da tecnologia e os requisitos para o sucesso empresarial.
+
+## Os 5 Estágios do Design Thinking
+
+### 1. Empatizar
+Compreender profundamente as necessidades dos usuários através de observação, engajamento e imersão.
+
+### 2. Definir  
+Sintetizar observações para definir os problemas principais que você identificou.
+
+### 3. Idear
+Brainstorm e gerar soluções criativas usando técnicas como brainstorming, brainwriting e worst possible idea.
+
+### 4. Prototipar
+Construir representações simples e rápidas de suas ideias para mostrar aos outros.
+
+### 5. Testar
+Testar protótipos com usuários reais e iterar baseado no feedback recebido.
+
+## Benefícios
+
+- **Inovação centrada no usuário**: Soluções que realmente atendem necessidades reais
+- **Colaboração multidisciplinar**: Equipes diversas geram melhores resultados  
+- **Iteração rápida**: Falhe rápido e barato para aprender mais cedo
+- **Tangibilização**: Torne ideias abstratas em algo concreto
+
+O Design Thinking não é apenas para designers - é uma mentalidade que pode ser aplicada em qualquer área para resolver problemas complexos.`,
+        category: "empathize",
+        author: "Design Thinking Expert",
+        description: "Uma introdução completa ao Design Thinking, sua metodologia e benefícios",
+        tags: ["introdução", "metodologia", "inovação", "processo"],
+        published: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: randomUUID(),
+        title: "Técnicas de Empatia: Como Entender Seus Usuários",
+        content: `# Técnicas de Empatia: Como Entender Seus Usuários
+
+A empatia é o coração do Design Thinking. É sobre entender profundamente as necessidades, pensamentos, emoções e motivações dos seus usuários.
+
+## Por que a Empatia é Importante?
+
+A empatia permite que você:
+- Compreenda as necessidades reais dos usuários
+- Identifique problemas que os usuários podem nem saber que têm
+- Desenvolva soluções mais relevantes e eficazes
+- Reduza o risco de criar produtos que ninguém quer
+
+## Principais Técnicas de Empatia
+
+### 1. Entrevistas com Usuários
+Conversas estruturadas para entender motivações, comportamentos e necessidades.
+
+**Dicas para entrevistas eficazes:**
+- Faça perguntas abertas
+- Escute mais do que fale
+- Pergunte "por quê?" para ir mais fundo
+- Observe linguagem corporal e emoções
+
+### 2. Observação
+Observe usuários em seu ambiente natural sem interferir.
+
+**O que observar:**
+- Comportamentos inconscientes
+- Frustrações não expressas
+- Workarounds criativos
+- Contexto de uso
+
+### 3. Mapas de Empatia
+Visualize o que os usuários pensam, sentem, veem, fazem, ouvem, suas dores e ganhos.
+
+### 4. Jornada do Usuário
+Mapeie toda a experiência do usuário, identificando pontos de dor e oportunidades.
+
+### 5. Shadowing
+Acompanhe usuários durante suas atividades diárias.
+
+## Ferramentas Práticas
+
+- **Personas**: Representações fictícias de usuários reais
+- **Cenários**: Histórias que descrevem como usuários interagem com soluções
+- **Storyboards**: Visualização da jornada do usuário
+
+## Dicas para Desenvolver Empatia
+
+1. **Deixe seus preconceitos de lado**
+2. **Seja genuinamente curioso**
+3. **Pratique escuta ativa**
+4. **Documente insights imediatamente**
+5. **Busque diversidade de perspectivas**
+
+Lembre-se: empatia é uma habilidade que pode ser desenvolvida com prática e dedicação.`,
+        category: "empathize",
+        author: "UX Researcher",
+        description: "Aprenda técnicas essenciais para desenvolver empatia e entender profundamente seus usuários",
+        tags: ["empatia", "pesquisa", "usuários", "entrevistas", "observação"],
+        published: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: randomUUID(),
+        title: "Como Definir o Problema Certo",
+        content: `# Como Definir o Problema Certo
+
+Definir o problema corretamente é crucial para o sucesso de qualquer projeto. Um problema bem definido está meio resolvido.
+
+## A Importância da Definição do Problema
+
+- **Direcionamento**: Guia todas as decisões subsequentes
+- **Alinhamento**: Mantém a equipe focada no mesmo objetivo  
+- **Eficiência**: Evita desperdício de tempo e recursos
+- **Inovação**: Problemas bem definidos inspiram soluções criativas
+
+## Ferramentas para Definir Problemas
+
+### 1. Problem Statement (Declaração do Problema)
+Formato: "O usuário [tipo de usuário] precisa de [necessidade] porque [insight]"
+
+### 2. How Might We (Como Podemos)
+Transforme desafios em oportunidades:
+- "Como podemos ajudar pais ocupados a preparar refeições saudáveis rapidamente?"
+- "Como podemos tornar a experiência de transporte público mais agradável?"
+
+### 3. 5 Porquês
+Técnica para chegar à raiz do problema fazendo "por quê?" repetidamente.
+
+## Critérios de um Bom Problem Statement
+
+### Específico
+- Evite generalidades
+- Use dados concretos
+- Seja preciso sobre o contexto
+
+### Orientado ao Usuário
+- Foque nas necessidades humanas
+- Use linguagem do usuário
+- Considere diferentes tipos de usuários
+
+### Inspirador
+- Motive a equipe
+- Sugira múltiplas soluções
+- Seja otimista mas realista
+
+### Acionável
+- Seja possível de resolver
+- Tenha escopo apropriado
+- Permita medição de sucesso
+
+## Processo de Definição
+
+### 1. Coleta de Insights
+- Analise dados da fase de empatia
+- Identifique padrões e temas
+- Priorize insights mais importantes
+
+### 2. Síntese
+- Agrupe insights relacionados
+- Identifique oportunidades
+- Crie hipóteses sobre necessidades
+
+### 3. Formulação
+- Escreva múltiplas versões do problema
+- Teste com stakeholders
+- Refine baseado no feedback
+
+### 4. Validação
+- Confirme com usuários
+- Verifique viabilidade
+- Ajuste se necessário
+
+## Armadilhas Comuns
+
+- **Pular direto para soluções**
+- **Definir problemas muito amplos**
+- **Focar em sintomas, não causas**
+- **Ignorar o contexto do usuário**
+- **Não validar com usuários**
+
+Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a equipe alinhada.`,
+        category: "define",
+        author: "Product Manager",
+        description: "Aprenda a arte de definir problemas de forma clara e inspiradora para impulsionar a inovação",
+        tags: ["problema", "definição", "metodologia", "process"],
+        published: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    articles.forEach(articleData => {
+      const article: Article = {
+        ...articleData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.articles.set(article.id, article);
+    });
   }
 
   // Projects
@@ -443,6 +697,10 @@ export class MemStorage implements IStorage {
     const hmw: HmwQuestion = {
       ...insertHmw,
       id,
+      challenge: insertHmw.challenge || null,
+      scope: insertHmw.scope || null,
+      context: insertHmw.context || null,
+      priority: insertHmw.priority || null,
       category: insertHmw.category || null,
       votes: insertHmw.votes || 0,
       createdAt: new Date(),
@@ -642,6 +900,103 @@ export class MemStorage implements IStorage {
       currentPhase: project.currentPhase || 1,
       completionRate: Math.round((completedTools / totalTools) * 100),
     };
+  }
+
+  // Users
+  async getUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.username === username);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const id = randomUUID();
+    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
+    
+    const user: User = {
+      ...insertUser,
+      id,
+      password: hashedPassword,
+      role: insertUser.role || "user",
+      createdAt: new Date(),
+    };
+    
+    this.users.set(id, user);
+    return user;
+  }
+
+  async updateUser(id: string, updateUser: Partial<InsertUser>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    // Hash password if it's being updated
+    let updatedData = { ...updateUser };
+    if (updateUser.password) {
+      updatedData.password = await bcrypt.hash(updateUser.password, 10);
+    }
+    
+    const updatedUser: User = { ...user, ...updatedData };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    return this.users.delete(id);
+  }
+
+  // Articles
+  async getArticles(): Promise<Article[]> {
+    return Array.from(this.articles.values()).filter(article => article.published);
+  }
+
+  async getArticlesByCategory(category: string): Promise<Article[]> {
+    return Array.from(this.articles.values()).filter(
+      article => article.published && article.category === category
+    );
+  }
+
+  async getArticle(id: string): Promise<Article | undefined> {
+    const article = this.articles.get(id);
+    return article?.published ? article : undefined;
+  }
+
+  async createArticle(insertArticle: InsertArticle): Promise<Article> {
+    const id = randomUUID();
+    const article: Article = {
+      ...insertArticle,
+      id,
+      description: insertArticle.description || null,
+      tags: insertArticle.tags || [],
+      published: insertArticle.published ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    this.articles.set(id, article);
+    return article;
+  }
+
+  async updateArticle(id: string, updateArticle: Partial<InsertArticle>): Promise<Article | undefined> {
+    const article = this.articles.get(id);
+    if (!article) return undefined;
+    
+    const updatedArticle: Article = { 
+      ...article, 
+      ...updateArticle, 
+      updatedAt: new Date() 
+    };
+    this.articles.set(id, updatedArticle);
+    return updatedArticle;
+  }
+
+  async deleteArticle(id: string): Promise<boolean> {
+    return this.articles.delete(id);
   }
 }
 

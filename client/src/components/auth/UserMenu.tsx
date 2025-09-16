@@ -1,0 +1,82 @@
+import { useState } from "react";
+import { LogOut, User, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
+
+export function UserMenu() {
+  const { user, logout, isAdmin } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  if (!user) return null;
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const getUserInitials = (username: string) => {
+    return username.slice(0, 2).toUpperCase();
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="button-user-menu">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-primary text-primary-foreground">
+              {getUserInitials(user.username)}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none" data-testid="text-username">
+              {user.username}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground" data-testid="text-role">
+              {isAdmin ? "Administrador" : "Usuário"}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="cursor-pointer" data-testid="button-profile">
+          <User className="mr-2 h-4 w-4" />
+          <span>Perfil</span>
+        </DropdownMenuItem>
+        {isAdmin && (
+          <DropdownMenuItem className="cursor-pointer" data-testid="button-admin">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Administração</span>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          data-testid="button-logout"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>{isLoggingOut ? "Saindo..." : "Sair"}</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
