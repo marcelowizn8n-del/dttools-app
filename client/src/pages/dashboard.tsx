@@ -244,11 +244,10 @@ export default function Dashboard() {
                     return (
                       <div key={phase.id} className="flex items-center gap-3">
                         <div 
-                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            phase.completed ? phase.iconColor : 'text-white'
-                          }`}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${phase.iconColor}`}
                           style={{ 
-                            backgroundColor: phase.completed ? (phase.bgColor) : '#e5e7eb'
+                            backgroundColor: phase.bgColor,
+                            opacity: phase.completed ? 1 : 0.7
                           }}
                         >
                           <Icon className="w-4 h-4" />
@@ -326,11 +325,12 @@ export default function Dashboard() {
                     <Card 
                       key={phase.id}
                       className={`cursor-pointer transition-all duration-300 border-2 ${
-                        isHovered ? 'shadow-lg scale-105' : 'border-gray-200 hover:shadow-md'
+                        isHovered ? 'shadow-lg scale-105' : 'shadow-md'
                       }`}
                       style={{
                         backgroundColor: isHovered ? phase.hoverColor : phase.bgColor,
-                        borderColor: isHovered ? phase.hoverColor : phase.bgColor
+                        borderColor: phase.bgColor,
+                        color: phase.iconColor === 'text-black' ? '#000' : '#fff'
                       }}
                       onMouseEnter={() => setSelectedPhase(phase.id)}
                       onMouseLeave={() => setSelectedPhase(null)}
@@ -339,7 +339,10 @@ export default function Dashboard() {
                         <div className="flex items-center gap-4">
                           <div 
                             className={`w-12 h-12 rounded-lg flex items-center justify-center ${phase.iconColor}`}
-                            style={{ backgroundColor: isHovered ? phase.hoverColor : phase.bgColor }}
+                            style={{ 
+                              backgroundColor: 'rgba(255,255,255,0.2)',
+                              backdropFilter: 'blur(10px)'
+                            }}
                           >
                             <Icon className="w-6 h-6" />
                           </div>

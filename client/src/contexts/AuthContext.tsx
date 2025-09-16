@@ -55,13 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       
-      const response = await apiRequest("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await apiRequest("POST", "/api/auth/login", { username, password });
 
       if (!response.ok) {
         const error = await response.json();
@@ -92,9 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async (): Promise<void> => {
     try {
       // Call logout endpoint (even if it fails, we still log out locally)
-      await apiRequest("/api/auth/logout", {
-        method: "POST",
-      });
+      await apiRequest("POST", "/api/auth/logout");
     } catch {
       // Ignore logout API errors
     }
