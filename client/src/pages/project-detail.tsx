@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import type { Project } from "@shared/schema";
 import Phase1Tools from "@/components/phase1/Phase1Tools";
 import Phase2Tools from "@/components/phase2/Phase2Tools";
+import Phase3Tools from "@/components/phase3/Phase3Tools";
 
 const phaseData = {
   1: { 
@@ -264,6 +265,8 @@ export default function ProjectDetailPage() {
         <Phase1Tools projectId={project.id} />
       ) : project.currentPhase === 2 ? (
         <Phase2Tools projectId={project.id} />
+      ) : project.currentPhase === 3 ? (
+        <Phase3Tools projectId={project.id} />
       ) : (
         <Card className="bg-blue-50 border-blue-200">
           <CardHeader>
