@@ -562,8 +562,8 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
         name: "team",
         displayName: "Team",
         description: "Perfeito para equipes e startups",
-        priceMonthly: 7900, // R$ 79.00 in cents
-        priceYearly: 85320, // R$ 79 * 12 * 0.9 (10% discount yearly)
+        priceMonthly: 14900, // R$ 149.00 in cents
+        priceYearly: 161280, // R$ 149 * 12 * 0.9 (10% discount yearly)
         stripePriceIdMonthly: null,
         stripePriceIdYearly: null,
         maxProjects: null, // unlimited
@@ -597,8 +597,8 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
         name: "enterprise",
         displayName: "Enterprise",
         description: "Soluções completas para grandes empresas",
-        priceMonthly: 19900, // R$ 199.00 in cents
-        priceYearly: 215280, // R$ 199 * 12 * 0.9 (10% discount yearly)
+        priceMonthly: 29900, // R$ 299.00 in cents
+        priceYearly: 323280, // R$ 299 * 12 * 0.9 (10% discount yearly)
         stripePriceIdMonthly: null,
         stripePriceIdYearly: null,
         maxProjects: null, // unlimited
