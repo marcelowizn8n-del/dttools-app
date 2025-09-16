@@ -1,5 +1,16 @@
 import { Link } from "wouter";
-import { Book, Settings, CreditCard } from "lucide-react";
+import { 
+  Book, 
+  Settings, 
+  CreditCard, 
+  Users,
+  Target,
+  Lightbulb,
+  Wrench,
+  TestTube,
+  BarChart3,
+  Star
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -31,29 +42,69 @@ export default function Header() {
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/projects">
-              <Button variant="ghost" data-testid="nav-projects">
-                {t("nav.projects")}
+          <nav className="hidden md:flex items-center gap-4">
+            <Link href="/empathize">
+              <Button variant="ghost" className="text-sm" data-testid="nav-empathize">
+                <Users className="mr-1 h-4 w-4" />
+                Empathize
               </Button>
             </Link>
+            <Link href="/define">
+              <Button variant="ghost" className="text-sm" data-testid="nav-define">
+                <Target className="mr-1 h-4 w-4" />
+                Define
+              </Button>
+            </Link>
+            <Link href="/ideate">
+              <Button variant="ghost" className="text-sm" data-testid="nav-ideate">
+                <Lightbulb className="mr-1 h-4 w-4" />
+                Ideate
+              </Button>
+            </Link>
+            <Link href="/prototype">
+              <Button variant="ghost" className="text-sm" data-testid="nav-prototype">
+                <Wrench className="mr-1 h-4 w-4" />
+                Prototype
+              </Button>
+            </Link>
+            <Link href="/test">
+              <Button variant="ghost" className="text-sm" data-testid="nav-test">
+                <TestTube className="mr-1 h-4 w-4" />
+                Test
+              </Button>
+            </Link>
+            <div className="h-6 w-px bg-gray-300 mx-2"></div>
             <Link href="/library">
-              <Button variant="ghost" data-testid="nav-library">
-                <Book className="mr-2 h-4 w-4" />
-                {t("nav.library")}
+              <Button variant="ghost" className="text-sm" data-testid="nav-library">
+                <Book className="mr-1 h-4 w-4" />
+                Library
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button variant="ghost" className="text-sm" data-testid="nav-dashboard">
+                <BarChart3 className="mr-1 h-4 w-4" />
+                Dashboard
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button variant="ghost" data-testid="nav-pricing">
-                <CreditCard className="mr-2 h-4 w-4" />
-                {t("nav.pricing")}
+              <Button variant="ghost" className="text-sm" data-testid="nav-pricing">
+                <CreditCard className="mr-1 h-4 w-4" />
+                Pricing
               </Button>
             </Link>
+            {isAuthenticated && (
+              <Link href="/subscription">
+                <Button variant="ghost" className="text-sm" data-testid="nav-subscription">
+                  <Star className="mr-1 h-4 w-4" />
+                  Subscription
+                </Button>
+              </Link>
+            )}
             {isAdmin && (
               <Link href="/admin">
-                <Button variant="ghost" data-testid="nav-admin">
-                  <Settings className="mr-2 h-4 w-4" />
-                  {t("nav.admin")}
+                <Button variant="ghost" className="text-sm" data-testid="nav-admin">
+                  <Settings className="mr-1 h-4 w-4" />
+                  Tools
                 </Button>
               </Link>
             )}
