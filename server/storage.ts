@@ -47,10 +47,12 @@ export interface IStorage {
   getPovStatements(projectId: string): Promise<PovStatement[]>;
   createPovStatement(pov: InsertPovStatement): Promise<PovStatement>;
   updatePovStatement(id: string, pov: Partial<InsertPovStatement>): Promise<PovStatement | undefined>;
+  deletePovStatement(id: string): Promise<boolean>;
 
   getHmwQuestions(projectId: string): Promise<HmwQuestion[]>;
   createHmwQuestion(hmw: InsertHmwQuestion): Promise<HmwQuestion>;
   updateHmwQuestion(id: string, hmw: Partial<InsertHmwQuestion>): Promise<HmwQuestion | undefined>;
+  deleteHmwQuestion(id: string): Promise<boolean>;
 
   // Phase 3: Ideate
   getIdeas(projectId: string): Promise<Idea[]>;
@@ -417,6 +419,10 @@ export class MemStorage implements IStorage {
     return updatedPov;
   }
 
+  async deletePovStatement(id: string): Promise<boolean> {
+    return this.povStatements.delete(id);
+  }
+
   // Phase 2: Define - HMW Questions
   async getHmwQuestions(projectId: string): Promise<HmwQuestion[]> {
     return Array.from(this.hmwQuestions.values()).filter(hmw => hmw.projectId === projectId);
@@ -442,6 +448,10 @@ export class MemStorage implements IStorage {
     const updatedHmw: HmwQuestion = { ...hmw, ...updateHmw };
     this.hmwQuestions.set(id, updatedHmw);
     return updatedHmw;
+  }
+
+  async deleteHmwQuestion(id: string): Promise<boolean> {
+    return this.hmwQuestions.delete(id);
   }
 
   // Phase 3: Ideate - Ideas

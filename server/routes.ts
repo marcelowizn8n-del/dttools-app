@@ -289,6 +289,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/pov-statements/:id", async (req, res) => {
+    try {
+      const validatedData = insertPovStatementSchema.omit({ projectId: true }).partial().parse(req.body);
+      const povStatement = await storage.updatePovStatement(req.params.id, validatedData);
+      if (!povStatement) {
+        return res.status(404).json({ error: "POV statement not found" });
+      }
+      res.json(povStatement);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid POV statement data" });
+    }
+  });
+
+  app.delete("/api/pov-statements/:id", async (req, res) => {
+    try {
+      const success = await storage.deletePovStatement(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "POV statement not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete POV statement" });
+    }
+  });
+
   // Phase 2: Define - HMW Questions
   app.get("/api/projects/:projectId/hmw-questions", async (req, res) => {
     try {
@@ -309,6 +334,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(hmwQuestion);
     } catch (error) {
       res.status(400).json({ error: "Invalid HMW question data" });
+    }
+  });
+
+  app.put("/api/hmw-questions/:id", async (req, res) => {
+    try {
+      const validatedData = insertHmwQuestionSchema.omit({ projectId: true }).partial().parse(req.body);
+      const hmwQuestion = await storage.updateHmwQuestion(req.params.id, validatedData);
+      if (!hmwQuestion) {
+        return res.status(404).json({ error: "HMW question not found" });
+      }
+      res.json(hmwQuestion);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid HMW question data" });
+    }
+  });
+
+  app.delete("/api/hmw-questions/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteHmwQuestion(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "HMW question not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete HMW question" });
     }
   });
 

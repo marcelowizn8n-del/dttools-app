@@ -87,6 +87,10 @@ export const hmwQuestions = pgTable("hmw_questions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: varchar("project_id").references(() => projects.id).notNull(),
   question: text("question").notNull(),
+  context: text("context"),
+  challenge: text("challenge"),
+  scope: text("scope").default("product"), // feature, product, service, experience, process
+  priority: text("priority").default("medium"), // low, medium, high
   category: text("category"), // categorization
   votes: integer("votes").default(0),
   createdAt: timestamp("created_at").default(sql`now()`),
