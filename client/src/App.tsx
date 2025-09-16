@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Header from "@/components/Header";
+import LandingPage from "@/pages/landing";
 import ProjectsPage from "@/pages/projects";
 import ProjectDetailPage from "@/pages/project-detail";
 import LibraryPage from "@/pages/library";
@@ -14,11 +15,26 @@ import AdminPage from "@/pages/admin";
 import LoginPage from "@/pages/login";
 import PricingPage from "@/pages/pricing";
 import NotFound from "@/pages/not-found";
+import { useAuth } from "@/contexts/AuthContext";
+
+function HomePage() {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? <ProjectsPage /> : <LandingPage />;
+}
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={ProjectsPage} />
+      <Route path="/" component={HomePage} />
       <Route path="/projects" component={ProjectsPage} />
       <Route path="/projects/:id" component={ProjectDetailPage} />
       <Route path="/library" component={LibraryPage} />
