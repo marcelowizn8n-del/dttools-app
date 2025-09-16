@@ -2,274 +2,430 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
-  insertEventSchema,
-  insertTeamMemberSchema,
-  insertReportSchema,
-  insertIntegrationSchema,
-  insertAIInsightSchema,
-  insertUserBehaviorSchema
+  insertProjectSchema,
+  insertEmpathyMapSchema,
+  insertPersonaSchema,
+  insertInterviewSchema,
+  insertObservationSchema,
+  insertPovStatementSchema,
+  insertHmwQuestionSchema,
+  insertIdeaSchema,
+  insertPrototypeSchema,
+  insertTestPlanSchema,
+  insertTestResultSchema,
+  insertUserProgressSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Events routes
-  app.get("/api/events", async (_req, res) => {
+  // Projects routes
+  app.get("/api/projects", async (_req, res) => {
     try {
-      const events = await storage.getEvents();
-      res.json(events);
+      const projects = await storage.getProjects();
+      res.json(projects);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch events" });
+      res.status(500).json({ error: "Failed to fetch projects" });
     }
   });
 
-  app.get("/api/events/:id", async (req, res) => {
+  app.get("/api/projects/:id", async (req, res) => {
     try {
-      const event = await storage.getEvent(req.params.id);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
+      const project = await storage.getProject(req.params.id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
       }
-      res.json(event);
+      res.json(project);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch event" });
+      res.status(500).json({ error: "Failed to fetch project" });
     }
   });
 
-  app.post("/api/events", async (req, res) => {
+  app.post("/api/projects", async (req, res) => {
     try {
-      const validatedData = insertEventSchema.parse(req.body);
-      const event = await storage.createEvent(validatedData);
-      res.status(201).json(event);
+      const validatedData = insertProjectSchema.parse(req.body);
+      const project = await storage.createProject(validatedData);
+      res.status(201).json(project);
     } catch (error) {
-      res.status(400).json({ error: "Invalid event data" });
+      res.status(400).json({ error: "Invalid project data" });
     }
   });
 
-  app.put("/api/events/:id", async (req, res) => {
+  app.put("/api/projects/:id", async (req, res) => {
     try {
-      const validatedData = insertEventSchema.partial().parse(req.body);
-      const event = await storage.updateEvent(req.params.id, validatedData);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
+      const validatedData = insertProjectSchema.partial().parse(req.body);
+      const project = await storage.updateProject(req.params.id, validatedData);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
       }
-      res.json(event);
+      res.json(project);
     } catch (error) {
-      res.status(400).json({ error: "Invalid event data" });
+      res.status(400).json({ error: "Invalid project data" });
     }
   });
 
-  // Team members routes
-  app.get("/api/team-members", async (_req, res) => {
+  app.delete("/api/projects/:id", async (req, res) => {
     try {
-      const members = await storage.getTeamMembers();
-      res.json(members);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch team members" });
-    }
-  });
-
-  app.post("/api/team-members", async (req, res) => {
-    try {
-      const validatedData = insertTeamMemberSchema.parse(req.body);
-      const member = await storage.createTeamMember(validatedData);
-      res.status(201).json(member);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid team member data" });
-    }
-  });
-
-  // Reports routes
-  app.get("/api/reports", async (_req, res) => {
-    try {
-      const reports = await storage.getReports();
-      res.json(reports);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch reports" });
-    }
-  });
-
-  app.get("/api/reports/recent", async (req, res) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-      const reports = await storage.getRecentReports(limit);
-      res.json(reports);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch recent reports" });
-    }
-  });
-
-  app.post("/api/reports", async (req, res) => {
-    try {
-      const validatedData = insertReportSchema.parse(req.body);
-      const report = await storage.createReport(validatedData);
-      res.status(201).json(report);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid report data" });
-    }
-  });
-
-  app.post("/api/reports/generate", async (req, res) => {
-    try {
-      const { eventId } = req.body;
-      
-      // Get event data
-      const event = await storage.getEvent(eventId);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
-      }
-
-      // Get team members for efficiency calculation
-      const teamMembers = await storage.getTeamMembers();
-      const avgEfficiency = teamMembers.length > 0 
-        ? teamMembers.reduce((sum, member) => sum + (member.efficiency || 0), 0) / teamMembers.length
-        : 0;
-
-      // Create report
-      const startDate = event.startDate ? new Date(event.startDate) : new Date();
-      const currentWeek = Math.max(1, Math.ceil((Date.now() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)));
-      const report = await storage.createReport({
-        eventId,
-        title: `${event.name} - Week ${currentWeek}`,
-        weekNumber: currentWeek,
-        year: new Date().getFullYear(),
-        completionRate: event.completionRate || 0,
-        teamEfficiency: avgEfficiency,
-        budgetUsage: event.budgetUsed || 0,
-        insights: {
-          recommendations: [
-            "Consider adjusting task assignments based on team performance",
-            "Monitor budget closely to prevent overruns"
-          ]
-        },
-        pdfUrl: null,
-      });
-
-      res.status(201).json(report);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to generate report" });
-    }
-  });
-
-  // Integrations routes
-  app.get("/api/integrations", async (_req, res) => {
-    try {
-      const integrations = await storage.getIntegrations();
-      res.json(integrations);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch integrations" });
-    }
-  });
-
-  app.post("/api/integrations", async (req, res) => {
-    try {
-      const validatedData = insertIntegrationSchema.parse(req.body);
-      const integration = await storage.createIntegration(validatedData);
-      res.status(201).json(integration);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid integration data" });
-    }
-  });
-
-  app.put("/api/integrations/:id", async (req, res) => {
-    try {
-      const validatedData = insertIntegrationSchema.partial().parse(req.body);
-      const integration = await storage.updateIntegration(req.params.id, validatedData);
-      if (!integration) {
-        return res.status(404).json({ error: "Integration not found" });
-      }
-      res.json(integration);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid integration data" });
-    }
-  });
-
-  // AI Insights routes
-  app.get("/api/ai-insights", async (_req, res) => {
-    try {
-      const insights = await storage.getAIInsights();
-      res.json(insights);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch AI insights" });
-    }
-  });
-
-  app.get("/api/ai-insights/unread", async (_req, res) => {
-    try {
-      const insights = await storage.getUnreadInsights();
-      res.json(insights);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch unread insights" });
-    }
-  });
-
-  app.post("/api/ai-insights", async (req, res) => {
-    try {
-      const validatedData = insertAIInsightSchema.parse(req.body);
-      const insight = await storage.createAIInsight(validatedData);
-      res.status(201).json(insight);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid AI insight data" });
-    }
-  });
-
-  app.put("/api/ai-insights/:id/read", async (req, res) => {
-    try {
-      const success = await storage.markInsightAsRead(req.params.id);
+      const success = await storage.deleteProject(req.params.id);
       if (!success) {
-        return res.status(404).json({ error: "Insight not found" });
+        return res.status(404).json({ error: "Project not found" });
       }
       res.json({ success: true });
     } catch (error) {
-      res.status(500).json({ error: "Failed to mark insight as read" });
+      res.status(500).json({ error: "Failed to delete project" });
     }
   });
 
-  // User behavior routes
-  app.post("/api/user-behavior", async (req, res) => {
+  // Phase 1: Empathize - Empathy Maps
+  app.get("/api/projects/:projectId/empathy-maps", async (req, res) => {
     try {
-      const validatedData = insertUserBehaviorSchema.parse(req.body);
-      const behavior = await storage.logUserBehavior(validatedData);
-      res.status(201).json(behavior);
+      const empathyMaps = await storage.getEmpathyMaps(req.params.projectId);
+      res.json(empathyMaps);
     } catch (error) {
-      res.status(400).json({ error: "Invalid user behavior data" });
+      res.status(500).json({ error: "Failed to fetch empathy maps" });
     }
   });
 
-  // Metrics routes
-  app.get("/api/metrics", async (_req, res) => {
+  app.post("/api/projects/:projectId/empathy-maps", async (req, res) => {
     try {
-      const metrics = await storage.getMetrics();
-      res.json(metrics);
+      const validatedData = insertEmpathyMapSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const empathyMap = await storage.createEmpathyMap(validatedData);
+      res.status(201).json(empathyMap);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch metrics" });
+      res.status(400).json({ error: "Invalid empathy map data" });
+    }
+  });
+
+  app.put("/api/empathy-maps/:id", async (req, res) => {
+    try {
+      const validatedData = insertEmpathyMapSchema.partial().parse(req.body);
+      const empathyMap = await storage.updateEmpathyMap(req.params.id, validatedData);
+      if (!empathyMap) {
+        return res.status(404).json({ error: "Empathy map not found" });
+      }
+      res.json(empathyMap);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid empathy map data" });
+    }
+  });
+
+  app.delete("/api/empathy-maps/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteEmpathyMap(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Empathy map not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete empathy map" });
+    }
+  });
+
+  // Phase 1: Empathize - Personas
+  app.get("/api/projects/:projectId/personas", async (req, res) => {
+    try {
+      const personas = await storage.getPersonas(req.params.projectId);
+      res.json(personas);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch personas" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/personas", async (req, res) => {
+    try {
+      const validatedData = insertPersonaSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const persona = await storage.createPersona(validatedData);
+      res.status(201).json(persona);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid persona data" });
+    }
+  });
+
+  app.put("/api/personas/:id", async (req, res) => {
+    try {
+      const validatedData = insertPersonaSchema.partial().parse(req.body);
+      const persona = await storage.updatePersona(req.params.id, validatedData);
+      if (!persona) {
+        return res.status(404).json({ error: "Persona not found" });
+      }
+      res.json(persona);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid persona data" });
+    }
+  });
+
+  app.delete("/api/personas/:id", async (req, res) => {
+    try {
+      const success = await storage.deletePersona(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Persona not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete persona" });
+    }
+  });
+
+  // Phase 1: Empathize - Interviews
+  app.get("/api/projects/:projectId/interviews", async (req, res) => {
+    try {
+      const interviews = await storage.getInterviews(req.params.projectId);
+      res.json(interviews);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch interviews" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/interviews", async (req, res) => {
+    try {
+      const validatedData = insertInterviewSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const interview = await storage.createInterview(validatedData);
+      res.status(201).json(interview);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid interview data" });
+    }
+  });
+
+  // Phase 1: Empathize - Observations
+  app.get("/api/projects/:projectId/observations", async (req, res) => {
+    try {
+      const observations = await storage.getObservations(req.params.projectId);
+      res.json(observations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch observations" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/observations", async (req, res) => {
+    try {
+      const validatedData = insertObservationSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const observation = await storage.createObservation(validatedData);
+      res.status(201).json(observation);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid observation data" });
+    }
+  });
+
+  // Phase 2: Define - POV Statements
+  app.get("/api/projects/:projectId/pov-statements", async (req, res) => {
+    try {
+      const povStatements = await storage.getPovStatements(req.params.projectId);
+      res.json(povStatements);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch POV statements" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/pov-statements", async (req, res) => {
+    try {
+      const validatedData = insertPovStatementSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const povStatement = await storage.createPovStatement(validatedData);
+      res.status(201).json(povStatement);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid POV statement data" });
+    }
+  });
+
+  // Phase 2: Define - HMW Questions
+  app.get("/api/projects/:projectId/hmw-questions", async (req, res) => {
+    try {
+      const hmwQuestions = await storage.getHmwQuestions(req.params.projectId);
+      res.json(hmwQuestions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch HMW questions" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/hmw-questions", async (req, res) => {
+    try {
+      const validatedData = insertHmwQuestionSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const hmwQuestion = await storage.createHmwQuestion(validatedData);
+      res.status(201).json(hmwQuestion);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid HMW question data" });
+    }
+  });
+
+  // Phase 3: Ideate - Ideas
+  app.get("/api/projects/:projectId/ideas", async (req, res) => {
+    try {
+      const ideas = await storage.getIdeas(req.params.projectId);
+      res.json(ideas);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch ideas" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/ideas", async (req, res) => {
+    try {
+      const validatedData = insertIdeaSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const idea = await storage.createIdea(validatedData);
+      res.status(201).json(idea);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid idea data" });
+    }
+  });
+
+  app.put("/api/ideas/:id", async (req, res) => {
+    try {
+      const validatedData = insertIdeaSchema.partial().parse(req.body);
+      const idea = await storage.updateIdea(req.params.id, validatedData);
+      if (!idea) {
+        return res.status(404).json({ error: "Idea not found" });
+      }
+      res.json(idea);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid idea data" });
+    }
+  });
+
+  // Phase 4: Prototype - Prototypes
+  app.get("/api/projects/:projectId/prototypes", async (req, res) => {
+    try {
+      const prototypes = await storage.getPrototypes(req.params.projectId);
+      res.json(prototypes);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch prototypes" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/prototypes", async (req, res) => {
+    try {
+      const validatedData = insertPrototypeSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const prototype = await storage.createPrototype(validatedData);
+      res.status(201).json(prototype);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid prototype data" });
+    }
+  });
+
+  // Phase 5: Test - Test Plans
+  app.get("/api/projects/:projectId/test-plans", async (req, res) => {
+    try {
+      const testPlans = await storage.getTestPlans(req.params.projectId);
+      res.json(testPlans);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch test plans" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/test-plans", async (req, res) => {
+    try {
+      const validatedData = insertTestPlanSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const testPlan = await storage.createTestPlan(validatedData);
+      res.status(201).json(testPlan);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid test plan data" });
+    }
+  });
+
+  // Phase 5: Test - Test Results
+  app.get("/api/test-plans/:testPlanId/results", async (req, res) => {
+    try {
+      const testResults = await storage.getTestResults(req.params.testPlanId);
+      res.json(testResults);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch test results" });
+    }
+  });
+
+  app.post("/api/test-plans/:testPlanId/results", async (req, res) => {
+    try {
+      const validatedData = insertTestResultSchema.parse({
+        ...req.body,
+        testPlanId: req.params.testPlanId
+      });
+      const testResult = await storage.createTestResult(validatedData);
+      res.status(201).json(testResult);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid test result data" });
+    }
+  });
+
+  // User Progress routes
+  app.get("/api/users/:userId/projects/:projectId/progress", async (req, res) => {
+    try {
+      const progress = await storage.getUserProgress(req.params.userId, req.params.projectId);
+      if (!progress) {
+        return res.status(404).json({ error: "Progress not found" });
+      }
+      res.json(progress);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user progress" });
+    }
+  });
+
+  app.put("/api/users/:userId/projects/:projectId/progress", async (req, res) => {
+    try {
+      const validatedData = insertUserProgressSchema.parse({
+        ...req.body,
+        userId: req.params.userId,
+        projectId: req.params.projectId
+      });
+      const progress = await storage.updateUserProgress(validatedData);
+      res.json(progress);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid progress data" });
     }
   });
 
   // Analytics routes
-  app.get("/api/analytics/progress-trends", async (_req, res) => {
+  app.get("/api/projects/:projectId/stats", async (req, res) => {
     try {
-      // Simulate weekly progress data
-      const weeks = ['Week 7', 'Week 8', 'Week 9', 'Week 10', 'Week 11', 'Week 12'];
-      const completionRates = [72, 78, 85, 82, 89, 87];
-      const teamEfficiency = [68, 75, 80, 83, 88, 92];
+      const stats = await storage.getProjectStats(req.params.projectId);
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch project stats" });
+    }
+  });
+
+  // Dashboard summary route
+  app.get("/api/dashboard", async (_req, res) => {
+    try {
+      const projects = await storage.getProjects();
+      const totalProjects = projects.length;
+      const activeProjects = projects.filter(p => p.status === "in_progress").length;
+      const completedProjects = projects.filter(p => p.status === "completed").length;
       
+      // Get average completion rate
+      const avgCompletion = projects.length > 0 
+        ? projects.reduce((sum, p) => sum + (p.completionRate || 0), 0) / projects.length 
+        : 0;
+
       res.json({
-        labels: weeks,
-        datasets: [
-          {
-            label: 'Completion Rate',
-            data: completionRates,
-            borderColor: 'hsl(221.2 83.2% 53.3%)',
-            backgroundColor: 'hsla(221.2, 83.2%, 53.3%, 0.1)',
-          },
-          {
-            label: 'Team Efficiency',
-            data: teamEfficiency,
-            borderColor: 'hsl(142.1 76.2% 36.3%)',
-            backgroundColor: 'hsla(142.1, 76.2%, 36.3%, 0.1)',
-          }
-        ]
+        totalProjects,
+        activeProjects, 
+        completedProjects,
+        avgCompletion: Math.round(avgCompletion),
+        recentProjects: projects.slice(-3).reverse()
       });
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch analytics data" });
+      res.status(500).json({ error: "Failed to fetch dashboard data" });
     }
   });
 
