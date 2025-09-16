@@ -11,6 +11,7 @@ import LibraryPage from "@/pages/library";
 import ArticleDetailPage from "@/pages/article-detail";
 import AdminPage from "@/pages/admin";
 import LoginPage from "@/pages/login";
+import PricingPage from "@/pages/pricing";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/projects/:id" component={ProjectDetailPage} />
       <Route path="/library" component={LibraryPage} />
       <Route path="/library/article/:id" component={ArticleDetailPage} />
+      <Route path="/pricing" component={PricingPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/login" component={LoginPage} />
       <Route component={NotFound} />

@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Book, Settings } from "lucide-react";
+import { Book, Settings, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserMenu } from "@/components/auth/UserMenu";
@@ -38,6 +38,12 @@ export default function Header() {
               <Button variant="ghost" data-testid="nav-library">
                 <Book className="mr-2 h-4 w-4" />
                 Biblioteca
+              </Button>
+            </Link>
+            <Link href="/pricing">
+              <Button variant="ghost" data-testid="nav-pricing">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Planos
               </Button>
             </Link>
             {isAdmin && (
