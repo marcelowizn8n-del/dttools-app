@@ -167,11 +167,11 @@ export default function Dashboard() {
               <Link href="/projects">
                 <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6">
                   <Play className="mr-2 h-5 w-5" />
-                  {isEnglish ? "Start Complete Project" : "Iniciar Projeto Completo"}
+                  {t("dashboard.start.project")}
                 </Button>
               </Link>
               <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-blue-600 text-blue-700 hover:bg-blue-50">
-                {isEnglish ? "Explore Phases" : "Explorar Fases"}
+                {t("dashboard.explore.phases")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>

@@ -46,6 +46,10 @@ const translations = {
     "nav.logout": "Sair",
     "nav.login": "Entrar",
     
+    // Dashboard
+    "dashboard.start.project": "Iniciar Projeto Completo",
+    "dashboard.explore.phases": "Explorar Fases",
+    
     // Pricing Page
     "pricing.title": "Escolha o Plano Ideal para Você",
     "pricing.subtitle": "Transforme suas ideias em soluções inovadoras com as ferramentas mais avançadas de Design Thinking. Comece grátis e evolua conforme suas necessidades.",
@@ -148,6 +152,10 @@ const translations = {
     "nav.admin": "Admin",
     "nav.logout": "Logout",
     "nav.login": "Login",
+    
+    // Dashboard
+    "dashboard.start.project": "Start Complete Project",
+    "dashboard.explore.phases": "Explore Phases",
     
     // Pricing Page
     "pricing.title": "Choose the Perfect Plan for You",
@@ -252,6 +260,10 @@ const translations = {
     "nav.logout": "Salir",
     "nav.login": "Iniciar sesión",
     
+    // Dashboard
+    "dashboard.start.project": "Iniciar Proyecto Completo",
+    "dashboard.explore.phases": "Explorar Fases",
+    
     // Pricing Page
     "pricing.title": "Elige el Plan Perfecto para Ti",
     "pricing.subtitle": "Transforma tus ideas en soluciones innovadoras con las herramientas más avanzadas de Design Thinking. Comienza gratis y evoluciona según tus necesidades.",
@@ -354,6 +366,10 @@ const translations = {
     "nav.admin": "Admin",
     "nav.logout": "Se déconnecter",
     "nav.login": "Se connecter",
+    
+    // Dashboard
+    "dashboard.start.project": "Démarrer Projet Complet",
+    "dashboard.explore.phases": "Explorer les Phases",
     
     // Pricing Page
     "pricing.title": "Choisissez le Plan Parfait pour Vous",
