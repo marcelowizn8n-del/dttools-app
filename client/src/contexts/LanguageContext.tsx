@@ -49,6 +49,49 @@ const translations = {
     // Dashboard
     "dashboard.start.project": "Iniciar Projeto Completo",
     "dashboard.explore.phases": "Explorar Fases",
+    "dashboard.hero.title": "Design Thinking Tools",
+    "dashboard.hero.subtitle": "Uma plataforma interativa e abrangente para guiar designers, equipes de inovação e profissionais criativos pelas etapas do Design Thinking.",
+    "dashboard.your.progress": "Seu Progresso",
+    "dashboard.beginner": "Iniciante",
+    "dashboard.points": "Pontos",
+    "dashboard.badges": "Badges", 
+    "dashboard.phases": "Fases",
+    "dashboard.session": "Sessão",
+    "dashboard.progress.by.phase": "Progresso por Fase",
+    "dashboard.recent.activity": "Atividade Recente",
+    "dashboard.no.activity": "Nenhuma atividade recente. Comece explorando as fases!",
+    "dashboard.next.steps": "Próximos Passos Sugeridos",
+    "dashboard.5.phases.title": "As 5 Fases do Design Thinking",
+    "dashboard.5.phases.subtitle": "Explore cada fase do processo e desenvolva soluções centradas no usuário.",
+    "dashboard.why.platform": "Por que usar nossa plataforma?",
+    "dashboard.ready.start": "Pronto para começar sua jornada?",
+    "dashboard.ready.subtitle": "Transforme problemas complexos em soluções inovadoras com o Design Thinking.",
+    "dashboard.start.now": "Começar Agora",
+    
+    // Phases
+    "phases.empathize": "Empatizar",
+    "phases.define": "Definir", 
+    "phases.ideate": "Idear",
+    "phases.prototype": "Prototipar",
+    "phases.test": "Testar",
+    "phases.empathize.desc": "Compreenda profundamente seus usuários",
+    "phases.define.desc": "Sintetize informações e identifique problemas",
+    "phases.ideate.desc": "Gere soluções criativas e inovadoras",
+    "phases.prototype.desc": "Torne suas ideias tangíveis",
+    "phases.test.desc": "Valide soluções com usuários reais",
+    
+    // Benefits
+    "benefits.human.centered": "Centrado no Ser Humano",
+    "benefits.human.centered.desc": "Coloque as necessidades e experiências dos usuários no centro do processo de design.",
+    "benefits.iterative.process": "Processo Iterativo",
+    "benefits.iterative.process.desc": "Refine suas soluções através de ciclos contínuos de teste e aprendizado.",
+    "benefits.collaborative": "Colaborativo",
+    "benefits.collaborative.desc": "Trabalhe em equipe e combine diferentes perspectivas para soluções mais ricas.",
+    
+    // Next Steps
+    "next.step.1": "Comece pela fase Empatizar para entender seus usuários", 
+    "next.step.2": "Explore as ferramentas adicionais no menu Ferramentas",
+    "next.step.3": "Complete mais ações para conquistar novos badges",
     
     // Pricing Page
     "pricing.title": "Escolha o Plano Ideal para Você",
@@ -156,6 +199,49 @@ const translations = {
     // Dashboard
     "dashboard.start.project": "Start Complete Project",
     "dashboard.explore.phases": "Explore Phases",
+    "dashboard.hero.title": "Design Thinking Tools",
+    "dashboard.hero.subtitle": "An interactive and comprehensive platform to guide designers, innovation teams and creative professionals through the Design Thinking stages.",
+    "dashboard.your.progress": "Your Progress",
+    "dashboard.beginner": "Beginner",
+    "dashboard.points": "Points",
+    "dashboard.badges": "Badges",
+    "dashboard.phases": "Phases", 
+    "dashboard.session": "Session",
+    "dashboard.progress.by.phase": "Progress by Phase",
+    "dashboard.recent.activity": "Recent Activity",
+    "dashboard.no.activity": "No recent activity. Start exploring the phases!",
+    "dashboard.next.steps": "Suggested Next Steps",
+    "dashboard.5.phases.title": "The 5 Phases of Design Thinking",
+    "dashboard.5.phases.subtitle": "Explore each phase of the process and develop user-centered solutions.",
+    "dashboard.why.platform": "Why use our platform?",
+    "dashboard.ready.start": "Ready to start your journey?",
+    "dashboard.ready.subtitle": "Transform complex problems into innovative solutions with Design Thinking.",
+    "dashboard.start.now": "Start Now",
+    
+    // Phases
+    "phases.empathize": "Empathize",
+    "phases.define": "Define",
+    "phases.ideate": "Ideate", 
+    "phases.prototype": "Prototype",
+    "phases.test": "Test",
+    "phases.empathize.desc": "Deeply understand your users",
+    "phases.define.desc": "Synthesize information and identify problems",
+    "phases.ideate.desc": "Generate creative and innovative solutions",
+    "phases.prototype.desc": "Make your ideas tangible",
+    "phases.test.desc": "Validate solutions with real users",
+    
+    // Benefits
+    "benefits.human.centered": "Human-Centered",
+    "benefits.human.centered.desc": "Put user needs and experiences at the center of the design process.",
+    "benefits.iterative.process": "Iterative Process",
+    "benefits.iterative.process.desc": "Refine your solutions through continuous cycles of testing and learning.",
+    "benefits.collaborative": "Collaborative",
+    "benefits.collaborative.desc": "Work as a team and combine different perspectives for richer solutions.",
+    
+    // Next Steps
+    "next.step.1": "Start with the Empathize phase to understand your users",
+    "next.step.2": "Explore additional tools in the Tools menu", 
+    "next.step.3": "Complete more actions to earn new badges",
     
     // Pricing Page
     "pricing.title": "Choose the Perfect Plan for You",
