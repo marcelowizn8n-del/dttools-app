@@ -174,7 +174,57 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(), // hashed password
   role: text("role").notNull().default("user"), // admin, user
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionPlanId: varchar("subscription_plan_id"),
+  subscriptionStatus: text("subscription_status").default("active"), // active, canceled, expired, trialing
+  subscriptionEndDate: timestamp("subscription_end_date"),
   createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Subscription Plans
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  priceMonthly: integer("price_monthly").notNull(), // in cents
+  priceYearly: integer("price_yearly").notNull(), // in cents
+  stripePriceIdMonthly: text("stripe_price_id_monthly"),
+  stripePriceIdYearly: text("stripe_price_id_yearly"),
+  maxProjects: integer("max_projects"), // null for unlimited
+  maxPersonasPerProject: integer("max_personas_per_project"), // null for unlimited
+  maxUsersPerTeam: integer("max_users_per_team"), // null for unlimited
+  aiChatLimit: integer("ai_chat_limit"), // null for unlimited
+  libraryArticlesCount: integer("library_articles_count"), // null for all articles
+  features: jsonb("features").default([]), // Array of feature strings
+  exportFormats: jsonb("export_formats").default([]), // Array of export formats (pdf, png, csv)
+  hasCollaboration: boolean("has_collaboration").default(false),
+  hasPermissionManagement: boolean("has_permission_management").default(false),
+  hasSharedWorkspace: boolean("has_shared_workspace").default(false),
+  hasCommentsAndFeedback: boolean("has_comments_and_feedback").default(false),
+  hasSso: boolean("has_sso").default(false),
+  hasCustomApi: boolean("has_custom_api").default(false),
+  hasCustomIntegrations: boolean("has_custom_integrations").default(false),
+  has24x7Support: boolean("has_24x7_support").default(false),
+  order: integer("order").default(0), // for display ordering
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// User Subscriptions History
+export const userSubscriptions = pgTable("user_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  planId: varchar("plan_id").references(() => subscriptionPlans.id).notNull(),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  status: text("status").notNull(), // active, canceled, expired, trialing, incomplete
+  billingPeriod: text("billing_period").notNull(), // monthly, yearly
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
 });
 
 // Articles for Design Thinking library
@@ -267,6 +317,17 @@ export const insertArticleSchema = createInsertSchema(articles).omit({
   updatedAt: true,
 });
 
+export const insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
@@ -309,3 +370,9 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type Article = typeof articles.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type InsertSubscriptionPlan = z.infer<typeof insertSubscriptionPlanSchema>;
+
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
+export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;

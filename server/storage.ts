@@ -12,7 +12,9 @@ import {
   type TestResult, type InsertTestResult,
   type UserProgress, type InsertUserProgress,
   type User, type InsertUser,
-  type Article, type InsertArticle
+  type Article, type InsertArticle,
+  type SubscriptionPlan, type InsertSubscriptionPlan,
+  type UserSubscription, type InsertUserSubscription
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
@@ -106,6 +108,21 @@ export interface IStorage {
   createArticle(article: InsertArticle): Promise<Article>;
   updateArticle(id: string, article: Partial<InsertArticle>): Promise<Article | undefined>;
   deleteArticle(id: string): Promise<boolean>;
+
+  // Subscription Plans
+  getSubscriptionPlans(): Promise<SubscriptionPlan[]>;
+  getSubscriptionPlan(id: string): Promise<SubscriptionPlan | undefined>;
+  getSubscriptionPlanByName(name: string): Promise<SubscriptionPlan | undefined>;
+  createSubscriptionPlan(plan: InsertSubscriptionPlan): Promise<SubscriptionPlan>;
+  updateSubscriptionPlan(id: string, plan: Partial<InsertSubscriptionPlan>): Promise<SubscriptionPlan | undefined>;
+  deleteSubscriptionPlan(id: string): Promise<boolean>;
+
+  // User Subscriptions
+  getUserSubscriptions(userId: string): Promise<UserSubscription[]>;
+  getUserActiveSubscription(userId: string): Promise<UserSubscription | undefined>;
+  createUserSubscription(subscription: InsertUserSubscription): Promise<UserSubscription>;
+  updateUserSubscription(id: string, subscription: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined>;
+  cancelUserSubscription(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -123,6 +140,8 @@ export class MemStorage implements IStorage {
   private userProgress: Map<string, UserProgress>;
   private users: Map<string, User>;
   private articles: Map<string, Article>;
+  private subscriptionPlans: Map<string, SubscriptionPlan>;
+  private userSubscriptions: Map<string, UserSubscription>;
 
   constructor() {
     this.projects = new Map();
@@ -139,6 +158,8 @@ export class MemStorage implements IStorage {
     this.userProgress = new Map();
     this.users = new Map();
     this.articles = new Map();
+    this.subscriptionPlans = new Map();
+    this.userSubscriptions = new Map();
     
     this.initializeData();
   }
@@ -231,6 +252,11 @@ export class MemStorage implements IStorage {
       username: "admin",
       password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password"
       role: "admin",
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      subscriptionPlanId: null,
+      subscriptionStatus: null,
+      subscriptionEndDate: null,
       createdAt: new Date(),
     };
     this.users.set(adminUser.id, adminUser);
@@ -240,6 +266,11 @@ export class MemStorage implements IStorage {
       username: "usuario",
       password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password" 
       role: "user",
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      subscriptionPlanId: null,
+      subscriptionStatus: null,
+      subscriptionEndDate: null,
       createdAt: new Date(),
     };
     this.users.set(regularUser.id, regularUser);
@@ -454,6 +485,156 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
         updatedAt: new Date(),
       };
       this.articles.set(article.id, article);
+    });
+
+    // Initialize subscription plans
+    const subscriptionPlanData = [
+      {
+        id: randomUUID(),
+        name: "free",
+        displayName: "Grátis",
+        description: "Perfeito para começar e explorar o Design Thinking",
+        priceMonthly: 0,
+        priceYearly: 0,
+        stripePriceIdMonthly: null,
+        stripePriceIdYearly: null,
+        maxProjects: 2,
+        maxPersonasPerProject: 2,
+        aiChatLimit: 10,
+        libraryArticlesCount: 3,
+        features: [
+          "Acesso às 5 fases do Design Thinking",
+          "Ferramentas básicas (Personas, Mapa de Empatia)",
+          "Até 2 projetos simultâneos",
+          "Até 2 personas por projeto",
+          "10 mensagens no Chat IA por mês",
+          "Biblioteca básica (3 artigos)"
+        ],
+        exportFormats: [],
+        hasCollaboration: false,
+        hasPermissionManagement: false,
+        hasSharedWorkspace: false,
+        hasCommentsAndFeedback: false,
+        hasSso: false,
+        hasCustomApi: false,
+        hasCustomIntegrations: false,
+        has24x7Support: false,
+        order: 0,
+        isActive: true,
+        createdAt: new Date()
+      },
+      {
+        id: randomUUID(),
+        name: "pro",
+        displayName: "Pro",
+        description: "Ideal para profissionais e freelancers",
+        priceMonthly: 2900, // R$ 29.00 in cents
+        priceYearly: 31320, // R$ 29 * 12 * 0.9 (10% discount yearly)
+        stripePriceIdMonthly: null,
+        stripePriceIdYearly: null,
+        maxProjects: null, // unlimited
+        maxPersonasPerProject: null, // unlimited
+        aiChatLimit: null, // unlimited
+        libraryArticlesCount: null, // all articles
+        features: [
+          "Tudo do plano Gratuito",
+          "Projetos ilimitados",
+          "Personas ilimitadas",
+          "Chat IA ilimitado",
+          "Biblioteca completa (todos os artigos)",
+          "Exportação em PDF, PNG, CSV"
+        ],
+        exportFormats: ["pdf", "png", "csv"],
+        hasCollaboration: false,
+        hasPermissionManagement: false,
+        hasSharedWorkspace: false,
+        hasCommentsAndFeedback: false,
+        hasSso: false,
+        hasCustomApi: false,
+        hasCustomIntegrations: false,
+        has24x7Support: false,
+        order: 1,
+        isActive: true,
+        createdAt: new Date()
+      },
+      {
+        id: randomUUID(),
+        name: "team",
+        displayName: "Team",
+        description: "Perfeito para equipes e startups",
+        priceMonthly: 7900, // R$ 79.00 in cents
+        priceYearly: 85320, // R$ 79 * 12 * 0.9 (10% discount yearly)
+        stripePriceIdMonthly: null,
+        stripePriceIdYearly: null,
+        maxProjects: null, // unlimited
+        maxPersonasPerProject: null, // unlimited
+        maxUsersPerTeam: 10,
+        aiChatLimit: null, // unlimited
+        libraryArticlesCount: null, // all articles
+        features: [
+          "Tudo do plano Pro",
+          "Até 10 usuários na equipe",
+          "Colaboração em tempo real",
+          "Gestão de permissões",
+          "Workspace compartilhado",
+          "Comentários e feedback"
+        ],
+        exportFormats: ["pdf", "png", "csv"],
+        hasCollaboration: true,
+        hasPermissionManagement: true,
+        hasSharedWorkspace: true,
+        hasCommentsAndFeedback: true,
+        hasSso: false,
+        hasCustomApi: false,
+        hasCustomIntegrations: false,
+        has24x7Support: false,
+        order: 2,
+        isActive: true,
+        createdAt: new Date()
+      },
+      {
+        id: randomUUID(),
+        name: "enterprise",
+        displayName: "Enterprise",
+        description: "Soluções completas para grandes empresas",
+        priceMonthly: 19900, // R$ 199.00 in cents
+        priceYearly: 215280, // R$ 199 * 12 * 0.9 (10% discount yearly)
+        stripePriceIdMonthly: null,
+        stripePriceIdYearly: null,
+        maxProjects: null, // unlimited
+        maxPersonasPerProject: null, // unlimited
+        maxUsersPerTeam: null, // unlimited
+        aiChatLimit: null, // unlimited
+        libraryArticlesCount: null, // all articles
+        features: [
+          "Tudo do plano Team",
+          "Usuários ilimitados",
+          "SSO (Single Sign-On)",
+          "API personalizada",
+          "Integrações customizadas",
+          "Suporte 24/7"
+        ],
+        exportFormats: ["pdf", "png", "csv"],
+        hasCollaboration: true,
+        hasPermissionManagement: true,
+        hasSharedWorkspace: true,
+        hasCommentsAndFeedback: true,
+        hasSso: true,
+        hasCustomApi: true,
+        hasCustomIntegrations: true,
+        has24x7Support: true,
+        order: 3,
+        isActive: true,
+        createdAt: new Date()
+      }
+    ];
+
+    subscriptionPlanData.forEach(planData => {
+      const plan: SubscriptionPlan = {
+        ...planData,
+        createdAt: new Date(),
+      };
+      this.subscriptionPlans.set(plan.id, plan);
     });
   }
 
@@ -997,6 +1178,122 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
 
   async deleteArticle(id: string): Promise<boolean> {
     return this.articles.delete(id);
+  }
+
+  // Subscription Plans
+  async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
+    return Array.from(this.subscriptionPlans.values()).filter(plan => plan.isActive);
+  }
+
+  async getSubscriptionPlan(id: string): Promise<SubscriptionPlan | undefined> {
+    return this.subscriptionPlans.get(id);
+  }
+
+  async getSubscriptionPlanByName(name: string): Promise<SubscriptionPlan | undefined> {
+    return Array.from(this.subscriptionPlans.values()).find(plan => plan.name === name);
+  }
+
+  async createSubscriptionPlan(insertPlan: InsertSubscriptionPlan): Promise<SubscriptionPlan> {
+    const id = randomUUID();
+    const plan: SubscriptionPlan = {
+      ...insertPlan,
+      id,
+      description: insertPlan.description || null,
+      stripePriceIdMonthly: insertPlan.stripePriceIdMonthly || null,
+      stripePriceIdYearly: insertPlan.stripePriceIdYearly || null,
+      maxProjects: insertPlan.maxProjects || null,
+      maxPersonasPerProject: insertPlan.maxPersonasPerProject || null,
+      maxUsersPerTeam: insertPlan.maxUsersPerTeam || null,
+      aiChatLimit: insertPlan.aiChatLimit || null,
+      libraryArticlesCount: insertPlan.libraryArticlesCount || null,
+      features: insertPlan.features || [],
+      exportFormats: insertPlan.exportFormats || [],
+      hasCollaboration: insertPlan.hasCollaboration ?? false,
+      hasPermissionManagement: insertPlan.hasPermissionManagement ?? false,
+      hasSharedWorkspace: insertPlan.hasSharedWorkspace ?? false,
+      hasCommentsAndFeedback: insertPlan.hasCommentsAndFeedback ?? false,
+      hasSso: insertPlan.hasSso ?? false,
+      hasCustomApi: insertPlan.hasCustomApi ?? false,
+      hasCustomIntegrations: insertPlan.hasCustomIntegrations ?? false,
+      has24x7Support: insertPlan.has24x7Support ?? false,
+      order: insertPlan.order ?? 0,
+      isActive: insertPlan.isActive ?? true,
+      createdAt: new Date(),
+    };
+    
+    this.subscriptionPlans.set(id, plan);
+    return plan;
+  }
+
+  async updateSubscriptionPlan(id: string, updatePlan: Partial<InsertSubscriptionPlan>): Promise<SubscriptionPlan | undefined> {
+    const plan = this.subscriptionPlans.get(id);
+    if (!plan) return undefined;
+    
+    const updatedPlan: SubscriptionPlan = { 
+      ...plan, 
+      ...updatePlan
+    };
+    this.subscriptionPlans.set(id, updatedPlan);
+    return updatedPlan;
+  }
+
+  async deleteSubscriptionPlan(id: string): Promise<boolean> {
+    return this.subscriptionPlans.delete(id);
+  }
+
+  // User Subscriptions
+  async getUserSubscriptions(userId: string): Promise<UserSubscription[]> {
+    return Array.from(this.userSubscriptions.values()).filter(sub => sub.userId === userId);
+  }
+
+  async getUserActiveSubscription(userId: string): Promise<UserSubscription | undefined> {
+    return Array.from(this.userSubscriptions.values()).find(
+      sub => sub.userId === userId && sub.status === 'active'
+    );
+  }
+
+  async createUserSubscription(insertSubscription: InsertUserSubscription): Promise<UserSubscription> {
+    const id = randomUUID();
+    const subscription: UserSubscription = {
+      ...insertSubscription,
+      id,
+      stripeSubscriptionId: insertSubscription.stripeSubscriptionId || null,
+      currentPeriodStart: insertSubscription.currentPeriodStart || null,
+      currentPeriodEnd: insertSubscription.currentPeriodEnd || null,
+      cancelAtPeriodEnd: insertSubscription.cancelAtPeriodEnd ?? false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    this.userSubscriptions.set(id, subscription);
+    return subscription;
+  }
+
+  async updateUserSubscription(id: string, updateSubscription: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined> {
+    const subscription = this.userSubscriptions.get(id);
+    if (!subscription) return undefined;
+    
+    const updatedSubscription: UserSubscription = { 
+      ...subscription, 
+      ...updateSubscription, 
+      updatedAt: new Date() 
+    };
+    this.userSubscriptions.set(id, updatedSubscription);
+    return updatedSubscription;
+  }
+
+  async cancelUserSubscription(id: string): Promise<boolean> {
+    const subscription = this.userSubscriptions.get(id);
+    if (!subscription) return false;
+    
+    const updatedSubscription: UserSubscription = { 
+      ...subscription, 
+      status: 'canceled',
+      cancelAtPeriodEnd: true,
+      updatedAt: new Date() 
+    };
+    this.userSubscriptions.set(id, updatedSubscription);
+    return true;
   }
 }
 
