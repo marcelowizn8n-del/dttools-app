@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/empathy-maps/:id", async (req, res) => {
     try {
-      const validatedData = insertEmpathyMapSchema.partial().parse(req.body);
+      const validatedData = insertEmpathyMapSchema.omit({ projectId: true }).partial().parse(req.body);
       const empathyMap = await storage.updateEmpathyMap(req.params.id, validatedData);
       if (!empathyMap) {
         return res.status(404).json({ error: "Empathy map not found" });
@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/personas/:id", async (req, res) => {
     try {
-      const validatedData = insertPersonaSchema.partial().parse(req.body);
+      const validatedData = insertPersonaSchema.omit({ projectId: true }).partial().parse(req.body);
       const persona = await storage.updatePersona(req.params.id, validatedData);
       if (!persona) {
         return res.status(404).json({ error: "Persona not found" });
@@ -193,6 +193,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/interviews/:id", async (req, res) => {
+    try {
+      const validatedData = insertInterviewSchema.omit({ projectId: true }).partial().parse(req.body);
+      const interview = await storage.updateInterview(req.params.id, validatedData);
+      if (!interview) {
+        return res.status(404).json({ error: "Interview not found" });
+      }
+      res.json(interview);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid interview data" });
+    }
+  });
+
+  app.delete("/api/interviews/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteInterview(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Interview not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete interview" });
+    }
+  });
+
   // Phase 1: Empathize - Observations
   app.get("/api/projects/:projectId/observations", async (req, res) => {
     try {
@@ -213,6 +238,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(observation);
     } catch (error) {
       res.status(400).json({ error: "Invalid observation data" });
+    }
+  });
+
+  app.put("/api/observations/:id", async (req, res) => {
+    try {
+      const validatedData = insertObservationSchema.omit({ projectId: true }).partial().parse(req.body);
+      const observation = await storage.updateObservation(req.params.id, validatedData);
+      if (!observation) {
+        return res.status(404).json({ error: "Observation not found" });
+      }
+      res.json(observation);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid observation data" });
+    }
+  });
+
+  app.delete("/api/observations/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteObservation(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Observation not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete observation" });
     }
   });
 
@@ -287,7 +337,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/ideas/:id", async (req, res) => {
     try {
-      const validatedData = insertIdeaSchema.partial().parse(req.body);
+      const validatedData = insertIdeaSchema.omit({ projectId: true }).partial().parse(req.body);
       const idea = await storage.updateIdea(req.params.id, validatedData);
       if (!idea) {
         return res.status(404).json({ error: "Idea not found" });

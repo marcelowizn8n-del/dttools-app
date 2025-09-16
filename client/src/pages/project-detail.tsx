@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { Project } from "@shared/schema";
+import Phase1Tools from "@/components/phase1/Phase1Tools";
 
 const phaseData = {
   1: { 
@@ -257,16 +258,20 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* Coming Soon Notice */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardHeader>
-          <CardTitle className="text-blue-900">🚀 Em Desenvolvimento</CardTitle>
-          <CardDescription className="text-blue-700">
-            As ferramentas específicas de cada fase estão sendo desenvolvidas. 
-            Em breve você poderá criar mapas de empatia, personas, protótipos e muito mais!
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      {/* Phase Tools */}
+      {project.currentPhase === 1 ? (
+        <Phase1Tools projectId={project.id} />
+      ) : (
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="text-blue-900">🚀 Em Desenvolvimento</CardTitle>
+            <CardDescription className="text-blue-700">
+              As ferramentas para esta fase estão sendo desenvolvidas. 
+              Complete a Fase 1 primeiro para desbloquear as próximas fases!
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
     </div>
   );
 }
