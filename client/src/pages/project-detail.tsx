@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { Project } from "@shared/schema";
 import Phase1Tools from "@/components/phase1/Phase1Tools";
+import Phase2Tools from "@/components/phase2/Phase2Tools";
 
 const phaseData = {
   1: { 
@@ -261,13 +262,15 @@ export default function ProjectDetailPage() {
       {/* Phase Tools */}
       {project.currentPhase === 1 ? (
         <Phase1Tools projectId={project.id} />
+      ) : project.currentPhase === 2 ? (
+        <Phase2Tools projectId={project.id} />
       ) : (
         <Card className="bg-blue-50 border-blue-200">
           <CardHeader>
             <CardTitle className="text-blue-900">🚀 Em Desenvolvimento</CardTitle>
             <CardDescription className="text-blue-700">
               As ferramentas para esta fase estão sendo desenvolvidas. 
-              Complete a Fase 1 primeiro para desbloquear as próximas fases!
+              Complete as fases anteriores para desbloquear as próximas fases!
             </CardDescription>
           </CardHeader>
         </Card>
