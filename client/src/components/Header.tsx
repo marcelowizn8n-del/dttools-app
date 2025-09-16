@@ -2,11 +2,14 @@ import { Link } from "wouter";
 import { Book, Settings, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { UserMenu } from "@/components/auth/UserMenu";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import logoIcon from "../assets/logo-icon.png";
 
 export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50">
@@ -31,39 +34,40 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/projects">
               <Button variant="ghost" data-testid="nav-projects">
-                Projetos
+                {t("nav.projects")}
               </Button>
             </Link>
             <Link href="/library">
               <Button variant="ghost" data-testid="nav-library">
                 <Book className="mr-2 h-4 w-4" />
-                Biblioteca
+                {t("nav.library")}
               </Button>
             </Link>
             <Link href="/pricing">
               <Button variant="ghost" data-testid="nav-pricing">
                 <CreditCard className="mr-2 h-4 w-4" />
-                Planos
+                {t("nav.pricing")}
               </Button>
             </Link>
             {isAdmin && (
               <Link href="/admin">
                 <Button variant="ghost" data-testid="nav-admin">
                   <Settings className="mr-2 h-4 w-4" />
-                  Administração
+                  {t("nav.admin")}
                 </Button>
               </Link>
             )}
           </nav>
 
           {/* User Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <LanguageSelector />
             {isAuthenticated ? (
               <UserMenu />
             ) : (
               <Link href="/login">
                 <Button data-testid="button-login">
-                  Entrar
+                  {t("nav.login")}
                 </Button>
               </Link>
             )}
