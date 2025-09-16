@@ -40,6 +40,8 @@ export interface IStorage {
 
   getObservations(projectId: string): Promise<Observation[]>;
   createObservation(observation: InsertObservation): Promise<Observation>;
+  updateObservation(id: string, observation: Partial<InsertObservation>): Promise<Observation | undefined>;
+  deleteObservation(id: string): Promise<boolean>;
 
   // Phase 2: Define
   getPovStatements(projectId: string): Promise<PovStatement[]>;
@@ -370,6 +372,23 @@ export class MemStorage implements IStorage {
     };
     this.observations.set(id, observation);
     return observation;
+  }
+
+  async updateObservation(id: string, updateObservation: Partial<InsertObservation>): Promise<Observation | undefined> {
+    const observation = this.observations.get(id);
+    if (!observation) return undefined;
+    
+    const updatedObservation: Observation = {
+      ...observation,
+      ...updateObservation,
+      insights: updateObservation.insights !== undefined ? updateObservation.insights : observation.insights,
+    };
+    this.observations.set(id, updatedObservation);
+    return updatedObservation;
+  }
+
+  async deleteObservation(id: string): Promise<boolean> {
+    return this.observations.delete(id);
   }
 
   // Phase 2: Define - POV Statements
