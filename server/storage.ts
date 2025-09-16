@@ -1,423 +1,607 @@
 import { 
-  type Event, type InsertEvent,
-  type TeamMember, type InsertTeamMember,
-  type Report, type InsertReport,
-  type Integration, type InsertIntegration,
-  type AIInsight, type InsertAIInsight,
-  type UserBehavior, type InsertUserBehavior
+  type Project, type InsertProject,
+  type EmpathyMap, type InsertEmpathyMap,
+  type Persona, type InsertPersona,
+  type Interview, type InsertInterview,
+  type Observation, type InsertObservation,
+  type PovStatement, type InsertPovStatement,
+  type HmwQuestion, type InsertHmwQuestion,
+  type Idea, type InsertIdea,
+  type Prototype, type InsertPrototype,
+  type TestPlan, type InsertTestPlan,
+  type TestResult, type InsertTestResult,
+  type UserProgress, type InsertUserProgress
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
-  // Events
-  getEvents(): Promise<Event[]>;
-  getEvent(id: string): Promise<Event | undefined>;
-  createEvent(event: InsertEvent): Promise<Event>;
-  updateEvent(id: string, event: Partial<InsertEvent>): Promise<Event | undefined>;
-  deleteEvent(id: string): Promise<boolean>;
+  // Projects
+  getProjects(): Promise<Project[]>;
+  getProject(id: string): Promise<Project | undefined>;
+  createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: string, project: Partial<InsertProject>): Promise<Project | undefined>;
+  deleteProject(id: string): Promise<boolean>;
 
-  // Team Members
-  getTeamMembers(): Promise<TeamMember[]>;
-  getTeamMember(id: string): Promise<TeamMember | undefined>;
-  createTeamMember(member: InsertTeamMember): Promise<TeamMember>;
-  updateTeamMember(id: string, member: Partial<InsertTeamMember>): Promise<TeamMember | undefined>;
+  // Phase 1: Empathize
+  getEmpathyMaps(projectId: string): Promise<EmpathyMap[]>;
+  createEmpathyMap(empathyMap: InsertEmpathyMap): Promise<EmpathyMap>;
+  updateEmpathyMap(id: string, empathyMap: Partial<InsertEmpathyMap>): Promise<EmpathyMap | undefined>;
+  deleteEmpathyMap(id: string): Promise<boolean>;
 
-  // Reports
-  getReports(): Promise<Report[]>;
-  getReportsByEvent(eventId: string): Promise<Report[]>;
-  createReport(report: InsertReport): Promise<Report>;
-  getRecentReports(limit?: number): Promise<Report[]>;
+  getPersonas(projectId: string): Promise<Persona[]>;
+  createPersona(persona: InsertPersona): Promise<Persona>;
+  updatePersona(id: string, persona: Partial<InsertPersona>): Promise<Persona | undefined>;
+  deletePersona(id: string): Promise<boolean>;
 
-  // Integrations
-  getIntegrations(): Promise<Integration[]>;
-  getIntegration(id: string): Promise<Integration | undefined>;
-  createIntegration(integration: InsertIntegration): Promise<Integration>;
-  updateIntegration(id: string, integration: Partial<InsertIntegration>): Promise<Integration | undefined>;
+  getInterviews(projectId: string): Promise<Interview[]>;
+  createInterview(interview: InsertInterview): Promise<Interview>;
+  updateInterview(id: string, interview: Partial<InsertInterview>): Promise<Interview | undefined>;
+  deleteInterview(id: string): Promise<boolean>;
 
-  // AI Insights
-  getAIInsights(): Promise<AIInsight[]>;
-  createAIInsight(insight: InsertAIInsight): Promise<AIInsight>;
-  markInsightAsRead(id: string): Promise<boolean>;
-  getUnreadInsights(): Promise<AIInsight[]>;
+  getObservations(projectId: string): Promise<Observation[]>;
+  createObservation(observation: InsertObservation): Promise<Observation>;
 
-  // User Behavior
-  logUserBehavior(behavior: InsertUserBehavior): Promise<UserBehavior>;
-  getUserBehaviorData(userId: string, limit?: number): Promise<UserBehavior[]>;
+  // Phase 2: Define
+  getPovStatements(projectId: string): Promise<PovStatement[]>;
+  createPovStatement(pov: InsertPovStatement): Promise<PovStatement>;
+  updatePovStatement(id: string, pov: Partial<InsertPovStatement>): Promise<PovStatement | undefined>;
+
+  getHmwQuestions(projectId: string): Promise<HmwQuestion[]>;
+  createHmwQuestion(hmw: InsertHmwQuestion): Promise<HmwQuestion>;
+  updateHmwQuestion(id: string, hmw: Partial<InsertHmwQuestion>): Promise<HmwQuestion | undefined>;
+
+  // Phase 3: Ideate
+  getIdeas(projectId: string): Promise<Idea[]>;
+  createIdea(idea: InsertIdea): Promise<Idea>;
+  updateIdea(id: string, idea: Partial<InsertIdea>): Promise<Idea | undefined>;
+  deleteIdea(id: string): Promise<boolean>;
+
+  // Phase 4: Prototype
+  getPrototypes(projectId: string): Promise<Prototype[]>;
+  createPrototype(prototype: InsertPrototype): Promise<Prototype>;
+  updatePrototype(id: string, prototype: Partial<InsertPrototype>): Promise<Prototype | undefined>;
+  deletePrototype(id: string): Promise<boolean>;
+
+  // Phase 5: Test
+  getTestPlans(projectId: string): Promise<TestPlan[]>;
+  createTestPlan(testPlan: InsertTestPlan): Promise<TestPlan>;
+  updateTestPlan(id: string, testPlan: Partial<InsertTestPlan>): Promise<TestPlan | undefined>;
+
+  getTestResults(testPlanId: string): Promise<TestResult[]>;
+  createTestResult(testResult: InsertTestResult): Promise<TestResult>;
+
+  // User Progress
+  getUserProgress(userId: string, projectId: string): Promise<UserProgress | undefined>;
+  updateUserProgress(progress: InsertUserProgress): Promise<UserProgress>;
 
   // Analytics
-  getMetrics(): Promise<{
-    activeEvents: number;
+  getProjectStats(projectId: string): Promise<{
+    totalTools: number;
+    completedTools: number;
+    currentPhase: number;
     completionRate: number;
-    teamEfficiency: number;
-    budgetUsage: number;
   }>;
 }
 
 export class MemStorage implements IStorage {
-  private events: Map<string, Event>;
-  private teamMembers: Map<string, TeamMember>;
-  private reports: Map<string, Report>;
-  private integrations: Map<string, Integration>;
-  private aiInsights: Map<string, AIInsight>;
-  private userBehavior: Map<string, UserBehavior>;
+  private projects: Map<string, Project>;
+  private empathyMaps: Map<string, EmpathyMap>;
+  private personas: Map<string, Persona>;
+  private interviews: Map<string, Interview>;
+  private observations: Map<string, Observation>;
+  private povStatements: Map<string, PovStatement>;
+  private hmwQuestions: Map<string, HmwQuestion>;
+  private ideas: Map<string, Idea>;
+  private prototypes: Map<string, Prototype>;
+  private testPlans: Map<string, TestPlan>;
+  private testResults: Map<string, TestResult>;
+  private userProgress: Map<string, UserProgress>;
 
   constructor() {
-    this.events = new Map();
-    this.teamMembers = new Map();
-    this.reports = new Map();
-    this.integrations = new Map();
-    this.aiInsights = new Map();
-    this.userBehavior = new Map();
+    this.projects = new Map();
+    this.empathyMaps = new Map();
+    this.personas = new Map();
+    this.interviews = new Map();
+    this.observations = new Map();
+    this.povStatements = new Map();
+    this.hmwQuestions = new Map();
+    this.ideas = new Map();
+    this.prototypes = new Map();
+    this.testPlans = new Map();
+    this.testResults = new Map();
+    this.userProgress = new Map();
     
     this.initializeData();
   }
 
   private initializeData() {
-    // Initialize with sample data
-    const sampleEvent: Event = {
+    // Initialize with sample Design Thinking project
+    const sampleProject: Project = {
       id: randomUUID(),
-      name: "Summer Festival 2024",
-      description: "Annual summer music festival",
-      status: "active",
-      completionRate: 87,
-      budget: 150000,
-      budgetUsed: 109500,
-      startDate: new Date("2024-06-01"),
-      endDate: new Date("2024-08-15"),
+      name: "App de Delivery Sustentável",
+      description: "Projeto para criar um aplicativo de delivery focado em sustentabilidade e impacto social",
+      status: "in_progress",
+      currentPhase: 1,
+      completionRate: 15,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.events.set(sampleEvent.id, sampleEvent);
+    this.projects.set(sampleProject.id, sampleProject);
 
-    const sampleMembers: TeamMember[] = [
-      {
-        id: randomUUID(),
-        name: "Mike Chen",
-        email: "mike@eventflow.com",
-        role: "Project Manager",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-        efficiency: 95,
-        tasksCompleted: 23,
-        tasksAssigned: 25,
-      },
-      {
-        id: randomUUID(),
-        name: "Emily Rodriguez",
-        email: "emily@eventflow.com",
-        role: "Coordinator",
-        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
-        efficiency: 88,
-        tasksCompleted: 19,
-        tasksAssigned: 22,
-      },
-      {
-        id: randomUUID(),
-        name: "David Park",
-        email: "david@eventflow.com",
-        role: "Operations",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-        efficiency: 91,
-        tasksCompleted: 17,
-        tasksAssigned: 19,
-      },
-    ];
-    sampleMembers.forEach(member => this.teamMembers.set(member.id, member));
-
-    const sampleIntegrations: Integration[] = [
-      {
-        id: randomUUID(),
-        name: "Asana",
-        type: "asana",
-        status: "connected",
-        apiKey: "asana_key_123",
-        webhook: null,
-        lastSync: new Date(),
-        settings: { projectIds: ["123", "456"] },
-      },
-      {
-        id: randomUUID(),
-        name: "Trello",
-        type: "trello",
-        status: "connected",
-        apiKey: "trello_key_456",
-        webhook: null,
-        lastSync: new Date(),
-        settings: { boardIds: ["board1", "board2"] },
-      },
-      {
-        id: randomUUID(),
-        name: "Monday.com",
-        type: "monday",
-        status: "syncing",
-        apiKey: "monday_key_789",
-        webhook: null,
-        lastSync: new Date(Date.now() - 300000), // 5 minutes ago
-        settings: { workspaceId: "workspace1" },
-      },
-      {
-        id: randomUUID(),
-        name: "Slack",
-        type: "slack",
-        status: "disconnected",
-        apiKey: null,
-        webhook: null,
-        lastSync: null,
-        settings: null,
-      },
-    ];
-    sampleIntegrations.forEach(integration => this.integrations.set(integration.id, integration));
-
-    const sampleInsights: AIInsight[] = [
-      {
-        id: randomUUID(),
-        type: "pattern",
-        title: "Pattern Detected",
-        description: "Teams perform 23% better when tasks are assigned on Mondays vs Fridays.",
-        confidence: 0.87,
-        priority: "medium",
-        isRead: false,
-        createdAt: new Date(),
-        relatedEventId: sampleEvent.id,
-      },
-      {
-        id: randomUUID(),
-        type: "trend",
-        title: "Trend Identified",
-        description: "Vendor response times improve by 15% when contacted before 10 AM.",
-        confidence: 0.92,
-        priority: "medium",
-        isRead: false,
-        createdAt: new Date(),
-        relatedEventId: sampleEvent.id,
-      },
-      {
-        id: randomUUID(),
-        type: "risk",
-        title: "Risk Alert",
-        description: "Summer Festival budget may exceed by 12% based on current spending rate.",
-        confidence: 0.78,
-        priority: "high",
-        isRead: false,
-        createdAt: new Date(),
-        relatedEventId: sampleEvent.id,
-      },
-    ];
-    sampleInsights.forEach(insight => this.aiInsights.set(insight.id, insight));
-  }
-
-  async getEvents(): Promise<Event[]> {
-    return Array.from(this.events.values());
-  }
-
-  async getEvent(id: string): Promise<Event | undefined> {
-    return this.events.get(id);
-  }
-
-  async createEvent(insertEvent: InsertEvent): Promise<Event> {
-    const id = randomUUID();
-    const event: Event = {
-      ...insertEvent,
-      id,
-      description: insertEvent.description || null,
-      status: insertEvent.status || "planning",
-      completionRate: insertEvent.completionRate || 0,
-      budget: insertEvent.budget || null,
-      budgetUsed: insertEvent.budgetUsed || 0,
-      startDate: insertEvent.startDate || null,
-      endDate: insertEvent.endDate || null,
+    // Sample Empathy Map
+    const sampleEmpathyMap: EmpathyMap = {
+      id: randomUUID(),
+      projectId: sampleProject.id,
+      title: "Consumidor Sustentável",
+      says: ["Quero opções mais sustentáveis", "O preço não pode ser muito alto"],
+      thinks: ["Será que faz diferença mesmo?", "Como posso ter certeza que é sustentável?"],
+      does: ["Pesquisa sobre sustentabilidade", "Compra produtos orgânicos ocasionalmente"],
+      feels: ["Preocupado com o meio ambiente", "Frustrado com poucas opções"],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.events.set(id, event);
-    return event;
-  }
+    this.empathyMaps.set(sampleEmpathyMap.id, sampleEmpathyMap);
 
-  async updateEvent(id: string, updateEvent: Partial<InsertEvent>): Promise<Event | undefined> {
-    const event = this.events.get(id);
-    if (!event) return undefined;
-    
-    const updatedEvent: Event = {
-      ...event,
-      ...updateEvent,
+    // Sample Persona
+    const samplePersona: Persona = {
+      id: randomUUID(),
+      projectId: sampleProject.id,
+      name: "Maria Silva",
+      age: 32,
+      occupation: "Designer Gráfico",
+      bio: "Profissional criativa que valoriza sustentabilidade e praticidade no dia a dia",
+      goals: ["Reduzir impacto ambiental", "Economizar tempo", "Apoiar negócios locais"],
+      frustrations: ["Poucas opções sustentáveis", "Informações confusas", "Preços altos"],
+      motivations: ["Responsabilidade ambiental", "Conveniência", "Qualidade"],
+      techSavviness: "high",
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+      createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.events.set(id, updatedEvent);
-    return updatedEvent;
-  }
+    this.personas.set(samplePersona.id, samplePersona);
 
-  async deleteEvent(id: string): Promise<boolean> {
-    return this.events.delete(id);
-  }
-
-  async getTeamMembers(): Promise<TeamMember[]> {
-    return Array.from(this.teamMembers.values());
-  }
-
-  async getTeamMember(id: string): Promise<TeamMember | undefined> {
-    return this.teamMembers.get(id);
-  }
-
-  async createTeamMember(insertMember: InsertTeamMember): Promise<TeamMember> {
-    const id = randomUUID();
-    const member: TeamMember = { 
-      ...insertMember, 
-      id,
-      avatar: insertMember.avatar || null,
-      efficiency: insertMember.efficiency || 0,
-      tasksCompleted: insertMember.tasksCompleted || 0,
-      tasksAssigned: insertMember.tasksAssigned || 0
-    };
-    this.teamMembers.set(id, member);
-    return member;
-  }
-
-  async updateTeamMember(id: string, updateMember: Partial<InsertTeamMember>): Promise<TeamMember | undefined> {
-    const member = this.teamMembers.get(id);
-    if (!member) return undefined;
-    
-    const updatedMember: TeamMember = { ...member, ...updateMember };
-    this.teamMembers.set(id, updatedMember);
-    return updatedMember;
-  }
-
-  async getReports(): Promise<Report[]> {
-    return Array.from(this.reports.values());
-  }
-
-  async getReportsByEvent(eventId: string): Promise<Report[]> {
-    return Array.from(this.reports.values()).filter(report => report.eventId === eventId);
-  }
-
-  async createReport(insertReport: InsertReport): Promise<Report> {
-    const id = randomUUID();
-    const report: Report = {
-      ...insertReport,
-      id,
-      eventId: insertReport.eventId || null,
-      insights: insertReport.insights || null,
-      pdfUrl: insertReport.pdfUrl || null,
-      generatedAt: new Date(),
-    };
-    this.reports.set(id, report);
-    return report;
-  }
-
-  async getRecentReports(limit = 10): Promise<Report[]> {
-    const reports = Array.from(this.reports.values());
-    return reports
-      .sort((a, b) => (b.generatedAt?.getTime() || 0) - (a.generatedAt?.getTime() || 0))
-      .slice(0, limit);
-  }
-
-  async getIntegrations(): Promise<Integration[]> {
-    return Array.from(this.integrations.values());
-  }
-
-  async getIntegration(id: string): Promise<Integration | undefined> {
-    return this.integrations.get(id);
-  }
-
-  async createIntegration(insertIntegration: InsertIntegration): Promise<Integration> {
-    const id = randomUUID();
-    const integration: Integration = { 
-      ...insertIntegration, 
-      id,
-      status: insertIntegration.status || "disconnected",
-      apiKey: insertIntegration.apiKey || null,
-      webhook: insertIntegration.webhook || null,
-      lastSync: null,
-      settings: insertIntegration.settings || null
-    };
-    this.integrations.set(id, integration);
-    return integration;
-  }
-
-  async updateIntegration(id: string, updateIntegration: Partial<InsertIntegration>): Promise<Integration | undefined> {
-    const integration = this.integrations.get(id);
-    if (!integration) return undefined;
-    
-    const updatedIntegration: Integration = { ...integration, ...updateIntegration };
-    this.integrations.set(id, updatedIntegration);
-    return updatedIntegration;
-  }
-
-  async getAIInsights(): Promise<AIInsight[]> {
-    return Array.from(this.aiInsights.values());
-  }
-
-  async createAIInsight(insertInsight: InsertAIInsight): Promise<AIInsight> {
-    const id = randomUUID();
-    const insight: AIInsight = {
-      ...insertInsight,
-      id,
-      priority: insertInsight.priority || "medium",
-      isRead: insertInsight.isRead || false,
-      relatedEventId: insertInsight.relatedEventId || null,
+    // Sample Interview
+    const sampleInterview: Interview = {
+      id: randomUUID(),
+      projectId: sampleProject.id,
+      participantName: "João Santos",
+      date: new Date(),
+      duration: 45,
+      questions: [
+        "Como você escolhe onde pedir comida?",
+        "O que sustentabilidade significa para você?",
+        "Que dificuldades você tem para ser mais sustentável?"
+      ],
+      responses: [
+        "Geralmente escolho pela conveniência e preço",
+        "É importante para o futuro do planeta",
+        "Falta informação e as opções são limitadas"
+      ],
+      insights: "Usuário valoriza sustentabilidade mas prioriza conveniência no dia a dia",
       createdAt: new Date(),
     };
-    this.aiInsights.set(id, insight);
-    return insight;
-  }
+    this.interviews.set(sampleInterview.id, sampleInterview);
 
-  async markInsightAsRead(id: string): Promise<boolean> {
-    const insight = this.aiInsights.get(id);
-    if (!insight) return false;
-    
-    insight.isRead = true;
-    this.aiInsights.set(id, insight);
-    return true;
-  }
-
-  async getUnreadInsights(): Promise<AIInsight[]> {
-    return Array.from(this.aiInsights.values()).filter(insight => !insight.isRead);
-  }
-
-  async logUserBehavior(insertBehavior: InsertUserBehavior): Promise<UserBehavior> {
-    const id = randomUUID();
-    const behavior: UserBehavior = {
-      ...insertBehavior,
-      id,
-      context: insertBehavior.context || null,
-      timestamp: new Date(),
+    // Sample User Progress
+    const sampleProgress: UserProgress = {
+      id: randomUUID(),
+      userId: "user_001",
+      projectId: sampleProject.id,
+      phase: 1,
+      completedTools: ["empathy_map", "personas", "interviews"],
+      badges: ["first_project", "empathy_expert"],
+      points: 150,
+      timeSpent: 120, // 2 hours
+      updatedAt: new Date(),
     };
-    this.userBehavior.set(id, behavior);
-    return behavior;
+    this.userProgress.set(`${sampleProgress.userId}_${sampleProject.id}`, sampleProgress);
   }
 
-  async getUserBehaviorData(userId: string, limit = 100): Promise<UserBehavior[]> {
-    const behaviors = Array.from(this.userBehavior.values())
-      .filter(behavior => behavior.userId === userId)
-      .sort((a, b) => (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0));
+  // Projects
+  async getProjects(): Promise<Project[]> {
+    return Array.from(this.projects.values());
+  }
+
+  async getProject(id: string): Promise<Project | undefined> {
+    return this.projects.get(id);
+  }
+
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const id = randomUUID();
+    const project: Project = {
+      ...insertProject,
+      id,
+      description: insertProject.description || null,
+      status: insertProject.status || "in_progress",
+      currentPhase: insertProject.currentPhase || 1,
+      completionRate: insertProject.completionRate || 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.projects.set(id, project);
+    return project;
+  }
+
+  async updateProject(id: string, updateProject: Partial<InsertProject>): Promise<Project | undefined> {
+    const project = this.projects.get(id);
+    if (!project) return undefined;
     
-    return limit ? behaviors.slice(0, limit) : behaviors;
+    const updatedProject: Project = {
+      ...project,
+      ...updateProject,
+      updatedAt: new Date(),
+    };
+    this.projects.set(id, updatedProject);
+    return updatedProject;
   }
 
-  async getMetrics(): Promise<{
-    activeEvents: number;
+  async deleteProject(id: string): Promise<boolean> {
+    return this.projects.delete(id);
+  }
+
+  // Phase 1: Empathize - Empathy Maps
+  async getEmpathyMaps(projectId: string): Promise<EmpathyMap[]> {
+    return Array.from(this.empathyMaps.values()).filter(map => map.projectId === projectId);
+  }
+
+  async createEmpathyMap(insertEmpathyMap: InsertEmpathyMap): Promise<EmpathyMap> {
+    const id = randomUUID();
+    const empathyMap: EmpathyMap = {
+      ...insertEmpathyMap,
+      id,
+      says: insertEmpathyMap.says || [],
+      thinks: insertEmpathyMap.thinks || [],
+      does: insertEmpathyMap.does || [],
+      feels: insertEmpathyMap.feels || [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.empathyMaps.set(id, empathyMap);
+    return empathyMap;
+  }
+
+  async updateEmpathyMap(id: string, updateEmpathyMap: Partial<InsertEmpathyMap>): Promise<EmpathyMap | undefined> {
+    const empathyMap = this.empathyMaps.get(id);
+    if (!empathyMap) return undefined;
+    
+    const updatedEmpathyMap: EmpathyMap = {
+      ...empathyMap,
+      ...updateEmpathyMap,
+      updatedAt: new Date(),
+    };
+    this.empathyMaps.set(id, updatedEmpathyMap);
+    return updatedEmpathyMap;
+  }
+
+  async deleteEmpathyMap(id: string): Promise<boolean> {
+    return this.empathyMaps.delete(id);
+  }
+
+  // Phase 1: Empathize - Personas
+  async getPersonas(projectId: string): Promise<Persona[]> {
+    return Array.from(this.personas.values()).filter(persona => persona.projectId === projectId);
+  }
+
+  async createPersona(insertPersona: InsertPersona): Promise<Persona> {
+    const id = randomUUID();
+    const persona: Persona = {
+      ...insertPersona,
+      id,
+      age: insertPersona.age || null,
+      occupation: insertPersona.occupation || null,
+      bio: insertPersona.bio || null,
+      goals: insertPersona.goals || [],
+      frustrations: insertPersona.frustrations || [],
+      motivations: insertPersona.motivations || [],
+      techSavviness: insertPersona.techSavviness || null,
+      avatar: insertPersona.avatar || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.personas.set(id, persona);
+    return persona;
+  }
+
+  async updatePersona(id: string, updatePersona: Partial<InsertPersona>): Promise<Persona | undefined> {
+    const persona = this.personas.get(id);
+    if (!persona) return undefined;
+    
+    const updatedPersona: Persona = {
+      ...persona,
+      ...updatePersona,
+      updatedAt: new Date(),
+    };
+    this.personas.set(id, updatedPersona);
+    return updatedPersona;
+  }
+
+  async deletePersona(id: string): Promise<boolean> {
+    return this.personas.delete(id);
+  }
+
+  // Phase 1: Empathize - Interviews
+  async getInterviews(projectId: string): Promise<Interview[]> {
+    return Array.from(this.interviews.values()).filter(interview => interview.projectId === projectId);
+  }
+
+  async createInterview(insertInterview: InsertInterview): Promise<Interview> {
+    const id = randomUUID();
+    const interview: Interview = {
+      ...insertInterview,
+      id,
+      duration: insertInterview.duration || null,
+      questions: insertInterview.questions || [],
+      responses: insertInterview.responses || [],
+      insights: insertInterview.insights || null,
+      createdAt: new Date(),
+    };
+    this.interviews.set(id, interview);
+    return interview;
+  }
+
+  async updateInterview(id: string, updateInterview: Partial<InsertInterview>): Promise<Interview | undefined> {
+    const interview = this.interviews.get(id);
+    if (!interview) return undefined;
+    
+    const updatedInterview: Interview = {
+      ...interview,
+      ...updateInterview,
+    };
+    this.interviews.set(id, updatedInterview);
+    return updatedInterview;
+  }
+
+  async deleteInterview(id: string): Promise<boolean> {
+    return this.interviews.delete(id);
+  }
+
+  // Phase 1: Empathize - Observations
+  async getObservations(projectId: string): Promise<Observation[]> {
+    return Array.from(this.observations.values()).filter(observation => observation.projectId === projectId);
+  }
+
+  async createObservation(insertObservation: InsertObservation): Promise<Observation> {
+    const id = randomUUID();
+    const observation: Observation = {
+      ...insertObservation,
+      id,
+      insights: insertObservation.insights || null,
+      createdAt: new Date(),
+    };
+    this.observations.set(id, observation);
+    return observation;
+  }
+
+  // Phase 2: Define - POV Statements
+  async getPovStatements(projectId: string): Promise<PovStatement[]> {
+    return Array.from(this.povStatements.values()).filter(pov => pov.projectId === projectId);
+  }
+
+  async createPovStatement(insertPov: InsertPovStatement): Promise<PovStatement> {
+    const id = randomUUID();
+    const pov: PovStatement = {
+      ...insertPov,
+      id,
+      priority: insertPov.priority || "medium",
+      createdAt: new Date(),
+    };
+    this.povStatements.set(id, pov);
+    return pov;
+  }
+
+  async updatePovStatement(id: string, updatePov: Partial<InsertPovStatement>): Promise<PovStatement | undefined> {
+    const pov = this.povStatements.get(id);
+    if (!pov) return undefined;
+    
+    const updatedPov: PovStatement = { ...pov, ...updatePov };
+    this.povStatements.set(id, updatedPov);
+    return updatedPov;
+  }
+
+  // Phase 2: Define - HMW Questions
+  async getHmwQuestions(projectId: string): Promise<HmwQuestion[]> {
+    return Array.from(this.hmwQuestions.values()).filter(hmw => hmw.projectId === projectId);
+  }
+
+  async createHmwQuestion(insertHmw: InsertHmwQuestion): Promise<HmwQuestion> {
+    const id = randomUUID();
+    const hmw: HmwQuestion = {
+      ...insertHmw,
+      id,
+      category: insertHmw.category || null,
+      votes: insertHmw.votes || 0,
+      createdAt: new Date(),
+    };
+    this.hmwQuestions.set(id, hmw);
+    return hmw;
+  }
+
+  async updateHmwQuestion(id: string, updateHmw: Partial<InsertHmwQuestion>): Promise<HmwQuestion | undefined> {
+    const hmw = this.hmwQuestions.get(id);
+    if (!hmw) return undefined;
+    
+    const updatedHmw: HmwQuestion = { ...hmw, ...updateHmw };
+    this.hmwQuestions.set(id, updatedHmw);
+    return updatedHmw;
+  }
+
+  // Phase 3: Ideate - Ideas
+  async getIdeas(projectId: string): Promise<Idea[]> {
+    return Array.from(this.ideas.values()).filter(idea => idea.projectId === projectId);
+  }
+
+  async createIdea(insertIdea: InsertIdea): Promise<Idea> {
+    const id = randomUUID();
+    const idea: Idea = {
+      ...insertIdea,
+      id,
+      category: insertIdea.category || null,
+      feasibility: insertIdea.feasibility || null,
+      impact: insertIdea.impact || null,
+      votes: insertIdea.votes || 0,
+      status: insertIdea.status || "idea",
+      createdAt: new Date(),
+    };
+    this.ideas.set(id, idea);
+    return idea;
+  }
+
+  async updateIdea(id: string, updateIdea: Partial<InsertIdea>): Promise<Idea | undefined> {
+    const idea = this.ideas.get(id);
+    if (!idea) return undefined;
+    
+    const updatedIdea: Idea = { ...idea, ...updateIdea };
+    this.ideas.set(id, updatedIdea);
+    return updatedIdea;
+  }
+
+  async deleteIdea(id: string): Promise<boolean> {
+    return this.ideas.delete(id);
+  }
+
+  // Phase 4: Prototype - Prototypes
+  async getPrototypes(projectId: string): Promise<Prototype[]> {
+    return Array.from(this.prototypes.values()).filter(prototype => prototype.projectId === projectId);
+  }
+
+  async createPrototype(insertPrototype: InsertPrototype): Promise<Prototype> {
+    const id = randomUUID();
+    const prototype: Prototype = {
+      ...insertPrototype,
+      id,
+      ideaId: insertPrototype.ideaId || null,
+      materials: insertPrototype.materials || [],
+      images: insertPrototype.images || [],
+      version: insertPrototype.version || 1,
+      feedback: insertPrototype.feedback || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.prototypes.set(id, prototype);
+    return prototype;
+  }
+
+  async updatePrototype(id: string, updatePrototype: Partial<InsertPrototype>): Promise<Prototype | undefined> {
+    const prototype = this.prototypes.get(id);
+    if (!prototype) return undefined;
+    
+    const updatedPrototype: Prototype = {
+      ...prototype,
+      ...updatePrototype,
+      updatedAt: new Date(),
+    };
+    this.prototypes.set(id, updatedPrototype);
+    return updatedPrototype;
+  }
+
+  async deletePrototype(id: string): Promise<boolean> {
+    return this.prototypes.delete(id);
+  }
+
+  // Phase 5: Test - Test Plans
+  async getTestPlans(projectId: string): Promise<TestPlan[]> {
+    return Array.from(this.testPlans.values()).filter(plan => plan.projectId === projectId);
+  }
+
+  async createTestPlan(insertTestPlan: InsertTestPlan): Promise<TestPlan> {
+    const id = randomUUID();
+    const testPlan: TestPlan = {
+      ...insertTestPlan,
+      id,
+      prototypeId: insertTestPlan.prototypeId || null,
+      duration: insertTestPlan.duration || null,
+      tasks: insertTestPlan.tasks || [],
+      metrics: insertTestPlan.metrics || [],
+      status: insertTestPlan.status || "planned",
+      createdAt: new Date(),
+    };
+    this.testPlans.set(id, testPlan);
+    return testPlan;
+  }
+
+  async updateTestPlan(id: string, updateTestPlan: Partial<InsertTestPlan>): Promise<TestPlan | undefined> {
+    const testPlan = this.testPlans.get(id);
+    if (!testPlan) return undefined;
+    
+    const updatedTestPlan: TestPlan = { ...testPlan, ...updateTestPlan };
+    this.testPlans.set(id, updatedTestPlan);
+    return updatedTestPlan;
+  }
+
+  // Phase 5: Test - Test Results
+  async getTestResults(testPlanId: string): Promise<TestResult[]> {
+    return Array.from(this.testResults.values()).filter(result => result.testPlanId === testPlanId);
+  }
+
+  async createTestResult(insertTestResult: InsertTestResult): Promise<TestResult> {
+    const id = randomUUID();
+    const testResult: TestResult = {
+      ...insertTestResult,
+      id,
+      taskResults: insertTestResult.taskResults || [],
+      feedback: insertTestResult.feedback || null,
+      successRate: insertTestResult.successRate || null,
+      completionTime: insertTestResult.completionTime || null,
+      insights: insertTestResult.insights || null,
+      createdAt: new Date(),
+    };
+    this.testResults.set(id, testResult);
+    return testResult;
+  }
+
+  // User Progress
+  async getUserProgress(userId: string, projectId: string): Promise<UserProgress | undefined> {
+    return this.userProgress.get(`${userId}_${projectId}`);
+  }
+
+  async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
+    const key = `${insertProgress.userId}_${insertProgress.projectId}`;
+    const existing = this.userProgress.get(key);
+    
+    const progress: UserProgress = {
+      id: existing?.id || randomUUID(),
+      ...insertProgress,
+      completedTools: insertProgress.completedTools || [],
+      badges: insertProgress.badges || [],
+      points: insertProgress.points || 0,
+      timeSpent: insertProgress.timeSpent || 0,
+      updatedAt: new Date(),
+    };
+    
+    this.userProgress.set(key, progress);
+    return progress;
+  }
+
+  // Analytics
+  async getProjectStats(projectId: string): Promise<{
+    totalTools: number;
+    completedTools: number;
+    currentPhase: number;
     completionRate: number;
-    teamEfficiency: number;
-    budgetUsage: number;
   }> {
-    const events = Array.from(this.events.values());
-    const activeEvents = events.filter(event => event.status === "active");
-    const members = Array.from(this.teamMembers.values());
-    
-    const avgCompletionRate = events.length > 0 
-      ? events.reduce((sum, event) => sum + (event.completionRate || 0), 0) / events.length 
-      : 0;
-      
-    const avgTeamEfficiency = members.length > 0
-      ? members.reduce((sum, member) => sum + (member.efficiency || 0), 0) / members.length
-      : 0;
-      
-    const totalBudget = events.reduce((sum, event) => sum + (event.budget || 0), 0);
-    const totalUsed = events.reduce((sum, event) => sum + (event.budgetUsed || 0), 0);
-    
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return { totalTools: 0, completedTools: 0, currentPhase: 1, completionRate: 0 };
+    }
+
+    const totalTools = 15; // Total tools across all phases
+    const empathyMaps = await this.getEmpathyMaps(projectId);
+    const personas = await this.getPersonas(projectId);
+    const interviews = await this.getInterviews(projectId);
+    const povStatements = await this.getPovStatements(projectId);
+    const ideas = await this.getIdeas(projectId);
+    const prototypes = await this.getPrototypes(projectId);
+    const testPlans = await this.getTestPlans(projectId);
+
+    const completedTools = 
+      empathyMaps.length + personas.length + interviews.length + 
+      povStatements.length + ideas.length + prototypes.length + testPlans.length;
+
     return {
-      activeEvents: activeEvents.length,
-      completionRate: Math.round(avgCompletionRate),
-      teamEfficiency: Math.round(avgTeamEfficiency),
-      budgetUsage: totalUsed,
+      totalTools,
+      completedTools,
+      currentPhase: project.currentPhase || 1,
+      completionRate: Math.round((completedTools / totalTools) * 100),
     };
   }
 }

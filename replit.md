@@ -1,8 +1,8 @@
-# EventFlow Pro
+# DTTools - Design Thinking Tools
 
 ## Overview
 
-EventFlow Pro is a comprehensive event management platform with AI-driven insights and automation capabilities. The application provides event organizers with tools to track progress, manage teams, generate reports, and integrate with popular project management services. Built as a full-stack TypeScript application, it features a modern React frontend with shadcn/ui components and an Express.js backend with PostgreSQL database integration.
+DTTools é uma plataforma interativa e abrangente para guiar designers, equipes de inovação e profissionais criativos pelas etapas do Design Thinking. O aplicativo oferece ferramentas específicas para cada uma das 5 fases do processo, sistema de progresso gamificado e funcionalidades de colaboração e exportação.
 
 ## User Preferences
 
@@ -11,70 +11,90 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
-- **Framework**: React 18 with TypeScript
-- **Routing**: Wouter for lightweight client-side routing
+- **Framework**: React 18 com TypeScript
+- **Routing**: Wouter para navegação entre fases
 - **UI Components**: shadcn/ui component library with Radix UI primitives
-- **Styling**: Tailwind CSS with CSS variables for theming
-- **State Management**: TanStack Query (React Query) for server state management
-- **Charts**: Chart.js for data visualization
-- **Build Tool**: Vite with custom configuration for development and production
+- **Styling**: Tailwind CSS com tema customizado para Design Thinking
+- **State Management**: TanStack Query para gerenciamento de estado do servidor
+- **Build Tool**: Vite com configuração customizada
 
 ### Backend Architecture
-- **Framework**: Express.js with TypeScript
-- **API Design**: RESTful APIs with structured error handling
-- **Database ORM**: Drizzle ORM for type-safe database operations
-- **Session Management**: Express sessions with PostgreSQL store
-- **Development**: Custom Vite integration for hot module replacement
-- **Request Logging**: Custom middleware for API request tracking
+- **Framework**: Express.js com TypeScript
+- **API Design**: APIs RESTful para cada fase do Design Thinking
+- **Database ORM**: Drizzle ORM para operações type-safe
+- **Session Management**: Express sessions para progresso do usuário
+- **Development**: Integração Vite para hot module replacement
 
 ### Database Design
-- **Database**: PostgreSQL with Neon serverless hosting
-- **Schema Management**: Drizzle migrations with schema definitions in TypeScript
+- **Database**: PostgreSQL para persistência de dados
+- **Schema Management**: Drizzle migrations com definições TypeScript
 - **Core Entities**:
-  - Events: Main project entities with status tracking and budget management
-  - Team Members: User profiles with efficiency metrics
-  - Reports: Automated weekly progress reports with PDF generation
-  - Integrations: Third-party service connections (Asana, Trello, Monday, Slack)
-  - AI Insights: Machine learning-generated recommendations and pattern detection
-  - User Behavior: Analytics tracking for AI learning and optimization
+  - **Projects**: Projetos de Design Thinking dos usuários
+  - **Empathy Maps**: Mapas de empatia (Fase 1)
+  - **Personas**: Personas criadas pelos usuários (Fase 1)
+  - **Interviews**: Entrevistas com usuários (Fase 1)
+  - **POV Statements**: Point of View statements (Fase 2)
+  - **Ideas**: Ideias geradas (Fase 3)
+  - **Prototypes**: Protótipos criados (Fase 4)
+  - **Tests**: Resultados de testes (Fase 5)
+  - **User Progress**: Sistema de progresso e badges
 
-### Key Features
-- **AI Learning Engine**: Client-side pattern recognition for user behavior optimization
-- **Automated Report Generation**: PDF report creation with jsPDF
-- **Real-time Metrics**: Live dashboard with completion rates and team efficiency
-- **Integration Management**: Support for multiple project management platforms
-- **Responsive Design**: Mobile-first approach with adaptive layouts
+### Key Features - 5 Fases do Design Thinking
+
+#### 1. Empatizar
+- **Mapa de Empatia**: Ferramenta para capturar o que o usuário diz, pensa, faz e sente
+- **Personas**: Criação de perfis detalhados dos usuários-alvo
+- **Entrevistas**: Documentação de entrevistas com usuários
+- **Observações de Campo**: Registro de comportamentos observados
+- **Jornada do Usuário**: Mapeamento da experiência do usuário
+
+#### 2. Definir
+- **POV Statements**: Point of View statements estruturados
+- **How Might We**: Definição de desafios de design
+- **Problem Statements**: Declarações claras dos problemas
+
+#### 3. Idear
+- **Brainstorming**: Ferramenta para geração de ideias
+- **Categorização de Ideias**: Organização e agrupamento
+- **Priorização**: Sistema de votação e ranking
+
+#### 4. Prototipar
+- **Tipos de Protótipo**: Digital, física, storyboard
+- **Documentação**: Imagens, descrições, materiais
+- **Iterações**: Versionamento de protótipos
+
+#### 5. Testar
+- **Planos de Teste**: Definição de metodologias
+- **Resultados**: Coleta de feedback e métricas
+- **Insights**: Learnings e próximos passos
+
+### Sistema de Progresso
+- **Badges**: Conquistas por completar atividades
+- **Pontuação**: Sistema de pontos por fase
+- **Tracking**: Progresso visual através das 5 fases
+- **Gamificação**: Níveis e reconhecimentos
 
 ### Data Flow Architecture
-- **Client-Server Communication**: JSON-based REST APIs with fetch-based requests
-- **Error Handling**: Centralized error boundaries with user-friendly messaging
-- **Caching Strategy**: TanStack Query for intelligent data caching and synchronization
-- **Type Safety**: End-to-end TypeScript with shared schema definitions
+- **Client-Server Communication**: APIs REST para CRUD de cada ferramenta
+- **Export Functionality**: Geração de PDFs e CSVs dos dados
+- **Progress Tracking**: Salvamento automático de progresso
+- **Type Safety**: TypeScript end-to-end com schemas compartilhados
 
 ## External Dependencies
 
-### Database Services
-- **Neon Database**: Serverless PostgreSQL hosting with connection pooling
-- **Drizzle ORM**: Type-safe database operations and migration management
-
 ### UI and Styling
-- **Radix UI**: Accessible component primitives for complex UI elements
-- **Tailwind CSS**: Utility-first CSS framework with custom design system
-- **Lucide React**: Icon library for consistent visual elements
-- **Chart.js**: Interactive charts and data visualization
+- **Radix UI**: Componentes acessíveis para interface complexa
+- **Tailwind CSS**: Framework CSS utilitário
+- **Lucide React**: Biblioteca de ícones
+- **Framer Motion**: Animações para progresso e gamificação
 
 ### Development Tools
-- **Vite**: Fast build tool with HMR and optimization
-- **TypeScript**: Static type checking across frontend and backend
-- **ESBuild**: Fast JavaScript bundling for production builds
+- **Vite**: Build tool rápido com HMR
+- **TypeScript**: Type checking em frontend e backend
+- **jsPDF**: Geração de relatórios PDF
+- **React Hook Form**: Formulários para cada ferramenta
 
-### Third-party Integrations
-- **Project Management APIs**: Asana, Trello, Monday.com for task synchronization
-- **Communication**: Slack integration for team notifications
-- **PDF Generation**: jsPDF for automated report creation
-- **Session Storage**: PostgreSQL-based session management with connect-pg-simple
-
-### Analytics and AI
-- **Client-side Learning**: Custom AI learning engine for user behavior analysis
-- **Pattern Recognition**: Local storage-based pattern detection and recommendations
-- **User Behavior Tracking**: Anonymous usage analytics for system optimization
+### Export and Sharing
+- **PDF Generation**: jsPDF para exportação de mapas e relatórios
+- **CSV Export**: Para dados tabulares de pesquisas e testes
+- **Local Storage**: Cache de progresso offline
