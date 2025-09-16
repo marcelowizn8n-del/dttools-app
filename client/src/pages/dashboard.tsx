@@ -129,7 +129,7 @@ export default function Dashboard() {
     queryKey: ["/api/projects"],
   });
 
-  const isEnglish = language === 'en';
+  // Remove the isEnglish variable, use t() for everything
   const completedProjects = projects.filter(p => p.status === 'completed').length;
   const totalProjects = projects.length;
   const avgProgress = totalProjects > 0 
@@ -153,14 +153,11 @@ export default function Dashboard() {
             </div>
             
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Design Thinking <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Tools</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">{t("dashboard.hero.title")}</span>
             </h1>
             
             <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
-              {isEnglish 
-                ? "An interactive and comprehensive platform to guide designers, innovation teams and creative professionals through the Design Thinking stages."
-                : "Uma plataforma interativa e abrangente para guiar designers, equipes de inovação e profissionais criativos pelas etapas do Design Thinking."
-              }
+              {t("dashboard.hero.subtitle")}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -170,7 +167,7 @@ export default function Dashboard() {
                   {t("dashboard.start.project")}
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-blue-600 text-blue-700 hover:bg-blue-50">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-blue-600 text-blue-700 hover:bg-blue-50 bg-white">
                 {t("dashboard.explore.phases")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -190,14 +187,14 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5 text-blue-600" />
                     <CardTitle className="text-lg">
-                      {isEnglish ? "Your Progress" : "Seu Progresso"}
+                      {t("dashboard.your.progress")}
                     </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-center">
                     <div className="text-sm text-gray-600 mb-2">
-                      {isEnglish ? "Beginner" : "Iniciante"} • 0%
+                      {t("dashboard.beginner")} • 0%
                     </div>
                     <Progress value={avgProgress} className="mb-4" />
                   </div>
@@ -205,19 +202,19 @@ export default function Dashboard() {
                   <div className="grid grid-cols-4 gap-2 text-center">
                     <div>
                       <div className="text-2xl font-bold text-blue-600">{totalProjects}</div>
-                      <p className="text-xs text-gray-600">{isEnglish ? "Points" : "Pontos"}</p>
+                      <p className="text-xs text-gray-600">{t("dashboard.points")}</p>
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-green-600">{completedProjects}</div>
-                      <p className="text-xs text-gray-600">{isEnglish ? "Badges" : "Badges"}</p>
+                      <p className="text-xs text-gray-600">{t("dashboard.badges")}</p>
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-orange-600">0/5</div>
-                      <p className="text-xs text-gray-600">{isEnglish ? "Phases" : "Fases"}</p>
+                      <p className="text-xs text-gray-600">{t("dashboard.phases")}</p>
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-purple-600">0m</div>
-                      <p className="text-xs text-gray-600">{isEnglish ? "Session" : "Sessão"}</p>
+                      <p className="text-xs text-gray-600">{t("dashboard.session")}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -228,7 +225,7 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-600" />
-                    {isEnglish ? "Progress by Phase" : "Progresso por Fase"}
+                    {t("dashboard.progress.by.phase")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -244,7 +241,7 @@ export default function Dashboard() {
                         <span className={`text-sm font-medium ${
                           phase.completed ? 'text-gray-900' : 'text-gray-500'
                         }`}>
-                          {isEnglish ? phase.nameEn : phase.name}
+                          {t(`phases.${phase.name.toLowerCase()}`)}
                         </span>
                         {phase.completed && (
                           <CheckCircle className="w-4 h-4 text-green-500 ml-auto" />
@@ -260,15 +257,12 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Clock className="w-5 h-5 text-blue-600" />
-                    {isEnglish ? "Recent Activity" : "Atividade Recente"}
+                    {t("dashboard.recent.activity")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-600 text-center py-4">
-                    {isEnglish 
-                      ? "No recent activity. Start exploring the phases!"
-                      : "Nenhuma atividade recente. Comece explorando as fases!"
-                    }
+                    {t("dashboard.no.activity")}
                   </p>
                 </CardContent>
               </Card>
@@ -278,15 +272,15 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Star className="w-5 h-5 text-yellow-500" />
-                    {isEnglish ? "Suggested Next Steps" : "Próximos Passos Sugeridos"}
+                    {t("dashboard.next.steps")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {(isEnglish ? nextStepsEn : nextSteps).map((step, index) => (
+                    {[1, 2, 3].map((index) => (
                       <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
                         <span className="text-blue-600 font-bold">•</span>
-                        {step}
+                        {t(`next.step.${index}`)}
                       </li>
                     ))}
                   </ul>
@@ -301,13 +295,10 @@ export default function Dashboard() {
             <section>
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  {isEnglish ? "The 5 Phases of Design Thinking" : "As 5 Fases do Design Thinking"}
+                  {t("dashboard.5.phases.title")}
                 </h2>
                 <p className="text-lg text-gray-600">
-                  {isEnglish 
-                    ? "Explore each phase of the process and develop user-centered solutions."
-                    : "Explore cada fase do processo e desenvolva soluções centradas no usuário."
-                  }
+                  {t("dashboard.5.phases.subtitle")}
                 </p>
               </div>
 
@@ -332,10 +323,10 @@ export default function Dashboard() {
                           </div>
                           <div>
                             <CardTitle className="text-lg">
-                              {phase.id}. {isEnglish ? phase.nameEn : phase.name}
+                              {phase.id}. {t(`phases.${phase.name.toLowerCase()}`)}
                             </CardTitle>
                             <CardDescription className="mt-1">
-                              {isEnglish ? phase.descriptionEn : phase.description}
+                              {t(`phases.${phase.name.toLowerCase()}.desc`)}
                             </CardDescription>
                           </div>
                         </div>
@@ -350,7 +341,7 @@ export default function Dashboard() {
             <section>
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  {isEnglish ? "Why use our platform?" : "Por que usar nossa plataforma?"}
+                  {t("dashboard.why.platform")}
                 </h2>
               </div>
 
@@ -365,12 +356,12 @@ export default function Dashboard() {
                           <Icon className="w-8 h-8 text-white" />
                         </div>
                         <CardTitle className="text-xl">
-                          {isEnglish ? benefit.titleEn : benefit.title}
+                          {t(`benefits.${benefit.title.toLowerCase().replace(/ /g, '.')}`)}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <CardDescription className="text-gray-600 leading-relaxed">
-                          {isEnglish ? benefit.descriptionEn : benefit.description}
+                          {t(`benefits.${benefit.title.toLowerCase().replace(/ /g, '.')}.desc`)}
                         </CardDescription>
                       </CardContent>
                     </Card>
@@ -384,18 +375,15 @@ export default function Dashboard() {
               <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 shadow-xl">
                 <CardContent className="py-12">
                   <h2 className="text-3xl font-bold mb-4">
-                    {isEnglish ? "Ready to start your journey?" : "Pronto para começar sua jornada?"}
+                    {t("dashboard.ready.start")}
                   </h2>
                   <p className="text-xl mb-8 text-blue-100">
-                    {isEnglish 
-                      ? "Transform complex problems into innovative solutions with Design Thinking."
-                      : "Transforme problemas complexos em soluções inovadoras com o Design Thinking."
-                    }
+                    {t("dashboard.ready.subtitle")}
                   </p>
                   <Link href="/projects">
                     <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6">
                       <Play className="mr-2 h-5 w-5" />
-                      {isEnglish ? "Start Now" : "Começar Agora"}
+                      {t("dashboard.start.now")}
                     </Button>
                   </Link>
                 </CardContent>
