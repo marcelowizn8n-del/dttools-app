@@ -10,6 +10,7 @@ import Phase1Tools from "@/components/phase1/Phase1Tools";
 import Phase2Tools from "@/components/phase2/Phase2Tools";
 import Phase3Tools from "@/components/phase3/Phase3Tools";
 import Phase4Tools from "@/components/phase4/Phase4Tools";
+import Phase5Tools from "@/components/phase5/Phase5Tools";
 
 const phaseData = {
   1: { 
@@ -270,6 +271,8 @@ export default function ProjectDetailPage() {
         <Phase3Tools projectId={project.id} />
       ) : project.currentPhase === 4 ? (
         <Phase4Tools projectId={project.id} />
+      ) : project.currentPhase === 5 ? (
+        <Phase5Tools projectId={project.id} />
       ) : (
         <Card className="bg-blue-50 border-blue-200">
           <CardHeader>
