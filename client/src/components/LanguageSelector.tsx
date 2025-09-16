@@ -26,11 +26,11 @@ export function LanguageSelector() {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 w-8 p-0"
+          className="h-8 w-auto px-2 py-1 gap-1"
           data-testid="button-language-selector"
         >
-          <Globe className="h-4 w-4" />
-          <span className="sr-only">Change language</span>
+          <span className="text-lg">{currentLanguage?.flag}</span>
+          <Globe className="h-3 w-3 opacity-60" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
