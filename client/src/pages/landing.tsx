@@ -137,38 +137,29 @@ export default function LandingPage() {
         <div className="relative container mx-auto px-6 py-20 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
             <Badge className="mb-4 bg-blue-100 text-blue-800 hover:bg-blue-100">
-              {isEnglish ? "🚀 The Future of Design Thinking" : "🚀 O Futuro do Design Thinking"}
+              {t("landing.future")}
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              {isEnglish 
-                ? "Transform Ideas into Revolutionary Solutions" 
-                : "Transforme Ideias em Soluções Revolucionárias"
-              }
+              {t("landing.hero.title")}
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
-              {isEnglish
-                ? "The most complete platform for Design Thinking with guided tools, real-time collaboration, and global reach in 4 languages."
-                : "A plataforma mais completa para Design Thinking com ferramentas guiadas, colaboração em tempo real e alcance global em 4 idiomas."
-              }
+              {t("landing.hero.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/login">
                 <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6">
-                  {isEnglish ? "Start for Free" : "Começar Grátis"}
+                  {t("landing.start.free")}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/pricing">
                 <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  {isEnglish ? "View Plans" : "Ver Planos"}
+                  {t("landing.view.plans")}
                 </Button>
               </Link>
             </div>
             <p className="text-sm text-gray-500 mt-4">
-              {isEnglish 
-                ? "✨ No credit card required • 7-day free trial" 
-                : "✨ Sem cartão de crédito • 7 dias grátis"
-              }
+              {t("landing.trial.info")}
             </p>
           </div>
         </div>
@@ -179,16 +170,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {isEnglish 
-                ? "The 5 Phases of Design Thinking" 
-                : "As 5 Fases do Design Thinking"
-              }
+              {t("landing.5.phases.title")}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {isEnglish
-                ? "Follow a proven methodology used by the world's most innovative companies"
-                : "Siga uma metodologia comprovada usada pelas empresas mais inovadoras do mundo"
-              }
+              {t("landing.5.phases.subtitle")}
             </p>
           </div>
 
@@ -239,16 +224,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {isEnglish 
-                ? "Everything You Need to Innovate" 
-                : "Tudo o que Você Precisa para Inovar"
-              }
+              {t("landing.everything.title")}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {isEnglish
-                ? "Powerful tools designed to accelerate your Design Thinking process"
-                : "Ferramentas poderosas projetadas para acelerar seu processo de Design Thinking"
-              }
+              {t("landing.everything.subtitle")}
             </p>
           </div>
 
@@ -283,17 +262,14 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {isEnglish 
-                ? "Trusted by Innovation Leaders" 
-                : "Confiado por Líderes em Inovação"
-              }
+              {t("landing.trusted.title")}
             </h2>
             <div className="flex justify-center items-center gap-2 mb-8">
               {[1,2,3,4,5].map(i => (
                 <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
               ))}
               <span className="ml-2 text-gray-600 font-medium">
-                {isEnglish ? "4.9/5 from 2,500+ users" : "4.9/5 de mais de 2.500 usuários"}
+                {t("landing.rating")}
               </span>
             </div>
           </div>
@@ -308,7 +284,7 @@ export default function LandingPage() {
                     ))}
                   </div>
                   <p className="text-gray-700 italic mb-4 leading-relaxed">
-                    "{isEnglish ? testimonial.contentEn : testimonial.content}"
+                    "{t(`landing.testimonial.${index + 1}`)}"
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -332,27 +308,21 @@ export default function LandingPage() {
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {isEnglish 
-              ? "Ready to Transform Your Innovation Process?" 
-              : "Pronto para Transformar seu Processo de Inovação?"
-            }
+            {t("landing.ready.title")}
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            {isEnglish
-              ? "Join thousands of innovators using DTTools to create breakthrough solutions"
-              : "Junte-se a milhares de inovadores usando DTTools para criar soluções revolucionárias"
-            }
+            {t("landing.ready.subtitle")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href="/login">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6">
-                {isEnglish ? "Start Free Trial" : "Começar Teste Grátis"}
+                {t("landing.start.trial")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/library">
               <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6">
-                {isEnglish ? "Explore Library" : "Explorar Biblioteca"}
+                {t("landing.explore.library")}
               </Button>
             </Link>
           </div>
