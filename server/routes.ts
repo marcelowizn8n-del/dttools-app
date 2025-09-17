@@ -76,14 +76,11 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Apply subscription middleware to all authenticated routes
-  app.use("/api", loadUserSubscription);
-
   // Subscription info endpoint
   app.get("/api/subscription-info", requireAuth, getSubscriptionInfo);
 
   // Projects routes
-  app.get("/api/projects", async (_req, res) => {
+  app.get("/api/projects", requireAuth, async (req, res) => {
     try {
       const projects = await storage.getProjects();
       res.json(projects);
@@ -92,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/projects/:id", async (req, res) => {
+  app.get("/api/projects/:id", requireAuth, async (req, res) => {
     try {
       const project = await storage.getProject(req.params.id);
       if (!project) {
@@ -140,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 1: Empathize - Empathy Maps
-  app.get("/api/projects/:projectId/empathy-maps", async (req, res) => {
+  app.get("/api/projects/:projectId/empathy-maps", requireAuth, async (req, res) => {
     try {
       const empathyMaps = await storage.getEmpathyMaps(req.params.projectId);
       res.json(empathyMaps);
@@ -149,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:projectId/empathy-maps", async (req, res) => {
+  app.post("/api/projects/:projectId/empathy-maps", requireAuth, async (req, res) => {
     try {
       const validatedData = insertEmpathyMapSchema.parse({
         ...req.body,
@@ -162,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/empathy-maps/:id", async (req, res) => {
+  app.put("/api/empathy-maps/:id", requireAuth, async (req, res) => {
     try {
       const validatedData = insertEmpathyMapSchema.omit({ projectId: true }).partial().parse(req.body);
       const empathyMap = await storage.updateEmpathyMap(req.params.id, validatedData);
@@ -175,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/empathy-maps/:id", async (req, res) => {
+  app.delete("/api/empathy-maps/:id", requireAuth, async (req, res) => {
     try {
       const success = await storage.deleteEmpathyMap(req.params.id);
       if (!success) {
@@ -188,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 1: Empathize - Personas
-  app.get("/api/projects/:projectId/personas", async (req, res) => {
+  app.get("/api/projects/:projectId/personas", requireAuth, async (req, res) => {
     try {
       const personas = await storage.getPersonas(req.params.projectId);
       res.json(personas);
@@ -197,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:projectId/personas", checkPersonaLimit, async (req, res) => {
+  app.post("/api/projects/:projectId/personas", requireAuth, checkPersonaLimit, async (req, res) => {
     try {
       const validatedData = insertPersonaSchema.parse({
         ...req.body,
@@ -210,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/personas/:id", async (req, res) => {
+  app.put("/api/personas/:id", requireAuth, async (req, res) => {
     try {
       const validatedData = insertPersonaSchema.omit({ projectId: true }).partial().parse(req.body);
       const persona = await storage.updatePersona(req.params.id, validatedData);
@@ -223,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/personas/:id", async (req, res) => {
+  app.delete("/api/personas/:id", requireAuth, async (req, res) => {
     try {
       const success = await storage.deletePersona(req.params.id);
       if (!success) {
@@ -236,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 1: Empathize - Interviews
-  app.get("/api/projects/:projectId/interviews", async (req, res) => {
+  app.get("/api/projects/:projectId/interviews", requireAuth, async (req, res) => {
     try {
       const interviews = await storage.getInterviews(req.params.projectId);
       res.json(interviews);
@@ -245,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:projectId/interviews", async (req, res) => {
+  app.post("/api/projects/:projectId/interviews", requireAuth, async (req, res) => {
     try {
       const validatedData = insertInterviewSchema.parse({
         ...req.body,
@@ -258,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/interviews/:id", async (req, res) => {
+  app.put("/api/interviews/:id", requireAuth, async (req, res) => {
     try {
       const validatedData = insertInterviewSchema.omit({ projectId: true }).partial().parse(req.body);
       const interview = await storage.updateInterview(req.params.id, validatedData);
@@ -271,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/interviews/:id", async (req, res) => {
+  app.delete("/api/interviews/:id", requireAuth, async (req, res) => {
     try {
       const success = await storage.deleteInterview(req.params.id);
       if (!success) {
@@ -284,7 +281,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 1: Empathize - Observations
-  app.get("/api/projects/:projectId/observations", async (req, res) => {
+  app.get("/api/projects/:projectId/observations", requireAuth, async (req, res) => {
     try {
       const observations = await storage.getObservations(req.params.projectId);
       res.json(observations);
@@ -293,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:projectId/observations", async (req, res) => {
+  app.post("/api/projects/:projectId/observations", requireAuth, async (req, res) => {
     try {
       const validatedData = insertObservationSchema.parse({
         ...req.body,
@@ -306,7 +303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/observations/:id", async (req, res) => {
+  app.put("/api/observations/:id", requireAuth, async (req, res) => {
     try {
       const validatedData = insertObservationSchema.omit({ projectId: true }).partial().parse(req.body);
       const observation = await storage.updateObservation(req.params.id, validatedData);
@@ -319,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/observations/:id", async (req, res) => {
+  app.delete("/api/observations/:id", requireAuth, async (req, res) => {
     try {
       const success = await storage.deleteObservation(req.params.id);
       if (!success) {
@@ -332,7 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 2: Define - POV Statements
-  app.get("/api/projects/:projectId/pov-statements", async (req, res) => {
+  app.get("/api/projects/:projectId/pov-statements", requireAuth, async (req, res) => {
     try {
       const povStatements = await storage.getPovStatements(req.params.projectId);
       res.json(povStatements);
@@ -341,7 +338,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:projectId/pov-statements", async (req, res) => {
+  app.post("/api/projects/:projectId/pov-statements", requireAuth, async (req, res) => {
     try {
       const validatedData = insertPovStatementSchema.parse({
         ...req.body,
@@ -354,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/pov-statements/:id", async (req, res) => {
+  app.put("/api/pov-statements/:id", requireAuth, async (req, res) => {
     try {
       // First, check if the POV statement exists
       const existingPovStatement = await storage.getPovStatement(req.params.id);
@@ -376,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/pov-statements/:id", async (req, res) => {
+  app.delete("/api/pov-statements/:id", requireAuth, async (req, res) => {
     try {
       // First, check if the POV statement exists
       const existingPovStatement = await storage.getPovStatement(req.params.id);
@@ -396,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 2: Define - HMW Questions
-  app.get("/api/projects/:projectId/hmw-questions", async (req, res) => {
+  app.get("/api/projects/:projectId/hmw-questions", requireAuth, async (req, res) => {
     try {
       const hmwQuestions = await storage.getHmwQuestions(req.params.projectId);
       res.json(hmwQuestions);
@@ -405,7 +402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:projectId/hmw-questions", async (req, res) => {
+  app.post("/api/projects/:projectId/hmw-questions", requireAuth, async (req, res) => {
     try {
       const validatedData = insertHmwQuestionSchema.parse({
         ...req.body,
@@ -418,7 +415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/hmw-questions/:id", async (req, res) => {
+  app.put("/api/hmw-questions/:id", requireAuth, async (req, res) => {
     try {
       // First, check if the HMW question exists
       const existingHmwQuestion = await storage.getHmwQuestion(req.params.id);
@@ -440,7 +437,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/hmw-questions/:id", async (req, res) => {
+  app.delete("/api/hmw-questions/:id", requireAuth, async (req, res) => {
     try {
       // First, check if the HMW question exists
       const existingHmwQuestion = await storage.getHmwQuestion(req.params.id);
@@ -460,7 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 3: Ideate - Ideas
-  app.get("/api/projects/:projectId/ideas", async (req, res) => {
+  app.get("/api/projects/:projectId/ideas", requireAuth, async (req, res) => {
     try {
       const ideas = await storage.getIdeas(req.params.projectId);
       res.json(ideas);
@@ -469,7 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:projectId/ideas", async (req, res) => {
+  app.post("/api/projects/:projectId/ideas", requireAuth, async (req, res) => {
     try {
       const validatedData = insertIdeaSchema.parse({
         ...req.body,
@@ -482,7 +479,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/ideas/:id", async (req, res) => {
+  app.put("/api/ideas/:id", requireAuth, async (req, res) => {
     try {
       const validatedData = insertIdeaSchema.omit({ projectId: true }).partial().parse(req.body);
       const idea = await storage.updateIdea(req.params.id, validatedData);
@@ -496,7 +493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 4: Prototype - Prototypes
-  app.get("/api/projects/:projectId/prototypes", async (req, res) => {
+  app.get("/api/projects/:projectId/prototypes", requireAuth, async (req, res) => {
     try {
       const prototypes = await storage.getPrototypes(req.params.projectId);
       res.json(prototypes);
@@ -505,7 +502,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:projectId/prototypes", async (req, res) => {
+  app.post("/api/projects/:projectId/prototypes", requireAuth, async (req, res) => {
     try {
       const validatedData = insertPrototypeSchema.parse({
         ...req.body,
@@ -519,7 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 5: Test - Test Plans
-  app.get("/api/projects/:projectId/test-plans", async (req, res) => {
+  app.get("/api/projects/:projectId/test-plans", requireAuth, async (req, res) => {
     try {
       const testPlans = await storage.getTestPlans(req.params.projectId);
       res.json(testPlans);
@@ -528,7 +525,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:projectId/test-plans", async (req, res) => {
+  app.post("/api/projects/:projectId/test-plans", requireAuth, async (req, res) => {
     try {
       const validatedData = insertTestPlanSchema.parse({
         ...req.body,
@@ -542,7 +539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 5: Test - Test Results
-  app.get("/api/test-plans/:testPlanId/results", async (req, res) => {
+  app.get("/api/test-plans/:testPlanId/results", requireAuth, async (req, res) => {
     try {
       const testResults = await storage.getTestResults(req.params.testPlanId);
       res.json(testResults);
@@ -551,7 +548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/test-plans/:testPlanId/results", async (req, res) => {
+  app.post("/api/test-plans/:testPlanId/results", requireAuth, async (req, res) => {
     try {
       const validatedData = insertTestResultSchema.parse({
         ...req.body,
@@ -565,7 +562,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User Progress routes
-  app.get("/api/users/:userId/projects/:projectId/progress", async (req, res) => {
+  app.get("/api/users/:userId/projects/:projectId/progress", requireAuth, async (req, res) => {
     try {
       const progress = await storage.getUserProgress(req.params.userId, req.params.projectId);
       if (!progress) {
@@ -577,7 +574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/users/:userId/projects/:projectId/progress", async (req, res) => {
+  app.put("/api/users/:userId/projects/:projectId/progress", requireAuth, async (req, res) => {
     try {
       const validatedData = insertUserProgressSchema.parse({
         ...req.body,
@@ -592,7 +589,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analytics routes
-  app.get("/api/projects/:projectId/stats", async (req, res) => {
+  app.get("/api/projects/:projectId/stats", requireAuth, async (req, res) => {
     try {
       const stats = await storage.getProjectStats(req.params.projectId);
       res.json(stats);
@@ -602,7 +599,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard summary route
-  app.get("/api/dashboard", async (_req, res) => {
+  app.get("/api/dashboard", requireAuth, async (req, res) => {
     try {
       const projects = await storage.getProjects();
       const totalProjects = projects.length;
