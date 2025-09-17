@@ -36,9 +36,22 @@ import { updateProfileSchema } from "@shared/schema";
 import type { UpdateProfile, User as UserType } from "@shared/schema";
 import { z } from "zod";
 
-// Extend the profile schema for form validation
-const profileFormSchema = updateProfileSchema.extend({
+// Create form validation schema separately since updateProfileSchema is transformed
+const profileFormSchema = z.object({
+  name: z.string().optional(),
   email: z.string().email("Email inválido").min(1, "Email é obrigatório"),
+  bio: z.string().optional(),
+  company: z.string().optional(),
+  jobRole: z.string().optional(),
+  industry: z.string().optional(),
+  experience: z.string().optional(),
+  country: z.string().optional(),
+  state: z.string().optional(),
+  city: z.string().optional(),
+  zipCode: z.string().optional(),
+  phone: z.string().optional(),
+  interests: z.array(z.string()).default([]),
+  profilePicture: z.string().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileFormSchema>;
