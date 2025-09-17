@@ -9,7 +9,8 @@ import {
   Wrench,
   TestTube,
   BarChart3,
-  Star
+  Star,
+  MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -105,6 +106,14 @@ export default function Header() {
                 Library
               </Button>
             </Link>
+            {isAuthenticated && (
+              <Link href="/chat">
+                <Button variant="ghost" className="text-sm" data-testid="nav-chat">
+                  <MessageCircle className="mr-1 h-4 w-4" />
+                  Chat IA
+                </Button>
+              </Link>
+            )}
             <Link href="/dashboard">
               <Button variant="ghost" className="text-sm" data-testid="nav-dashboard">
                 <BarChart3 className="mr-1 h-4 w-4" />

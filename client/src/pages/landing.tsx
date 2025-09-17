@@ -345,8 +345,8 @@ export default function LandingPage() {
               </Button>
             </Link>
             <Link href="/library">
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6">
-                Explorar Biblioteca
+              <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6 bg-transparent">
+                📚 Explorar Biblioteca
               </Button>
             </Link>
           </div>

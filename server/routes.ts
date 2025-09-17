@@ -27,6 +27,7 @@ import {
   checkPersonaLimit, 
   getSubscriptionInfo 
 } from "./subscriptionMiddleware";
+import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "./aiService";
 
 // Initialize Stripe with secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -1078,6 +1079,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error canceling subscription:", error);
       res.status(500).json({ error: "Failed to cancel subscription" });
+    }
+  });
+
+  // AI Chat routes
+  app.post("/api/chat", requireAuth, async (req, res) => {
+    try {
+      const { messages, context }: { messages: ChatMessage[], context: DesignThinkingContext } = req.body;
+      
+      if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ error: "Messages array is required" });
+      }
+
+      if (!context || typeof context.currentPhase !== 'number') {
+        return res.status(400).json({ error: "Valid context with currentPhase is required" });
+      }
+
+      const response = await designThinkingAI.chat(messages, context);
+      res.json({ message: response });
+    } catch (error) {
+      console.error("Error in AI chat:", error);
+      if (error instanceof Error && error.message.includes('OpenAI')) {
+        res.status(503).json({ error: "AI service temporarily unavailable. Please check API configuration." });
+      } else {
+        res.status(500).json({ error: "Failed to process chat request" });
+      }
+    }
+  });
+
+  app.post("/api/chat/suggestions", requireAuth, async (req, res) => {
+    try {
+      const { context, topic }: { context: DesignThinkingContext, topic: string } = req.body;
+      
+      if (!context || typeof context.currentPhase !== 'number') {
+        return res.status(400).json({ error: "Valid context with currentPhase is required" });
+      }
+
+      if (!topic || typeof topic !== 'string') {
+        return res.status(400).json({ error: "Topic is required" });
+      }
+
+      const suggestions = await designThinkingAI.generateSuggestions(context, topic);
+      res.json({ suggestions });
+    } catch (error) {
+      console.error("Error generating suggestions:", error);
+      res.status(500).json({ error: "Failed to generate suggestions" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/analyze", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const { currentPhase } = req.body;
+      
+      // Get project data
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Get phase-specific data
+      const empathyMaps = await storage.getEmpathyMaps(projectId);
+      const personas = await storage.getPersonas(projectId);
+      const interviews = await storage.getInterviews(projectId);
+      const observations = await storage.getObservations(projectId);
+      const povStatements = await storage.getPovStatements(projectId);
+      const hmwQuestions = await storage.getHmwQuestions(projectId);
+      const ideas = await storage.getIdeas(projectId);
+      const prototypes = await storage.getPrototypes(projectId);
+      const testPlans = await storage.getTestPlans(projectId);
+
+      const projectData = {
+        project,
+        empathyMaps,
+        personas,
+        interviews,
+        observations,
+        povStatements,
+        hmwQuestions,
+        ideas,
+        prototypes,
+        testPlans
+      };
+
+      const analysis = await designThinkingAI.analyzeProjectPhase(projectData, currentPhase || project.currentPhase);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error analyzing project:", error);
+      res.status(500).json({ error: "Failed to analyze project" });
     }
   });
 
