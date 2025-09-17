@@ -702,6 +702,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Username and password are required" });
       }
 
+      // Debug: List all users before search
+      const allUsers = await storage.getUsers();
+      console.log("Total users in system:", allUsers.length);
+      console.log("All usernames:", allUsers.map(u => u.username));
+      console.log("Searching for username:", username);
+
       const user = await storage.getUserByUsername(username);
       console.log("User found:", user ? "Yes" : "No");
       
@@ -764,7 +770,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const user = await storage.createUser(userData);
-      console.log("User created:", user.username, user.email);
+      console.log("User created successfully:", user.username, user.email);
+      
+      // Debug: List all users
+      const allUsers = await storage.getUsers();
+      console.log("Total users in system:", allUsers.length);
+      console.log("All usernames:", allUsers.map(u => u.username));
       
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
