@@ -17,7 +17,8 @@ import {
   insertUserSchema,
   insertArticleSchema,
   insertSubscriptionPlanSchema,
-  insertUserSubscriptionSchema
+  insertUserSubscriptionSchema,
+  updateProfileSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
@@ -795,6 +796,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Logout failed" });
+    }
+  });
+
+  // User profile routes
+  app.get("/api/users/profile", requireAuth, async (req, res) => {
+    try {
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Remove password from response
+      const { password: _, ...userProfile } = user;
+      res.json(userProfile);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user profile" });
+    }
+  });
+
+  app.put("/api/users/profile", requireAuth, async (req, res) => {
+    try {
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      const validatedData = updateProfileSchema.parse(req.body);
+      const user = await storage.updateUser(req.user.id, validatedData);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Update session user data
+      if (req.session?.user) {
+        req.session.user = {
+          ...req.session.user,
+          name: user.name,
+          email: user.email,
+        };
+      }
+
+      // Remove password from response
+      const { password: _, ...userProfile } = user;
+      res.json(userProfile);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Failed to update user profile" });
+      }
     }
   });
 

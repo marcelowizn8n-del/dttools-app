@@ -186,6 +186,7 @@ export const users = pgTable("users", {
   zipCode: text("zip_code"),
   phone: text("phone"),
   bio: text("bio"),
+  profilePicture: text("profile_picture"),
   interests: jsonb("interests").default([]),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
@@ -341,6 +342,38 @@ export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions
   updatedAt: true,
 });
 
+// Profile update schema - excludes sensitive fields
+export const updateProfileSchema = createInsertSchema(users).omit({
+  id: true,
+  username: true,
+  password: true,
+  role: true,
+  stripeCustomerId: true,
+  stripeSubscriptionId: true,
+  subscriptionPlanId: true,
+  subscriptionStatus: true,
+  subscriptionEndDate: true,
+  createdAt: true,
+}).extend({
+  profilePicture: z.string().optional(), // Add profile picture field
+}).transform((data) => ({
+  ...data,
+  // Transform null values to empty strings for better form handling
+  name: data.name || "",
+  email: data.email || "",
+  bio: data.bio || "",
+  company: data.company || "",
+  jobRole: data.jobRole || "",
+  industry: data.industry || "",
+  experience: data.experience || "",
+  country: data.country || "",
+  state: data.state || "",
+  city: data.city || "",
+  zipCode: data.zipCode || "",
+  phone: data.phone || "",
+  profilePicture: data.profilePicture || "",
+}));
+
 // Types
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
@@ -389,6 +422,8 @@ export type InsertSubscriptionPlan = z.infer<typeof insertSubscriptionPlanSchema
 
 export type UserSubscription = typeof userSubscriptions.$inferSelect;
 export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
+
+export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 
 // AI Analysis Types
 export interface ProjectAnalysisData {

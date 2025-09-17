@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "wouter";
 
 export function UserMenu() {
   const { user, logout, isAdmin } = useAuth();
@@ -56,9 +57,11 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" data-testid="button-profile">
-          <User className="mr-2 h-4 w-4" />
-          <span>Perfil</span>
+        <DropdownMenuItem asChild>
+          <Link href="/profile" className="cursor-pointer flex items-center" data-testid="button-profile">
+            <User className="mr-2 h-4 w-4" />
+            <span>Perfil</span>
+          </Link>
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem className="cursor-pointer" data-testid="button-admin">
