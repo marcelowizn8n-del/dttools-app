@@ -75,9 +75,9 @@ function App() {
       <TooltipProvider>
         <LanguageProvider>
           <AuthProvider>
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen bg-background flex flex-col">
               <Header />
-              <main>
+              <main className="flex-1">
                 <Router />
               </main>
             </div>

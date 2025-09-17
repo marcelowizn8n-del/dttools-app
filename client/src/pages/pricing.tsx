@@ -262,14 +262,14 @@ export default function PricingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+      <div className="bg-gradient-to-b from-blue-50 to-white flex items-center justify-center py-20">
         <div className="text-lg">{t("loading.plans")}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="bg-gradient-to-b from-blue-50 to-white">
       {/* Header */}
       <div className="text-center pt-16 pb-12 px-4">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
