@@ -330,7 +330,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 pb-32 bg-gradient-to-r from-blue-600 to-purple-600">
+      <section className="py-20 pb-48 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {t("landing.ready.title")}
@@ -352,7 +352,7 @@ export default function LandingPage() {
             </Link>
           </div>
           {/* Visual spacing to ensure buttons are fully visible */}
-          <div className="h-8"></div>
+          <div className="h-16"></div>
         </div>
       </section>
     </div>
