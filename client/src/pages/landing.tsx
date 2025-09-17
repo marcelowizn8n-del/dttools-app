@@ -153,7 +153,7 @@ export default function LandingPage() {
                 </Button>
               </Link>
               <Link href="/pricing">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-blue-600 text-blue-700 hover:bg-blue-50 bg-white">
                   {t("landing.view.plans")}
                 </Button>
               </Link>
