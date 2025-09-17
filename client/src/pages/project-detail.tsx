@@ -1,5 +1,6 @@
 import { useParams, Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,24 +53,27 @@ const phaseData = {
   },
 };
 
-function PhaseCard({ phaseNumber, isActive, isCompleted }: { 
+function PhaseCard({ phaseNumber, isActive, isCompleted, onClick, isUpdating }: { 
   phaseNumber: number; 
   isActive: boolean; 
-  isCompleted: boolean; 
+  isCompleted: boolean;
+  onClick: () => void;
+  isUpdating: boolean;
 }) {
   const phase = phaseData[phaseNumber as keyof typeof phaseData];
   const Icon = phase.icon;
 
   return (
     <Card 
-      className={`transition-all duration-200 ${
+      className={`transition-all duration-200 cursor-pointer ${
         isActive 
           ? `border-2 ${phase.color} shadow-md` 
           : isCompleted 
-          ? "border-green-200 bg-green-50" 
-          : "border-gray-200 hover:border-gray-300"
-      }`}
+          ? "border-green-200 bg-green-50 hover:bg-green-100" 
+          : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
+      } ${isUpdating ? "opacity-50" : ""}`}
       data-testid={`card-phase-${phaseNumber}`}
+      onClick={onClick}
     >
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
@@ -142,6 +146,24 @@ export default function ProjectDetailPage() {
     },
     enabled: !!projectId,
   });
+
+  // Mutation to update project phase
+  const updatePhaseMutation = useMutation({
+    mutationFn: async (newPhase: number) => {
+      return apiRequest('PUT', `/api/projects/${projectId}`, { currentPhase: newPhase });
+    },
+    onSuccess: () => {
+      // Invalidate and refetch project data
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "stats"] });
+    },
+  });
+
+  const handlePhaseChange = (phaseNumber: number) => {
+    if (phaseNumber !== project?.currentPhase && !updatePhaseMutation.isPending) {
+      updatePhaseMutation.mutate(phaseNumber);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -272,6 +294,8 @@ export default function ProjectDetailPage() {
                   phaseNumber={phaseNumber}
                   isActive={(project.currentPhase || 1) === phaseNumber}
                   isCompleted={(project.currentPhase || 1) > phaseNumber}
+                  onClick={() => handlePhaseChange(phaseNumber)}
+                  isUpdating={updatePhaseMutation.isPending}
                 />
               ))}
             </div>

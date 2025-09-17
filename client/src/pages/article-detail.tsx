@@ -149,7 +149,7 @@ export default function ArticleDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="bg-background">
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
@@ -175,7 +175,7 @@ export default function ArticleDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Navigation */}
         <div className="mb-6">

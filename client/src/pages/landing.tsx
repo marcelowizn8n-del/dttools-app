@@ -146,9 +146,9 @@ export default function LandingPage() {
   const isEnglish = language === 'en';
 
   return (
-    <div className="min-h-screen">
+    <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="relative container mx-auto px-6 py-20 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
