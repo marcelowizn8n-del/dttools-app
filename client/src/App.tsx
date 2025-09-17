@@ -46,7 +46,7 @@ function ProjectsRoute() {
     );
   }
   
-  return isAuthenticated ? <DashboardPage /> : <ProjectsPage />;
+  return isAuthenticated ? <ProjectsPage /> : <ProjectsPage />;
 }
 
 function Router() {
