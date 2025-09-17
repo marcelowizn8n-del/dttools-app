@@ -14,7 +14,10 @@ const phases = [
     nameEn: "Empathize",
     description: "Compreenda profundamente seus usuários através de pesquisas, entrevistas e observações.",
     descriptionEn: "Deeply understand your users through research, interviews and observations.",
-    color: "bg-red-50 text-red-600 border-red-200"
+    bgColor: "#E8F4FA", // Tom suave de #90C5E0
+    borderColor: "#90C5E0",
+    iconColor: "#5A9FC5",
+    textColor: "#2C5F7C"
   },
   {
     id: 2,
@@ -23,7 +26,10 @@ const phases = [
     nameEn: "Define", 
     description: "Defina claramente o problema e crie declarações de ponto de vista focadas.",
     descriptionEn: "Clearly define the problem and create focused point of view statements.",
-    color: "bg-orange-50 text-orange-600 border-orange-200"
+    bgColor: "#E2E6ED", // Tom suave de #3A5A7E
+    borderColor: "#3A5A7E",
+    iconColor: "#2C4560",
+    textColor: "#1E2F45"
   },
   {
     id: 3,
@@ -32,7 +38,10 @@ const phases = [
     nameEn: "Ideate",
     description: "Gere uma ampla gama de ideias criativas através de brainstorming estruturado.",
     descriptionEn: "Generate a wide range of creative ideas through structured brainstorming.",
-    color: "bg-yellow-50 text-yellow-600 border-yellow-200"
+    bgColor: "#FFFBEB", // Tom suave de #FFD700
+    borderColor: "#FFD700",
+    iconColor: "#D4AF00",
+    textColor: "#7A6500"
   },
   {
     id: 4,
@@ -41,7 +50,10 @@ const phases = [
     nameEn: "Prototype",
     description: "Construa protótipos rápidos e baratos para testar suas melhores ideias.",
     descriptionEn: "Build quick and inexpensive prototypes to test your best ideas.",
-    color: "bg-blue-50 text-blue-600 border-blue-200"
+    bgColor: "#FFF2EC", // Tom suave de #FF8C42
+    borderColor: "#FF8C42",
+    iconColor: "#E07038",
+    textColor: "#8C4A1F"
   },
   {
     id: 5,
@@ -50,7 +62,10 @@ const phases = [
     nameEn: "Test",
     description: "Teste seus protótipos com usuários reais e colete feedback valioso.",
     descriptionEn: "Test your prototypes with real users and collect valuable feedback.",
-    color: "bg-green-50 text-green-600 border-green-200"
+    bgColor: "#E9FAF6", // Tom suave de #76D7C4
+    borderColor: "#76D7C4",
+    iconColor: "#48A396",
+    textColor: "#2D6B5F"
   }
 ];
 
@@ -185,17 +200,23 @@ export default function LandingPage() {
               return (
                 <Card 
                   key={phase.id}
-                  className={`relative transition-all duration-300 cursor-pointer border-2 ${
-                    isHovered ? phase.color + ' shadow-lg scale-105' : 'border-gray-200 hover:shadow-md'
-                  }`}
+                  className="relative transition-all duration-300 cursor-pointer border-2 hover:shadow-lg hover:scale-105"
+                  style={{
+                    backgroundColor: phase.bgColor,
+                    borderColor: isHovered ? phase.borderColor : '#e5e7eb'
+                  }}
                   onMouseEnter={() => setHoveredPhase(phase.id)}
                   onMouseLeave={() => setHoveredPhase(null)}
                   data-testid={`card-phase-${phase.id}`}
                 >
                   <CardHeader className="text-center pb-3">
-                    <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
-                      isHovered ? phase.color : 'bg-gray-100'
-                    }`}>
+                    <div 
+                      className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3"
+                      style={{
+                        backgroundColor: isHovered ? phase.borderColor : 'white',
+                        color: isHovered ? 'white' : phase.iconColor
+                      }}
+                    >
                       <Icon className="w-6 h-6" />
                     </div>
                     <CardTitle className="text-lg font-semibold">
