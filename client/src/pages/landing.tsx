@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import logoIcon from "../assets/logo-icon.png";
 
 const phases = [
   {
@@ -151,9 +152,11 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="relative container mx-auto px-6 py-20 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
-            <Badge className="mb-4 bg-blue-100 text-blue-800 hover:bg-blue-100">
-              {t("landing.future")}
-            </Badge>
+            <img 
+              src={logoIcon} 
+              alt="DTTools" 
+              className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-8"
+            />
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               {t("landing.hero.title")}
             </h1>
