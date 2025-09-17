@@ -696,16 +696,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = req.body;
+      console.log("Login attempt:", { username, passwordLength: password?.length });
+      
       if (!username || !password) {
         return res.status(400).json({ error: "Username and password are required" });
       }
 
       const user = await storage.getUserByUsername(username);
+      console.log("User found:", user ? "Yes" : "No");
+      
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
       const isValidPassword = await bcrypt.compare(password, user.password);
+      console.log("Password valid:", isValidPassword);
+      
       if (!isValidPassword) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
@@ -717,6 +723,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ user: userWithoutPassword });
     } catch (error) {
+      console.error("Login error:", error);
       res.status(500).json({ error: "Login failed" });
     }
   });
@@ -757,6 +764,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const user = await storage.createUser(userData);
+      console.log("User created:", user.username, user.email);
       
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
