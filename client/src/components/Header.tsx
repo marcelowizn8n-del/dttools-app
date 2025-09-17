@@ -52,7 +52,7 @@ export default function Header() {
                 data-testid="nav-empathize"
               >
                 <Users className="mr-1 h-4 w-4" />
-                Empathize
+                {t("phases.empathize")}
               </Button>
             </Link>
             <Link href="/projects">
@@ -63,7 +63,7 @@ export default function Header() {
                 data-testid="nav-define"
               >
                 <Target className="mr-1 h-4 w-4" />
-                Define
+                {t("phases.define")}
               </Button>
             </Link>
             <Link href="/projects">
@@ -74,7 +74,7 @@ export default function Header() {
                 data-testid="nav-ideate"
               >
                 <Lightbulb className="mr-1 h-4 w-4" />
-                Ideate
+                {t("phases.ideate")}
               </Button>
             </Link>
             <Link href="/projects">
@@ -85,7 +85,7 @@ export default function Header() {
                 data-testid="nav-prototype"
               >
                 <Wrench className="mr-1 h-4 w-4" />
-                Prototype
+                {t("phases.prototype")}
               </Button>
             </Link>
             <Link href="/projects">
@@ -96,14 +96,14 @@ export default function Header() {
                 data-testid="nav-test"
               >
                 <TestTube className="mr-1 h-4 w-4" />
-                Test
+                {t("phases.test")}
               </Button>
             </Link>
             <div className="h-6 w-px bg-gray-300 mx-2"></div>
             <Link href="/library">
               <Button variant="ghost" className="text-sm" data-testid="nav-library">
                 <Book className="mr-1 h-4 w-4" />
-                Library
+                {t("nav.library")}
               </Button>
             </Link>
             {isAuthenticated && (
@@ -123,14 +123,14 @@ export default function Header() {
             <Link href="/pricing">
               <Button variant="ghost" className="text-sm" data-testid="nav-pricing">
                 <CreditCard className="mr-1 h-4 w-4" />
-                Pricing
+                {t("nav.pricing")}
               </Button>
             </Link>
             {isAuthenticated && (
               <Link href="/subscription">
                 <Button variant="ghost" className="text-sm" data-testid="nav-subscription">
                   <Star className="mr-1 h-4 w-4" />
-                  Subscription
+                  Assinatura
                 </Button>
               </Link>
             )}
@@ -138,7 +138,7 @@ export default function Header() {
               <Link href="/admin">
                 <Button variant="ghost" className="text-sm" data-testid="nav-admin">
                   <Settings className="mr-1 h-4 w-4" />
-                  Tools
+                  {t("nav.admin")}
                 </Button>
               </Link>
             )}
