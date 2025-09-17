@@ -45,61 +45,11 @@ export default function Header() {
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-4">
             <Link href="/projects">
-              <Button 
-                variant="ghost" 
-                className="text-sm text-white hover:opacity-80" 
-                style={{ backgroundColor: '#90C5E0' }}
-                data-testid="nav-empathize"
-              >
+              <Button variant="ghost" className="text-sm" data-testid="nav-projects">
                 <Users className="mr-1 h-4 w-4" />
-                {t("phases.empathize")}
+                {t("nav.projects") || "Projects"}
               </Button>
             </Link>
-            <Link href="/projects">
-              <Button 
-                variant="ghost" 
-                className="text-sm text-white hover:opacity-80" 
-                style={{ backgroundColor: '#3A5A7E' }}
-                data-testid="nav-define"
-              >
-                <Target className="mr-1 h-4 w-4" />
-                {t("phases.define")}
-              </Button>
-            </Link>
-            <Link href="/projects">
-              <Button 
-                variant="ghost" 
-                className="text-sm text-black hover:opacity-80" 
-                style={{ backgroundColor: '#FFD700' }}
-                data-testid="nav-ideate"
-              >
-                <Lightbulb className="mr-1 h-4 w-4" />
-                {t("phases.ideate")}
-              </Button>
-            </Link>
-            <Link href="/projects">
-              <Button 
-                variant="ghost" 
-                className="text-sm text-white hover:opacity-80" 
-                style={{ backgroundColor: '#FF8C42' }}
-                data-testid="nav-prototype"
-              >
-                <Wrench className="mr-1 h-4 w-4" />
-                {t("phases.prototype")}
-              </Button>
-            </Link>
-            <Link href="/projects">
-              <Button 
-                variant="ghost" 
-                className="text-sm text-black hover:opacity-80" 
-                style={{ backgroundColor: '#76D7C4' }}
-                data-testid="nav-test"
-              >
-                <TestTube className="mr-1 h-4 w-4" />
-                {t("phases.test")}
-              </Button>
-            </Link>
-            <div className="h-6 w-px bg-gray-300 mx-2"></div>
             <Link href="/library">
               <Button variant="ghost" className="text-sm" data-testid="nav-library">
                 <Book className="mr-1 h-4 w-4" />
@@ -114,26 +64,20 @@ export default function Header() {
                 </Button>
               </Link>
             )}
-            <Link href="/dashboard">
-              <Button variant="ghost" className="text-sm" data-testid="nav-dashboard">
-                <BarChart3 className="mr-1 h-4 w-4" />
-                Dashboard
-              </Button>
-            </Link>
+            {isAuthenticated && (
+              <Link href="/dashboard">
+                <Button variant="ghost" className="text-sm" data-testid="nav-dashboard">
+                  <BarChart3 className="mr-1 h-4 w-4" />
+                  Dashboard
+                </Button>
+              </Link>
+            )}
             <Link href="/pricing">
               <Button variant="ghost" className="text-sm" data-testid="nav-pricing">
                 <CreditCard className="mr-1 h-4 w-4" />
                 {t("nav.pricing")}
               </Button>
             </Link>
-            {isAuthenticated && (
-              <Link href="/subscription">
-                <Button variant="ghost" className="text-sm" data-testid="nav-subscription">
-                  <Star className="mr-1 h-4 w-4" />
-                  Assinatura
-                </Button>
-              </Link>
-            )}
             {isAdmin && (
               <Link href="/admin">
                 <Button variant="ghost" className="text-sm" data-testid="nav-admin">

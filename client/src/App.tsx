@@ -53,6 +53,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
+      <Route path="/dashboard" component={DashboardPage} />
       <Route path="/projects" component={ProjectsRoute} />
       <Route path="/projects/:id" component={ProjectDetailPage} />
       <Route path="/library" component={LibraryPage} />
