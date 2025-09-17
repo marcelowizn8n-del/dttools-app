@@ -27,7 +27,7 @@ export default function Header() {
       <div className="container mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/projects">
+          <Link href="/">
             <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
               <img 
                 src={logoIcon} 
@@ -43,7 +43,7 @@ export default function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-4">
-            <Link href="/empathize">
+            <Link href="/projects">
               <Button 
                 variant="ghost" 
                 className="text-sm text-white hover:opacity-80" 
@@ -54,7 +54,7 @@ export default function Header() {
                 Empathize
               </Button>
             </Link>
-            <Link href="/define">
+            <Link href="/projects">
               <Button 
                 variant="ghost" 
                 className="text-sm text-white hover:opacity-80" 
@@ -65,7 +65,7 @@ export default function Header() {
                 Define
               </Button>
             </Link>
-            <Link href="/ideate">
+            <Link href="/projects">
               <Button 
                 variant="ghost" 
                 className="text-sm text-black hover:opacity-80" 
@@ -76,7 +76,7 @@ export default function Header() {
                 Ideate
               </Button>
             </Link>
-            <Link href="/prototype">
+            <Link href="/projects">
               <Button 
                 variant="ghost" 
                 className="text-sm text-white hover:opacity-80" 
@@ -87,7 +87,7 @@ export default function Header() {
                 Prototype
               </Button>
             </Link>
-            <Link href="/test">
+            <Link href="/projects">
               <Button 
                 variant="ghost" 
                 className="text-sm text-black hover:opacity-80" 
