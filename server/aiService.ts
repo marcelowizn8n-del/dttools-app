@@ -155,7 +155,7 @@ Responda sempre em português brasileiro de forma clara e didática.`;
         }))
       ];
 
-      const response = await openai.chat.completions.create({
+      const response = await openai!.chat.completions.create({
         model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: openaiMessages,
         max_tokens: 1000,
@@ -176,7 +176,7 @@ Responda sempre em português brasileiro de forma clara e didática.`;
     try {
       const prompt = `Baseado no contexto de Design Thinking na fase ${context.currentPhase} e no tópico "${currentTopic}", gere 3 sugestões práticas e específicas de próximos passos ou perguntas relevantes. Responda em formato JSON com um array de strings chamado "suggestions".`;
 
-      const response = await openai.chat.completions.create({
+      const response = await openai!.chat.completions.create({
         model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: [
           { role: 'system', content: this.getSystemPrompt(context) },
@@ -213,7 +213,7 @@ Responda sempre em português brasileiro de forma clara e didática.`;
       - "nextSteps": array de strings com próximos passos recomendados  
       - "completeness": número de 0 a 100 indicando o percentual de completude da fase`;
 
-      const response = await openai.chat.completions.create({
+      const response = await openai!.chat.completions.create({
         model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: [
           { role: 'system', content: this.getSystemPrompt({ currentPhase, userLevel: 'intermediate' }) },
@@ -304,7 +304,7 @@ CRITÉRIOS DE ANÁLISE:
 
 Seja específico, construtivo e ofereça insights acionáveis. Responda em português brasileiro.`;
 
-      const response = await openai.chat.completions.create({
+      const response = await openai!.chat.completions.create({
         model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: [
           { 
