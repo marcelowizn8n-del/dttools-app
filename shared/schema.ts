@@ -172,8 +172,21 @@ export const userProgress = pgTable("user_progress", {
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
   password: text("password").notNull(), // hashed password
   role: text("role").notNull().default("user"), // admin, user
+  company: text("company"),
+  jobRole: text("job_role"),
+  industry: text("industry"),
+  experience: text("experience"),
+  country: text("country"),
+  state: text("state"),
+  city: text("city"),
+  zipCode: text("zip_code"),
+  phone: text("phone"),
+  bio: text("bio"),
+  interests: jsonb("interests").default([]),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionPlanId: varchar("subscription_plan_id"),
