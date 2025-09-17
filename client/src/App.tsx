@@ -13,6 +13,8 @@ import LibraryPage from "@/pages/library";
 import ArticleDetailPage from "@/pages/article-detail";
 import AdminPage from "@/pages/admin";
 import LoginPage from "@/pages/login";
+import SignupPage from "@/pages/signup";
+import CompleteProfilePage from "@/pages/complete-profile";
 import PricingPage from "@/pages/pricing";
 import ChatPage from "@/pages/chat";
 import NotFound from "@/pages/not-found";
@@ -59,6 +61,8 @@ function Router() {
       <Route path="/pricing" component={PricingPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/signup" component={SignupPage} />
+      <Route path="/complete-profile" component={CompleteProfilePage} />
       <Route component={NotFound} />
     </Switch>
   );
