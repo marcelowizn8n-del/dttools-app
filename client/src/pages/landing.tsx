@@ -346,7 +346,7 @@ export default function LandingPage() {
             </Link>
             <Link href="/library">
               <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6">
-                {t("landing.explore.library")}
+                Explorar Biblioteca
               </Button>
             </Link>
           </div>
