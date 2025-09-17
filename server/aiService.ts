@@ -244,7 +244,8 @@ Responda sempre em português brasileiro de forma clara e didática.`;
     analysisData: ProjectAnalysisData
   ): Promise<AIProjectAnalysis> {
     if (!openai) {
-      throw new Error("OpenAI não está configurado. Verifique se a chave da API está definida.");
+      // Retorna análise simulada para demonstração quando API key não estiver configurada
+      return this.generateMockAnalysis(analysisData);
     }
 
     try {
@@ -371,6 +372,125 @@ Seja específico, construtivo e ofereça insights acionáveis. Responda em portu
         }
       };
     }
+  }
+
+  private generateMockAnalysis(analysisData: ProjectAnalysisData): AIProjectAnalysis {
+    // Conta quantos dados reais o projeto tem
+    const empathyDataCount = (analysisData.empathyMaps?.length || 0) + 
+                           (analysisData.personas?.length || 0) + 
+                           (analysisData.interviews?.length || 0) + 
+                           (analysisData.observations?.length || 0);
+    
+    const defineDataCount = analysisData.povStatements?.length || 0;
+    const ideateDataCount = analysisData.ideas?.length || 0;
+    const prototypeDataCount = analysisData.prototypes?.length || 0;
+    const testDataCount = (analysisData.testPlans?.length || 0) + (analysisData.testResults?.length || 0);
+
+    // Calcula score baseado nos dados reais
+    const maturityScore = Math.min(10, 
+      Math.round(2 + (empathyDataCount * 0.5) + (defineDataCount * 0.8) + 
+                 (ideateDataCount * 0.3) + (prototypeDataCount * 1.2) + (testDataCount * 1.5))
+    );
+
+    return {
+      executiveSummary: `Projeto ${analysisData.project?.name || 'DTTools'} está na fase ${analysisData.project?.currentPhase || 1} do Design Thinking. ${empathyDataCount > 0 ? 'Demonstra boa base de pesquisa empática.' : 'Recomenda-se ampliar pesquisa com usuários.'} Análise baseada em dados demonstrativos.`,
+      maturityScore,
+      overallInsights: [
+        empathyDataCount > 2 ? "Excelente trabalho na fase de Empatia" : "Ampliar pesquisa empática trará mais insights",
+        "Continue seguindo a metodologia estruturada do Design Thinking",
+        "Dados coletados demonstram potencial para soluções inovadoras"
+      ],
+      attentionPoints: [
+        empathyDataCount === 0 ? "Necessário coletar mais dados de usuários" : "Considerar diversificar métodos de pesquisa",
+        defineDataCount === 0 ? "Definir claramente o problema central" : "Refinar definição do problema",
+        "Para análise completa, configure a chave da API OpenAI"
+      ],
+      priorityNextSteps: [
+        analysisData.project?.currentPhase === 1 ? "Finalizar ferramentas da fase Empatizar" : "Avançar para próxima fase",
+        "Documentar todos os insights coletados",
+        "Revisar progresso com equipe regularmente"
+      ],
+      phaseAnalyses: this.generateSmartPhaseAnalyses(empathyDataCount, defineDataCount, ideateDataCount, prototypeDataCount, testDataCount),
+      consistency: {
+        score: Math.min(100, 40 + (empathyDataCount * 10) + (defineDataCount * 15)),
+        issues: empathyDataCount < 2 ? ["Necessário mais dados de empatia"] : ["Continuar coletando feedback"],
+        strengths: ["Seguindo metodologia Design Thinking", "Estrutura de projeto bem organizada"]
+      },
+      alignment: {
+        problemSolutionAlignment: empathyDataCount > 0 ? 75 : 45,
+        researchInsightsAlignment: defineDataCount > 0 ? 80 : 50,
+        comments: ["Projeto demonstra entendimento da metodologia", "Continue aprofundando pesquisa com usuários"]
+      },
+      recommendations: {
+        immediate: [
+          empathyDataCount === 0 ? "Criar mapas de empatia e personas" : "Analisar dados coletados",
+          "Documentar insights principais"
+        ],
+        shortTerm: [
+          "Avançar para próxima fase do Design Thinking",
+          "Validar hipóteses com mais usuários"
+        ],
+        longTerm: [
+          "Implementar processo contínuo de feedback",
+          "Considerar consultoria especializada para análises avançadas"
+        ]
+      }
+    };
+  }
+
+  private generateSmartPhaseAnalyses(empathy: number, define: number, ideate: number, prototype: number, test: number): PhaseAnalysis[] {
+    return [
+      {
+        phase: 1,
+        phaseName: "Empatizar",
+        completeness: Math.min(100, empathy * 25),
+        quality: empathy > 2 ? 85 : empathy > 0 ? 65 : 30,
+        insights: empathy > 0 ? [`${empathy} ferramentas de empatia criadas`, "Base sólida para entender usuários"] : ["Fase iniciada, continuar coletando dados"],
+        gaps: empathy < 2 ? ["Ampliar métodos de pesquisa empática"] : ["Considerar entrevistas adicionais"],
+        recommendations: empathy === 0 ? ["Começar com mapas de empatia"] : ["Analisar padrões nos dados coletados"],
+        strengths: empathy > 0 ? ["Dados empáticos coletados"] : ["Estrutura preparada para pesquisa"]
+      },
+      {
+        phase: 2,
+        phaseName: "Definir",
+        completeness: Math.min(100, define * 30),
+        quality: define > 0 ? 70 : 25,
+        insights: define > 0 ? ["Problema começando a ser definido"] : ["Aguardando definição do problema"],
+        gaps: define === 0 ? ["Criar declarações POV"] : ["Expandir definição do problema"],
+        recommendations: ["Sintetizar insights da fase anterior"],
+        strengths: define > 0 ? ["Processo de definição iniciado"] : ["Preparado para definir problema"]
+      },
+      {
+        phase: 3,
+        phaseName: "Idear",
+        completeness: Math.min(100, ideate * 20),
+        quality: ideate > 0 ? 60 : 20,
+        insights: ideate > 0 ? ["Processo criativo iniciado"] : ["Aguardando ideação"],
+        gaps: ["Gerar mais diversidade de ideias"],
+        recommendations: ["Usar técnicas de brainstorming"],
+        strengths: ideate > 0 ? ["Criatividade aplicada"] : ["Potencial criativo"]
+      },
+      {
+        phase: 4,
+        phaseName: "Prototipar",
+        completeness: Math.min(100, prototype * 25),
+        quality: prototype > 0 ? 65 : 15,
+        insights: prototype > 0 ? ["Ideias sendo materializadas"] : ["Aguardando prototipagem"],
+        gaps: ["Criar protótipos testáveis"],
+        recommendations: ["Focar em protótipos rápidos"],
+        strengths: prototype > 0 ? ["Pensamento tangível"] : ["Preparado para prototipar"]
+      },
+      {
+        phase: 5,
+        phaseName: "Testar",
+        completeness: Math.min(100, test * 30),
+        quality: test > 0 ? 70 : 10,
+        insights: test > 0 ? ["Validação com usuários iniciada"] : ["Aguardando testes"],
+        gaps: ["Testar com usuários reais"],
+        recommendations: ["Planejar sessões de teste"],
+        strengths: test > 0 ? ["Foco na validação"] : ["Estrutura para testes"]
+      }
+    ];
   }
 
   private getDefaultPhaseAnalyses(): PhaseAnalysis[] {
