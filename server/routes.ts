@@ -721,6 +721,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Signup route
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { name, email, password, company, role, industry, experience, country, state, city, zipCode, phone, bio, interests } = req.body;
+      
+      if (!name || !email || !password) {
+        return res.status(400).json({ error: "Nome, email e senha são obrigatórios" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(email);
+      if (existingUser) {
+        return res.status(400).json({ error: "Este email já está cadastrado" });
+      }
+
+      // Create new user
+      const userData = {
+        username: email, // Use email as username
+        email,
+        name,
+        password,
+        company: company || null,
+        jobRole: role,
+        industry,
+        experience,
+        country,
+        state,
+        city,
+        zipCode,
+        phone: phone || null,
+        bio: bio || null,
+        interests: interests || [],
+        role: "user"
+      };
+
+      const user = await storage.createUser(userData);
+      
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+      res.status(201).json({ user: userWithoutPassword, message: "Conta criada com sucesso!" });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(500).json({ error: "Erro ao criar conta. Tente novamente." });
+    }
+  });
+
   app.post("/api/auth/logout", async (req, res) => {
     try {
       // Destroy session

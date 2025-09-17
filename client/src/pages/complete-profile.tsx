@@ -32,11 +32,20 @@ export default function CompleteProfilePage() {
         ...profileData
       };
 
-      // TODO: Send complete user data to API to create account
-      console.log('Creating user with data:', completeUserData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Send complete user data to API to create account
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(completeUserData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao criar conta');
+      }
       
       // Clear stored signup data
       localStorage.removeItem('signupData');
@@ -47,7 +56,7 @@ export default function CompleteProfilePage() {
       
     } catch (error) {
       console.error('Error creating account:', error);
-      alert('Erro ao criar conta. Tente novamente.');
+      alert(error instanceof Error ? error.message : 'Erro ao criar conta. Tente novamente.');
     }
   };
 
