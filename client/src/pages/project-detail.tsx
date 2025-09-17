@@ -63,17 +63,30 @@ function PhaseCard({ phaseNumber, isActive, isCompleted, onClick, isUpdating }: 
   const phase = phaseData[phaseNumber as keyof typeof phaseData];
   const Icon = phase.icon;
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('PhaseCard clicked:', phaseNumber);
+    if (!isUpdating) {
+      onClick();
+    }
+  };
+
   return (
     <Card 
-      className={`transition-all duration-200 cursor-pointer ${
+      className={`transition-all duration-200 select-none ${
+        isUpdating 
+          ? "opacity-50 cursor-not-allowed" 
+          : "cursor-pointer hover:shadow-lg"
+      } ${
         isActive 
           ? `border-2 ${phase.color} shadow-md` 
           : isCompleted 
           ? "border-green-200 bg-green-50 hover:bg-green-100" 
           : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
-      } ${isUpdating ? "opacity-50" : ""}`}
+      }`}
       data-testid={`card-phase-${phaseNumber}`}
-      onClick={onClick}
+      onClick={handleClick}
     >
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
@@ -150,18 +163,45 @@ export default function ProjectDetailPage() {
   // Mutation to update project phase
   const updatePhaseMutation = useMutation({
     mutationFn: async (newPhase: number) => {
-      return apiRequest('PUT', `/api/projects/${projectId}`, { currentPhase: newPhase });
+      console.log('Making API request to update phase:', newPhase, 'for project:', projectId);
+      const result = await apiRequest('PUT', `/api/projects/${projectId}`, { currentPhase: newPhase });
+      console.log('API request successful:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Phase update successful:', data);
       // Invalidate and refetch project data
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "stats"] });
     },
+    onError: (error) => {
+      console.error('Phase update failed:', error);
+    },
   });
 
   const handlePhaseChange = (phaseNumber: number) => {
-    if (phaseNumber !== project?.currentPhase && !updatePhaseMutation.isPending) {
+    console.log('Phase change requested:', { 
+      phaseNumber, 
+      currentPhase: project?.currentPhase, 
+      isPending: updatePhaseMutation.isPending,
+      projectId 
+    });
+    
+    if (!project) {
+      console.error('No project data available');
+      return;
+    }
+
+    if (updatePhaseMutation.isPending) {
+      console.log('Mutation already pending, skipping');
+      return;
+    }
+
+    if (phaseNumber !== project.currentPhase) {
+      console.log('Updating phase from', project.currentPhase, 'to', phaseNumber);
       updatePhaseMutation.mutate(phaseNumber);
+    } else {
+      console.log('Phase already selected:', phaseNumber);
     }
   };
 
