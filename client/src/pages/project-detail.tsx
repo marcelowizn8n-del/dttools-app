@@ -1,16 +1,18 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3 } from "lucide-react";
+import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Project } from "@shared/schema";
 import Phase1Tools from "@/components/phase1/Phase1Tools";
 import Phase2Tools from "@/components/phase2/Phase2Tools";
 import Phase3Tools from "@/components/phase3/Phase3Tools";
 import Phase4Tools from "@/components/phase4/Phase4Tools";
 import Phase5Tools from "@/components/phase5/Phase5Tools";
+import AnalysisReport from "@/components/AnalysisReport";
 
 const phaseData = {
   1: { 
@@ -247,43 +249,62 @@ export default function ProjectDetailPage() {
         </Card>
       </div>
 
-      {/* Design Thinking Phases */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900">Fases do Design Thinking</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5].map((phaseNumber) => (
-            <PhaseCard
-              key={phaseNumber}
-              phaseNumber={phaseNumber}
-              isActive={(project.currentPhase || 1) === phaseNumber}
-              isCompleted={(project.currentPhase || 1) > phaseNumber}
-            />
-          ))}
-        </div>
-      </div>
+      {/* Main Content with Tabs */}
+      <Tabs defaultValue="phases" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="phases" data-testid="tab-phases">
+            Fases & Ferramentas
+          </TabsTrigger>
+          <TabsTrigger value="analysis" data-testid="tab-analysis">
+            <Brain className="w-4 h-4 mr-2" />
+            Análise Inteligente IA
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Phase Tools */}
-      {project.currentPhase === 1 ? (
-        <Phase1Tools projectId={project.id} />
-      ) : project.currentPhase === 2 ? (
-        <Phase2Tools projectId={project.id} />
-      ) : project.currentPhase === 3 ? (
-        <Phase3Tools projectId={project.id} />
-      ) : project.currentPhase === 4 ? (
-        <Phase4Tools projectId={project.id} />
-      ) : project.currentPhase === 5 ? (
-        <Phase5Tools projectId={project.id} />
-      ) : (
-        <Card className="bg-blue-50 border-blue-200">
-          <CardHeader>
-            <CardTitle className="text-blue-900">🚀 Em Desenvolvimento</CardTitle>
-            <CardDescription className="text-blue-700">
-              As ferramentas para esta fase estão sendo desenvolvidas. 
-              Complete as fases anteriores para desbloquear as próximas fases!
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
+        <TabsContent value="phases" className="space-y-6">
+          {/* Design Thinking Phases */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900">Fases do Design Thinking</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5].map((phaseNumber) => (
+                <PhaseCard
+                  key={phaseNumber}
+                  phaseNumber={phaseNumber}
+                  isActive={(project.currentPhase || 1) === phaseNumber}
+                  isCompleted={(project.currentPhase || 1) > phaseNumber}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Phase Tools */}
+          {project.currentPhase === 1 ? (
+            <Phase1Tools projectId={project.id} />
+          ) : project.currentPhase === 2 ? (
+            <Phase2Tools projectId={project.id} />
+          ) : project.currentPhase === 3 ? (
+            <Phase3Tools projectId={project.id} />
+          ) : project.currentPhase === 4 ? (
+            <Phase4Tools projectId={project.id} />
+          ) : project.currentPhase === 5 ? (
+            <Phase5Tools projectId={project.id} />
+          ) : (
+            <Card className="bg-blue-50 border-blue-200">
+              <CardHeader>
+                <CardTitle className="text-blue-900">🚀 Em Desenvolvimento</CardTitle>
+                <CardDescription className="text-blue-700">
+                  As ferramentas para esta fase estão sendo desenvolvidas. 
+                  Complete as fases anteriores para desbloquear as próximas fases!
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="analysis" className="space-y-6">
+          <AnalysisReport projectId={project.id} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

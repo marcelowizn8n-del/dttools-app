@@ -24,6 +24,56 @@ export interface DesignThinkingContext {
   focusArea?: 'empathize' | 'define' | 'ideate' | 'prototype' | 'test';
 }
 
+// Comprehensive AI Analysis interfaces
+export interface ProjectAnalysisData {
+  project: any;
+  empathyMaps: any[];
+  personas: any[];
+  interviews: any[];
+  observations: any[];
+  povStatements: any[];
+  hmwQuestions: any[];
+  ideas: any[];
+  prototypes: any[];
+  testPlans: any[];
+  testResults: any[];
+}
+
+export interface PhaseAnalysis {
+  phase: number;
+  phaseName: string;
+  completeness: number;
+  quality: number;
+  insights: string[];
+  gaps: string[];
+  recommendations: string[];
+  strengths: string[];
+}
+
+export interface AIProjectAnalysis {
+  executiveSummary: string;
+  maturityScore: number;
+  overallInsights: string[];
+  attentionPoints: string[];
+  priorityNextSteps: string[];
+  phaseAnalyses: PhaseAnalysis[];
+  consistency: {
+    score: number;
+    issues: string[];
+    strengths: string[];
+  };
+  alignment: {
+    problemSolutionAlignment: number;
+    researchInsightsAlignment: number;
+    comments: string[];
+  };
+  recommendations: {
+    immediate: string[];
+    shortTerm: string[];
+    longTerm: string[];
+  };
+}
+
 export class DesignThinkingAI {
   private getSystemPrompt(context: DesignThinkingContext): string {
     const phaseGuides = {
@@ -188,6 +238,160 @@ Responda sempre em português brasileiro de forma clara e didática.`;
         completeness: 0
       };
     }
+  }
+
+  async analyzeCompleteProject(
+    analysisData: ProjectAnalysisData
+  ): Promise<AIProjectAnalysis> {
+    if (!openai) {
+      throw new Error("OpenAI não está configurado. Verifique se a chave da API está definida.");
+    }
+
+    try {
+      const prompt = `Como especialista em Design Thinking, analise este projeto completo e forneça uma análise abrangente.
+
+DADOS DO PROJETO:
+${JSON.stringify(analysisData, null, 2)}
+
+Forneça uma análise completa em formato JSON com a seguinte estrutura:
+
+{
+  "executiveSummary": "Resumo executivo do projeto (2-3 frases)",
+  "maturityScore": numero de 1-10 indicando maturidade geral do projeto,
+  "overallInsights": ["insight geral 1", "insight geral 2", "..."],
+  "attentionPoints": ["ponto que precisa atenção 1", "ponto que precisa atenção 2", "..."],
+  "priorityNextSteps": ["próximo passo prioritário 1", "próximo passo prioritário 2", "..."],
+  "phaseAnalyses": [
+    {
+      "phase": 1,
+      "phaseName": "Empatizar",
+      "completeness": numero 0-100,
+      "quality": numero 0-100,
+      "insights": ["insight específico da fase"],
+      "gaps": ["gap ou oportunidade perdida"],
+      "recommendations": ["recomendação específica"],
+      "strengths": ["ponto forte da fase"]
+    },
+    // ... para cada uma das 5 fases
+  ],
+  "consistency": {
+    "score": numero 0-100,
+    "issues": ["problema de consistência"],
+    "strengths": ["ponto forte de consistência"]
+  },
+  "alignment": {
+    "problemSolutionAlignment": numero 0-100,
+    "researchInsightsAlignment": numero 0-100,
+    "comments": ["comentário sobre alinhamento"]
+  },
+  "recommendations": {
+    "immediate": ["ação imediata"],
+    "shortTerm": ["ação de curto prazo"],
+    "longTerm": ["ação de longo prazo"]
+  }
+}
+
+CRITÉRIOS DE ANÁLISE:
+1. Completeness: Verifique se cada fase tem ferramentas suficientes e bem desenvolvidas
+2. Quality: Avalie a profundidade e relevância dos insights e dados coletados
+3. Consistency: Analise se há fluxo lógico e consistência entre as fases
+4. Alignment: Verifique se as soluções propostas realmente abordam os problemas identificados
+5. Research Quality: Avalie se a pesquisa de usuário foi robusta o suficiente
+6. Innovation: Considere o nível de criatividade e inovação das soluções
+7. Feasibility: Analise a viabilidade das soluções propostas
+8. User-Centricity: Verifique se o foco no usuário é mantido consistentemente
+
+Seja específico, construtivo e ofereça insights acionáveis. Responda em português brasileiro.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+        messages: [
+          { 
+            role: 'system', 
+            content: `Você é um especialista sênior em Design Thinking com 15+ anos de experiência, conhecido por análises profundas e insights transformadores. Analise projetos com rigor acadêmico mas linguagem acessível.` 
+          },
+          { role: 'user', content: prompt }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 3000,
+        temperature: 0.7,
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || '{}');
+      
+      // Validate and provide defaults
+      return {
+        executiveSummary: result.executiveSummary || "Análise do projeto não pôde ser completada.",
+        maturityScore: Math.max(1, Math.min(10, result.maturityScore || 5)),
+        overallInsights: result.overallInsights || ["Análise detalhada não disponível no momento."],
+        attentionPoints: result.attentionPoints || ["Verificar dados do projeto."],
+        priorityNextSteps: result.priorityNextSteps || ["Continuar desenvolvimento do projeto."],
+        phaseAnalyses: result.phaseAnalyses || this.getDefaultPhaseAnalyses(),
+        consistency: {
+          score: Math.max(0, Math.min(100, result.consistency?.score || 50)),
+          issues: result.consistency?.issues || ["Dados insuficientes para análise de consistência."],
+          strengths: result.consistency?.strengths || ["Projeto em desenvolvimento."]
+        },
+        alignment: {
+          problemSolutionAlignment: Math.max(0, Math.min(100, result.alignment?.problemSolutionAlignment || 50)),
+          researchInsightsAlignment: Math.max(0, Math.min(100, result.alignment?.researchInsightsAlignment || 50)),
+          comments: result.alignment?.comments || ["Necessário mais dados para avaliar alinhamento."]
+        },
+        recommendations: {
+          immediate: result.recommendations?.immediate || ["Continuar coletando dados de usuário."],
+          shortTerm: result.recommendations?.shortTerm || ["Desenvolver ferramentas das fases atuais."],
+          longTerm: result.recommendations?.longTerm || ["Planejar testes com usuários reais."]
+        }
+      };
+    } catch (error) {
+      console.error('Erro ao analisar projeto completo:', error);
+      
+      // Return default analysis on error
+      return {
+        executiveSummary: "Não foi possível gerar análise completa neste momento. Verifique a configuração da API OpenAI.",
+        maturityScore: 5,
+        overallInsights: ["Análise automática indisponível. Continue desenvolvendo o projeto seguindo as melhores práticas de Design Thinking."],
+        attentionPoints: ["Serviço de análise IA temporariamente indisponível."],
+        priorityNextSteps: ["Revisar dados do projeto e tentar análise novamente."],
+        phaseAnalyses: this.getDefaultPhaseAnalyses(),
+        consistency: {
+          score: 50,
+          issues: ["Análise de consistência indisponível."],
+          strengths: ["Continue seguindo a metodologia Design Thinking."]
+        },
+        alignment: {
+          problemSolutionAlignment: 50,
+          researchInsightsAlignment: 50,
+          comments: ["Análise de alinhamento indisponível no momento."]
+        },
+        recommendations: {
+          immediate: ["Verificar configurações do sistema."],
+          shortTerm: ["Continuar desenvolvimento seguindo metodologia."],
+          longTerm: ["Considerar análise manual com especialista."]
+        }
+      };
+    }
+  }
+
+  private getDefaultPhaseAnalyses(): PhaseAnalysis[] {
+    const phases = [
+      { phase: 1, name: "Empatizar" },
+      { phase: 2, name: "Definir" },
+      { phase: 3, name: "Idear" },
+      { phase: 4, name: "Prototipar" },
+      { phase: 5, name: "Testar" }
+    ];
+
+    return phases.map(p => ({
+      phase: p.phase,
+      phaseName: p.name,
+      completeness: 50,
+      quality: 50,
+      insights: [`Fase ${p.name} em desenvolvimento.`],
+      gaps: ["Dados insuficientes para análise detalhada."],
+      recommendations: [`Continue trabalhando nas ferramentas da fase ${p.name}.`],
+      strengths: ["Seguindo metodologia correta."]
+    }));
   }
 }
 

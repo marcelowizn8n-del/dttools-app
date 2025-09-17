@@ -1,3 +1,5 @@
+import type { AIProjectAnalysis, Project } from "@shared/schema";
+
 interface ReportData {
   eventName: string;
   weekNumber: number;
@@ -16,6 +18,12 @@ interface ReportData {
     title: string;
     description: string;
   }>;
+}
+
+interface AIAnalysisReportData {
+  project: Project;
+  analysis: AIProjectAnalysis;
+  generatedAt: Date;
 }
 
 export async function generatePDFReport(data: ReportData): Promise<string> {
@@ -107,4 +115,271 @@ export async function generateCSVReport(data: ReportData): Promise<string> {
   
   const blob = new Blob([csvString], { type: "text/csv" });
   return URL.createObjectURL(blob);
+}
+
+export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise<string> {
+  // Dynamic import to avoid bundle size issues
+  const jsPDF = (await import("jspdf")).default;
+  
+  const doc = new jsPDF();
+  const { analysis, project, generatedAt } = data;
+  let yPos = 20;
+
+  // Helper function to add new page if needed
+  const checkPageBreak = (requiredSpace: number) => {
+    if (yPos + requiredSpace > 280) {
+      doc.addPage();
+      yPos = 20;
+    }
+  };
+
+  // Helper function to wrap text
+  const addWrappedText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 12) => {
+    doc.setFontSize(fontSize);
+    const splitText = doc.splitTextToSize(text, maxWidth);
+    doc.text(splitText, x, y);
+    return splitText.length * (fontSize * 0.4); // Height of text block
+  };
+
+  // Header
+  doc.setFontSize(24);
+  doc.setFont(undefined, "bold");
+  doc.text("Análise Inteligente IA", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  doc.setFontSize(16);
+  doc.text(`Projeto: ${project.name}`, 20, yPos);
+  
+  yPos += 10;
+  doc.setFontSize(12);
+  doc.text(`Gerado em: ${generatedAt.toLocaleDateString('pt-BR')}`, 20, yPos);
+  doc.text(`Fase Atual: ${project.currentPhase}/5`, 120, yPos);
+
+  // Executive Summary
+  yPos += 20;
+  checkPageBreak(40);
+  doc.setFontSize(18);
+  doc.setFont(undefined, "bold");
+  doc.text("Resumo Executivo", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  const summaryHeight = addWrappedText(analysis.executiveSummary, 20, yPos, 170, 12);
+  yPos += summaryHeight + 10;
+
+  // Maturity Score Section
+  checkPageBreak(50);
+  doc.setFontSize(18);
+  doc.setFont(undefined, "bold");
+  doc.text("Score de Maturidade", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  doc.setFontSize(14);
+  doc.setFont(undefined, "bold");
+  doc.text(`Score Geral: ${analysis.maturityScore}/10`, 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 10;
+  doc.setFontSize(12);
+  const maturityLabel = analysis.maturityScore >= 8 ? 'Projeto Maduro' : 
+                       analysis.maturityScore >= 6 ? 'Projeto Desenvolvido' :
+                       analysis.maturityScore >= 4 ? 'Projeto em Desenvolvimento' : 'Projeto Inicial';
+  doc.text(`Status: ${maturityLabel}`, 20, yPos);
+  
+  // Draw maturity score bar
+  yPos += 15;
+  const barWidth = 150;
+  const barHeight = 8;
+  const fillWidth = (analysis.maturityScore / 10) * barWidth;
+  
+  // Bar background
+  doc.setFillColor(230, 230, 230);
+  doc.rect(20, yPos, barWidth, barHeight, 'F');
+  
+  // Bar fill
+  const color = analysis.maturityScore >= 8 ? [34, 197, 94] : 
+                analysis.maturityScore >= 6 ? [234, 179, 8] :
+                analysis.maturityScore >= 4 ? [249, 115, 22] : [239, 68, 68];
+  doc.setFillColor(color[0], color[1], color[2]);
+  doc.rect(20, yPos, fillWidth, barHeight, 'F');
+  
+  yPos += 20;
+
+  // Consistency and Alignment Metrics
+  checkPageBreak(40);
+  doc.setFontSize(16);
+  doc.setFont(undefined, "bold");
+  doc.text("Métricas de Qualidade", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  doc.setFontSize(12);
+  doc.text(`Consistência: ${analysis.consistency.score}%`, 20, yPos);
+  doc.text(`Alinhamento Problema-Solução: ${analysis.alignment.problemSolutionAlignment}%`, 120, yPos);
+  
+  yPos += 10;
+  doc.text(`Alinhamento Research-Insights: ${analysis.alignment.researchInsightsAlignment}%`, 20, yPos);
+
+  // Phase Analysis
+  yPos += 20;
+  checkPageBreak(80);
+  doc.setFontSize(18);
+  doc.setFont(undefined, "bold");
+  doc.text("Análise por Fases", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  
+  analysis.phaseAnalyses.forEach((phase, index) => {
+    checkPageBreak(35);
+    
+    doc.setFontSize(14);
+    doc.setFont(undefined, "bold");
+    doc.text(`Fase ${phase.phase}: ${phase.phaseName}`, 20, yPos);
+    doc.setFont(undefined, "normal");
+    
+    yPos += 10;
+    doc.setFontSize(11);
+    doc.text(`Completude: ${phase.completeness}%`, 25, yPos);
+    doc.text(`Qualidade: ${phase.quality}%`, 80, yPos);
+    
+    yPos += 8;
+    if (phase.strengths.length > 0) {
+      doc.text(`✓ Pontos Fortes: ${phase.strengths[0]}`, 25, yPos);
+      yPos += 6;
+    }
+    
+    if (phase.gaps.length > 0) {
+      doc.text(`⚠ Gaps: ${phase.gaps[0]}`, 25, yPos);
+      yPos += 6;
+    }
+    
+    yPos += 8;
+  });
+
+  // Overall Insights
+  yPos += 10;
+  checkPageBreak(50);
+  doc.setFontSize(18);
+  doc.setFont(undefined, "bold");
+  doc.text("Insights Principais", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  doc.setFontSize(12);
+  
+  analysis.overallInsights.slice(0, 5).forEach((insight) => {
+    checkPageBreak(15);
+    doc.text("•", 20, yPos);
+    const insightHeight = addWrappedText(insight, 27, yPos, 160, 11);
+    yPos += Math.max(8, insightHeight + 3);
+  });
+
+  // Attention Points
+  yPos += 15;
+  checkPageBreak(50);
+  doc.setFontSize(18);
+  doc.setFont(undefined, "bold");
+  doc.text("Pontos de Atenção", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  doc.setFontSize(12);
+  
+  analysis.attentionPoints.slice(0, 5).forEach((point) => {
+    checkPageBreak(15);
+    doc.text("⚠", 20, yPos);
+    const pointHeight = addWrappedText(point, 27, yPos, 160, 11);
+    yPos += Math.max(8, pointHeight + 3);
+  });
+
+  // Recommendations
+  yPos += 15;
+  checkPageBreak(80);
+  doc.setFontSize(18);
+  doc.setFont(undefined, "bold");
+  doc.text("Recomendações Estratégicas", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  
+  // Immediate actions
+  doc.setFontSize(14);
+  doc.setFont(undefined, "bold");
+  doc.text("Ações Imediatas", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 10;
+  doc.setFontSize(11);
+  analysis.recommendations.immediate.slice(0, 3).forEach((rec) => {
+    checkPageBreak(12);
+    doc.text("•", 22, yPos);
+    const recHeight = addWrappedText(rec, 27, yPos, 160, 10);
+    yPos += Math.max(7, recHeight + 2);
+  });
+
+  yPos += 8;
+  checkPageBreak(30);
+  doc.setFontSize(14);
+  doc.setFont(undefined, "bold");
+  doc.text("Curto Prazo", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 10;
+  doc.setFontSize(11);
+  analysis.recommendations.shortTerm.slice(0, 3).forEach((rec) => {
+    checkPageBreak(12);
+    doc.text("•", 22, yPos);
+    const recHeight = addWrappedText(rec, 27, yPos, 160, 10);
+    yPos += Math.max(7, recHeight + 2);
+  });
+
+  yPos += 8;
+  checkPageBreak(30);
+  doc.setFontSize(14);
+  doc.setFont(undefined, "bold");
+  doc.text("Longo Prazo", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 10;
+  doc.setFontSize(11);
+  analysis.recommendations.longTerm.slice(0, 3).forEach((rec) => {
+    checkPageBreak(12);
+    doc.text("•", 22, yPos);
+    const recHeight = addWrappedText(rec, 27, yPos, 160, 10);
+    yPos += Math.max(7, recHeight + 2);
+  });
+
+  // Priority Next Steps
+  yPos += 15;
+  checkPageBreak(50);
+  doc.setFontSize(18);
+  doc.setFont(undefined, "bold");
+  doc.text("Próximos Passos Prioritários", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  doc.setFontSize(12);
+  
+  analysis.priorityNextSteps.slice(0, 5).forEach((step, index) => {
+    checkPageBreak(15);
+    doc.text(`${index + 1}.`, 20, yPos);
+    const stepHeight = addWrappedText(step, 30, yPos, 155, 11);
+    yPos += Math.max(10, stepHeight + 3);
+  });
+
+  // Footer
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(10);
+    doc.text(`Página ${i} de ${totalPages}`, 170, 290);
+    doc.text("Gerado por DT Tools - Análise IA", 20, 290);
+  }
+
+  // Generate blob URL
+  const pdfBlob = doc.output("blob");
+  return URL.createObjectURL(pdfBlob);
 }
