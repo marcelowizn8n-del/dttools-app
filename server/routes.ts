@@ -1235,6 +1235,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Comprehensive AI Analysis endpoint
+  app.post("/api/projects/:projectId/ai-analysis", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      
+      // Get project data
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Get all project data across all phases
+      const empathyMaps = await storage.getEmpathyMaps(projectId);
+      const personas = await storage.getPersonas(projectId);
+      const interviews = await storage.getInterviews(projectId);
+      const observations = await storage.getObservations(projectId);
+      const povStatements = await storage.getPovStatements(projectId);
+      const hmwQuestions = await storage.getHmwQuestions(projectId);
+      const ideas = await storage.getIdeas(projectId);
+      const prototypes = await storage.getPrototypes(projectId);
+      const testPlans = await storage.getTestPlans(projectId);
+
+      // Get test results for all test plans
+      const testResults = [];
+      for (const testPlan of testPlans) {
+        const results = await storage.getTestResults(testPlan.id);
+        testResults.push(...results);
+      }
+
+      const analysisData = {
+        project,
+        empathyMaps,
+        personas,
+        interviews,
+        observations,
+        povStatements,
+        hmwQuestions,
+        ideas,
+        prototypes,
+        testPlans,
+        testResults
+      };
+
+      const analysis = await designThinkingAI.analyzeCompleteProject(analysisData);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error generating AI analysis:", error);
+      if (error instanceof Error && error.message.includes('OpenAI')) {
+        res.status(503).json({ error: "AI service temporarily unavailable. Please check API configuration." });
+      } else {
+        res.status(500).json({ error: "Failed to generate AI analysis" });
+      }
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

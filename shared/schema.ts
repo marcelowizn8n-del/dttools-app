@@ -389,3 +389,53 @@ export type InsertSubscriptionPlan = z.infer<typeof insertSubscriptionPlanSchema
 
 export type UserSubscription = typeof userSubscriptions.$inferSelect;
 export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
+
+// AI Analysis Types
+export interface ProjectAnalysisData {
+  project: Project;
+  empathyMaps: EmpathyMap[];
+  personas: Persona[];
+  interviews: Interview[];
+  observations: Observation[];
+  povStatements: PovStatement[];
+  hmwQuestions: HmwQuestion[];
+  ideas: Idea[];
+  prototypes: Prototype[];
+  testPlans: TestPlan[];
+  testResults: TestResult[];
+}
+
+export interface PhaseAnalysis {
+  phase: number;
+  phaseName: string;
+  completeness: number;
+  quality: number;
+  insights: string[];
+  gaps: string[];
+  recommendations: string[];
+  strengths: string[];
+}
+
+export interface AIProjectAnalysis {
+  executiveSummary: string;
+  maturityScore: number;
+  overallInsights: string[];
+  attentionPoints: string[];
+  priorityNextSteps: string[];
+  phaseAnalyses: PhaseAnalysis[];
+  consistency: {
+    score: number;
+    issues: string[];
+    strengths: string[];
+  };
+  alignment: {
+    problemSolutionAlignment: number;
+    researchInsightsAlignment: number;
+    comments: string[];
+  };
+  recommendations: {
+    immediate: string[];
+    shortTerm: string[];
+    longTerm: string[];
+  };
+}
