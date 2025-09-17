@@ -250,8 +250,21 @@ export class MemStorage implements IStorage {
     const adminUser: User = {
       id: randomUUID(),
       username: "admin",
+      email: "admin@dttools.app",
+      name: "Administrator",
       password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password"
       role: "admin",
+      company: null,
+      jobRole: "Administrator",
+      industry: "Technology", 
+      experience: "Expert",
+      country: "Brasil",
+      state: "São Paulo",
+      city: "São Paulo",
+      zipCode: "00000000",
+      phone: null,
+      bio: null,
+      interests: [],
       stripeCustomerId: null,
       stripeSubscriptionId: null,
       subscriptionPlanId: null,
@@ -264,8 +277,21 @@ export class MemStorage implements IStorage {
     const regularUser: User = {
       id: randomUUID(),
       username: "usuario",
+      email: "usuario@test.com",
+      name: "Usuario Teste",
       password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password" 
       role: "user",
+      company: null,
+      jobRole: null,
+      industry: null,
+      experience: null,
+      country: null,
+      state: null,
+      city: null,
+      zipCode: null,
+      phone: null,
+      bio: null,
+      interests: [],
       stripeCustomerId: null,
       stripeSubscriptionId: null,
       subscriptionPlanId: null,
@@ -274,6 +300,68 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.users.set(regularUser.id, regularUser);
+
+    // Create Marcelo's user account
+    const marceloUser: User = {
+      id: randomUUID(),
+      username: "dttools.app@gmail.com",
+      email: "dttools.app@gmail.com", 
+      name: "Marcelo Araujo",
+      password: "$2b$10$YourHashedPasswordHere", // Will be replaced with actual hash
+      role: "user",
+      company: null,
+      jobRole: "Designer",
+      industry: "Design",
+      experience: "Sênior (6-10 anos)",
+      country: "Brasil",
+      state: "São Paulo",
+      city: "São Paulo",
+      zipCode: "05616090",
+      phone: null,
+      bio: null,
+      interests: ["UX/UI Design", "Design Thinking"],
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      subscriptionPlanId: null,
+      subscriptionStatus: null,
+      subscriptionEndDate: null,
+      createdAt: new Date(),
+    };
+    
+    // Hash the password for Marcelo's account
+    bcrypt.hash("Gulex0519!@", 10).then(hashedPassword => {
+      marceloUser.password = hashedPassword;
+      this.users.set(marceloUser.id, marceloUser);
+    });
+
+    const adminUserUpdated: User = {
+      id: randomUUID(),
+      username: "admin",
+      email: "admin@dttools.app",
+      name: "Administrator",
+      password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password"
+      role: "admin",
+      company: null,
+      jobRole: "Administrator",
+      industry: "Technology",
+      experience: "Expert",
+      country: "Brasil",
+      state: "São Paulo",
+      city: "São Paulo",
+      zipCode: "00000000",
+      phone: null,
+      bio: null,
+      interests: [],
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      subscriptionPlanId: null,
+      subscriptionStatus: null,
+      subscriptionEndDate: null,
+      createdAt: new Date(),
+    };
+    // Replace the admin user
+    this.users.delete(adminUser.id);
+    this.users.set(adminUserUpdated.id, adminUserUpdated);
 
     // Sample Articles
     const articles = [
