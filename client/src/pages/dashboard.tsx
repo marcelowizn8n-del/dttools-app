@@ -177,7 +177,7 @@ export default function Dashboard() {
                   {t("dashboard.start.project")}
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-blue-600 text-blue-700 hover:bg-blue-50 bg-white">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-blue-600 text-blue-700 hover:bg-blue-600 hover:text-white bg-white transition-all duration-200">
                 {t("dashboard.explore.phases")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
