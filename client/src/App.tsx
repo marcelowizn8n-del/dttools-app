@@ -14,6 +14,7 @@ import ArticleDetailPage from "@/pages/article-detail";
 import AdminPage from "@/pages/admin";
 import LoginPage from "@/pages/login";
 import PricingPage from "@/pages/pricing";
+import ChatPage from "@/pages/chat";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardPage from "@/pages/dashboard";
@@ -54,6 +55,7 @@ function Router() {
       <Route path="/projects/:id" component={ProjectDetailPage} />
       <Route path="/library" component={LibraryPage} />
       <Route path="/library/article/:id" component={ArticleDetailPage} />
+      <Route path="/chat" component={ChatPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/login" component={LoginPage} />
