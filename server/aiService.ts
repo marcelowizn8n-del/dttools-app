@@ -9,7 +9,29 @@ Follow these instructions when using this blueprint:
 */
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+
+// Initialize OpenAI client with improved error handling
+let openai: OpenAI | null = null;
+
+function initializeOpenAI(): OpenAI | null {
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    console.warn('WARNING: OPENAI_API_KEY not found in environment variables. AI features will be disabled.');
+    console.warn('To enable AI features: Add OPENAI_API_KEY to Secrets panel and restart the application.');
+    return null;
+  }
+  
+  try {
+    return new OpenAI({ apiKey });
+  } catch (error) {
+    console.error('ERROR: Failed to initialize OpenAI client:', error);
+    return null;
+  }
+}
+
+// Initialize the client
+openai = initializeOpenAI();
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -144,6 +166,46 @@ Responda sempre em português brasileiro de forma clara e didática.`;
     messages: ChatMessage[],
     context: DesignThinkingContext
   ): Promise<string> {
+    if (!openai) {
+      // Return friendly fallback message similar to other methods
+      const phaseGuides = {
+        1: {
+          name: "Empatizar",
+          guidance: "foque em entender profundamente seus usuários através de mapas de empatia, personas, entrevistas e observações. Procure descobrir suas necessidades, desejos e frustrações."
+        },
+        2: {
+          name: "Definir", 
+          guidance: "sintetize os insights coletados para definir claramente o problema principal. Use declarações de ponto de vista (POV) e perguntas 'Como Podemos' (HMW)."
+        },
+        3: {
+          name: "Idear",
+          guidance: "gere o máximo de soluções criativas possível. Use brainstorming, brainwriting e outras técnicas para explorar diferentes abordagens."
+        },
+        4: {
+          name: "Prototipar",
+          guidance: "construa versões simples e rápidas das suas melhores ideias. Podem ser protótipos de papel, wireframes ou mockups básicos."
+        },
+        5: {
+          name: "Testar",
+          guidance: "valide seus protótipos com usuários reais. Colete feedback, observe comportamentos e identifique melhorias necessárias."
+        }
+      };
+
+      const currentPhase = phaseGuides[context.currentPhase as keyof typeof phaseGuides] || phaseGuides[1];
+      
+      return `Olá! Sou seu mentor de Design Thinking. No momento, as funcionalidades avançadas de IA estão indisponíveis, mas posso te orientar com base na metodologia.
+
+Você está na Fase ${context.currentPhase} - ${currentPhase.name}. Nesta etapa, ${currentPhase.guidance}
+
+Algumas dicas práticas:
+• Use as ferramentas disponíveis na plataforma para documentar seu progresso
+• Mantenha sempre o foco no usuário e suas necessidades
+• Não tenha pressa - cada fase tem sua importância no processo
+• Colabore com sua equipe e compartilhe insights
+
+Para funcionalidades avançadas de IA, configure a chave da API OpenAI nos Secrets do Replit. Posso te ajudar com mais alguma orientação sobre Design Thinking?`;
+    }
+
     try {
       const systemPrompt = this.getSystemPrompt(context);
       
@@ -155,11 +217,11 @@ Responda sempre em português brasileiro de forma clara e didática.`;
         }))
       ];
 
-      const response = await openai!.chat.completions.create({
+      const response = await openai.chat.completions.create({
         model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: openaiMessages,
         max_tokens: 1000,
-        temperature: 0.7,
+        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
 
       return response.choices[0].message.content || "Desculpe, não consegui gerar uma resposta. Tente novamente.";
@@ -173,10 +235,18 @@ Responda sempre em português brasileiro de forma clara e didática.`;
     context: DesignThinkingContext,
     currentTopic: string
   ): Promise<string[]> {
+    if (!openai) {
+      return [
+        "Como podemos entender melhor nossos usuários?",
+        "Que ferramentas seriam mais úteis nesta fase?",
+        "Qual seria o próximo passo mais importante?"
+      ];
+    }
+
     try {
       const prompt = `Baseado no contexto de Design Thinking na fase ${context.currentPhase} e no tópico "${currentTopic}", gere 3 sugestões práticas e específicas de próximos passos ou perguntas relevantes. Responda em formato JSON com um array de strings chamado "suggestions".`;
 
-      const response = await openai!.chat.completions.create({
+      const response = await openai.chat.completions.create({
         model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: [
           { role: 'system', content: this.getSystemPrompt(context) },
@@ -184,7 +254,7 @@ Responda sempre em português brasileiro de forma clara e didática.`;
         ],
         response_format: { type: "json_object" },
         max_tokens: 500,
-        temperature: 0.8,
+        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"suggestions": []}');
@@ -213,7 +283,15 @@ Responda sempre em português brasileiro de forma clara e didática.`;
       - "nextSteps": array de strings com próximos passos recomendados  
       - "completeness": número de 0 a 100 indicando o percentual de completude da fase`;
 
-      const response = await openai!.chat.completions.create({
+      if (!openai) {
+        return {
+          insights: ["Análise não disponível no momento"],
+          nextSteps: ["Continue trabalhando nas ferramentas da fase atual"],
+          completeness: 0
+        };
+      }
+
+      const response = await openai.chat.completions.create({
         model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: [
           { role: 'system', content: this.getSystemPrompt({ currentPhase, userLevel: 'intermediate' }) },
@@ -221,7 +299,7 @@ Responda sempre em português brasileiro de forma clara e didática.`;
         ],
         response_format: { type: "json_object" },
         max_tokens: 800,
-        temperature: 0.6,
+        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"insights": [], "nextSteps": [], "completeness": 0}');
@@ -304,7 +382,7 @@ CRITÉRIOS DE ANÁLISE:
 
 Seja específico, construtivo e ofereça insights acionáveis. Responda em português brasileiro.`;
 
-      const response = await openai!.chat.completions.create({
+      const response = await openai.chat.completions.create({
         model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: [
           { 
@@ -315,7 +393,7 @@ Seja específico, construtivo e ofereça insights acionáveis. Responda em portu
         ],
         response_format: { type: "json_object" },
         max_tokens: 3000,
-        temperature: 0.7,
+        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{}');

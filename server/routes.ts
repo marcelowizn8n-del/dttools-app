@@ -1164,11 +1164,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: response });
     } catch (error) {
       console.error("Error in AI chat:", error);
-      if (error instanceof Error && error.message.includes('OpenAI')) {
-        res.status(503).json({ error: "AI service temporarily unavailable. Please check API configuration." });
-      } else {
-        res.status(500).json({ error: "Failed to process chat request" });
-      }
+      // Always return 200 with helpful message, since chat() method now handles fallbacks gracefully
+      res.json({ message: "Desculpe, houve um problema temporário. Tente novamente ou continue usando as ferramentas de Design Thinking disponíveis na plataforma." });
     }
   });
 
