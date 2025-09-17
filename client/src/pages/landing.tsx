@@ -201,42 +201,43 @@ export default function LandingPage() {
               const isHovered = hoveredPhase === phase.id;
               
               return (
-                <Card 
-                  key={phase.id}
-                  className="relative transition-all duration-300 cursor-pointer border-2 hover:shadow-lg hover:scale-105"
-                  style={{
-                    backgroundColor: phase.bgColor,
-                    borderColor: isHovered ? phase.borderColor : '#e5e7eb'
-                  }}
-                  onMouseEnter={() => setHoveredPhase(phase.id)}
-                  onMouseLeave={() => setHoveredPhase(null)}
-                  data-testid={`card-phase-${phase.id}`}
-                >
-                  <CardHeader className="text-center pb-3">
-                    <div 
-                      className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3"
-                      style={{
-                        backgroundColor: isHovered ? phase.borderColor : 'white',
-                        color: isHovered ? 'white' : phase.iconColor
-                      }}
-                    >
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <CardTitle className="text-lg font-semibold">
-                      {index + 1}. {isEnglish ? phase.nameEn : phase.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-sm text-gray-600 leading-relaxed">
-                      {isEnglish ? phase.descriptionEn : phase.description}
-                    </CardDescription>
-                  </CardContent>
-                  {index < phases.length - 1 && (
-                    <div className="hidden lg:block absolute -right-3 top-1/2 transform -translate-y-1/2 z-10">
-                      <ArrowRight className="w-6 h-6 text-gray-400" />
-                    </div>
-                  )}
-                </Card>
+                <Link href="/login" key={phase.id}>
+                  <Card 
+                    className="relative transition-all duration-300 cursor-pointer border-2 hover:shadow-lg hover:scale-105"
+                    style={{
+                      backgroundColor: phase.bgColor,
+                      borderColor: isHovered ? phase.borderColor : '#e5e7eb'
+                    }}
+                    onMouseEnter={() => setHoveredPhase(phase.id)}
+                    onMouseLeave={() => setHoveredPhase(null)}
+                    data-testid={`card-phase-${phase.id}`}
+                  >
+                    <CardHeader className="text-center pb-3">
+                      <div 
+                        className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3"
+                        style={{
+                          backgroundColor: isHovered ? phase.borderColor : 'white',
+                          color: isHovered ? 'white' : phase.iconColor
+                        }}
+                      >
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <CardTitle className="text-lg font-semibold">
+                        {index + 1}. {isEnglish ? phase.nameEn : phase.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm text-gray-600 leading-relaxed">
+                        {isEnglish ? phase.descriptionEn : phase.description}
+                      </CardDescription>
+                    </CardContent>
+                    {index < phases.length - 1 && (
+                      <div className="hidden lg:block absolute -right-3 top-1/2 transform -translate-y-1/2 z-10">
+                        <ArrowRight className="w-6 h-6 text-gray-400" />
+                      </div>
+                    )}
+                  </Card>
+                </Link>
               );
             })}
           </div>
