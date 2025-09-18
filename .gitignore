@@ -219,10 +219,27 @@ MANUAL_*.md
 MATERIAL_*.md
 PLANO_*.md
 migracao-*.md
+GITHUB_UPLOAD_CHECKLIST.md
+replit.md
+
+# Development assets and images (but keep client assets)
+attached_assets/
+homepage_current_state.png
+project_final_state.png
 *.png
 *.jpg
 *.jpeg
 *.gif
 *.svg
+!client/src/assets/*.png
+!client/src/assets/*.jpg
+!client/src/assets/*.jpeg
+!client/src/assets/*.gif
+!client/src/assets/*.svg
+
+# Existing package and secrets
 dttools_package.tar.gz
 stripe_secret_key
+
+# Netlify deployment config (platform specific)
+netlify.toml
