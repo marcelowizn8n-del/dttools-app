@@ -27,20 +27,23 @@ export default function Header() {
     <header className="bg-background border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4 md:px-6 py-3">
         <div className="flex items-center justify-between min-h-[60px] gap-4">
-          {/* Logo - Always visible with fixed width */}
-          <Link href="/" className="flex-shrink-0 min-w-[140px]">
-            <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-              <img 
-                src={logoIcon} 
-                alt="DTTools" 
-                className="w-10 h-10 mr-3"
-              />
-              <div className="flex flex-col">
-                <h1 className="text-xl font-bold whitespace-nowrap text-foreground">DTTools</h1>
-                <p className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block">Design Thinking Tools</p>
+          {/* Logo - Always visible with fixed width - CRITICAL BRANDING ELEMENT */}
+          <div className="flex-shrink-0 flex-grow-0 min-w-[160px] max-w-[200px] w-auto">
+            <Link href="/" className="block">
+              <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
+                <img 
+                  src={logoIcon} 
+                  alt="DTTools" 
+                  className="w-10 h-10 mr-3 flex-shrink-0"
+                  style={{ minWidth: '40px', minHeight: '40px' }}
+                />
+                <div className="flex flex-col min-w-0 flex-1">
+                  <h1 className="text-xl font-bold whitespace-nowrap text-foreground overflow-hidden text-ellipsis">DTTools</h1>
+                  <p className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block overflow-hidden text-ellipsis">Design Thinking Tools</p>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
 
           {/* Navigation - Center section with responsive sizing */}
           <nav className="hidden lg:flex items-center gap-2 xl:gap-4 flex-1 justify-center max-w-3xl">
