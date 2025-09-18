@@ -181,8 +181,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="container mx-auto px-6 py-8 pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="container mx-auto px-6 py-8 pb-32">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
@@ -500,12 +500,12 @@ export default function ProfilePage() {
               </Card>
 
               {/* Submit Button */}
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-6 pb-8">
                 <Button 
                   type="submit" 
                   size="lg" 
                   disabled={updateProfileMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 shadow-lg"
                   data-testid="button-save-profile"
                 >
                   {updateProfileMutation.isPending ? (
