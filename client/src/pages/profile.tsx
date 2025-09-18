@@ -36,22 +36,22 @@ import { updateProfileSchema } from "@shared/schema";
 import type { UpdateProfile, User as UserType } from "@shared/schema";
 import { z } from "zod";
 
-// Create form validation schema separately since updateProfileSchema is transformed
+// Create form validation schema that matches UpdateProfile requirements
 const profileFormSchema = z.object({
-  name: z.string().optional(),
+  name: z.string().default(""),
   email: z.string().email("Email inválido").min(1, "Email é obrigatório"),
-  bio: z.string().optional(),
-  company: z.string().optional(),
-  jobRole: z.string().optional(),
-  industry: z.string().optional(),
-  experience: z.string().optional(),
-  country: z.string().optional(),
-  state: z.string().optional(),
-  city: z.string().optional(),
-  zipCode: z.string().optional(),
-  phone: z.string().optional(),
+  bio: z.string().default(""),
+  company: z.string().default(""),
+  jobRole: z.string().default(""),
+  industry: z.string().default(""),
+  experience: z.string().default(""),
+  country: z.string().default(""),
+  state: z.string().default(""),
+  city: z.string().default(""),
+  zipCode: z.string().default(""),
+  phone: z.string().default(""),
   interests: z.array(z.string()).default([]),
-  profilePicture: z.string().optional(),
+  profilePicture: z.string().default(""),
 });
 
 type ProfileFormData = z.infer<typeof profileFormSchema>;
@@ -104,7 +104,7 @@ export default function ProfilePage() {
         city: profile.city || "",
         zipCode: profile.zipCode || "",
         phone: profile.phone || "",
-        interests: profile.interests || [],
+        interests: (profile.interests as string[]) || [],
         profilePicture: profile.profilePicture || "",
       });
       setProfilePicture(profile.profilePicture || "");
@@ -171,7 +171,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-[60vh] flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
           <p className="text-gray-600">Carregando perfil...</p>
@@ -181,8 +181,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="container mx-auto px-6 py-8">
+    <div className="min-h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="container mx-auto px-6 py-8 pb-16">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
