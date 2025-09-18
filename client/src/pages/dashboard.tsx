@@ -25,6 +25,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
 import type { Project } from "@shared/schema";
+import dttoolsIcon from "../assets/dttools-icon.png";
 
 const phases = [
   {
@@ -154,11 +155,12 @@ export default function Dashboard() {
         <div className="relative container mx-auto px-6 py-16">
           <div className="text-center max-w-4xl mx-auto">
             <div className="mb-6">
-              <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full shadow-lg flex items-center justify-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <Lightbulb className="w-6 h-6 text-white" />
-                </div>
-              </div>
+              <img 
+                src={dttoolsIcon} 
+                alt="DTTools Icon" 
+                className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 mx-auto object-contain" 
+                data-testid="dttools-icon-dashboard" 
+              />
             </div>
             
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
