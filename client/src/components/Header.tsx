@@ -4,12 +4,7 @@ import {
   Settings, 
   CreditCard, 
   Users,
-  Target,
-  Lightbulb,
-  Wrench,
-  TestTube,
   BarChart3,
-  Star,
   MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,24 +19,23 @@ export default function Header() {
   const { t } = useLanguage();
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-50">
+    <header className="bg-background border-b border-border sticky top-0 z-10">
       <div className="container mx-auto px-4 md:px-6 py-3">
         <div className="flex items-center justify-between min-h-[60px] gap-4">
-          {/* Logo - Always visible with fixed width - CRITICAL BRANDING ELEMENT */}
-          <div className="flex-shrink-0 flex-grow-0 min-w-[160px] max-w-[200px] w-auto">
+          {/* Logo - Clean and sustainable approach */}
+          <div className="logo-container min-w-24 sm:min-w-[140px] md:min-w-[160px] max-w-[200px]">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
                 <img 
                   src={logoIcon} 
                   alt="DTTools" 
-                  className="w-10 h-10 mr-3 flex-shrink-0 !block !visible !opacity-100"
-                  style={{ 
-                    minWidth: '40px', 
-                    minHeight: '40px'
-                  }}
+                  className="logo-img w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 mr-2 sm:mr-3"
+                  data-testid="logo-img"
                 />
                 <div className="flex flex-col min-w-0 flex-1">
-                  <h1 className="text-xl font-bold whitespace-nowrap text-foreground overflow-hidden text-ellipsis">DTTools</h1>
+                  <h1 className="text-base sm:text-lg md:text-xl font-bold whitespace-nowrap text-foreground overflow-hidden text-ellipsis">
+                    DTTools
+                  </h1>
                   <p className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block overflow-hidden text-ellipsis">Design Thinking Tools</p>
                 </div>
               </div>
