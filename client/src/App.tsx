@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Header from "@/components/Header";
 import LandingPage from "@/pages/landing";
 import ProjectsPage from "@/pages/projects";
+import ProjectsMarketingPage from "@/pages/projects-marketing";
 import ProjectDetailPage from "@/pages/project-detail";
 import LibraryPage from "@/pages/library";
 import ArticleDetailPage from "@/pages/article-detail";
@@ -47,7 +48,7 @@ function ProjectsRoute() {
     );
   }
   
-  return isAuthenticated ? <ProjectsPage /> : <ProjectsPage />;
+  return isAuthenticated ? <ProjectsPage /> : <ProjectsMarketingPage />;
 }
 
 function Router() {
