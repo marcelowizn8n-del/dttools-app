@@ -27,18 +27,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading: true,
   });
 
-  // Initialize auth state from localStorage
+  // Initialize auth state by checking server session
   useEffect(() => {
-    const storedUser = localStorage.getItem("auth_user");
-    if (storedUser) {
+    const checkAuthStatus = async () => {
       try {
-        const user = JSON.parse(storedUser);
-        setState({
-          user,
-          isAuthenticated: true,
-          isLoading: false,
+        // Check server session first
+        const response = await fetch("/api/auth/me", {
+          credentials: "include",
         });
-      } catch {
+        
+        if (response.ok) {
+          // Verify response is JSON before parsing
+          const contentType = response.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            console.warn("Auth check received non-JSON response, treating as unauthenticated");
+            throw new Error("Non-JSON response from server");
+          }
+          
+          const { user } = await response.json();
+          // Sync localStorage with server session
+          localStorage.setItem("auth_user", JSON.stringify(user));
+          setState({
+            user,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } else {
+          // Server session invalid, clear localStorage
+          localStorage.removeItem("auth_user");
+          setState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        // On error, clear localStorage and set unauthenticated
         localStorage.removeItem("auth_user");
         setState({
           user: null,
@@ -46,9 +71,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           isLoading: false,
         });
       }
-    } else {
-      setState(prev => ({ ...prev, isLoading: false }));
-    }
+    };
+
+    checkAuthStatus();
   }, []);
 
   const login = async (username: string, password: string): Promise<void> => {

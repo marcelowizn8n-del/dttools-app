@@ -723,7 +723,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create session
       const { password: _, ...userWithoutPassword } = user;
       req.session.userId = user.id;
-      req.session.user = userWithoutPassword;
+      req.session.user = {
+        id: userWithoutPassword.id,
+        username: userWithoutPassword.username,
+        role: userWithoutPassword.role,
+        createdAt: userWithoutPassword.createdAt || new Date()
+      };
 
       res.json({ user: userWithoutPassword });
     } catch (error) {
@@ -799,6 +804,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check current session/user
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      if (!req.session?.userId || !req.session?.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      // Return current user data from session
+      res.json({ user: req.session.user });
+    } catch (error) {
+      console.error("Auth check error:", error);
+      res.status(500).json({ error: "Failed to check authentication" });
+    }
+  });
+
   // User profile routes
   app.get("/api/users/profile", requireAuth, async (req, res) => {
     try {
@@ -832,12 +852,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
 
-      // Update session user data
+      // Update session user data  
       if (req.session?.user) {
         req.session.user = {
           ...req.session.user,
-          name: user.name,
-          email: user.email,
+          username: user.email, // Use email as username
         };
       }
 
@@ -1143,7 +1162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             await storage.updateUser(customer.metadata.userId, {
               subscriptionStatus: status,
-              subscriptionEndDate: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null
+              subscriptionEndDate: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : null
             });
 
             // Update user subscription
@@ -1151,7 +1170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (userSub) {
               await storage.updateUserSubscription(userSub.id, {
                 status,
-                currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null,
+                currentPeriodEnd: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : null,
                 cancelAtPeriodEnd: subscription.cancel_at_period_end
               });
             }
