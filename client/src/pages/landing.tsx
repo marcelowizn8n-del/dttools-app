@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import logoHorizontal from "../assets/logo-horizontal.png";
+import dttoolsIcon from "../assets/dttools-icon.png";
 
 const phases = [
   {
@@ -152,10 +153,20 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="relative container mx-auto px-6 py-20 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
+            {/* Ícone DTTools GRANDE e proeminente */}
+            <div className="mb-6">
+              <img 
+                src={dttoolsIcon} 
+                alt="DTTools Icon" 
+                className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 mx-auto mb-4 object-contain drop-shadow-lg"
+                data-testid="dttools-icon-landing"
+              />
+            </div>
+            {/* Logo horizontal menor */}
             <img 
               src={logoHorizontal} 
               alt="DTTools" 
-              className="w-48 h-24 md:w-64 md:h-32 mx-auto mb-8 object-contain"
+              className="w-40 h-20 md:w-48 md:h-24 mx-auto mb-8 object-contain"
             />
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               {t("landing.hero.title")}
