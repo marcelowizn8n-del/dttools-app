@@ -12,7 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { LanguageSelector } from "@/components/LanguageSelector";
-import logoIcon from "../assets/logo-icon.png";
+import logoHorizontal from "../assets/logo-horizontal.png";
 
 export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -27,17 +27,11 @@ export default function Header() {
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
                 <img 
-                  src={logoIcon} 
+                  src={logoHorizontal} 
                   alt="DTTools" 
-                  className="logo-img w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 mr-2 sm:mr-3"
+                  className="logo-img h-8 sm:h-9 md:h-10 w-auto object-contain"
                   data-testid="logo-img"
                 />
-                <div className="flex flex-col min-w-0 flex-1">
-                  <h1 className="text-base sm:text-lg md:text-xl font-bold whitespace-nowrap text-foreground overflow-hidden text-ellipsis">
-                    DTTools
-                  </h1>
-                  <p className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block overflow-hidden text-ellipsis">Design Thinking Tools</p>
-                </div>
               </div>
             </Link>
           </div>
