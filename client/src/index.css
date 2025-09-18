@@ -63,7 +63,7 @@
 
   html, body {
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: hidden; /* Prevent horizontal scroll */
     overflow-y: auto;
   }
 
@@ -74,5 +74,35 @@
 
   #root {
     min-height: 100vh;
+  }
+}
+
+/* 🎯 Sustainable mobile logo solution */
+.logo-container {
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.logo-img {
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .logo-container {
+    min-width: 100px;
+  }
+  
+  .logo-img {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-img {
+    width: 28px;
+    height: 28px;
   }
 }
