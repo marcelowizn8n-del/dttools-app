@@ -1,6 +1,228 @@
-node_modules
-dist
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+.output/
+.vercel/
+.netlify/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+logs/
+*.log
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env.test
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Gatsby files
+.cache/
+public
+
+# Vite build outputs
+dist-ssr
+*.local
+
+# Rollup build outputs
+.rpt2_cache
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# macOS
 .DS_Store
-server/public
-vite.config.ts.*
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# Linux
+*~
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Replit specific
+.replit
+.upm
+.config/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Deployment and build artifacts
+server/public/
+migrations/
 *.tar.gz
+
+# Secrets and credentials
+secrets/
+*.key
+*.pem
+*.p12
+
+# Test coverage
+coverage/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Package archives
+*.tgz
+*.zip
+*.rar
+
+# TypeScript build files
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Vite temp files
+vite.config.ts.*
+
+# Development documentation that shouldn't be in production
+BACKUP_*.md
+DOWNLOAD_*.md
+GUIA_*.md
+MANUAL_*.md
+MATERIAL_*.md
+PLANO_*.md
+migracao-*.md
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+dttools_package.tar.gz
+stripe_secret_key
