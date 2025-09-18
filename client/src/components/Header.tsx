@@ -34,8 +34,11 @@ export default function Header() {
                 <img 
                   src={logoIcon} 
                   alt="DTTools" 
-                  className="w-10 h-10 mr-3 flex-shrink-0"
-                  style={{ minWidth: '40px', minHeight: '40px' }}
+                  className="w-10 h-10 mr-3 flex-shrink-0 !block !visible !opacity-100"
+                  style={{ 
+                    minWidth: '40px', 
+                    minHeight: '40px'
+                  }}
                 />
                 <div className="flex flex-col min-w-0 flex-1">
                   <h1 className="text-xl font-bold whitespace-nowrap text-foreground overflow-hidden text-ellipsis">DTTools</h1>
