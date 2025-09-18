@@ -9,9 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
+import dttoolsIcon from "../../assets/dttools-icon.png";
 
 export function UserMenu() {
   const { user, logout, isAdmin } = useAuth();
@@ -39,6 +40,11 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="button-user-menu">
           <Avatar className="h-8 w-8">
+            <AvatarImage 
+              src={dttoolsIcon} 
+              alt="DTTools" 
+              className="object-contain p-1"
+            />
             <AvatarFallback className="bg-blue-600 text-white text-sm font-medium">
               {getUserInitials(user.username)}
             </AvatarFallback>
