@@ -182,7 +182,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex-1 p-6 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex-1 p-2 sm:p-4 lg:p-6 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -195,9 +195,9 @@ export default function ChatPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 h-[calc(100vh-10rem)] sm:h-[calc(100vh-12rem)] lg:h-[calc(100vh-16rem)] min-h-[500px]">
           {/* Configuration Panel */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className="lg:col-span-1 space-y-3 lg:space-y-4 overflow-y-auto max-h-full">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Configurações</CardTitle>
@@ -346,7 +346,7 @@ export default function ChatPage() {
 
           {/* Chat Interface */}
           <div className="lg:col-span-3">
-            <Card className="h-[600px] flex flex-col">
+            <Card className="h-full min-h-[400px] flex flex-col shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MessageCircle className="h-5 w-5" />
@@ -357,13 +357,13 @@ export default function ChatPage() {
                 </CardTitle>
               </CardHeader>
               
-              <CardContent className="flex-1 flex flex-col">
+              <CardContent className="flex-1 flex flex-col min-h-0 pb-2">
                 {/* Messages */}
-                <ScrollArea className="flex-1 pr-4">
-                  <div className="space-y-4">
+                <ScrollArea className="flex-1 pr-4 min-h-0 overflow-hidden">
+                  <div className="space-y-4 pb-6">
                     {messages.map((message, index) => (
                       <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                           <div className={`h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                             message.role === 'user' 
                               ? 'bg-blue-600 text-white' 
@@ -376,7 +376,7 @@ export default function ChatPage() {
                               ? 'bg-blue-600 text-white'
                               : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                           }`}>
-                            <p className="text-sm whitespace-pre-wrap" data-testid={`message-${index}`}>
+                            <p className="text-sm whitespace-pre-wrap break-words" data-testid={`message-${index}`}>
                               {message.content}
                             </p>
                             <p className="text-xs opacity-70 mt-1">
@@ -390,10 +390,10 @@ export default function ChatPage() {
                   </div>
                 </ScrollArea>
 
-                <Separator className="my-4" />
+                <Separator className="my-2 sm:my-4" />
 
                 {/* Input */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-2 pb-2">
                   <Input
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
