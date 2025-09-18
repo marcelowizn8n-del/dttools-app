@@ -25,25 +25,25 @@ export default function Header() {
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50">
-      <div className="container mx-auto px-6 py-3">
-        <div className="flex items-center justify-between min-h-[60px]">
-          {/* Logo */}
-          <Link href="/">
-            <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0" data-testid="header-logo">
+      <div className="container mx-auto px-4 md:px-6 py-3">
+        <div className="flex items-center justify-between min-h-[60px] gap-4">
+          {/* Logo - Always visible with fixed width */}
+          <Link href="/" className="flex-shrink-0 min-w-[140px]">
+            <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
               <img 
                 src={logoIcon} 
                 alt="DTTools" 
-                className="w-10 h-10 mr-3 flex-shrink-0"
+                className="w-10 h-10 mr-3"
               />
-              <div className="flex flex-col min-w-0">
-                <h1 className="text-xl font-bold whitespace-nowrap">DTTools</h1>
+              <div className="flex flex-col">
+                <h1 className="text-xl font-bold whitespace-nowrap text-foreground">DTTools</h1>
                 <p className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block">Design Thinking Tools</p>
               </div>
             </div>
           </Link>
 
-          {/* Navigation */}
-          <nav className="hidden lg:flex items-center gap-4 flex-1 justify-center max-w-2xl">
+          {/* Navigation - Center section with responsive sizing */}
+          <nav className="hidden lg:flex items-center gap-2 xl:gap-4 flex-1 justify-center max-w-3xl">
             <Link href="/projects">
               <Button variant="ghost" className="text-sm" data-testid="nav-projects">
                 <Users className="mr-1 h-4 w-4" />
@@ -88,8 +88,8 @@ export default function Header() {
             )}
           </nav>
 
-          {/* User Actions */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* User Actions - Fixed width to prevent layout shift */}
+          <div className="flex items-center gap-2 flex-shrink-0 min-w-[120px] justify-end">
             <LanguageSelector />
             {isAuthenticated ? (
               <UserMenu />
