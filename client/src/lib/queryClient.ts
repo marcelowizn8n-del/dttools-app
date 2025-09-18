@@ -52,6 +52,16 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       retry: false,
+      // Global error handler for mutations
+      onError: (error) => {
+        // Handle 401 errors globally
+        if (error.message.includes('401:')) {
+          console.warn("Authentication required - redirecting to login");
+          // Clear localStorage and redirect to login
+          localStorage.removeItem("auth_user");
+          window.location.href = "/login";
+        }
+      },
     },
   },
 });

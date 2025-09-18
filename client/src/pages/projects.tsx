@@ -104,12 +104,7 @@ function CreateProjectDialog() {
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: InsertProject) => {
-      const response = await fetch(`/api/projects`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Failed to create project");
+      const response = await apiRequest("POST", "/api/projects", data);
       return response.json();
     },
     onSuccess: () => {
