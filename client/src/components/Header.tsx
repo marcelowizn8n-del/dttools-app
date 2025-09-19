@@ -27,26 +27,13 @@ export default function Header() {
           <div className="logo-container min-w-24 sm:min-w-[140px] md:min-w-[160px] max-w-[200px]">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                {isAuthenticated ? (
-                  // When logged in: Show prominent DTTools icon + compact text
-                  <div className="flex items-center gap-2">
-                    <img 
-                      src={dttoolsIcon} 
-                      alt="DTTools" 
-                      className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 object-contain flex-shrink-0"
-                      data-testid="dttools-icon"
-                    />
-                    <span className="hidden sm:block text-lg font-semibold text-primary">DTTools</span>
-                  </div>
-                ) : (
-                  // When not logged in: Show horizontal logo
-                  <img 
-                    src={logoHorizontal} 
-                    alt="DTTools" 
-                    className="logo-img h-10 sm:h-12 md:h-14 w-auto object-contain"
-                    data-testid="logo-img"
-                  />
-                )}
+                {/* Always show horizontal logo with text */}
+                <img 
+                  src={logoHorizontal} 
+                  alt="DTTools" 
+                  className="logo-img h-10 sm:h-12 md:h-14 w-auto object-contain"
+                  data-testid="logo-img"
+                />
               </div>
             </Link>
           </div>
