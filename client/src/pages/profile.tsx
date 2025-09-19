@@ -128,33 +128,92 @@ export default function ProfilePage() {
       });
     },
     onError: (error: Error) => {
+      let errorMessage = error.message;
+      
+      // Handle specific error cases
+      if (error.message.includes('413') || error.message.includes('too large')) {
+        errorMessage = "Foto muito grande. Tente uma imagem menor ou use o botão para compressar automaticamente.";
+      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
+      }
+      
       toast({
         title: "Erro ao atualizar perfil",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     },
   });
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File, maxWidth: number = 800): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8); // 80% quality
+        resolve(compressedBase64);
+      };
+      
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
         toast({
-          title: "Arquivo muito grande",
-          description: "A imagem deve ter no máximo 5MB",
+          title: "Arquivo inválido",
+          description: "Por favor, selecione uma imagem (JPG, PNG, etc.)",
           variant: "destructive",
         });
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setProfilePicture(result);
-        form.setValue("profilePicture", result);
-      };
-      reader.readAsDataURL(file);
+      // Increased limit to 10MB
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "Arquivo muito grande",
+          description: `A imagem deve ter no máximo 10MB. Sua foto tem ${(file.size / (1024 * 1024)).toFixed(1)}MB`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        // Show loading
+        toast({
+          title: "Processando imagem...",
+          description: "Comprimindo e otimizando sua foto",
+        });
+
+        // Compress the image
+        const compressedImage = await compressImage(file);
+        setProfilePicture(compressedImage);
+        form.setValue("profilePicture", compressedImage);
+
+        toast({
+          title: "Foto carregada!",
+          description: "Sua foto foi otimizada e está pronta para salvar",
+        });
+      } catch (error) {
+        toast({
+          title: "Erro ao processar imagem",
+          description: "Não foi possível processar sua foto. Tente outra imagem.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
