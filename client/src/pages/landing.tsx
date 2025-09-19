@@ -162,12 +162,6 @@ export default function LandingPage() {
                 data-testid="dttools-icon-landing"
               />
             </div>
-            {/* Logo horizontal menor */}
-            <img 
-              src={logoHorizontal} 
-              alt="DTTools" 
-              className="w-40 h-20 md:w-48 md:h-24 mx-auto mb-8 object-contain"
-            />
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               {t("landing.hero.title")}
             </h1>
