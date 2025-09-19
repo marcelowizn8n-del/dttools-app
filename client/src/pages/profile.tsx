@@ -323,7 +323,7 @@ export default function ProfilePage() {
                         Alterar Foto
                       </Button>
                       <p className="text-sm text-gray-500 mt-2">
-                        JPG, PNG ou GIF. Máximo 5MB.
+                        JPG, PNG ou GIF. Máximo 10MB.
                       </p>
                     </div>
                     <input
