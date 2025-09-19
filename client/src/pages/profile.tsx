@@ -154,22 +154,30 @@ export default function ProfilePage() {
     },
   });
 
-  const compressImage = (file: File, maxWidth: number = 800): Promise<string> => {
+  const compressImage = (file: File, maxWidth: number = 400): Promise<string> => {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
       
       img.onload = () => {
-        // Calculate new dimensions
+        // Calculate new dimensions with smaller max size
         const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
         canvas.width = img.width * ratio;
         canvas.height = img.height * ratio;
         
-        // Draw and compress
+        // Draw and compress with lower quality for profile pictures
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8); // 80% quality
-        resolve(compressedBase64);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); // 60% quality
+        
+        // Check final size and compress more if needed
+        const sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024); // Base64 to bytes conversion
+        if (sizeInMB > 1) { // If still over 1MB, compress more
+          const evenSmallerBase64 = canvas.toDataURL('image/jpeg', 0.4); // 40% quality
+          resolve(evenSmallerBase64);
+        } else {
+          resolve(compressedBase64);
+        }
       };
       
       img.onerror = reject;
