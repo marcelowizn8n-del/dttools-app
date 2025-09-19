@@ -18,6 +18,7 @@ import {
   insertArticleSchema,
   insertSubscriptionPlanSchema,
   insertUserSubscriptionSchema,
+  insertCanvasDrawingSchema,
   updateProfileSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
@@ -1359,6 +1360,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ error: "Failed to generate AI analysis" });
       }
+    }
+  });
+
+  // Canvas Drawings Routes
+  // GET /api/canvas-drawings/:projectId
+  app.get("/api/canvas-drawings/:projectId", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const drawings = await storage.getCanvasDrawings(projectId);
+      res.json(drawings);
+    } catch (error) {
+      console.error("Error fetching canvas drawings:", error);
+      res.status(500).json({ error: "Failed to fetch canvas drawings" });
+    }
+  });
+
+  // POST /api/canvas-drawings
+  app.post("/api/canvas-drawings", requireAuth, async (req, res) => {
+    try {
+      const parsed = insertCanvasDrawingSchema.parse(req.body);
+      const drawing = await storage.createCanvasDrawing(parsed);
+      res.status(201).json(drawing);
+    } catch (error) {
+      console.error("Error creating canvas drawing:", error);
+      res.status(500).json({ error: "Failed to create canvas drawing" });
+    }
+  });
+
+  // PUT /api/canvas-drawings/:id
+  app.put("/api/canvas-drawings/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const parsed = insertCanvasDrawingSchema.partial().parse(req.body);
+      const drawing = await storage.updateCanvasDrawing(id, parsed);
+      
+      if (!drawing) {
+        return res.status(404).json({ error: "Canvas drawing not found" });
+      }
+      
+      res.json(drawing);
+    } catch (error) {
+      console.error("Error updating canvas drawing:", error);
+      res.status(500).json({ error: "Failed to update canvas drawing" });
+    }
+  });
+
+  // DELETE /api/canvas-drawings/:id
+  app.delete("/api/canvas-drawings/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteCanvasDrawing(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Canvas drawing not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting canvas drawing:", error);
+      res.status(500).json({ error: "Failed to delete canvas drawing" });
     }
   });
 
