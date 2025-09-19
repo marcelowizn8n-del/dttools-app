@@ -27,8 +27,9 @@ const app = express();
 // Trust proxy for secure cookies behind load balancer
 app.set('trust proxy', 1);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Increase limits for image uploads (base64 encoded images can be large)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 // Validate required environment variables
 if (!process.env.SESSION_SECRET) {
