@@ -154,44 +154,56 @@ export default function ProfilePage() {
     },
   });
 
-  const compressImage = (file: File, maxWidth: number = 300): Promise<string> => {
+  const compressImage = (file: File, maxWidth: number = 400): Promise<string> => {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
       
       img.onload = () => {
-        // Calculate new dimensions - even smaller for profile pictures
+        // Calculate new dimensions
         const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
-        canvas.width = img.width * ratio;
-        canvas.height = img.height * ratio;
+        const newWidth = Math.max(Math.floor(img.width * ratio), 100); // Min 100px
+        const newHeight = Math.max(Math.floor(img.height * ratio), 100); // Min 100px
         
-        // Draw and compress with aggressive compression
-        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.width = newWidth;
+        canvas.height = newHeight;
         
-        // Start with very aggressive compression
-        let compressedBase64 = canvas.toDataURL('image/jpeg', 0.3); // 30% quality
+        // Draw the image
+        ctx?.drawImage(img, 0, 0, newWidth, newHeight);
         
-        // Check final size and compress even more if needed
+        // Start with moderate compression
+        let quality = 0.7; // 70% quality
+        let compressedBase64 = canvas.toDataURL('image/jpeg', quality);
         let sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024); // Base64 to bytes conversion
         
-        // If still too large, reduce further
-        if (sizeInMB > 0.5) { // Keep under 500KB
-          compressedBase64 = canvas.toDataURL('image/jpeg', 0.2); // 20% quality
+        // Progressive compression if needed
+        while (sizeInMB > 1 && quality > 0.3) { // Keep under 1MB, min 30% quality
+          quality -= 0.1;
+          compressedBase64 = canvas.toDataURL('image/jpeg', quality);
           sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024);
         }
         
-        // Ultimate fallback - make it very small
-        if (sizeInMB > 0.5) {
-          // Reduce dimensions even more
-          canvas.width = Math.min(canvas.width, 200);
-          canvas.height = Math.min(canvas.height, 200);
-          ctx?.clearRect(0, 0, canvas.width, canvas.height);
-          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-          compressedBase64 = canvas.toDataURL('image/jpeg', 0.2);
+        // If still too large, reduce dimensions gradually
+        if (sizeInMB > 1) {
+          let currentWidth = newWidth;
+          let currentHeight = newHeight;
+          
+          while (sizeInMB > 1 && currentWidth > 150) {
+            currentWidth = Math.floor(currentWidth * 0.8);
+            currentHeight = Math.floor(currentHeight * 0.8);
+            
+            canvas.width = currentWidth;
+            canvas.height = currentHeight;
+            ctx?.clearRect(0, 0, currentWidth, currentHeight);
+            ctx?.drawImage(img, 0, 0, currentWidth, currentHeight);
+            
+            compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
+            sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024);
+          }
         }
         
-        console.log(`Compressed image from ${(file.size / (1024 * 1024)).toFixed(1)}MB to ~${((compressedBase64.length * 0.75) / (1024 * 1024)).toFixed(1)}MB`);
+        console.log(`Compressed image from ${(file.size / (1024 * 1024)).toFixed(1)}MB to ${sizeInMB.toFixed(2)}MB (${Math.round(quality * 100)}% quality, ${canvas.width}x${canvas.height}px)`);
         resolve(compressedBase64);
       };
       
