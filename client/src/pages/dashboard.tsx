@@ -382,12 +382,12 @@ export default function Dashboard() {
                           <Icon className="w-8 h-8 text-white" />
                         </div>
                         <CardTitle className="text-xl">
-                          {t(`benefits.${benefit.title.toLowerCase().replace(/ /g, '.')}`)}
+                          {language === 'pt-BR' ? benefit.title : benefit.titleEn}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <CardDescription className="text-gray-600 leading-relaxed">
-                          {t(`benefits.${benefit.title.toLowerCase().replace(/ /g, '.')}.desc`)}
+                          {language === 'pt-BR' ? benefit.description : benefit.descriptionEn}
                         </CardDescription>
                       </CardContent>
                     </Card>
