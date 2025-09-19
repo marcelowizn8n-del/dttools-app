@@ -107,6 +107,7 @@ export const ideas = pgTable("ideas", {
   impact: integer("impact"), // 1-5 scale
   votes: integer("votes").default(0),
   status: text("status").default("idea"), // idea, selected, prototype, tested
+  canvasData: jsonb("canvas_data"), // Fabric.js canvas data for drawings/sketches
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
@@ -116,12 +117,30 @@ export const prototypes = pgTable("prototypes", {
   projectId: varchar("project_id").references(() => projects.id).notNull(),
   ideaId: varchar("idea_id").references(() => ideas.id),
   name: text("name").notNull(),
-  type: text("type").notNull(), // paper, digital, physical, storyboard
+  type: text("type").notNull(), // paper, digital, physical, storyboard, canvas
   description: text("description").notNull(),
   materials: jsonb("materials").default([]),
   images: jsonb("images").default([]),
+  canvasData: jsonb("canvas_data"), // Konva.js canvas data for interactive prototypes
   version: integer("version").default(1),
   feedback: text("feedback"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Canvas Drawings - For reusable sketches across phases
+export const canvasDrawings = pgTable("canvas_drawings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  phase: integer("phase").notNull(), // 1-5 phases where this drawing is used
+  canvasType: text("canvas_type").notNull(), // fabric, konva
+  canvasData: jsonb("canvas_data").notNull(), // Canvas library data (Fabric.js or Konva.js)
+  thumbnailData: text("thumbnail_data"), // Base64 encoded thumbnail for preview
+  tags: jsonb("tags").default([]), // Tags for categorization
+  isTemplate: boolean("is_template").default(false), // Can be used as a template
+  parentId: varchar("parent_id"), // For drawing iterations - will be set to reference same table later
   createdAt: timestamp("created_at").default(sql`now()`),
   updatedAt: timestamp("updated_at").default(sql`now()`),
 });
@@ -342,6 +361,12 @@ export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions
   updatedAt: true,
 });
 
+export const insertCanvasDrawingSchema = createInsertSchema(canvasDrawings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Profile update schema - excludes sensitive fields
 export const updateProfileSchema = createInsertSchema(users).omit({
   id: true,
@@ -404,6 +429,9 @@ export type InsertSubscriptionPlan = z.infer<typeof insertSubscriptionPlanSchema
 
 export type UserSubscription = typeof userSubscriptions.$inferSelect;
 export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
+
+export type CanvasDrawing = typeof canvasDrawings.$inferSelect;
+export type InsertCanvasDrawing = z.infer<typeof insertCanvasDrawingSchema>;
 
 export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 
