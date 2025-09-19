@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import ConnectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -17,26 +18,46 @@ declare module 'express-session' {
   }
 }
 
-// Create memory store for sessions (in production, use connect-pg-simple with database)
+// Create session store - use PostgreSQL in production, memory in development
 const MemStore = MemoryStore(session);
+const PgStore = ConnectPgSimple(session);
 
 const app = express();
+
+// Trust proxy for secure cookies behind load balancer
+app.set('trust proxy', 1);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Validate required environment variables
+if (!process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET environment variable is required');
+}
+
 // Session configuration
+const isProduction = process.env.NODE_ENV === 'production';
+const sessionStore = isProduction && process.env.DATABASE_URL ? 
+  new PgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+    tableName: 'user_sessions'
+  }) : 
+  new MemStore({
+    checkPeriod: 86400000 // prune expired entries every 24h
+  });
+
 app.use(session({
   name: 'dttools.session',
-  secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: new MemStore({
-    checkPeriod: 86400000 // prune expired entries every 24h
-  }),
+  store: sessionStore,
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: isProduction, // true in production with HTTPS
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: isProduction ? 'strict' : 'lax'
   }
 }));
 
