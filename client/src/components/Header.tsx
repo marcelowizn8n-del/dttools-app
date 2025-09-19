@@ -33,7 +33,7 @@ export default function Header() {
                     <img 
                       src={dttoolsIcon} 
                       alt="DTTools" 
-                      className="h-8 w-8 sm:h-10 sm:w-10 object-contain flex-shrink-0"
+                      className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 object-contain flex-shrink-0"
                       data-testid="dttools-icon"
                     />
                     <span className="hidden sm:block text-lg font-semibold text-primary">DTTools</span>
