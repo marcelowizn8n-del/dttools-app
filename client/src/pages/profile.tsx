@@ -159,10 +159,20 @@ export default function ProfilePage() {
   };
 
   const onSubmit = (data: ProfileFormData) => {
-    updateProfileMutation.mutate({
+    // Convert camelCase to snake_case for backend compatibility
+    const backendData = {
       ...data,
-      profilePicture: profilePicture,
-    });
+      job_role: data.jobRole,
+      zip_code: data.zipCode,
+      profile_picture: profilePicture,
+    };
+    
+    // Remove the camelCase versions to avoid conflicts
+    delete (backendData as any).jobRole;
+    delete (backendData as any).zipCode;
+    delete (backendData as any).profilePicture;
+    
+    updateProfileMutation.mutate(backendData);
   };
 
   const getUserInitials = (name: string) => {

@@ -354,25 +354,7 @@ export const updateProfileSchema = createInsertSchema(users).omit({
   subscriptionStatus: true,
   subscriptionEndDate: true,
   createdAt: true,
-}).extend({
-  profilePicture: z.string().optional(), // Add profile picture field
-}).transform((data) => ({
-  ...data,
-  // Transform null values to empty strings for better form handling
-  name: data.name || "",
-  email: data.email || "",
-  bio: data.bio || "",
-  company: data.company || "",
-  jobRole: data.jobRole || "",
-  industry: data.industry || "",
-  experience: data.experience || "",
-  country: data.country || "",
-  state: data.state || "",
-  city: data.city || "",
-  zipCode: data.zipCode || "",
-  phone: data.phone || "",
-  profilePicture: data.profilePicture || "",
-}));
+}).partial(); // Make all fields optional for partial updates
 
 // Types
 export type Project = typeof projects.$inferSelect;
