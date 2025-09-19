@@ -344,7 +344,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const loadDrawing = (drawing: CanvasDrawing) => {
     if (!canvas) return;
 
-    canvas.loadFromJSON(drawing.canvasData, () => {
+    canvas.loadFromJSON(drawing.canvasData as string | Record<string, any>, () => {
       canvas.renderAll();
       setCurrentDrawing(drawing);
       setIsDrawingSelectorOpen(false);
@@ -379,7 +379,8 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     });
 
     // Adicionar linha ao canvas (mas atrás dos objetos)
-    canvas.insertAt(line, 0);
+    canvas.add(line);
+    canvas.sendObjectToBack(line);
     
     // Criar conexão e adicionar à lista
     const connectionId = `conn_${Date.now()}_${Math.random()}`;
@@ -429,7 +430,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       setFirstSelectedObject(obj);
       obj.set('stroke', '#ff6b6b');
       obj.set('strokeWidth', 3);
-      canvas.renderAll();
+      canvas?.renderAll();
       
       toast({
         title: "Primeiro objeto selecionado",
@@ -444,7 +445,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       firstSelectedObject.set('strokeWidth', firstSelectedObject.originalStrokeWidth || 0);
       
       setFirstSelectedObject(null);
-      canvas.renderAll();
+      canvas?.renderAll();
       
       toast({
         title: "Conexão criada!",
@@ -455,7 +456,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       firstSelectedObject.set('stroke', firstSelectedObject.originalStroke || firstSelectedObject.fill);
       firstSelectedObject.set('strokeWidth', firstSelectedObject.originalStrokeWidth || 0);
       setFirstSelectedObject(null);
-      canvas.renderAll();
+      canvas?.renderAll();
       
       toast({
         title: "Seleção cancelada",
