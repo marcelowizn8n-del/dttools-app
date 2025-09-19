@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lightbulb, Tag, TrendingUp } from "lucide-react";
+import { Lightbulb, Tag, TrendingUp, PenTool } from "lucide-react";
 import IdeaTool from "./IdeaTool";
+import IdeaDrawingTool from "./IdeaDrawingTool";
 
 interface Phase3ToolsProps {
   projectId: string;
@@ -27,10 +28,14 @@ export default function Phase3Tools({ projectId }: Phase3ToolsProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="brainstorming" className="flex items-center gap-2">
             <Lightbulb className="w-4 h-4" />
             Brainstorming
+          </TabsTrigger>
+          <TabsTrigger value="drawing" className="flex items-center gap-2">
+            <PenTool className="w-4 h-4" />
+            Desenho de Ideias
           </TabsTrigger>
           <TabsTrigger value="categorization" className="flex items-center gap-2">
             <Tag className="w-4 h-4" />
@@ -44,6 +49,10 @@ export default function Phase3Tools({ projectId }: Phase3ToolsProps) {
 
         <TabsContent value="brainstorming" className="space-y-6">
           <IdeaTool projectId={projectId} />
+        </TabsContent>
+
+        <TabsContent value="drawing" className="space-y-6">
+          <IdeaDrawingTool projectId={projectId} />
         </TabsContent>
 
         <TabsContent value="categorization" className="space-y-6">
