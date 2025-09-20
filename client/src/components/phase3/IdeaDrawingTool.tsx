@@ -438,7 +438,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     const reader = new FileReader();
     reader.onload = (e) => {
       const imageUrl = e.target?.result as string;
-      FabricImage.fromURL(imageUrl, (img) => {
+      FabricImage.fromURL(imageUrl).then((img) => {
         img.set({
           left: 50,
           top: 50,
@@ -469,7 +469,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
           const reader = new FileReader();
           reader.onload = (e) => {
             const imageUrl = e.target?.result as string;
-            FabricImage.fromURL(imageUrl, (img) => {
+            FabricImage.fromURL(imageUrl).then((img) => {
               img.set({
                 left: 100,
                 top: 100,

@@ -173,10 +173,11 @@ export default function Dashboard() {
       
       if (!targetProject) {
         // If no projects exist, create a new one
-        targetProject = await createProjectMutation.mutateAsync({
+        const response = await createProjectMutation.mutateAsync({
           name: `Projeto ${t(`phases.${phases[phaseId - 1].translationKey}`)}`,
           description: `Projeto criado automaticamente para a ${t(`phases.${phases[phaseId - 1].translationKey}`)}`
         });
+        targetProject = await response.json();
       }
 
       // Update project to the selected phase
