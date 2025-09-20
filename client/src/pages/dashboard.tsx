@@ -32,6 +32,7 @@ const phases = [
     id: 1,
     name: "Empatizar",
     nameEn: "Empathize",
+    translationKey: "empathize",
     description: "Compreenda profundamente seus usuários",
     descriptionEn: "Deeply understand your users",
     icon: Users,
@@ -45,6 +46,7 @@ const phases = [
     id: 2,
     name: "Definir",
     nameEn: "Define",
+    translationKey: "define",
     description: "Sintetize informações e identifique problemas",
     descriptionEn: "Synthesize information and identify problems",
     icon: Target,
@@ -58,6 +60,7 @@ const phases = [
     id: 3,
     name: "Idear",
     nameEn: "Ideate",
+    translationKey: "ideate",
     description: "Gere soluções criativas e inovadoras",
     descriptionEn: "Generate creative and innovative solutions",
     icon: Lightbulb,
@@ -71,6 +74,7 @@ const phases = [
     id: 4,
     name: "Prototipar",
     nameEn: "Prototype",
+    translationKey: "prototype",
     description: "Torne suas ideias tangíveis",
     descriptionEn: "Make your ideas tangible",
     icon: Wrench,
@@ -84,6 +88,7 @@ const phases = [
     id: 5,
     name: "Testar",
     nameEn: "Test",
+    translationKey: "test",
     description: "Valide soluções com usuários reais",
     descriptionEn: "Validate solutions with real users",
     icon: TestTube,
@@ -135,6 +140,10 @@ export default function Dashboard() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const [selectedPhase, setSelectedPhase] = useState<number | null>(null);
+
+  const handlePhaseClick = () => {
+    window.location.href = "/projects";
+  };
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -256,7 +265,7 @@ export default function Dashboard() {
                         <span className={`text-sm font-medium ${
                           phase.completed ? 'text-gray-900' : 'text-gray-500'
                         }`}>
-                          {t(`phases.${phase.name.toLowerCase()}`)}
+                          {t(`phases.${phase.translationKey}`)}
                         </span>
                         {phase.completed && (
                           <CheckCircle className="w-4 h-4 text-green-500 ml-auto" />
@@ -335,6 +344,8 @@ export default function Dashboard() {
                       }}
                       onMouseEnter={() => setSelectedPhase(phase.id)}
                       onMouseLeave={() => setSelectedPhase(null)}
+                      onClick={handlePhaseClick}
+                      data-testid={`card-phase-${phase.id}`}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-center gap-4">
@@ -349,10 +360,10 @@ export default function Dashboard() {
                           </div>
                           <div>
                             <CardTitle className="text-lg">
-                              {phase.id}. {t(`phases.${phase.name.toLowerCase()}`)}
+                              {phase.id}. {t(`phases.${phase.translationKey}`)}
                             </CardTitle>
                             <CardDescription className="mt-1">
-                              {t(`phases.${phase.name.toLowerCase()}.desc`)}
+                              {t(`phases.${phase.translationKey}.desc`)}
                             </CardDescription>
                           </div>
                         </div>
