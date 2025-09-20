@@ -52,6 +52,9 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const [selectedTool, setSelectedTool] = useState<string>("pen");
   const [selectedColor, setSelectedColor] = useState<string>("#000000");
   const [selectedBrushSize, setSelectedBrushSize] = useState<number>(5);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
+  const [tempShape, setTempShape] = useState<any>(null);
   const [currentDrawing, setCurrentDrawing] = useState<CanvasDrawing | null>(null);
   const [isDrawingSelectorOpen, setIsDrawingSelectorOpen] = useState(false);
   const [newDrawingTitle, setNewDrawingTitle] = useState("");
@@ -178,6 +181,20 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     fabricCanvas.on('mouse:down', (options) => {
       if (selectedToolRef.current === "connector" && options.target && options.target.type !== 'line') {
         handleObjectSelection(options.target);
+      } else if (["rectangle", "circle", "triangle", "line"].includes(selectedToolRef.current)) {
+        handleShapeMouseDown(options);
+      }
+    });
+    
+    fabricCanvas.on('mouse:move', (options) => {
+      if (["rectangle", "circle", "triangle", "line"].includes(selectedToolRef.current)) {
+        handleShapeMouseMove(options);
+      }
+    });
+    
+    fabricCanvas.on('mouse:up', (options) => {
+      if (["rectangle", "circle", "triangle", "line"].includes(selectedToolRef.current)) {
+        handleShapeMouseUp(options);
       }
     });
 
@@ -255,6 +272,13 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         canvas.discardActiveObject();
         canvas.renderAll();
         break;
+      case "rectangle":
+      case "circle":
+      case "triangle":
+      case "line":
+        canvas.isDrawingMode = false;
+        canvas.selection = false;
+        break;
       default:
         canvas.isDrawingMode = false;
         canvas.selection = false;
@@ -262,64 +286,164 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     }
   };
 
-  const addShape = (shapeType: string) => {
-    if (!canvas) return;
-
-    let shape: any; // Using any for Fabric objects to avoid complex typing
-    const left = Math.random() * (canvas.width! - 100);
-    const top = Math.random() * (canvas.height! - 100);
-
-    switch (shapeType) {
+  const handleShapeMouseDown = (options: any) => {
+    if (!canvas || selectedTool === "pen" || selectedTool === "select") return;
+    
+    setIsDrawing(true);
+    const pointer = canvas.getPointer(options.e);
+    setStartPos({ x: pointer.x, y: pointer.y });
+  };
+  
+  const handleShapeMouseMove = (options: any) => {
+    if (!canvas || !isDrawing || !startPos) return;
+    
+    const pointer = canvas.getPointer(options.e);
+    
+    // Remove previous temp shape
+    if (tempShape) {
+      canvas.remove(tempShape);
+      setTempShape(null);
+    }
+    
+    const width = Math.abs(pointer.x - startPos.x);
+    const height = Math.abs(pointer.y - startPos.y);
+    const left = Math.min(startPos.x, pointer.x);
+    const top = Math.min(startPos.y, pointer.y);
+    
+    let shape: any;
+    
+    switch (selectedTool) {
       case "rectangle":
         shape = new FabricRect({
           left,
           top,
-          width: 100,
-          height: 80,
-          fill: selectedColor,
+          width,
+          height,
+          fill: "transparent",
           stroke: selectedColor,
           strokeWidth: 2,
           opacity: 0.8,
+          selectable: false,
         });
         break;
       case "circle":
+        const radius = Math.min(width, height) / 2;
         shape = new FabricCircle({
-          left,
-          top,
-          radius: 50,
-          fill: selectedColor,
+          left: left + radius,
+          top: top + radius,
+          radius,
+          fill: "transparent",
           stroke: selectedColor,
           strokeWidth: 2,
           opacity: 0.8,
+          selectable: false,
         });
         break;
       case "triangle":
         shape = new FabricTriangle({
           left,
           top,
-          width: 80,
-          height: 80,
-          fill: selectedColor,
+          width,
+          height,
+          fill: "transparent",
           stroke: selectedColor,
           strokeWidth: 2,
           opacity: 0.8,
+          selectable: false,
         });
         break;
       case "line":
-        shape = new FabricLine([0, 0, 100, 0], {
-          left,
-          top,
+        shape = new FabricLine([startPos.x, startPos.y, pointer.x, pointer.y], {
           stroke: selectedColor,
           strokeWidth: selectedBrushSize,
+          selectable: false,
         });
         break;
       default:
         return;
     }
-
+    
     canvas.add(shape);
-    canvas.setActiveObject(shape);
+    setTempShape(shape);
     canvas.renderAll();
+  };
+  
+  const handleShapeMouseUp = (options: any) => {
+    if (!canvas || !isDrawing || !startPos) return;
+    
+    setIsDrawing(false);
+    const pointer = canvas.getPointer(options.e);
+    
+    // Remove temp shape
+    if (tempShape) {
+      canvas.remove(tempShape);
+      setTempShape(null);
+    }
+    
+    const width = Math.abs(pointer.x - startPos.x);
+    const height = Math.abs(pointer.y - startPos.y);
+    
+    // Only create shape if there was actual dragging (minimum size)
+    if (width > 5 || height > 5) {
+      const left = Math.min(startPos.x, pointer.x);
+      const top = Math.min(startPos.y, pointer.y);
+      
+      let finalShape: any;
+      
+      switch (selectedTool) {
+        case "rectangle":
+          finalShape = new FabricRect({
+            left,
+            top,
+            width,
+            height,
+            fill: "transparent",
+            stroke: selectedColor,
+            strokeWidth: 2,
+            opacity: 0.8,
+          });
+          break;
+        case "circle":
+          const radius = Math.min(width, height) / 2;
+          finalShape = new FabricCircle({
+            left: left + radius,
+            top: top + radius,
+            radius,
+            fill: "transparent",
+            stroke: selectedColor,
+            strokeWidth: 2,
+            opacity: 0.8,
+          });
+          break;
+        case "triangle":
+          finalShape = new FabricTriangle({
+            left,
+            top,
+            width,
+            height,
+            fill: "transparent",
+            stroke: selectedColor,
+            strokeWidth: 2,
+            opacity: 0.8,
+          });
+          break;
+        case "line":
+          finalShape = new FabricLine([startPos.x, startPos.y, pointer.x, pointer.y], {
+            stroke: selectedColor,
+            strokeWidth: selectedBrushSize,
+          });
+          break;
+        default:
+          setStartPos(null);
+          return;
+      }
+      
+      canvas.add(finalShape);
+      canvas.setActiveObject(finalShape);
+      canvas.renderAll();
+    }
+    
+    setStartPos(null);
   };
 
   const addText = () => {
@@ -795,36 +919,36 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
             <TabsContent value="shapes">
               <div className="flex flex-wrap gap-2">
                 <Button
-                  variant="outline"
+                  variant={selectedTool === "rectangle" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => addShape("rectangle")}
+                  onClick={() => handleToolChange("rectangle")}
                   data-testid="shape-rectangle"
                 >
                   <Square className="w-4 h-4 mr-2" />
                   Retângulo
                 </Button>
                 <Button
-                  variant="outline"
+                  variant={selectedTool === "circle" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => addShape("circle")}
+                  onClick={() => handleToolChange("circle")}
                   data-testid="shape-circle"
                 >
                   <Circle className="w-4 h-4 mr-2" />
                   Círculo
                 </Button>
                 <Button
-                  variant="outline"
+                  variant={selectedTool === "triangle" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => addShape("triangle")}
+                  onClick={() => handleToolChange("triangle")}
                   data-testid="shape-triangle"
                 >
                   <Triangle className="w-4 h-4 mr-2" />
                   Triângulo
                 </Button>
                 <Button
-                  variant="outline"
+                  variant={selectedTool === "line" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => addShape("line")}
+                  onClick={() => handleToolChange("line")}
                   data-testid="shape-line"
                 >
                   <Minus className="w-4 h-4 mr-2" />
