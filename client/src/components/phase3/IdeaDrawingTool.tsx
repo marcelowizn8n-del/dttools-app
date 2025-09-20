@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
 import { 
   Canvas as FabricCanvas, 
   Rect as FabricRect, 
@@ -8,60 +7,104 @@ import {
   Triangle as FabricTriangle, 
   Line as FabricLine, 
   IText as FabricIText,
-  Image as FabricImage
+  Image as FabricImage,
+  FabricObject
 } from "fabric";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { 
-  PenTool, 
+  Pen, 
   Square, 
-  Circle, 
-  Triangle, 
+  Circle as CircleIcon, 
   Type, 
-  Save, 
+  Upload,
   Download, 
   Trash2, 
-  Undo, 
-  Redo,
+  Save,
   Palette,
+  MousePointer2,
   Plus,
   Eye,
   Edit3,
-  Upload,
-  MousePointer2
+  Star as StarIcon,
+  Image as ImageIcon,
+  Undo,
+  Redo,
+  Minus,
+  Link
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 import type { CanvasDrawing } from "@shared/schema";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 
 interface IdeaDrawingToolProps {
   projectId: string;
 }
 
+interface DrawingElement {
+  id: string;
+  type: 'line' | 'text' | 'image' | 'rect' | 'circle' | 'triangle' | 'connector';
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  text?: string;
+  fontSize?: number;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  imageUrl?: string;
+  points?: number[];
+  fabricObject?: FabricObject;
+}
+
+interface DrawingPage {
+  id: string;
+  name: string;
+  elements: DrawingElement[];
+  canvasData?: any;
+}
+
 export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [canvas, setCanvas] = useState<FabricCanvas | null>(null);
-  const [selectedTool, setSelectedTool] = useState<string>("pen");
-  const [selectedColor, setSelectedColor] = useState<string>("#000000");
-  const [selectedBrushSize, setSelectedBrushSize] = useState<number>(5);
+  
+  // Drawing state
+  const [tool, setTool] = useState<string>("pen");
+  const [pages, setPages] = useState<DrawingPage[]>([
+    { id: "page-1", name: "Página 1", elements: [] }
+  ]);
+  const [currentPageId, setCurrentPageId] = useState<string>("page-1");
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
-  const [tempShape, setTempShape] = useState<any>(null);
+  const [selectedColor, setSelectedColor] = useState<string>("#000000");
+  const [selectedStrokeWidth, setSelectedStrokeWidth] = useState<number>(2);
+  const [fontSize, setFontSize] = useState<number>(16);
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  
+  // UI state
   const [currentDrawing, setCurrentDrawing] = useState<CanvasDrawing | null>(null);
   const [newDrawingTitle, setNewDrawingTitle] = useState("");
   const [newDrawingDescription, setNewDrawingDescription] = useState("");
   
-  // Refs para evitar stale closures nos event handlers
-  const selectedToolRef = useRef<string>("pen");
-  const selectedColorRef = useRef<string>("#000000");
-  const selectedBrushSizeRef = useRef<number>(5);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // History for undo/redo - now per page
+  const [pageHistories, setPageHistories] = useState<Map<string, { history: (any | null)[], step: number }>>(
+    new Map([["page-1", { history: [null], step: 0 }]])
+  );
+
+  // Current page
+  const currentPage = useMemo(() => 
+    pages.find(p => p.id === currentPageId) || pages[0], 
+    [pages, currentPageId]
+  );
 
   // Query para buscar desenhos existentes
   const { data: drawings = [], isLoading: isLoadingDrawings } = useQuery({
@@ -118,7 +161,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     },
   });
 
-  // Inicializar canvas
+  // Initialize canvas
   useEffect(() => {
     if (canvasRef.current && !canvas) {
       const fabricCanvas = new FabricCanvas(canvasRef.current, {
@@ -127,9 +170,12 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         backgroundColor: 'white',
       });
 
-      fabricCanvas.isDrawingMode = true;
-      fabricCanvas.freeDrawingBrush.width = selectedBrushSize;
-      fabricCanvas.freeDrawingBrush.color = selectedColor;
+      // Configure drawing brush
+      fabricCanvas.isDrawingMode = tool === "pen";
+      if (fabricCanvas.freeDrawingBrush) {
+        fabricCanvas.freeDrawingBrush.width = selectedStrokeWidth;
+        fabricCanvas.freeDrawingBrush.color = selectedColor;
+      }
 
       setCanvas(fabricCanvas);
 
@@ -139,95 +185,57 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     }
   }, [canvasRef.current]);
 
-  // Atualizar refs quando estado muda
+  // Update canvas when tool or settings change
   useEffect(() => {
-    selectedToolRef.current = selectedTool;
-    selectedColorRef.current = selectedColor;
-    selectedBrushSizeRef.current = selectedBrushSize;
-    
     if (canvas) {
-      canvas.freeDrawingBrush.width = selectedBrushSize;
-      canvas.freeDrawingBrush.color = selectedColor;
+      canvas.isDrawingMode = tool === "pen";
+      if (canvas.freeDrawingBrush) {
+        canvas.freeDrawingBrush.width = selectedStrokeWidth;
+        canvas.freeDrawingBrush.color = selectedColor;
+      }
       
-      if (selectedTool === "pen") {
-        canvas.isDrawingMode = true;
+      if (tool === "select") {
+        canvas.defaultCursor = 'default';
       } else {
-        canvas.isDrawingMode = false;
+        canvas.defaultCursor = 'crosshair';
       }
     }
-  }, [selectedTool, selectedColor, selectedBrushSize, canvas]);
+  }, [tool, selectedColor, selectedStrokeWidth, canvas]);
 
-  // Event handlers para criação de formas
+  // Save to history
+  const saveToHistory = useCallback(() => {
+    if (!canvas) return;
+    
+    const currentHistory = pageHistories.get(currentPageId) || { history: [null], step: 0 };
+    const canvasState = canvas.toJSON();
+    
+    // Remove future history if we're not at the end
+    const newHistory = [...currentHistory.history.slice(0, currentHistory.step + 1)];
+    newHistory.push(canvasState);
+    
+    // Limit history size
+    if (newHistory.length > 20) {
+      newHistory.shift();
+    } else {
+      currentHistory.step++;
+    }
+    
+    setPageHistories(new Map(pageHistories.set(currentPageId, {
+      history: newHistory,
+      step: currentHistory.step
+    })));
+  }, [canvas, currentPageId, pageHistories]);
+
+  // Event handlers for shape creation
   useEffect(() => {
     if (!canvas) return;
 
     const handleMouseDown = (e: any) => {
-      if (selectedToolRef.current === "pen" || selectedToolRef.current === "select") return;
+      if (tool === "pen" || tool === "select") return;
       
       const pointer = canvas.getPointer(e.e);
       setStartPos({ x: pointer.x, y: pointer.y });
       setIsDrawing(true);
-    };
-
-    const handleMouseMove = (e: any) => {
-      if (!isDrawing || !startPos || selectedToolRef.current === "pen" || selectedToolRef.current === "select") return;
-      
-      const pointer = canvas.getPointer(e.e);
-      
-      // Remove temporary shape
-      if (tempShape) {
-        canvas.remove(tempShape);
-        setTempShape(null);
-      }
-
-      // Create new temporary shape for preview
-      let shape: any = null;
-      const width = Math.abs(pointer.x - startPos.x);
-      const height = Math.abs(pointer.y - startPos.y);
-      const left = Math.min(startPos.x, pointer.x);
-      const top = Math.min(startPos.y, pointer.y);
-
-      switch (selectedToolRef.current) {
-        case "rectangle":
-          shape = new FabricRect({
-            left,
-            top,
-            width,
-            height,
-            fill: 'transparent',
-            stroke: selectedColorRef.current,
-            strokeWidth: 2,
-          });
-          break;
-        case "circle":
-          const radius = Math.min(width, height) / 2;
-          shape = new FabricCircle({
-            left: left,
-            top: top,
-            radius,
-            fill: 'transparent',
-            stroke: selectedColorRef.current,
-            strokeWidth: 2,
-          });
-          break;
-        case "triangle":
-          shape = new FabricTriangle({
-            left,
-            top,
-            width,
-            height,
-            fill: 'transparent',
-            stroke: selectedColorRef.current,
-            strokeWidth: 2,
-          });
-          break;
-      }
-
-      if (shape) {
-        canvas.add(shape);
-        setTempShape(shape);
-        canvas.renderAll();
-      }
     };
 
     const handleMouseUp = () => {
@@ -235,37 +243,93 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       
       setIsDrawing(false);
       setStartPos(null);
-      
-      if (tempShape && selectedToolRef.current !== "pen" && selectedToolRef.current !== "select") {
-        // Make the temporary shape permanent
-        tempShape.selectable = true;
-        tempShape.evented = true;
-        setTempShape(null);
-        canvas.renderAll();
-      }
+      saveToHistory();
+    };
+
+    const handleObjectAdded = () => {
+      saveToHistory();
     };
 
     canvas.on('mouse:down', handleMouseDown);
-    canvas.on('mouse:move', handleMouseMove);
     canvas.on('mouse:up', handleMouseUp);
+    canvas.on('path:created', handleObjectAdded);
 
     return () => {
       canvas.off('mouse:down', handleMouseDown);
-      canvas.off('mouse:move', handleMouseMove);
       canvas.off('mouse:up', handleMouseUp);
+      canvas.off('path:created', handleObjectAdded);
     };
-  }, [canvas, isDrawing, startPos, tempShape]);
+  }, [canvas, tool, isDrawing, startPos, saveToHistory]);
 
-  const handleToolChange = (tool: string) => {
-    setSelectedTool(tool);
-    if (canvas) {
-      canvas.isDrawingMode = tool === "pen";
-      if (tool === "select") {
-        canvas.defaultCursor = 'default';
-      } else {
-        canvas.defaultCursor = 'crosshair';
-      }
-    }
+  // Tools
+  const handleToolChange = (newTool: string) => {
+    setTool(newTool);
+  };
+
+  const addRectangle = () => {
+    if (!canvas) return;
+    
+    const rect = new FabricRect({
+      left: 100,
+      top: 100,
+      width: 100,
+      height: 60,
+      fill: 'transparent',
+      stroke: selectedColor,
+      strokeWidth: selectedStrokeWidth,
+    });
+    
+    canvas.add(rect);
+    canvas.setActiveObject(rect);
+    canvas.renderAll();
+  };
+
+  const addCircle = () => {
+    if (!canvas) return;
+    
+    const circle = new FabricCircle({
+      left: 100,
+      top: 100,
+      radius: 50,
+      fill: 'transparent',
+      stroke: selectedColor,
+      strokeWidth: selectedStrokeWidth,
+    });
+    
+    canvas.add(circle);
+    canvas.setActiveObject(circle);
+    canvas.renderAll();
+  };
+
+  const addTriangle = () => {
+    if (!canvas) return;
+    
+    const triangle = new FabricTriangle({
+      left: 100,
+      top: 100,
+      width: 100,
+      height: 100,
+      fill: 'transparent',
+      stroke: selectedColor,
+      strokeWidth: selectedStrokeWidth,
+    });
+    
+    canvas.add(triangle);
+    canvas.setActiveObject(triangle);
+    canvas.renderAll();
+  };
+
+  const addLine = () => {
+    if (!canvas) return;
+    
+    const line = new FabricLine([50, 100, 200, 100], {
+      stroke: selectedColor,
+      strokeWidth: selectedStrokeWidth,
+    });
+    
+    canvas.add(line);
+    canvas.setActiveObject(line);
+    canvas.renderAll();
   };
 
   const addText = () => {
@@ -275,7 +339,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       left: 100,
       top: 100,
       fontFamily: 'Arial',
-      fontSize: 20,
+      fontSize: fontSize,
       fill: selectedColor,
     });
     
@@ -291,6 +355,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     if (activeObject) {
       canvas.remove(activeObject);
       canvas.renderAll();
+      saveToHistory();
     }
   };
 
@@ -299,26 +364,57 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     canvas.clear();
     canvas.backgroundColor = 'white';
     canvas.renderAll();
+    saveToHistory();
     toast({
       title: "Canvas limpo!",
       description: "Todos os elementos foram removidos.",
     });
   };
 
-  const undoAction = () => {
-    // Implementar undo se necessário
-    toast({
-      title: "Função não implementada",
-      description: "Funcionalidade de desfazer será implementada em breve.",
-    });
+  const undo = () => {
+    const currentHistory = pageHistories.get(currentPageId);
+    if (!currentHistory || !canvas) return;
+    
+    if (currentHistory.step > 0) {
+      const newStep = currentHistory.step - 1;
+      const previousState = currentHistory.history[newStep];
+      
+      if (previousState) {
+        canvas.loadFromJSON(previousState, () => {
+          canvas.renderAll();
+        });
+      } else {
+        canvas.clear();
+        canvas.backgroundColor = 'white';
+        canvas.renderAll();
+      }
+      
+      setPageHistories(new Map(pageHistories.set(currentPageId, {
+        ...currentHistory,
+        step: newStep
+      })));
+    }
   };
 
-  const redoAction = () => {
-    // Implementar redo se necessário
-    toast({
-      title: "Função não implementada", 
-      description: "Funcionalidade de refazer será implementada em breve.",
-    });
+  const redo = () => {
+    const currentHistory = pageHistories.get(currentPageId);
+    if (!currentHistory || !canvas) return;
+    
+    if (currentHistory.step < currentHistory.history.length - 1) {
+      const newStep = currentHistory.step + 1;
+      const nextState = currentHistory.history[newStep];
+      
+      if (nextState) {
+        canvas.loadFromJSON(nextState, () => {
+          canvas.renderAll();
+        });
+      }
+      
+      setPageHistories(new Map(pageHistories.set(currentPageId, {
+        ...currentHistory,
+        step: newStep
+      })));
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -337,6 +433,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         });
         canvas.add(img);
         canvas.renderAll();
+        saveToHistory();
         
         toast({
           title: "Imagem adicionada!",
@@ -347,13 +444,106 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     reader.readAsDataURL(file);
   };
 
+  // Page management
+  const addPage = () => {
+    const newPageId = `page-${Date.now()}`;
+    const newPage: DrawingPage = {
+      id: newPageId,
+      name: `Página ${pages.length + 1}`,
+      elements: []
+    };
+    
+    setPages([...pages, newPage]);
+    const newHistories = new Map(pageHistories);
+    newHistories.set(newPageId, { history: [null], step: 0 });
+    setPageHistories(newHistories);
+    switchToPage(newPageId);
+  };
+
+  const switchToPage = (pageId: string) => {
+    if (!canvas) return;
+    
+    // Save current page state
+    const currentState = canvas.toJSON();
+    setPages(pages.map(p => 
+      p.id === currentPageId 
+        ? { ...p, canvasData: currentState }
+        : p
+    ));
+    
+    // Switch to new page
+    setCurrentPageId(pageId);
+    const targetPage = pages.find(p => p.id === pageId);
+    
+    if (targetPage?.canvasData) {
+      canvas.loadFromJSON(targetPage.canvasData, () => {
+        canvas.renderAll();
+      });
+    } else {
+      canvas.clear();
+      canvas.backgroundColor = 'white';
+      canvas.renderAll();
+    }
+  };
+
+  const deletePage = (pageId: string) => {
+    if (pages.length <= 1) {
+      toast({
+        title: "Não é possível excluir",
+        description: "É necessário ter pelo menos uma página.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const newPages = pages.filter(p => p.id !== pageId);
+    setPages(newPages);
+    
+    if (currentPageId === pageId) {
+      switchToPage(newPages[0].id);
+    }
+    
+    // Remove from history
+    pageHistories.delete(pageId);
+    setPageHistories(new Map(pageHistories));
+  };
+
+  const renamePage = (pageId: string, newName: string) => {
+    setPages(pages.map(p => 
+      p.id === pageId 
+        ? { ...p, name: newName }
+        : p
+    ));
+  };
+
+  const generateThumbnail = (pageData?: any) => {
+    if (!canvas) return '';
+    
+    // Create a temporary canvas for thumbnail
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 200;
+    tempCanvas.height = 150;
+    const ctx = tempCanvas.getContext('2d');
+    
+    if (ctx) {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, 200, 150);
+      
+      // Draw current canvas content scaled down
+      const mainCanvas = canvas.getElement();
+      ctx.drawImage(mainCanvas, 0, 0, 200, 150);
+    }
+    
+    return tempCanvas.toDataURL();
+  };
+
   const exportDrawing = () => {
     if (!canvas) return;
 
     const dataURL = canvas.toDataURL({
       format: 'png',
       quality: 1,
-      multiplier: 2 // Alta resolução para exportação
+      multiplier: 2
     });
 
     const link = document.createElement('a');
@@ -362,13 +552,6 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const createNewDrawing = () => {
-    if (!canvas) return;
-    
-    clearCanvas();
-    setCurrentDrawing(null);
   };
 
   const saveDrawing = () => {
@@ -390,35 +573,70 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       return;
     }
 
-    const canvasData = JSON.stringify(canvas.toObject());
-    const thumbnailData = canvas.toDataURL();
+    // Save all pages data
+    const allPagesData = {
+      pages: pages.map(page => ({
+        ...page,
+        canvasData: page.id === currentPageId ? canvas.toJSON() : page.canvasData
+      })),
+      currentPageId
+    };
+
+    const thumbnailData = generateThumbnail();
 
     saveDrawingMutation.mutate({
       title: newDrawingTitle,
       description: newDrawingDescription,
-      canvasData,
+      canvasData: allPagesData,
       thumbnailData,
     });
   };
 
   const loadDrawing = (drawing: CanvasDrawing) => {
     try {
-      const canvasData = typeof drawing.canvasData === 'string' 
-        ? JSON.parse(drawing.canvasData) 
-        : drawing.canvasData;
-        
-      if (canvasData && canvas) {
-        canvas.loadFromJSON(canvasData, () => {
-          canvas.renderAll();
-          setCurrentDrawing(drawing);
-          
-          toast({
-            title: "Desenho carregado!",
-            description: `Desenho "${drawing.title}" foi carregado com sucesso.`,
-          });
-        });
+      let drawingData = drawing.canvasData;
+      
+      if (typeof drawingData === 'string') {
+        drawingData = JSON.parse(drawingData);
       }
+      
+      if (drawingData && typeof drawingData === 'object' && 'pages' in drawingData && Array.isArray(drawingData.pages)) {
+        // New multi-page format
+        const data = drawingData as any; // Type assertion for complex nested structure
+        setPages(data.pages);
+        setCurrentPageId(data.currentPageId || data.pages[0]?.id);
+        
+        // Initialize history for all pages
+        const newHistories = new Map();
+        data.pages.forEach((page: any) => {
+          newHistories.set(page.id, { history: [page.canvasData || null], step: 0 });
+        });
+        setPageHistories(newHistories);
+        
+        // Load current page
+        const currentPageData = data.pages.find((p: any) => p.id === (data.currentPageId || data.pages[0]?.id));
+        if (currentPageData?.canvasData && canvas) {
+          canvas.loadFromJSON(currentPageData.canvasData, () => {
+            canvas.renderAll();
+          });
+        }
+      } else {
+        // Legacy single canvas format
+        if (canvas && drawingData) {
+          canvas.loadFromJSON(drawingData, () => {
+            canvas.renderAll();
+          });
+        }
+      }
+      
+      setCurrentDrawing(drawing);
+      
+      toast({
+        title: "Desenho carregado!",
+        description: `Desenho "${drawing.title}" foi carregado com sucesso.`,
+      });
     } catch (error) {
+      console.error('Error loading drawing:', error);
       toast({
         title: "Erro ao carregar",
         description: "Não foi possível carregar o desenho.",
@@ -427,11 +645,24 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     }
   };
 
+  const createNewDrawing = () => {
+    if (!canvas) return;
+    
+    setPages([{ id: "page-1", name: "Página 1", elements: [] }]);
+    setCurrentPageId("page-1");
+    setPageHistories(new Map([["page-1", { history: [null], step: 0 }]]));
+    setCurrentDrawing(null);
+    
+    canvas.clear();
+    canvas.backgroundColor = 'white';
+    canvas.renderAll();
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
         <div className="flex items-center gap-3 mb-4">
-          <PenTool className="w-6 h-6 text-yellow-600" />
+          <Palette className="w-6 h-6 text-yellow-600" />
           <h2 className="text-xl font-bold text-gray-900">Desenho de Ideias</h2>
         </div>
         <p className="text-gray-600 mb-4">
@@ -452,27 +683,46 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         </TabsList>
 
         <TabsContent value="canvas" className="space-y-4">
-          {/* Páginas */}
+          {/* Pages */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Páginas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                <div className="relative group cursor-pointer border-2 border-blue-500 bg-blue-50 rounded-lg p-2">
-                  <div className="aspect-video bg-gray-100 rounded border mb-2 flex items-center justify-center overflow-hidden">
-                    <span className="text-gray-400 text-xs">Página vazia</span>
+                {pages.map((page) => (
+                  <div
+                    key={page.id}
+                    className={`relative group cursor-pointer border-2 rounded-lg p-2 transition-all ${
+                      currentPageId === page.id 
+                        ? 'border-blue-500 bg-blue-50' 
+                        : 'border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50'
+                    }`}
+                    onClick={() => switchToPage(page.id)}
+                    data-testid={`page-${page.id}`}
+                  >
+                    <div className="aspect-video bg-gray-100 rounded border mb-2 flex items-center justify-center overflow-hidden">
+                      <span className="text-gray-400 text-xs">
+                        {page.elements?.length || 0} elementos
+                      </span>
+                    </div>
+                    <div className="text-center">
+                      <h4 className="text-sm font-medium truncate">{page.name}</h4>
+                      <p className="text-xs text-gray-500">{page.elements?.length || 0} elementos</p>
+                    </div>
+                    {currentPageId === page.id && (
+                      <div className="absolute top-1 left-1 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">
+                        ✓
+                      </div>
+                    )}
                   </div>
-                  <div className="text-center">
-                    <h4 className="text-sm font-medium truncate">Página 1</h4>
-                    <p className="text-xs text-gray-500">0 elementos</p>
-                  </div>
-                  <div className="absolute top-1 left-1 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">
-                    ✓
-                  </div>
-                </div>
+                ))}
                 
-                <div className="relative group cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-2 transition-all hover:border-gray-400 bg-gray-50 hover:bg-gray-100">
+                <div 
+                  className="relative group cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-2 transition-all hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
+                  onClick={addPage}
+                  data-testid="add-page"
+                >
                   <div className="aspect-video bg-gray-200 rounded border mb-2 flex items-center justify-center">
                     <Plus className="w-8 h-8 text-gray-400" />
                   </div>
@@ -484,12 +734,12 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
               </div>
               
               <div className="text-sm text-gray-600 text-center">
-                Página atual: <strong>Página 1</strong> (0 elementos)
+                Página atual: <strong>{currentPage?.name || 'Nenhuma'}</strong> ({currentPage?.elements?.length || 0} elementos)
               </div>
             </CardContent>
           </Card>
 
-          {/* Ferramentas */}
+          {/* Tools */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Ferramentas</CardTitle>
@@ -500,7 +750,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                 <h4 className="font-medium text-sm text-gray-700">Ferramentas de Desenho</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                   <Button
-                    variant={selectedTool === "select" ? "default" : "outline"}
+                    variant={tool === "select" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("select")}
                     data-testid="button-tool-select"
@@ -510,19 +760,19 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     <span className="text-xs leading-tight">Selecionar</span>
                   </Button>
                   <Button
-                    variant={selectedTool === "pen" ? "default" : "outline"}
+                    variant={tool === "pen" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("pen")}
                     data-testid="button-tool-pen"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
-                    <PenTool className="w-4 h-4 mb-1" />
+                    <Pen className="w-4 h-4 mb-1" />
                     <span className="text-xs leading-tight">Caneta</span>
                   </Button>
                   <Button
-                    variant={selectedTool === "rectangle" ? "default" : "outline"}
+                    variant={tool === "rect" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => handleToolChange("rectangle")}
+                    onClick={() => { handleToolChange("rect"); addRectangle(); }}
                     data-testid="button-tool-rect"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -530,34 +780,54 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     <span className="text-xs leading-tight">Retângulo</span>
                   </Button>
                   <Button
-                    variant={selectedTool === "circle" ? "default" : "outline"}
+                    variant={tool === "circle" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => handleToolChange("circle")}
+                    onClick={() => { handleToolChange("circle"); addCircle(); }}
                     data-testid="button-tool-circle"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
-                    <Circle className="w-4 h-4 mb-1" />
+                    <CircleIcon className="w-4 h-4 mb-1" />
                     <span className="text-xs leading-tight">Círculo</span>
                   </Button>
                   <Button
-                    variant={selectedTool === "triangle" ? "default" : "outline"}
+                    variant={tool === "triangle" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => handleToolChange("triangle")}
+                    onClick={() => { handleToolChange("triangle"); addTriangle(); }}
                     data-testid="button-tool-star"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
-                    <Triangle className="w-4 h-4 mb-1" />
+                    <StarIcon className="w-4 h-4 mb-1" />
                     <span className="text-xs leading-tight">Estrela</span>
                   </Button>
                   <Button
-                    variant={selectedTool === "text" ? "default" : "outline"}
+                    variant={tool === "text" ? "default" : "outline"}
                     size="sm"
-                    onClick={addText}
+                    onClick={() => { handleToolChange("text"); addText(); }}
                     data-testid="button-tool-text"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
                     <Type className="w-4 h-4 mb-1" />
                     <span className="text-xs leading-tight">Texto</span>
+                  </Button>
+                  <Button
+                    variant={tool === "line" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => { handleToolChange("line"); addLine(); }}
+                    data-testid="button-tool-line"
+                    className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
+                  >
+                    <Minus className="w-4 h-4 mb-1" />
+                    <span className="text-xs leading-tight">Linha</span>
+                  </Button>
+                  <Button
+                    variant={tool === "connector" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToolChange("connector")}
+                    data-testid="button-tool-connector"
+                    className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
+                  >
+                    <Link className="w-4 h-4 mb-1" />
+                    <span className="text-xs leading-tight">Conector</span>
                   </Button>
                 </div>
                 
@@ -583,7 +853,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
               {/* Configurações */}
               <div className="space-y-4">
                 <h4 className="font-medium text-sm text-gray-700">Configurações</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="flex items-center gap-2">
                     <label className="text-sm font-medium min-w-0 flex-shrink-0">Cor:</label>
                     <input
@@ -601,10 +871,23 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                       type="number"
                       min="1"
                       max="20"
-                      value={selectedBrushSize}
-                      onChange={(e) => setSelectedBrushSize(Number(e.target.value))}
+                      value={selectedStrokeWidth}
+                      onChange={(e) => setSelectedStrokeWidth(Number(e.target.value))}
                       className="w-20 flex-shrink-0"
                       data-testid="input-stroke-width"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium min-w-0 flex-shrink-0">Texto:</label>
+                    <Input
+                      type="number"
+                      min="8"
+                      max="72"
+                      value={fontSize}
+                      onChange={(e) => setFontSize(Number(e.target.value))}
+                      className="w-20 flex-shrink-0"
+                      data-testid="input-font-size"
                     />
                   </div>
                 </div>
@@ -617,7 +900,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={undoAction}
+                    onClick={undo}
                     data-testid="button-undo"
                     className="flex items-center justify-center gap-2 h-10"
                   >
@@ -627,7 +910,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={redoAction}
+                    onClick={redo}
                     data-testid="button-redo"
                     className="flex items-center justify-center gap-2 h-10"
                   >
@@ -664,6 +947,11 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Canvas de Desenho</CardTitle>
+              {currentDrawing && (
+                <Badge variant="secondary">
+                  Editando: {currentDrawing.title}
+                </Badge>
+              )}
             </CardHeader>
             <CardContent>
               <div className="w-full border rounded-lg bg-white overflow-hidden" style={{ height: '500px' }}>
@@ -719,54 +1007,61 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         </TabsContent>
       </Tabs>
 
-      {/* Save Dialog */}
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="mt-4" data-testid="button-save-drawing">
-            <Save className="w-4 h-4 mr-2" />
-            Salvar Desenho
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Salvar Desenho de Ideação</DialogTitle>
-            <DialogDescription>
-              Dê um nome e descrição para seu desenho
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="title">Título</Label>
-              <Input
-                id="title"
-                placeholder="Ex: Fluxo de usuário principal"
-                value={newDrawingTitle}
-                onChange={(e) => setNewDrawingTitle(e.target.value)}
-                data-testid="input-drawing-title"
-              />
+      {/* Save/Export Actions */}
+      <div className="flex gap-2">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button data-testid="button-save-drawing">
+              <Save className="w-4 h-4 mr-2" />
+              Salvar Desenho
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Salvar Desenho de Ideação</DialogTitle>
+              <DialogDescription>
+                Dê um nome e descrição para seu desenho
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="title" className="text-sm font-medium">Título</label>
+                <Input
+                  id="title"
+                  placeholder="Ex: Fluxo de usuário principal"
+                  value={newDrawingTitle}
+                  onChange={(e) => setNewDrawingTitle(e.target.value)}
+                  data-testid="input-drawing-title"
+                />
+              </div>
+              <div>
+                <label htmlFor="description" className="text-sm font-medium">Descrição (opcional)</label>
+                <Textarea
+                  id="description"
+                  placeholder="Descreva o que este desenho representa..."
+                  value={newDrawingDescription}
+                  onChange={(e) => setNewDrawingDescription(e.target.value)}
+                  data-testid="textarea-drawing-description"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={saveDrawing} disabled={saveDrawingMutation.isPending} data-testid="button-confirm-save">
+                  {saveDrawingMutation.isPending ? "Salvando..." : "Salvar"}
+                </Button>
+                <Button variant="outline" onClick={exportDrawing} data-testid="button-export">
+                  <Download className="w-4 h-4 mr-2" />
+                  Exportar PNG
+                </Button>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="description">Descrição (opcional)</Label>
-              <Textarea
-                id="description"
-                placeholder="Descreva o que este desenho representa..."
-                value={newDrawingDescription}
-                onChange={(e) => setNewDrawingDescription(e.target.value)}
-                data-testid="textarea-drawing-description"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={saveDrawing} disabled={saveDrawingMutation.isPending} data-testid="button-confirm-save">
-                {saveDrawingMutation.isPending ? "Salvando..." : "Salvar"}
-              </Button>
-              <Button variant="outline" onClick={exportDrawing} data-testid="button-export">
-                <Download className="w-4 h-4 mr-2" />
-                Exportar PNG
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+        
+        <Button variant="outline" onClick={exportDrawing} data-testid="button-export-drawing">
+          <Download className="w-4 h-4 mr-2" />
+          Exportar PNG
+        </Button>
+      </div>
     </div>
   );
 }
