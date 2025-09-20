@@ -14,7 +14,8 @@ import {
   type User, type InsertUser,
   type Article, type InsertArticle,
   type SubscriptionPlan, type InsertSubscriptionPlan,
-  type UserSubscription, type InsertUserSubscription
+  type UserSubscription, type InsertUserSubscription,
+  type CanvasDrawing, type InsertCanvasDrawing
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
@@ -109,6 +110,13 @@ export interface IStorage {
   updateArticle(id: string, article: Partial<InsertArticle>): Promise<Article | undefined>;
   deleteArticle(id: string): Promise<boolean>;
 
+  // Canvas Drawings
+  getCanvasDrawings(projectId: string): Promise<CanvasDrawing[]>;
+  getCanvasDrawing(id: string): Promise<CanvasDrawing | undefined>;
+  createCanvasDrawing(drawing: InsertCanvasDrawing): Promise<CanvasDrawing>;
+  updateCanvasDrawing(id: string, drawing: Partial<InsertCanvasDrawing>): Promise<CanvasDrawing | undefined>;
+  deleteCanvasDrawing(id: string): Promise<boolean>;
+
   // Subscription Plans
   getSubscriptionPlans(): Promise<SubscriptionPlan[]>;
   getSubscriptionPlan(id: string): Promise<SubscriptionPlan | undefined>;
@@ -142,6 +150,7 @@ export class MemStorage implements IStorage {
   private articles: Map<string, Article>;
   private subscriptionPlans: Map<string, SubscriptionPlan>;
   private userSubscriptions: Map<string, UserSubscription>;
+  private canvasDrawings: Map<string, CanvasDrawing>;
 
   constructor() {
     this.projects = new Map();
@@ -160,6 +169,7 @@ export class MemStorage implements IStorage {
     this.articles = new Map();
     this.subscriptionPlans = new Map();
     this.userSubscriptions = new Map();
+    this.canvasDrawings = new Map();
     
     this.initializeData();
   }
@@ -1405,6 +1415,49 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
     };
     this.userSubscriptions.set(id, updatedSubscription);
     return true;
+  }
+
+  // Canvas Drawings
+  async getCanvasDrawings(projectId: string): Promise<CanvasDrawing[]> {
+    return Array.from(this.canvasDrawings.values()).filter(drawing => drawing.projectId === projectId);
+  }
+
+  async getCanvasDrawing(id: string): Promise<CanvasDrawing | undefined> {
+    return this.canvasDrawings.get(id);
+  }
+
+  async createCanvasDrawing(insertDrawing: InsertCanvasDrawing): Promise<CanvasDrawing> {
+    const id = randomUUID();
+    const drawing: CanvasDrawing = {
+      ...insertDrawing,
+      id,
+      description: insertDrawing.description || null,
+      thumbnailData: insertDrawing.thumbnailData || null,
+      tags: insertDrawing.tags || [],
+      isTemplate: insertDrawing.isTemplate ?? false,
+      parentId: insertDrawing.parentId || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.canvasDrawings.set(id, drawing);
+    return drawing;
+  }
+
+  async updateCanvasDrawing(id: string, updateDrawing: Partial<InsertCanvasDrawing>): Promise<CanvasDrawing | undefined> {
+    const drawing = this.canvasDrawings.get(id);
+    if (!drawing) return undefined;
+    
+    const updatedDrawing: CanvasDrawing = { 
+      ...drawing, 
+      ...updateDrawing, 
+      updatedAt: new Date() 
+    };
+    this.canvasDrawings.set(id, updatedDrawing);
+    return updatedDrawing;
+  }
+
+  async deleteCanvasDrawing(id: string): Promise<boolean> {
+    return this.canvasDrawings.delete(id);
   }
 }
 

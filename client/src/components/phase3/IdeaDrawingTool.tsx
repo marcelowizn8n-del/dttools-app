@@ -618,7 +618,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                         <p className="text-sm text-gray-600">Novo Desenho</p>
                       </CardContent>
                     </Card>
-                    {drawings
+                    {Array.isArray(drawings) && drawings
                       .filter((d: CanvasDrawing) => d.phase === 3)
                       .map((drawing: CanvasDrawing) => (
                       <Card 
