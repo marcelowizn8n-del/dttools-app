@@ -697,12 +697,12 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
 
             {/* Canvas */}
             <Card>
-              <CardContent className="p-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg overflow-hidden">
+              <CardContent className="p-2 md:p-4">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg overflow-auto max-w-full">
                   <Stage
                     ref={stageRef}
-                    width={800}
-                    height={600}
+                    width={window.innerWidth < 768 ? Math.max(300, window.innerWidth - 64) : 800}
+                    height={window.innerWidth < 768 ? 400 : 600}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
