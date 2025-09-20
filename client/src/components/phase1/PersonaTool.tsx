@@ -134,8 +134,8 @@ function PersonaCard({ persona, projectId }: { persona: Persona; projectId: stri
               Objetivos
             </h4>
             <div className="space-y-1">
-              {(persona.goals as string[])?.length > 0 ? (
-                (persona.goals as string[]).map((goal, index) => (
+              {Array.isArray(persona.goals) && persona.goals.length > 0 ? (
+                persona.goals.map((goal, index) => (
                   <Badge 
                     key={index} 
                     variant="secondary" 
@@ -158,8 +158,8 @@ function PersonaCard({ persona, projectId }: { persona: Persona; projectId: stri
               Frustrações
             </h4>
             <div className="space-y-1">
-              {(persona.frustrations as string[])?.length > 0 ? (
-                (persona.frustrations as string[]).map((frustration, index) => (
+              {Array.isArray(persona.frustrations) && persona.frustrations.length > 0 ? (
+                persona.frustrations.map((frustration, index) => (
                   <Badge 
                     key={index} 
                     variant="secondary" 
@@ -182,8 +182,8 @@ function PersonaCard({ persona, projectId }: { persona: Persona; projectId: stri
               Motivações
             </h4>
             <div className="space-y-1">
-              {(persona.motivations as string[])?.length > 0 ? (
-                (persona.motivations as string[]).map((motivation, index) => (
+              {Array.isArray(persona.motivations) && persona.motivations.length > 0 ? (
+                persona.motivations.map((motivation, index) => (
                   <Badge 
                     key={index} 
                     variant="secondary" 
