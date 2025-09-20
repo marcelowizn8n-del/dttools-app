@@ -349,6 +349,29 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         description: "Clique no primeiro objeto, depois no segundo para criar uma conexão.",
       });
     }
+    
+    // Add shapes immediately when tool is selected (with safety checks)
+    if (canvas && canvas.getContext) {
+      setTimeout(() => {
+        switch (newTool) {
+          case 'rect':
+            addRectangle();
+            break;
+          case 'circle':
+            addCircle();
+            break;
+          case 'triangle':
+            addTriangle();
+            break;
+          case 'text':
+            addText();
+            break;
+          case 'line':
+            addLine();
+            break;
+        }
+      }, 100);
+    }
   };
 
   const addRectangle = () => {
@@ -1160,7 +1183,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   <Button
                     variant={tool === "rect" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => { handleToolChange("rect"); addRectangle(); }}
+                    onClick={() => handleToolChange("rect")}
                     data-testid="button-tool-rect"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1170,7 +1193,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   <Button
                     variant={tool === "circle" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => { handleToolChange("circle"); addCircle(); }}
+                    onClick={() => handleToolChange("circle")}
                     data-testid="button-tool-circle"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1180,7 +1203,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   <Button
                     variant={tool === "triangle" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => { handleToolChange("triangle"); addTriangle(); }}
+                    onClick={() => handleToolChange("triangle")}
                     data-testid="button-tool-star"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1190,7 +1213,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   <Button
                     variant={tool === "text" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => { handleToolChange("text"); addText(); }}
+                    onClick={() => handleToolChange("text")}
                     data-testid="button-tool-text"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1200,7 +1223,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   <Button
                     variant={tool === "line" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => { handleToolChange("line"); addLine(); }}
+                    onClick={() => handleToolChange("line")}
                     data-testid="button-tool-line"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
