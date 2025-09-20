@@ -151,10 +151,16 @@ export default function Dashboard() {
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: { name: string; description?: string }) => {
-      return apiRequest(`/api/projects`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("POST", `/api/projects`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+    },
+  });
+
+  const updatePhaseMutation = useMutation({
+    mutationFn: async ({ projectId, phase }: { projectId: string; phase: number }) => {
+      return apiRequest("PUT", `/api/projects/${projectId}`, { currentPhase: phase });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -167,15 +173,22 @@ export default function Dashboard() {
       
       if (!targetProject) {
         // If no projects exist, create a new one
-        const newProject = await createProjectMutation.mutateAsync({
+        targetProject = await createProjectMutation.mutateAsync({
           name: `Projeto ${t(`phases.${phases[phaseId - 1].translationKey}`)}`,
           description: `Projeto criado automaticamente para a ${t(`phases.${phases[phaseId - 1].translationKey}`)}`
         });
-        targetProject = newProject;
       }
 
-      // Navigate to the specific phase
-      setLocation(`/projects/${targetProject.id}/phase/${phaseId}`);
+      // Update project to the selected phase
+      if (targetProject.currentPhase !== phaseId) {
+        await updatePhaseMutation.mutateAsync({ 
+          projectId: targetProject.id, 
+          phase: phaseId 
+        });
+      }
+
+      // Navigate to the project (it will show the selected phase)
+      setLocation(`/projects/${targetProject.id}`);
     } catch (error) {
       toast({
         title: "Erro",
