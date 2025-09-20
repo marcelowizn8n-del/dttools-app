@@ -78,6 +78,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
   const [currentPageId, setCurrentPageId] = useState<string>("page-1");
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<number[]>([]);
+  const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
   const [selectedColor, setSelectedColor] = useState<string>("#000000");
   const [selectedStrokeWidth, setSelectedStrokeWidth] = useState<number>(2);
   const [fontSize, setFontSize] = useState<number>(16);
@@ -345,33 +346,27 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     
     if (tool === "pen") {
       setCurrentPath([pos.x, pos.y]);
-    } else {
+    } else if (tool === "text") {
       const newElement: DrawingElement = {
         id: `element-${Date.now()}`,
-        type: tool as any,
+        type: "text",
         x: pos.x,
         y: pos.y,
-        fill: tool === "text" ? selectedColor : "transparent",
+        fill: selectedColor,
         stroke: selectedColor,
         strokeWidth: selectedStrokeWidth,
         draggable: true,
+        text: "Texto",
+        fontSize: fontSize,
       };
-
-      if (tool === "text") {
-        newElement.text = "Texto";
-        newElement.fontSize = fontSize;
-        // Finalize text immediately
-        const currentElements = getCurrentElements();
-        const newElements = [...currentElements, newElement];
-        updateCurrentPageElements(newElements);
-        saveToHistory(newElements);
-      } else if (tool === "rect" || tool === "circle" || tool === "star") {
-        newElement.width = 1;
-        newElement.height = 1;
-        const currentElements = getCurrentElements();
-        updateCurrentPageElements([...currentElements, newElement]);
-        // Don't save to history until mouse up for shapes
-      }
+      // Finalize text immediately
+      const currentElements = getCurrentElements();
+      const newElements = [...currentElements, newElement];
+      updateCurrentPageElements(newElements);
+      saveToHistory(newElements);
+    } else if (tool === "rect" || tool === "circle" || tool === "star") {
+      // Store the starting position for shapes but don't add to canvas yet
+      setStartPos({ x: pos.x, y: pos.y });
     }
   };
 
@@ -383,25 +378,28 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     
     if (tool === "pen") {
       setCurrentPath(prev => [...prev, point.x, point.y]);
-    } else {
-      // Update shape dimensions while drawing - create new objects to avoid mutation
-      const currentElements = getCurrentElements();
-      const newElements = [...currentElements];
-      const lastElementIndex = newElements.length - 1;
-      const lastElement = newElements[lastElementIndex];
+    } else if ((tool === "rect" || tool === "circle" || tool === "star") && startPos) {
+      // Create temporary shape for preview while dragging
+      const tempElement: DrawingElement = {
+        id: `temp-${tool}`,
+        type: tool as any,
+        x: Math.min(startPos.x, point.x),
+        y: Math.min(startPos.y, point.y),
+        width: Math.abs(point.x - startPos.x),
+        height: Math.abs(point.y - startPos.y),
+        fill: "transparent",
+        stroke: selectedColor,
+        strokeWidth: selectedStrokeWidth,
+        draggable: true,
+      };
       
-      if (lastElement && (lastElement.type === "rect" || lastElement.type === "circle" || lastElement.type === "star")) {
-        newElements[lastElementIndex] = {
-          ...lastElement,
-          width: Math.abs(point.x - lastElement.x!),
-          height: Math.abs(point.y - lastElement.y!)
-        };
-        updateCurrentPageElements(newElements);
-      }
+      const currentElements = getCurrentElements();
+      const elementsWithoutTemp = currentElements.filter(el => !el.id.startsWith('temp-'));
+      updateCurrentPageElements([...elementsWithoutTemp, tempElement]);
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: any) => {
     if (!isDrawing) return;
     
     setIsDrawing(false);
@@ -421,9 +419,41 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
       updateCurrentPageElements(newElements);
       saveToHistory(newElements);
       setCurrentPath([]);
-    } else if (tool === "rect" || tool === "circle" || tool === "star") {
-      // Save shape to history on mouse up (final state)
-      saveToHistory(getCurrentElements());
+    } else if ((tool === "rect" || tool === "circle" || tool === "star") && startPos) {
+      const stage = e.target.getStage();
+      const point = stage.getPointerPosition();
+      
+      // Only create shape if there was actual dragging (minimum size)
+      const width = Math.abs(point.x - startPos.x);
+      const height = Math.abs(point.y - startPos.y);
+      
+      if (width > 5 || height > 5) {
+        const finalElement: DrawingElement = {
+          id: `element-${Date.now()}`,
+          type: tool as any,
+          x: Math.min(startPos.x, point.x),
+          y: Math.min(startPos.y, point.y),
+          width: width,
+          height: height,
+          fill: "transparent",
+          stroke: selectedColor,
+          strokeWidth: selectedStrokeWidth,
+          draggable: true,
+        };
+        
+        const currentElements = getCurrentElements();
+        const elementsWithoutTemp = currentElements.filter(el => !el.id.startsWith('temp-'));
+        const newElements = [...elementsWithoutTemp, finalElement];
+        updateCurrentPageElements(newElements);
+        saveToHistory(newElements);
+      } else {
+        // Remove temp element if drag was too small
+        const currentElements = getCurrentElements();
+        const elementsWithoutTemp = currentElements.filter(el => !el.id.startsWith('temp-'));
+        updateCurrentPageElements(elementsWithoutTemp);
+      }
+      
+      setStartPos(null);
     }
   };
 
