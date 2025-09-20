@@ -562,7 +562,8 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     }
 
     const canvasData = {
-      elements: getCurrentElements(),
+      pages: pages,
+      currentPageId: currentPageId,
       width: 800,
       height: 600,
     };
@@ -584,9 +585,26 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
         ? JSON.parse(drawing.canvasData) 
         : drawing.canvasData;
         
-      if (canvasData && canvasData.elements) {
-        updateCurrentPageElements(canvasData.elements);
-        saveToHistory(canvasData.elements);
+      if (canvasData) {
+        // Check if it's the new multi-page format
+        if (canvasData.pages) {
+          setPages(canvasData.pages);
+          setCurrentPageId(canvasData.currentPageId || canvasData.pages[0]?.id || "page-1");
+          
+          // Initialize history for each page
+          const newPageHistories = new Map();
+          canvasData.pages.forEach((page: DrawingPage) => {
+            newPageHistories.set(page.id, { history: [page.elements], step: 0 });
+          });
+          setPageHistories(newPageHistories);
+        } else if (canvasData.elements) {
+          // Legacy single-page format
+          const legacyPage = { id: "page-1", name: "Página 1", elements: canvasData.elements };
+          setPages([legacyPage]);
+          setCurrentPageId("page-1");
+          setPageHistories(new Map([["page-1", { history: [canvasData.elements], step: 0 }]]));
+        }
+        
         setCurrentDrawing(drawing);
         
         toast({
@@ -632,6 +650,17 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
       strokeWidth: isSelected ? (element.strokeWidth || 2) + 2 : element.strokeWidth,
       draggable: element.draggable,
       onClick: () => setSelectedElement(element.id),
+      onDragEnd: (e: any) => {
+        const newPos = e.target.position();
+        const currentElements = getCurrentElements();
+        const newElements = currentElements.map(el => 
+          el.id === element.id 
+            ? { ...el, x: newPos.x, y: newPos.y }
+            : el
+        );
+        updateCurrentPageElements(newElements);
+        saveToHistory(newElements);
+      },
     };
 
     switch (element.type) {
@@ -766,66 +795,66 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                 {/* Tool selection - Grid layout for better mobile responsiveness */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm text-gray-700">Ferramentas de Desenho</h4>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 lg:flex lg:flex-wrap gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                     <Button
                       variant={tool === "select" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setTool("select")}
                       data-testid="button-tool-select"
-                      className="flex items-center justify-center"
+                      className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                     >
-                      <MousePointer2 className="w-4 h-4 lg:mr-1" />
-                      <span className="hidden lg:inline">Selecionar</span>
+                      <MousePointer2 className="w-4 h-4 mb-1" />
+                      <span className="text-xs leading-tight">Selecionar</span>
                     </Button>
                     <Button
                       variant={tool === "pen" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setTool("pen")}
                       data-testid="button-tool-pen"
-                      className="flex items-center justify-center"
+                      className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                     >
-                      <Pen className="w-4 h-4 lg:mr-1" />
-                      <span className="hidden lg:inline">Caneta</span>
+                      <Pen className="w-4 h-4 mb-1" />
+                      <span className="text-xs leading-tight">Caneta</span>
                     </Button>
                     <Button
                       variant={tool === "rect" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setTool("rect")}
                       data-testid="button-tool-rect"
-                      className="flex items-center justify-center"
+                      className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                     >
-                      <Square className="w-4 h-4 lg:mr-1" />
-                      <span className="hidden lg:inline">Retângulo</span>
+                      <Square className="w-4 h-4 mb-1" />
+                      <span className="text-xs leading-tight">Retângulo</span>
                     </Button>
                     <Button
                       variant={tool === "circle" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setTool("circle")}
                       data-testid="button-tool-circle"
-                      className="flex items-center justify-center"
+                      className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                     >
-                      <CircleIcon className="w-4 h-4 lg:mr-1" />
-                      <span className="hidden lg:inline">Círculo</span>
+                      <CircleIcon className="w-4 h-4 mb-1" />
+                      <span className="text-xs leading-tight">Círculo</span>
                     </Button>
                     <Button
                       variant={tool === "star" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setTool("star")}
                       data-testid="button-tool-star"
-                      className="flex items-center justify-center"
+                      className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                     >
-                      <StarIcon className="w-4 h-4 lg:mr-1" />
-                      <span className="hidden lg:inline">Estrela</span>
+                      <StarIcon className="w-4 h-4 mb-1" />
+                      <span className="text-xs leading-tight">Estrela</span>
                     </Button>
                     <Button
                       variant={tool === "text" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setTool("text")}
                       data-testid="button-tool-text"
-                      className="flex items-center justify-center"
+                      className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                     >
-                      <Type className="w-4 h-4 lg:mr-1" />
-                      <span className="hidden lg:inline">Texto</span>
+                      <Type className="w-4 h-4 mb-1" />
+                      <span className="text-xs leading-tight">Texto</span>
                     </Button>
                   </div>
                   
@@ -834,10 +863,10 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     data-testid="button-upload-image"
-                    className="w-full sm:w-auto"
+                    className="col-span-2 sm:col-span-3 md:col-span-6 h-12 flex items-center justify-center gap-2"
                   >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Adicionar Imagem
+                    <Upload className="w-4 h-4" />
+                    <span>Adicionar Imagem</span>
                   </Button>
                   <input
                     ref={fileInputRef}
@@ -851,7 +880,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                 {/* Color and settings - Organized in sections */}
                 <div className="space-y-4">
                   <h4 className="font-medium text-sm text-gray-700">Configurações</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium min-w-0 flex-shrink-0">Cor:</label>
                       <input
@@ -896,17 +925,17 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                 {/* Action buttons - Organized in logical groups */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm text-gray-700">Ações</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-wrap gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={undo}
                       disabled={(pageHistories.get(currentPageId)?.step || 0) <= 0}
                       data-testid="button-undo"
-                      className="flex items-center justify-center"
+                      className="flex items-center justify-center gap-2 h-10"
                     >
-                      <Undo className="w-4 h-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Desfazer</span>
+                      <Undo className="w-4 h-4" />
+                      <span className="text-sm">Desfazer</span>
                     </Button>
                     <Button
                       variant="outline"
@@ -918,10 +947,10 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
         return pageHistory.step >= pageHistory.history.length - 1;
       })()}
                       data-testid="button-redo"
-                      className="flex items-center justify-center"
+                      className="flex items-center justify-center gap-2 h-10"
                     >
-                      <Redo className="w-4 h-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Refazer</span>
+                      <Redo className="w-4 h-4" />
+                      <span className="text-sm">Refazer</span>
                     </Button>
                     
                     <Button
@@ -930,40 +959,40 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                       onClick={deleteSelected}
                       disabled={!selectedElement}
                       data-testid="button-delete-selected"
-                      className="flex items-center justify-center"
+                      className="flex items-center justify-center gap-2 h-10"
                     >
-                      <Trash2 className="w-4 h-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Excluir</span>
+                      <Trash2 className="w-4 h-4" />
+                      <span className="text-sm">Excluir</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={clearCanvas}
                       data-testid="button-clear"
-                      className="flex items-center justify-center"
+                      className="flex items-center justify-center gap-2 h-10"
                     >
-                      <Trash2 className="w-4 h-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Limpar</span>
+                      <Trash2 className="w-4 h-4" />
+                      <span className="text-sm">Limpar</span>
                     </Button>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 mt-4">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={exportDrawing}
                       data-testid="button-export"
-                      className="flex items-center justify-center"
+                      className="flex items-center justify-center gap-2 h-10"
                     >
-                      <Download className="w-4 h-4 mr-1" />
-                      Exportar
+                      <Download className="w-4 h-4" />
+                      <span className="text-sm">Exportar</span>
                     </Button>
                     
                     <Dialog open={isDrawingSelectorOpen} onOpenChange={setIsDrawingSelectorOpen}>
                       <DialogTrigger asChild>
-                        <Button size="sm" data-testid="button-save-drawing" className="flex items-center justify-center">
-                          <Save className="w-4 h-4 mr-1" />
-                          Salvar
+                        <Button size="sm" data-testid="button-save-drawing" className="flex items-center justify-center gap-2 h-10">
+                          <Save className="w-4 h-4" />
+                          <span className="text-sm">Salvar</span>
                         </Button>
                       </DialogTrigger>
                     <DialogContent>
