@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Users, 
   Target, 
@@ -25,6 +25,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation } from "wouter";
 import type { Project } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import dttoolsIcon from "../assets/dttools-icon.png";
 
 const phases = [
@@ -141,14 +143,47 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [selectedPhase, setSelectedPhase] = useState<number | null>(null);
   const [, setLocation] = useLocation();
-
-  const handlePhaseClick = () => {
-    setLocation("/projects");
-  };
+  const { toast } = useToast();
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
+
+  const createProjectMutation = useMutation({
+    mutationFn: async (data: { name: string; description?: string }) => {
+      return apiRequest(`/api/projects`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+    },
+  });
+
+  const handlePhaseClick = async (phaseId: number) => {
+    try {
+      let targetProject = projects[0]; // Use the first project if available
+      
+      if (!targetProject) {
+        // If no projects exist, create a new one
+        const newProject = await createProjectMutation.mutateAsync({
+          name: `Projeto ${t(`phases.${phases[phaseId - 1].translationKey}`)}`,
+          description: `Projeto criado automaticamente para a ${t(`phases.${phases[phaseId - 1].translationKey}`)}`
+        });
+        targetProject = newProject;
+      }
+
+      // Navigate to the specific phase
+      setLocation(`/projects/${targetProject.id}/phase/${phaseId}`);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível acessar a fase. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Remove the isEnglish variable, use t() for everything
   const completedProjects = projects.filter(p => p.status === 'completed').length;
@@ -345,7 +380,7 @@ export default function Dashboard() {
                       }}
                       onMouseEnter={() => setSelectedPhase(phase.id)}
                       onMouseLeave={() => setSelectedPhase(null)}
-                      onClick={handlePhaseClick}
+                      onClick={() => handlePhaseClick(phase.id)}
                       data-testid={`card-phase-${phase.id}`}
                     >
                       <CardHeader className="pb-3">
