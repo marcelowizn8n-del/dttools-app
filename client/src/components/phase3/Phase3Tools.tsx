@@ -28,22 +28,25 @@ export default function Phase3Tools({ projectId }: Phase3ToolsProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="brainstorming" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-4 gap-1">
+          <TabsTrigger value="brainstorming" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-2 py-2">
             <Lightbulb className="w-4 h-4" />
-            Brainstorming
+            <span className="hidden sm:inline">Brainstorming</span>
+            <span className="sm:hidden">Ideias</span>
           </TabsTrigger>
-          <TabsTrigger value="drawing" className="flex items-center gap-2">
+          <TabsTrigger value="drawing" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-2 py-2">
             <PenTool className="w-4 h-4" />
-            Desenho de Ideias
+            <span>Desenho</span>
           </TabsTrigger>
-          <TabsTrigger value="categorization" className="flex items-center gap-2">
+          <TabsTrigger value="categorization" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-2 py-2">
             <Tag className="w-4 h-4" />
-            Categorização
+            <span className="hidden sm:inline">Categorização</span>
+            <span className="sm:hidden">Categorias</span>
           </TabsTrigger>
-          <TabsTrigger value="prioritization" className="flex items-center gap-2">
+          <TabsTrigger value="prioritization" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-2 py-2">
             <TrendingUp className="w-4 h-4" />
-            Priorização
+            <span className="hidden sm:inline">Priorização</span>
+            <span className="sm:hidden">Prioridade</span>
           </TabsTrigger>
         </TabsList>
 

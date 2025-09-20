@@ -28,22 +28,24 @@ export default function Phase4Tools({ projectId }: Phase4ToolsProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="prototypes" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-4 gap-1">
+          <TabsTrigger value="prototypes" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-2 py-2">
             <Wrench className="w-4 h-4" />
-            Protótipos
+            <span className="hidden sm:inline">Protótipos</span>
+            <span className="sm:hidden">Proto</span>
           </TabsTrigger>
-          <TabsTrigger value="drawing" className="flex items-center gap-2">
+          <TabsTrigger value="drawing" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-2 py-2">
             <Palette className="w-4 h-4" />
-            Desenho
+            <span>Desenho</span>
           </TabsTrigger>
-          <TabsTrigger value="types" className="flex items-center gap-2">
+          <TabsTrigger value="types" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-2 py-2">
             <Monitor className="w-4 h-4" />
-            Tipos
+            <span>Tipos</span>
           </TabsTrigger>
-          <TabsTrigger value="iteration" className="flex items-center gap-2">
+          <TabsTrigger value="iteration" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-2 py-2">
             <FileText className="w-4 h-4" />
-            Iteração
+            <span className="hidden sm:inline">Iteração</span>
+            <span className="sm:hidden">Iterar</span>
           </TabsTrigger>
         </TabsList>
 
