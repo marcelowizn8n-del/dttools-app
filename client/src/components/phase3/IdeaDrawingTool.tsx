@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { 
@@ -7,7 +7,8 @@ import {
   Circle as FabricCircle, 
   Triangle as FabricTriangle, 
   Line as FabricLine, 
-  IText as FabricIText 
+  IText as FabricIText,
+  Image as FabricImage
 } from "fabric";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,8 @@ import {
   Plus,
   Eye,
   Edit3,
-  Link
+  Link,
+  Upload
 } from "lucide-react";
 import type { CanvasDrawing } from "@shared/schema";
 
@@ -62,11 +64,12 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   // Refs para evitar stale closures nos event handlers
   const selectedToolRef = useRef<string>("pen");
   const firstSelectedObjectRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Query para buscar desenhos existentes
   const { data: drawings = [], isLoading: isLoadingDrawings } = useQuery({
     queryKey: ['/api/canvas-drawings', projectId] as const,
-    queryFn: () => fetch(`/api/canvas-drawings/${projectId}`, { credentials: 'include' }).then(res => res.json()),
+    queryFn: () => fetch(`/api/canvas-drawings/${projectId}?phase=3`, { credentials: 'include' }).then(res => res.json()),
     enabled: !!projectId,
   });
 
@@ -427,6 +430,74 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     connection.line.setCoords();
   };
 
+  // Upload de imagem
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !canvas) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageUrl = e.target?.result as string;
+      FabricImage.fromURL(imageUrl, (img) => {
+        img.set({
+          left: 50,
+          top: 50,
+          scaleX: 0.5,
+          scaleY: 0.5,
+        });
+        canvas.add(img);
+        canvas.renderAll();
+        
+        toast({
+          title: "Imagem adicionada!",
+          description: "A imagem foi inserida no canvas.",
+        });
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Paste de imagem do clipboard
+  const handlePaste = useCallback(async (event: ClipboardEvent) => {
+    const items = event.clipboardData?.items;
+    if (!items || !canvas) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        if (blob) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const imageUrl = e.target?.result as string;
+            FabricImage.fromURL(imageUrl, (img) => {
+              img.set({
+                left: 100,
+                top: 100,
+                scaleX: 0.5,
+                scaleY: 0.5,
+              });
+              canvas.add(img);
+              canvas.renderAll();
+              
+              toast({
+                title: "Imagem colada!",
+                description: "A imagem foi inserida no canvas.",
+              });
+            });
+          };
+          reader.readAsDataURL(blob);
+        }
+        break;
+      }
+    }
+  }, [canvas, toast]);
+
+  // Add paste event listener
+  useEffect(() => {
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [handlePaste]);
+
   // Lidar com cliques de objetos no modo connector
   const handleObjectSelection = (obj: any) => {
     if (selectedToolRef.current !== "connector") return;
@@ -624,6 +695,22 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   <Link className="w-4 h-4 mr-2" />
                   Conectar
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  data-testid="button-upload-image"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
                 <Button
                   variant="outline"
                   size="sm"
