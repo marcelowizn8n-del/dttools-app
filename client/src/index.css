@@ -78,26 +78,9 @@
   }
 }
 
-/* 🎯 Sustainable mobile logo solution */
-.logo-container {
-  overflow: visible;
-  flex-shrink: 0;
-}
-
-.logo-img {
-  flex-shrink: 0;
+/* App logo stability - prevent layout shifts and shrinking during HMR */
+.app-logo {
   display: block;
-}
-
-/* Mobile responsive adjustments - Allow Tailwind to control logo size */
-@media (max-width: 640px) {
-  .logo-container {
-    min-width: 120px;
-  }
-  
-  /* Remove fixed size - let Tailwind classes control it */
-}
-
-@media (max-width: 480px) {
-  /* Remove fixed size - let Tailwind classes control it */
+  /* Ensure minimum height to prevent collapse during hot reload */
+  min-height: 48px;
 }
