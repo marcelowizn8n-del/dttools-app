@@ -99,6 +99,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const [currentDrawing, setCurrentDrawing] = useState<CanvasDrawing | null>(null);
   const [newDrawingTitle, setNewDrawingTitle] = useState("");
   const [newDrawingDescription, setNewDrawingDescription] = useState("");
+  const [isLoadingCanvas, setIsLoadingCanvas] = useState(false);
   
   // History for undo/redo - now per page
   const [pageHistories, setPageHistories] = useState<Map<string, { history: (any | null)[], step: number }>>(
@@ -225,7 +226,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
 
   // Save to history
   const saveToHistory = useCallback(() => {
-    if (!canvas) return;
+    if (!canvas || isLoadingCanvas) return; // Don't save during loading
     
     const currentHistory = pageHistories.get(currentPageId) || { history: [null], step: 0 };
     const canvasState = canvas.toJSON();
@@ -249,7 +250,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       });
       return newMap;
     });
-  }, [canvas, currentPageId, pageHistories]);
+  }, [canvas, currentPageId, pageHistories, isLoadingCanvas]);
 
   // Event handlers for canvas interactions and history
   useEffect(() => {
@@ -281,14 +282,24 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
 
     // Comprehensive history tracking
     const handleObjectAdded = () => {
-      setTimeout(() => saveToHistory(), 50); // Slight delay to ensure state is updated
+      if (!isLoadingCanvas) {
+        setTimeout(() => saveToHistory(), 50); // Slight delay to ensure state is updated
+      }
     };
     
     const handleObjectModified = () => {
       saveToHistory();
     };
     
-    const handleObjectRemoved = () => {
+    const handleObjectRemoved = (e: any) => {
+      const removedObject = e.target;
+      
+      // Clean up connectors when objects are deleted
+      if (removedObject && (removedObject as any).data?.id) {
+        const objectId = (removedObject as any).data.id;
+        cleanupConnectors(objectId);
+      }
+      
       saveToHistory();
     };
 
@@ -296,11 +307,20 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       saveToHistory();
     };
 
+    // Update connectors when objects move
+    const handleObjectMoving = (e: any) => {
+      const movingObject = e.target;
+      if (movingObject && (movingObject as any).data?.id) {
+        updateConnectors(movingObject);
+      }
+    };
+
     canvas.on('mouse:down', handleMouseDown);
     canvas.on('mouse:up', handleMouseUp);
     canvas.on('object:added', handleObjectAdded);
     canvas.on('object:modified', handleObjectModified);
     canvas.on('object:removed', handleObjectRemoved);
+    canvas.on('object:moving', handleObjectMoving);
     canvas.on('path:created', handlePathCreated);
 
     return () => {
@@ -309,6 +329,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       canvas.off('object:added', handleObjectAdded);
       canvas.off('object:modified', handleObjectModified);
       canvas.off('object:removed', handleObjectRemoved);
+      canvas.off('object:moving', handleObjectMoving);
       canvas.off('path:created', handlePathCreated);
     };
   }, [canvas, tool, isDrawing, startPos, saveToHistory]);
@@ -485,36 +506,128 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     );
     
     // Set custom data on the connector line and objects
+    const sourceId = (source as any).data?.id || `obj_${Date.now()}_1`;
+    const targetId = (target as any).data?.id || `obj_${Date.now()}_2`;
+    const connectionId = `conn_${Date.now()}`;
+    
     (connectionLine as any).data = {
       isConnector: true,
-      sourceId: (source as any).data?.id || `obj_${Date.now()}_1`,
-      targetId: (target as any).data?.id || `obj_${Date.now()}_2`
+      sourceId: sourceId,
+      targetId: targetId,
+      connectionId: connectionId
     };
     
     // Add IDs to objects if they don't have them
     if (!(source as any).data?.id) {
-      (source as any).data = { ...(source as any).data, id: `obj_${Date.now()}_1` };
+      (source as any).data = { ...(source as any).data, id: sourceId };
     }
     if (!(target as any).data?.id) {
-      (target as any).data = { ...(target as any).data, id: `obj_${Date.now()}_2` };
+      (target as any).data = { ...(target as any).data, id: targetId };
     }
     
     canvas.add(connectionLine);
     canvas.renderAll();
     
     // Store connection mapping
-    const sourceId = (source as any).data?.id || `obj_${Date.now()}_1`;
-    const targetId = (target as any).data?.id || `obj_${Date.now()}_2`;
-    const connectionId = `conn_${Date.now()}`;
-    
     setConnections(prev => {
       const newConnections = new Map(prev);
       if (!newConnections.has(sourceId)) {
         newConnections.set(sourceId, []);
       }
       newConnections.get(sourceId)?.push(connectionId);
+      
+      if (!newConnections.has(targetId)) {
+        newConnections.set(targetId, []);
+      }
+      newConnections.get(targetId)?.push(connectionId);
+      
       return newConnections;
     });
+  };
+
+  // Update connector positions when objects move
+  const updateConnectors = (movingObject: FabricObject) => {
+    if (!canvas) return;
+    
+    const movingObjectId = (movingObject as any).data?.id;
+    if (!movingObjectId) return;
+    
+    // Find all connector lines that involve this object (independent of connections Map)
+    canvas.getObjects().forEach((obj) => {
+      const objData = (obj as any).data;
+      if (objData?.isConnector && (objData.sourceId === movingObjectId || objData.targetId === movingObjectId)) {
+        const line = obj as FabricLine;
+        const sourceId = objData.sourceId;
+        const targetId = objData.targetId;
+        
+        // Find source and target objects
+        let sourceObj: FabricObject | null = null;
+        let targetObj: FabricObject | null = null;
+        
+        canvas.getObjects().forEach((canvasObj) => {
+          const canvasObjData = (canvasObj as any).data;
+          if (canvasObjData?.id === sourceId) sourceObj = canvasObj;
+          if (canvasObjData?.id === targetId) targetObj = canvasObj;
+        });
+        
+        if (sourceObj && targetObj) {
+          const sourceBounds = sourceObj.getBoundingRect();
+          const targetBounds = targetObj.getBoundingRect();
+          
+          const sourceCenter = {
+            x: sourceBounds.left + sourceBounds.width / 2,
+            y: sourceBounds.top + sourceBounds.height / 2
+          };
+          
+          const targetCenter = {
+            x: targetBounds.left + targetBounds.width / 2,
+            y: targetBounds.top + targetBounds.height / 2
+          };
+          
+          line.set({
+            x1: sourceCenter.x,
+            y1: sourceCenter.y,
+            x2: targetCenter.x,
+            y2: targetCenter.y
+          });
+        }
+      }
+    });
+    
+    canvas.renderAll();
+  };
+
+  // Clean up connectors when objects are deleted
+  const cleanupConnectors = (deletedObjectId: string) => {
+    if (!canvas) return;
+    
+    // Find and remove connector lines associated with the deleted object (independent of connections Map)
+    const objectsToRemove: FabricObject[] = [];
+    
+    canvas.getObjects().forEach((obj) => {
+      const objData = (obj as any).data;
+      if (objData?.isConnector && (objData.sourceId === deletedObjectId || objData.targetId === deletedObjectId)) {
+        objectsToRemove.push(obj);
+      }
+    });
+    
+    objectsToRemove.forEach(obj => canvas.remove(obj));
+    
+    // Update connections map to remove references to deleted connections
+    setConnections(prev => {
+      const newConnections = new Map(prev);
+      newConnections.delete(deletedObjectId);
+      
+      // Remove connection IDs from other objects' lists
+      const removedConnectionIds = objectsToRemove.map(obj => (obj as any).data?.connectionId).filter(Boolean);
+      for (const [key, connectionList] of newConnections.entries()) {
+        newConnections.set(key, connectionList.filter(connId => !removedConnectionIds.includes(connId)));
+      }
+      
+      return newConnections;
+    });
+    
+    canvas.renderAll();
   };
 
   const deleteSelected = () => {
@@ -547,14 +660,18 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       const newStep = currentHistory.step - 1;
       const previousState = currentHistory.history[newStep];
       
+      setIsLoadingCanvas(true); // Prevent history pollution during undo
+      
       if (previousState) {
         canvas.loadFromJSON(previousState, () => {
           canvas.renderAll();
+          setIsLoadingCanvas(false);
         });
       } else {
         canvas.clear();
         canvas.backgroundColor = 'white';
         canvas.renderAll();
+        setIsLoadingCanvas(false);
       }
       
       setPageHistories(new Map(pageHistories.set(currentPageId, {
@@ -572,10 +689,15 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       const newStep = currentHistory.step + 1;
       const nextState = currentHistory.history[newStep];
       
+      setIsLoadingCanvas(true); // Prevent history pollution during redo
+      
       if (nextState) {
         canvas.loadFromJSON(nextState, () => {
           canvas.renderAll();
+          setIsLoadingCanvas(false);
         });
+      } else {
+        setIsLoadingCanvas(false);
       }
       
       setPageHistories(new Map(pageHistories.set(currentPageId, {
@@ -631,6 +753,8 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const switchToPage = (pageId: string) => {
     if (!canvas) return;
     
+    setIsLoadingCanvas(true); // Prevent history saves during switch
+    
     // Save current page state
     const currentState = canvas.toJSON();
     setPages(pages.map(p => 
@@ -646,11 +770,33 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     if (targetPage?.canvasData) {
       canvas.loadFromJSON(targetPage.canvasData, () => {
         canvas.renderAll();
+        setIsLoadingCanvas(false);
+        
+        // Initialize history for this page if not exists
+        if (!pageHistories.has(pageId)) {
+          const currentCanvasState = canvas.toJSON();
+          setPageHistories(prev => {
+            const newMap = new Map(prev);
+            newMap.set(pageId, { history: [currentCanvasState], step: 0 });
+            return newMap;
+          });
+        }
       });
     } else {
       canvas.clear();
       canvas.backgroundColor = 'white';
       canvas.renderAll();
+      setIsLoadingCanvas(false);
+      
+      // Initialize empty history for new page
+      if (!pageHistories.has(pageId)) {
+        const emptyCanvasState = canvas.toJSON();
+        setPageHistories(prev => {
+          const newMap = new Map(prev);
+          newMap.set(pageId, { history: [emptyCanvasState], step: 0 });
+          return newMap;
+        });
+      }
     }
   };
 
@@ -720,29 +866,63 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       // Current page - use existing canvas
       return generateThumbnail();
     } else if (page.canvasData) {
-      // Other page - create temporary canvas
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = 200;
-      tempCanvas.height = 150;
-      const ctx = tempCanvas.getContext('2d');
-      
-      if (ctx) {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, 200, 150);
+      // Other page - create temporary Fabric canvas for offscreen rendering
+      return new Promise((resolve) => {
+        const tempCanvasElement = document.createElement('canvas');
+        tempCanvasElement.width = 800;
+        tempCanvasElement.height = 500;
         
-        // For now, return a placeholder for other pages
-        ctx.fillStyle = '#f0f0f0';
-        ctx.fillRect(10, 10, 180, 130);
-        ctx.fillStyle = '#666';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(page.name, 100, 75);
-      }
-      
-      return tempCanvas.toDataURL();
+        const tempFabricCanvas = new FabricCanvas(tempCanvasElement, {
+          width: 800,
+          height: 500,
+          backgroundColor: 'white',
+        });
+        
+        // Load the page data into temporary canvas
+        tempFabricCanvas.loadFromJSON(page.canvasData, () => {
+          tempFabricCanvas.renderAll();
+          
+          // Create thumbnail from the temporary canvas
+          const thumbnailCanvas = document.createElement('canvas');
+          thumbnailCanvas.width = 200;
+          thumbnailCanvas.height = 150;
+          const ctx = thumbnailCanvas.getContext('2d');
+          
+          if (ctx) {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, 200, 150);
+            
+            // Draw the temporary canvas content scaled down
+            const tempElement = tempFabricCanvas.getElement();
+            ctx.drawImage(tempElement, 0, 0, 200, 150);
+          }
+          
+          // Clean up temporary canvas
+          tempFabricCanvas.dispose();
+          
+          resolve(thumbnailCanvas.toDataURL());
+        });
+      });
     }
     
-    return '';
+    // Default empty thumbnail
+    const defaultCanvas = document.createElement('canvas');
+    defaultCanvas.width = 200;
+    defaultCanvas.height = 150;
+    const ctx = defaultCanvas.getContext('2d');
+    
+    if (ctx) {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, 200, 150);
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(10, 10, 180, 130);
+      ctx.fillStyle = '#666';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(page.name, 100, 75);
+    }
+    
+    return defaultCanvas.toDataURL();
   };
 
   const exportDrawing = () => {
