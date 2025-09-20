@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import type { Project } from "@shared/schema";
 import dttoolsIcon from "../assets/dttools-icon.png";
 
@@ -140,9 +140,10 @@ export default function Dashboard() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const [selectedPhase, setSelectedPhase] = useState<number | null>(null);
+  const [, setLocation] = useLocation();
 
   const handlePhaseClick = () => {
-    window.location.href = "/projects";
+    setLocation("/projects");
   };
 
   const { data: projects = [] } = useQuery<Project[]>({
