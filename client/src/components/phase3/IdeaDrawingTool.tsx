@@ -13,7 +13,6 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,7 +24,6 @@ import {
   Square, 
   Circle, 
   Triangle, 
-  Minus, 
   Type, 
   Save, 
   Download, 
@@ -36,8 +34,8 @@ import {
   Plus,
   Eye,
   Edit3,
-  Link,
-  Upload
+  Upload,
+  MousePointer2
 } from "lucide-react";
 import type { CanvasDrawing } from "@shared/schema";
 
@@ -56,19 +54,13 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
   const [tempShape, setTempShape] = useState<any>(null);
   const [currentDrawing, setCurrentDrawing] = useState<CanvasDrawing | null>(null);
-  const [isDrawingSelectorOpen, setIsDrawingSelectorOpen] = useState(false);
   const [newDrawingTitle, setNewDrawingTitle] = useState("");
   const [newDrawingDescription, setNewDrawingDescription] = useState("");
-  
-  // Estados para conectores entre formas
-  const [connections, setConnections] = useState<Array<{id: string; line: any; fromObject: any; toObject: any}>>([]);
-  const [firstSelectedObject, setFirstSelectedObject] = useState<any>(null);
   
   // Refs para evitar stale closures nos event handlers
   const selectedToolRef = useRef<string>("pen");
   const selectedColorRef = useRef<string>("#000000");
   const selectedBrushSizeRef = useRef<number>(5);
-  const firstSelectedObjectRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Query para buscar desenhos existentes
@@ -113,6 +105,8 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         title: "Desenho salvo!",
         description: "Seu desenho de ideação foi salvo com sucesso.",
       });
+      setNewDrawingTitle("");
+      setNewDrawingDescription("");
     },
     onError: (error) => {
       console.error("Erro ao salvar desenho:", error);
@@ -124,487 +118,209 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     },
   });
 
-  // Referência para conectores - usar ref para evitar re-renders
-  const connectionsRef = useRef<Array<{id: string; line: any; fromObject: any; toObject: any}>>([]);
-
-  // Função para calcular dimensões responsivas do canvas
-  const getCanvasDimensions = () => {
-    if (typeof window === 'undefined') return { width: 800, height: 600 };
-    
-    const container = canvasRef.current?.parentElement;
-    if (!container) return { width: 800, height: 600 };
-    
-    const containerWidth = container.clientWidth;
-    // Mobile: usar largura total menos padding
-    if (window.innerWidth < 768) {
-      return {
-        width: Math.max(300, Math.min(containerWidth - 32, 600)), // mínimo 300px, máximo container - padding
-        height: 400 // altura menor no mobile
-      };
-    }
-    // Desktop: dimensões padrão
-    return { width: 800, height: 600 };
-  };
-
-  // Handler para resize responsivo
+  // Inicializar canvas
   useEffect(() => {
-    const handleResize = () => {
-      if (!canvas) return;
-      
-      const newDimensions = getCanvasDimensions();
-      canvas.setWidth(newDimensions.width);
-      canvas.setHeight(newDimensions.height);
-      canvas.renderAll();
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [canvas]);
+    if (canvasRef.current && !canvas) {
+      const fabricCanvas = new FabricCanvas(canvasRef.current, {
+        width: 800,
+        height: 500,
+        backgroundColor: 'white',
+      });
 
-  // Inicializar canvas Fabric.js uma vez só
-  useEffect(() => {
-    if (!canvasRef.current) return;
-
-    const dimensions = getCanvasDimensions();
-    const fabricCanvas = new FabricCanvas(canvasRef.current, {
-      width: dimensions.width,
-      height: dimensions.height,
-      backgroundColor: 'white',
-      selection: true,
-    });
-
-    // Configurar brush inicial
-    if (fabricCanvas.freeDrawingBrush) {
+      fabricCanvas.isDrawingMode = true;
       fabricCanvas.freeDrawingBrush.width = selectedBrushSize;
       fabricCanvas.freeDrawingBrush.color = selectedColor;
+
+      setCanvas(fabricCanvas);
+
+      return () => {
+        fabricCanvas.dispose();
+      };
     }
+  }, [canvasRef.current]);
 
-    // Event listeners para conectores
-    fabricCanvas.on('mouse:down', (options) => {
-      if (selectedToolRef.current === "connector" && options.target && options.target.type !== 'line') {
-        handleObjectSelection(options.target);
-      } else if (["rectangle", "circle", "triangle", "line"].includes(selectedToolRef.current)) {
-        handleShapeMouseDown(options);
-      }
-    });
-    
-    fabricCanvas.on('mouse:move', (options) => {
-      if (["rectangle", "circle", "triangle", "line"].includes(selectedToolRef.current)) {
-        handleShapeMouseMove(options);
-      }
-    });
-    
-    fabricCanvas.on('mouse:up', (options) => {
-      if (["rectangle", "circle", "triangle", "line"].includes(selectedToolRef.current)) {
-        handleShapeMouseUp(options);
-      }
-    });
-
-    // Event listener para atualizar conexões quando objetos se movem
-    fabricCanvas.on('object:moving', (options) => {
-      const movingObject = options.target;
-      if (!movingObject) return;
-
-      // Atualizar todas as conexões que envolvem este objeto
-      connectionsRef.current.forEach(connection => {
-        if (connection.fromObject === movingObject || connection.toObject === movingObject) {
-          updateConnection(connection);
-        }
-      });
-      
-      fabricCanvas.renderAll();
-    });
-
-    // Event listener para quando objetos terminam de se mover
-    fabricCanvas.on('object:modified', (options) => {
-      const modifiedObject = options.target;
-      if (!modifiedObject) return;
-
-      // Atualizar todas as conexões que envolvem este objeto
-      connectionsRef.current.forEach(connection => {
-        if (connection.fromObject === modifiedObject || connection.toObject === modifiedObject) {
-          updateConnection(connection);
-        }
-      });
-      
-      fabricCanvas.renderAll();
-    });
-
-    setCanvas(fabricCanvas);
-
-    return () => {
-      fabricCanvas.dispose();
-    };
-  }, []); // Dependências vazias - inicializar apenas uma vez
-
-  // Atualizar configurações do brush quando mudar cor ou tamanho
+  // Atualizar refs quando estado muda
   useEffect(() => {
-    if (canvas && canvas.freeDrawingBrush) {
+    selectedToolRef.current = selectedTool;
+    selectedColorRef.current = selectedColor;
+    selectedBrushSizeRef.current = selectedBrushSize;
+    
+    if (canvas) {
       canvas.freeDrawingBrush.width = selectedBrushSize;
       canvas.freeDrawingBrush.color = selectedColor;
-    }
-  }, [canvas, selectedBrushSize, selectedColor]);
-
-  // Sync refs with state to avoid stale closures
-  useEffect(() => {
-    selectedColorRef.current = selectedColor;
-  }, [selectedColor]);
-
-  useEffect(() => {
-    selectedBrushSizeRef.current = selectedBrushSize;
-  }, [selectedBrushSize]);
-
-  // Funções das ferramentas
-  const handleToolChange = (tool: string) => {
-    if (!canvas) return;
-    
-    setSelectedTool(tool);
-    selectedToolRef.current = tool; // Atualizar ref para event handlers
-    
-    // Reset connector state when changing tools
-    if (tool !== "connector") {
-      setFirstSelectedObject(null);
-      firstSelectedObjectRef.current = null;
-    }
-    
-    switch (tool) {
-      case "pen":
+      
+      if (selectedTool === "pen") {
         canvas.isDrawingMode = true;
-        canvas.selection = false;
-        break;
-      case "select":
+      } else {
         canvas.isDrawingMode = false;
-        canvas.selection = true;
-        break;
-      case "connector":
-        canvas.isDrawingMode = false;
-        canvas.selection = true;
-        // Clear any previous selection when switching to connector mode
-        canvas.discardActiveObject();
-        canvas.renderAll();
-        break;
-      case "rectangle":
-      case "circle":
-      case "triangle":
-      case "line":
-        canvas.isDrawingMode = false;
-        canvas.selection = false;
-        break;
-      default:
-        canvas.isDrawingMode = false;
-        canvas.selection = false;
-        break;
+      }
     }
-  };
+  }, [selectedTool, selectedColor, selectedBrushSize, canvas]);
 
-  const handleShapeMouseDown = (options: any) => {
+  // Event handlers para criação de formas
+  useEffect(() => {
     if (!canvas) return;
-    
-    setIsDrawing(true);
-    const pointer = canvas.getPointer(options.e);
-    setStartPos({ x: pointer.x, y: pointer.y });
-  };
-  
-  const handleShapeMouseMove = (options: any) => {
-    if (!canvas || !isDrawing || !startPos) return;
-    
-    const pointer = canvas.getPointer(options.e);
-    
-    // Remove previous temp shape
-    if (tempShape) {
-      canvas.remove(tempShape);
-      setTempShape(null);
-    }
-    
-    const width = Math.abs(pointer.x - startPos.x);
-    const height = Math.abs(pointer.y - startPos.y);
-    const left = Math.min(startPos.x, pointer.x);
-    const top = Math.min(startPos.y, pointer.y);
-    
-    let shape: any;
-    
-    switch (selectedToolRef.current) {
-      case "rectangle":
-        shape = new FabricRect({
-          left,
-          top,
-          width,
-          height,
-          fill: "transparent",
-          stroke: selectedColorRef.current,
-          strokeWidth: 2,
-          opacity: 0.8,
-          selectable: false,
-        });
-        break;
-      case "circle":
-        const radius = Math.min(width, height) / 2;
-        shape = new FabricCircle({
-          left: left + width / 2,
-          top: top + height / 2,
-          radius,
-          fill: "transparent",
-          stroke: selectedColorRef.current,
-          strokeWidth: 2,
-          opacity: 0.8,
-          selectable: false,
-          originX: 'center',
-          originY: 'center',
-        });
-        break;
-      case "triangle":
-        shape = new FabricTriangle({
-          left,
-          top,
-          width,
-          height,
-          fill: "transparent",
-          stroke: selectedColorRef.current,
-          strokeWidth: 2,
-          opacity: 0.8,
-          selectable: false,
-        });
-        break;
-      case "line":
-        shape = new FabricLine([startPos.x, startPos.y, pointer.x, pointer.y], {
-          stroke: selectedColorRef.current,
-          strokeWidth: selectedBrushSizeRef.current,
-          selectable: false,
-        });
-        break;
-      default:
-        return;
-    }
-    
-    canvas.add(shape);
-    setTempShape(shape);
-    canvas.renderAll();
-  };
-  
-  const handleShapeMouseUp = (options: any) => {
-    if (!canvas || !isDrawing || !startPos) return;
-    
-    setIsDrawing(false);
-    const pointer = canvas.getPointer(options.e);
-    
-    // Remove temp shape
-    if (tempShape) {
-      canvas.remove(tempShape);
-      setTempShape(null);
-    }
-    
-    const width = Math.abs(pointer.x - startPos.x);
-    const height = Math.abs(pointer.y - startPos.y);
-    
-    // Only create shape if there was actual dragging (minimum size)
-    if (width > 5 || height > 5) {
+
+    const handleMouseDown = (e: any) => {
+      if (selectedToolRef.current === "pen" || selectedToolRef.current === "select") return;
+      
+      const pointer = canvas.getPointer(e.e);
+      setStartPos({ x: pointer.x, y: pointer.y });
+      setIsDrawing(true);
+    };
+
+    const handleMouseMove = (e: any) => {
+      if (!isDrawing || !startPos || selectedToolRef.current === "pen" || selectedToolRef.current === "select") return;
+      
+      const pointer = canvas.getPointer(e.e);
+      
+      // Remove temporary shape
+      if (tempShape) {
+        canvas.remove(tempShape);
+        setTempShape(null);
+      }
+
+      // Create new temporary shape for preview
+      let shape: any = null;
+      const width = Math.abs(pointer.x - startPos.x);
+      const height = Math.abs(pointer.y - startPos.y);
       const left = Math.min(startPos.x, pointer.x);
       const top = Math.min(startPos.y, pointer.y);
-      
-      let finalShape: any;
-      
+
       switch (selectedToolRef.current) {
         case "rectangle":
-          finalShape = new FabricRect({
+          shape = new FabricRect({
             left,
             top,
             width,
             height,
-            fill: "transparent",
+            fill: 'transparent',
             stroke: selectedColorRef.current,
             strokeWidth: 2,
-            opacity: 0.8,
           });
           break;
         case "circle":
           const radius = Math.min(width, height) / 2;
-          finalShape = new FabricCircle({
-            left: left + width / 2,
-            top: top + height / 2,
+          shape = new FabricCircle({
+            left: left,
+            top: top,
             radius,
-            fill: "transparent",
+            fill: 'transparent',
             stroke: selectedColorRef.current,
             strokeWidth: 2,
-            opacity: 0.8,
-            originX: 'center',
-            originY: 'center',
           });
           break;
         case "triangle":
-          finalShape = new FabricTriangle({
+          shape = new FabricTriangle({
             left,
             top,
             width,
             height,
-            fill: "transparent",
+            fill: 'transparent',
             stroke: selectedColorRef.current,
             strokeWidth: 2,
-            opacity: 0.8,
           });
           break;
-        case "line":
-          finalShape = new FabricLine([startPos.x, startPos.y, pointer.x, pointer.y], {
-            stroke: selectedColorRef.current,
-            strokeWidth: selectedBrushSizeRef.current,
-          });
-          break;
-        default:
-          setStartPos(null);
-          return;
       }
+
+      if (shape) {
+        canvas.add(shape);
+        setTempShape(shape);
+        canvas.renderAll();
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (!isDrawing || !startPos) return;
       
-      canvas.add(finalShape);
-      canvas.setActiveObject(finalShape);
-      canvas.renderAll();
+      setIsDrawing(false);
+      setStartPos(null);
+      
+      if (tempShape && selectedToolRef.current !== "pen" && selectedToolRef.current !== "select") {
+        // Make the temporary shape permanent
+        tempShape.selectable = true;
+        tempShape.evented = true;
+        setTempShape(null);
+        canvas.renderAll();
+      }
+    };
+
+    canvas.on('mouse:down', handleMouseDown);
+    canvas.on('mouse:move', handleMouseMove);
+    canvas.on('mouse:up', handleMouseUp);
+
+    return () => {
+      canvas.off('mouse:down', handleMouseDown);
+      canvas.off('mouse:move', handleMouseMove);
+      canvas.off('mouse:up', handleMouseUp);
+    };
+  }, [canvas, isDrawing, startPos, tempShape]);
+
+  const handleToolChange = (tool: string) => {
+    setSelectedTool(tool);
+    if (canvas) {
+      canvas.isDrawingMode = tool === "pen";
+      if (tool === "select") {
+        canvas.defaultCursor = 'default';
+      } else {
+        canvas.defaultCursor = 'crosshair';
+      }
     }
-    
-    setStartPos(null);
   };
 
   const addText = () => {
     if (!canvas) return;
-
-    const text = new FabricIText("Clique para editar", {
+    
+    const text = new FabricIText('Clique para editar', {
       left: 100,
       top: 100,
       fontFamily: 'Arial',
-      fontSize: 24,
+      fontSize: 20,
       fill: selectedColor,
     });
-
+    
     canvas.add(text);
     canvas.setActiveObject(text);
-    canvas.renderAll();
-  };
-
-  const clearCanvas = () => {
-    if (!canvas) return;
-    
-    canvas.clear();
-    canvas.backgroundColor = 'white';
+    text.enterEditing();
     canvas.renderAll();
   };
 
   const deleteSelected = () => {
     if (!canvas) return;
-    
-    const activeObjects = canvas.getActiveObjects();
-    if (activeObjects.length) {
-      canvas.remove(...activeObjects);
-      canvas.discardActiveObject();
+    const activeObject = canvas.getActiveObject();
+    if (activeObject) {
+      canvas.remove(activeObject);
       canvas.renderAll();
     }
   };
 
-  const saveDrawing = () => {
-    if (!canvas || !newDrawingTitle.trim()) {
-      toast({
-        title: "Título obrigatório",
-        description: "Por favor, insira um título para o desenho.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const canvasData = canvas.toJSON();
-    const thumbnailData = canvas.toDataURL({
-      format: 'png',
-      quality: 0.3,
-      multiplier: 0.2 // Thumbnail pequeno
-    });
-
-    saveDrawingMutation.mutate({
-      title: newDrawingTitle,
-      description: newDrawingDescription,
-      canvasData,
-      thumbnailData,
-    });
-
-    setNewDrawingTitle("");
-    setNewDrawingDescription("");
-  };
-
-  const loadDrawing = (drawing: CanvasDrawing) => {
+  const clearCanvas = () => {
     if (!canvas) return;
-
-    canvas.loadFromJSON(drawing.canvasData as string | Record<string, any>, () => {
-      canvas.renderAll();
-      setCurrentDrawing(drawing);
-      setIsDrawingSelectorOpen(false);
-      toast({
-        title: "Desenho carregado!",
-        description: `"${drawing.title}" foi carregado no canvas.`,
-      });
-    });
-  };
-
-  // Função para criar conexão entre dois objetos
-  const createConnection = (fromObj: any, toObj: any) => {
-    if (!canvas || !fromObj || !toObj) return;
-
-    // Calcular posições centrais dos objetos usando métodos robustos do Fabric.js
-    const fromCenter = fromObj.getCenterPoint ? fromObj.getCenterPoint() : {
-      x: fromObj.left + (fromObj.width || 0) / 2,
-      y: fromObj.top + (fromObj.height || 0) / 2,
-    };
-    const toCenter = toObj.getCenterPoint ? toObj.getCenterPoint() : {
-      x: toObj.left + (toObj.width || 0) / 2,
-      y: toObj.top + (toObj.height || 0) / 2,
-    };
-
-    // Criar linha conectora
-    const line = new FabricLine([fromCenter.x, fromCenter.y, toCenter.x, toCenter.y], {
-      stroke: '#666666',
-      strokeWidth: 2,
-      selectable: false,
-      evented: false,
-      strokeDashArray: [5, 5], // Linha tracejada
-    });
-
-    // Adicionar linha ao canvas (mas atrás dos objetos)
-    canvas.add(line);
-    canvas.sendObjectToBack(line);
-    
-    // Criar conexão e adicionar à lista
-    const connectionId = `conn_${Date.now()}_${Math.random()}`;
-    const newConnection = {
-      id: connectionId,
-      line,
-      fromObject: fromObj,
-      toObject: toObj,
-    };
-
-    connectionsRef.current = [...connectionsRef.current, newConnection];
-    setConnections(connectionsRef.current); // Atualizar estado para re-render
+    canvas.clear();
+    canvas.backgroundColor = 'white';
     canvas.renderAll();
-
-    return newConnection;
-  };
-
-  // Atualizar posição de uma conexão
-  const updateConnection = (connection: any) => {
-    if (!connection.fromObject || !connection.toObject || !connection.line) return;
-
-    const fromCenter = connection.fromObject.getCenterPoint ? connection.fromObject.getCenterPoint() : {
-      x: connection.fromObject.left + (connection.fromObject.width || 0) / 2,
-      y: connection.fromObject.top + (connection.fromObject.height || 0) / 2,
-    };
-    const toCenter = connection.toObject.getCenterPoint ? connection.toObject.getCenterPoint() : {
-      x: connection.toObject.left + (connection.toObject.width || 0) / 2,
-      y: connection.toObject.top + (connection.toObject.height || 0) / 2,
-    };
-
-    connection.line.set({
-      x1: fromCenter.x,
-      y1: fromCenter.y,
-      x2: toCenter.x,
-      y2: toCenter.y,
+    toast({
+      title: "Canvas limpo!",
+      description: "Todos os elementos foram removidos.",
     });
-
-    connection.line.setCoords();
   };
 
-  // Upload de imagem
+  const undoAction = () => {
+    // Implementar undo se necessário
+    toast({
+      title: "Função não implementada",
+      description: "Funcionalidade de desfazer será implementada em breve.",
+    });
+  };
+
+  const redoAction = () => {
+    // Implementar redo se necessário
+    toast({
+      title: "Função não implementada", 
+      description: "Funcionalidade de refazer será implementada em breve.",
+    });
+  };
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !canvas) return;
@@ -631,97 +347,6 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     reader.readAsDataURL(file);
   };
 
-  // Paste de imagem do clipboard
-  const handlePaste = useCallback(async (event: ClipboardEvent) => {
-    const items = event.clipboardData?.items;
-    if (!items || !canvas) return;
-
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf('image') !== -1) {
-        const blob = items[i].getAsFile();
-        if (blob) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const imageUrl = e.target?.result as string;
-            FabricImage.fromURL(imageUrl).then((img) => {
-              img.set({
-                left: 100,
-                top: 100,
-                scaleX: 0.5,
-                scaleY: 0.5,
-              });
-              canvas.add(img);
-              canvas.renderAll();
-              
-              toast({
-                title: "Imagem colada!",
-                description: "A imagem foi inserida no canvas.",
-              });
-            });
-          };
-          reader.readAsDataURL(blob);
-        }
-        break;
-      }
-    }
-  }, [canvas, toast]);
-
-  // Add paste event listener
-  useEffect(() => {
-    document.addEventListener('paste', handlePaste);
-    return () => document.removeEventListener('paste', handlePaste);
-  }, [handlePaste]);
-
-  // Lidar com cliques de objetos no modo connector
-  const handleObjectSelection = (obj: any) => {
-    if (selectedToolRef.current !== "connector") return;
-
-    if (!firstSelectedObjectRef.current) {
-      // Primeiro objeto selecionado
-      setFirstSelectedObject(obj);
-      firstSelectedObjectRef.current = obj;
-      // Save original properties before changing them
-      obj.originalStroke = obj.stroke;
-      obj.originalStrokeWidth = obj.strokeWidth;
-      obj.set('stroke', '#ff6b6b');
-      obj.set('strokeWidth', 3);
-      canvas?.renderAll();
-      
-      toast({
-        title: "Primeiro objeto selecionado",
-        description: "Clique em outro objeto para criar a conexão",
-      });
-    } else if (firstSelectedObjectRef.current !== obj) {
-      // Segundo objeto selecionado - criar conexão
-      createConnection(firstSelectedObjectRef.current, obj);
-      
-      // Reset selection visual
-      firstSelectedObjectRef.current.set('stroke', firstSelectedObjectRef.current.originalStroke || firstSelectedObjectRef.current.fill);
-      firstSelectedObjectRef.current.set('strokeWidth', firstSelectedObjectRef.current.originalStrokeWidth ?? firstSelectedObjectRef.current.strokeWidth ?? 1);
-      
-      setFirstSelectedObject(null);
-      firstSelectedObjectRef.current = null;
-      canvas?.renderAll();
-      
-      toast({
-        title: "Conexão criada!",
-        description: "Os objetos foram conectados com sucesso.",
-      });
-    } else {
-      // Mesmo objeto clicado novamente - cancelar
-      firstSelectedObjectRef.current.set('stroke', firstSelectedObjectRef.current.originalStroke || firstSelectedObjectRef.current.fill);
-      firstSelectedObjectRef.current.set('strokeWidth', firstSelectedObjectRef.current.originalStrokeWidth ?? firstSelectedObjectRef.current.strokeWidth ?? 1);
-      setFirstSelectedObject(null);
-      firstSelectedObjectRef.current = null;
-      canvas?.renderAll();
-      
-      toast({
-        title: "Seleção cancelada",
-        description: "Selecione dois objetos diferentes para conectar.",
-      });
-    }
-  };
-
   const exportDrawing = () => {
     if (!canvas) return;
 
@@ -744,14 +369,63 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     
     clearCanvas();
     setCurrentDrawing(null);
-    setIsDrawingSelectorOpen(false);
   };
 
-  const colors = [
-    "#000000", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", 
-    "#FF00FF", "#00FFFF", "#FFA500", "#800080", "#008000",
-    "#808080", "#FFC0CB", "#A52A2A", "#90EE90", "#87CEEB"
-  ];
+  const saveDrawing = () => {
+    if (!newDrawingTitle.trim()) {
+      toast({
+        title: "Título obrigatório",
+        description: "Por favor, insira um título para o desenho.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!canvas) {
+      toast({
+        title: "Erro",
+        description: "Canvas não encontrado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const canvasData = JSON.stringify(canvas.toObject());
+    const thumbnailData = canvas.toDataURL();
+
+    saveDrawingMutation.mutate({
+      title: newDrawingTitle,
+      description: newDrawingDescription,
+      canvasData,
+      thumbnailData,
+    });
+  };
+
+  const loadDrawing = (drawing: CanvasDrawing) => {
+    try {
+      const canvasData = typeof drawing.canvasData === 'string' 
+        ? JSON.parse(drawing.canvasData) 
+        : drawing.canvasData;
+        
+      if (canvasData && canvas) {
+        canvas.loadFromJSON(canvasData, () => {
+          canvas.renderAll();
+          setCurrentDrawing(drawing);
+          
+          toast({
+            title: "Desenho carregado!",
+            description: `Desenho "${drawing.title}" foi carregado com sucesso.`,
+          });
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao carregar",
+        description: "Não foi possível carregar o desenho.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -765,121 +439,137 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         </p>
       </div>
 
-      {/* Toolbar */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Ferramentas de Desenho</CardTitle>
-            <div className="flex gap-2">
-              <Dialog open={isDrawingSelectorOpen} onOpenChange={setIsDrawingSelectorOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Eye className="w-4 h-4 mr-2" />
-                    Desenhos Salvos
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl">
-                  <DialogHeader>
-                    <DialogTitle>Seus Desenhos de Ideação</DialogTitle>
-                    <DialogDescription>
-                      Selecione um desenho existente para continuar editando
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-                    <Card 
-                      className="cursor-pointer hover:shadow-md transition-shadow border-dashed"
-                      onClick={createNewDrawing}
-                    >
-                      <CardContent className="p-4 text-center">
-                        <Plus className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-600">Novo Desenho</p>
-                      </CardContent>
-                    </Card>
-                    {Array.isArray(drawings) && drawings
-                      .filter((d: CanvasDrawing) => d.phase === 3)
-                      .map((drawing: CanvasDrawing) => (
-                      <Card 
-                        key={drawing.id} 
-                        className="cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => loadDrawing(drawing)}
-                      >
-                        <CardContent className="p-4">
-                          {drawing.thumbnailData && (
-                            <img 
-                              src={drawing.thumbnailData} 
-                              alt={drawing.title}
-                              className="w-full h-24 object-cover rounded mb-2"
-                            />
-                          )}
-                          <h3 className="font-medium text-sm truncate">{drawing.title}</h3>
-                          {drawing.description && (
-                            <p className="text-xs text-gray-500 truncate">{drawing.description}</p>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
+      <Tabs defaultValue="canvas" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="canvas" className="flex items-center gap-2">
+            <Edit3 className="w-4 h-4" />
+            Canvas de Desenho
+          </TabsTrigger>
+          <TabsTrigger value="gallery" className="flex items-center gap-2">
+            <Eye className="w-4 h-4" />
+            Meus Desenhos
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="canvas" className="space-y-4">
+          {/* Páginas */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Páginas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div className="relative group cursor-pointer border-2 border-blue-500 bg-blue-50 rounded-lg p-2">
+                  <div className="aspect-video bg-gray-100 rounded border mb-2 flex items-center justify-center overflow-hidden">
+                    <span className="text-gray-400 text-xs">Página vazia</span>
                   </div>
-                </DialogContent>
-              </Dialog>
+                  <div className="text-center">
+                    <h4 className="text-sm font-medium truncate">Página 1</h4>
+                    <p className="text-xs text-gray-500">0 elementos</p>
+                  </div>
+                  <div className="absolute top-1 left-1 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">
+                    ✓
+                  </div>
+                </div>
+                
+                <div className="relative group cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-2 transition-all hover:border-gray-400 bg-gray-50 hover:bg-gray-100">
+                  <div className="aspect-video bg-gray-200 rounded border mb-2 flex items-center justify-center">
+                    <Plus className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <div className="text-center">
+                    <h4 className="text-sm font-medium text-gray-600">Nova Página</h4>
+                    <p className="text-xs text-gray-400">Clique para criar</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-sm text-gray-600 text-center">
+                Página atual: <strong>Página 1</strong> (0 elementos)
+              </div>
+            </CardContent>
+          </Card>
 
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={createNewDrawing}
-                data-testid="button-new-drawing"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Novo
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="tools" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="tools">Ferramentas</TabsTrigger>
-              <TabsTrigger value="shapes">Formas</TabsTrigger>
-              <TabsTrigger value="colors">Cores</TabsTrigger>
-              <TabsTrigger value="save">Salvar</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="tools">
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={selectedTool === "pen" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleToolChange("pen")}
-                  data-testid="tool-pen"
-                >
-                  <PenTool className="w-4 h-4 mr-2" />
-                  Desenho Livre
-                </Button>
-                <Button
-                  variant={selectedTool === "select" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleToolChange("select")}
-                  data-testid="tool-select"
-                >
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  Selecionar
-                </Button>
-                <Button
-                  variant={selectedTool === "connector" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleToolChange("connector")}
-                  data-testid="tool-connector"
-                >
-                  <Link className="w-4 h-4 mr-2" />
-                  Conectar
-                </Button>
+          {/* Ferramentas */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Ferramentas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Tool selection - Grid layout matching Phase 4 */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm text-gray-700">Ferramentas de Desenho</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                  <Button
+                    variant={selectedTool === "select" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToolChange("select")}
+                    data-testid="button-tool-select"
+                    className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
+                  >
+                    <MousePointer2 className="w-4 h-4 mb-1" />
+                    <span className="text-xs leading-tight">Selecionar</span>
+                  </Button>
+                  <Button
+                    variant={selectedTool === "pen" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToolChange("pen")}
+                    data-testid="button-tool-pen"
+                    className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
+                  >
+                    <PenTool className="w-4 h-4 mb-1" />
+                    <span className="text-xs leading-tight">Caneta</span>
+                  </Button>
+                  <Button
+                    variant={selectedTool === "rectangle" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToolChange("rectangle")}
+                    data-testid="button-tool-rect"
+                    className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
+                  >
+                    <Square className="w-4 h-4 mb-1" />
+                    <span className="text-xs leading-tight">Retângulo</span>
+                  </Button>
+                  <Button
+                    variant={selectedTool === "circle" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToolChange("circle")}
+                    data-testid="button-tool-circle"
+                    className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
+                  >
+                    <Circle className="w-4 h-4 mb-1" />
+                    <span className="text-xs leading-tight">Círculo</span>
+                  </Button>
+                  <Button
+                    variant={selectedTool === "triangle" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToolChange("triangle")}
+                    data-testid="button-tool-star"
+                    className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
+                  >
+                    <Triangle className="w-4 h-4 mb-1" />
+                    <span className="text-xs leading-tight">Estrela</span>
+                  </Button>
+                  <Button
+                    variant={selectedTool === "text" ? "default" : "outline"}
+                    size="sm"
+                    onClick={addText}
+                    data-testid="button-tool-text"
+                    className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
+                  >
+                    <Type className="w-4 h-4 mb-1" />
+                    <span className="text-xs leading-tight">Texto</span>
+                  </Button>
+                </div>
+                
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
                   data-testid="button-upload-image"
+                  className="col-span-2 sm:col-span-3 md:col-span-6 h-12 flex items-center justify-center gap-2"
                 >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload
+                  <Upload className="w-4 h-4" />
+                  <span>Adicionar Imagem</span>
                 </Button>
                 <input
                   ref={fileInputRef}
@@ -888,202 +578,195 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   onChange={handleImageUpload}
                   className="hidden"
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addText}
-                  data-testid="tool-text"
-                >
-                  <Type className="w-4 h-4 mr-2" />
-                  Texto
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={deleteSelected}
-                  data-testid="button-delete"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Deletar
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearCanvas}
-                  data-testid="button-clear"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Limpar Tudo
-                </Button>
               </div>
-              
-              <div className="flex items-center gap-4 mt-4">
-                <div className="flex items-center gap-2">
-                  <Label>Tamanho do Pincel:</Label>
-                  <Input
-                    type="range"
-                    min="1"
-                    max="20"
-                    value={selectedBrushSize}
-                    onChange={(e) => setSelectedBrushSize(Number(e.target.value))}
-                    className="w-20"
-                    data-testid="brush-size-slider"
-                  />
-                  <span className="text-sm">{selectedBrushSize}px</span>
-                </div>
-              </div>
-            </TabsContent>
 
-            <TabsContent value="shapes">
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={selectedTool === "rectangle" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleToolChange("rectangle")}
-                  data-testid="shape-rectangle"
-                >
-                  <Square className="w-4 h-4 mr-2" />
-                  Retângulo
-                </Button>
-                <Button
-                  variant={selectedTool === "circle" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleToolChange("circle")}
-                  data-testid="shape-circle"
-                >
-                  <Circle className="w-4 h-4 mr-2" />
-                  Círculo
-                </Button>
-                <Button
-                  variant={selectedTool === "triangle" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleToolChange("triangle")}
-                  data-testid="shape-triangle"
-                >
-                  <Triangle className="w-4 h-4 mr-2" />
-                  Triângulo
-                </Button>
-                <Button
-                  variant={selectedTool === "line" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleToolChange("line")}
-                  data-testid="shape-line"
-                >
-                  <Minus className="w-4 h-4 mr-2" />
-                  Linha
-                </Button>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="colors">
+              {/* Configurações */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Label>Cor Atual:</Label>
-                  <div 
-                    className="w-8 h-8 rounded border-2 border-gray-300"
-                    style={{ backgroundColor: selectedColor }}
-                  />
-                  <Input
-                    type="color"
-                    value={selectedColor}
-                    onChange={(e) => setSelectedColor(e.target.value)}
-                    className="w-16 h-8"
-                    data-testid="color-picker"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-5 gap-2">
-                  {colors.map((color) => (
-                    <button
-                      key={color}
-                      className={`w-10 h-10 rounded border-2 transition-all ${
-                        selectedColor === color ? 'border-gray-800 scale-110' : 'border-gray-300 hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setSelectedColor(color)}
-                      data-testid={`color-${color}`}
+                <h4 className="font-medium text-sm text-gray-700">Configurações</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium min-w-0 flex-shrink-0">Cor:</label>
+                    <input
+                      type="color"
+                      value={selectedColor}
+                      onChange={(e) => setSelectedColor(e.target.value)}
+                      className="w-12 h-8 rounded border border-gray-300 flex-shrink-0"
+                      data-testid="input-color"
                     />
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="save">
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="drawing-title">Título do Desenho*</Label>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium min-w-0 flex-shrink-0">Espessura:</label>
                     <Input
-                      id="drawing-title"
-                      value={newDrawingTitle}
-                      onChange={(e) => setNewDrawingTitle(e.target.value)}
-                      placeholder="Ex: Fluxo de navegação do app"
-                      data-testid="input-drawing-title"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="drawing-description">Descrição (opcional)</Label>
-                    <Textarea
-                      id="drawing-description"
-                      value={newDrawingDescription}
-                      onChange={(e) => setNewDrawingDescription(e.target.value)}
-                      placeholder="Descreva o que este desenho representa"
-                      className="min-h-[40px]"
-                      data-testid="input-drawing-description"
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={selectedBrushSize}
+                      onChange={(e) => setSelectedBrushSize(Number(e.target.value))}
+                      className="w-20 flex-shrink-0"
+                      data-testid="input-stroke-width"
                     />
                   </div>
                 </div>
-                
-                <div className="flex gap-2">
+              </div>
+
+              {/* Ações */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm text-gray-700">Ações</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <Button
-                    onClick={saveDrawing}
-                    disabled={saveDrawingMutation.isPending || !newDrawingTitle.trim()}
-                    data-testid="button-save-drawing"
+                    variant="outline"
+                    size="sm"
+                    onClick={undoAction}
+                    data-testid="button-undo"
+                    className="flex items-center justify-center gap-2 h-10"
                   >
-                    <Save className="w-4 h-4 mr-2" />
-                    {saveDrawingMutation.isPending ? "Salvando..." : "Salvar Desenho"}
+                    <Undo className="w-4 h-4" />
+                    <span className="text-sm">Desfazer</span>
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={exportDrawing}
-                    data-testid="button-export-drawing"
+                    size="sm"
+                    onClick={redoAction}
+                    data-testid="button-redo"
+                    className="flex items-center justify-center gap-2 h-10"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Exportar PNG
+                    <Redo className="w-4 h-4" />
+                    <span className="text-sm">Refazer</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={deleteSelected}
+                    data-testid="button-delete-selected"
+                    className="flex items-center justify-center gap-2 h-10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span className="text-sm">Excluir</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearCanvas}
+                    data-testid="button-clear"
+                    className="flex items-center justify-center gap-2 h-10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span className="text-sm">Limpar</span>
                   </Button>
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
 
-      {/* Canvas */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="w-5 h-5" />
-            Canvas de Desenho
-            {currentDrawing && (
-              <Badge variant="secondary">
-                Editando: {currentDrawing.title}
-              </Badge>
-            )}
-          </CardTitle>
-          <CardDescription>
-            Desenhe suas ideias, conceitos e conexões usando as ferramentas acima
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6">
-          <div className="border border-gray-300 rounded-lg overflow-auto max-w-full">
-            <canvas
-              ref={canvasRef}
-              className="block max-w-full h-auto"
-              data-testid="drawing-canvas"
-            />
+          {/* Canvas */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Canvas de Desenho</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="w-full border rounded-lg bg-white overflow-hidden" style={{ height: '500px' }}>
+                <canvas
+                  ref={canvasRef}
+                  width={800}
+                  height={500}
+                  className="w-full h-full cursor-crosshair"
+                  data-testid="drawing-canvas"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="gallery" className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow border-dashed"
+              onClick={createNewDrawing}
+              data-testid="card-new-drawing"
+            >
+              <CardContent className="p-4 text-center">
+                <Plus className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm text-gray-600">Novo Desenho</p>
+              </CardContent>
+            </Card>
+            {Array.isArray(drawings) && drawings
+              .filter((d: CanvasDrawing) => d.phase === 3)
+              .map((drawing: CanvasDrawing) => (
+              <Card 
+                key={drawing.id} 
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => loadDrawing(drawing)}
+                data-testid={`card-drawing-${drawing.id}`}
+              >
+                <CardContent className="p-4">
+                  {drawing.thumbnailData && (
+                    <img 
+                      src={drawing.thumbnailData} 
+                      alt={drawing.title}
+                      className="w-full h-24 object-cover rounded mb-2"
+                    />
+                  )}
+                  <h3 className="font-medium text-sm truncate">{drawing.title}</h3>
+                  {drawing.description && (
+                    <p className="text-xs text-gray-500 truncate">{drawing.description}</p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Save Dialog */}
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button className="mt-4" data-testid="button-save-drawing">
+            <Save className="w-4 h-4 mr-2" />
+            Salvar Desenho
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Salvar Desenho de Ideação</DialogTitle>
+            <DialogDescription>
+              Dê um nome e descrição para seu desenho
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Título</Label>
+              <Input
+                id="title"
+                placeholder="Ex: Fluxo de usuário principal"
+                value={newDrawingTitle}
+                onChange={(e) => setNewDrawingTitle(e.target.value)}
+                data-testid="input-drawing-title"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Descrição (opcional)</Label>
+              <Textarea
+                id="description"
+                placeholder="Descreva o que este desenho representa..."
+                value={newDrawingDescription}
+                onChange={(e) => setNewDrawingDescription(e.target.value)}
+                data-testid="textarea-drawing-description"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={saveDrawing} disabled={saveDrawingMutation.isPending} data-testid="button-confirm-save">
+                {saveDrawingMutation.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+              <Button variant="outline" onClick={exportDrawing} data-testid="button-export">
+                <Download className="w-4 h-4 mr-2" />
+                Exportar PNG
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
