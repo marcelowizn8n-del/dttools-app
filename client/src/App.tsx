@@ -80,7 +80,7 @@ function App() {
           <AuthProvider>
             <div className="min-h-screen bg-background">
               <Header />
-              <main className="min-h-0">
+              <main>
                 <Router />
               </main>
             </div>
