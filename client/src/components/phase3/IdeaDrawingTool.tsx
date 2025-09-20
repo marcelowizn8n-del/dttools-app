@@ -122,13 +122,31 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   // Referência para conectores - usar ref para evitar re-renders
   const connectionsRef = useRef<Array<{id: string; line: any; fromObject: any; toObject: any}>>([]);
 
+  // Função para calcular dimensões responsivas do canvas
+  const getCanvasDimensions = () => {
+    const container = canvasRef.current?.parentElement;
+    if (!container) return { width: 800, height: 600 };
+    
+    const containerWidth = container.clientWidth;
+    // Mobile: usar largura total menos padding
+    if (containerWidth < 768) {
+      return {
+        width: Math.max(300, containerWidth - 32), // mínimo 300px, máximo container - padding
+        height: 400 // altura menor no mobile
+      };
+    }
+    // Desktop: dimensões padrão
+    return { width: 800, height: 600 };
+  };
+
   // Inicializar canvas Fabric.js uma vez só
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    const dimensions = getCanvasDimensions();
     const fabricCanvas = new FabricCanvas(canvasRef.current, {
-      width: 800,
-      height: 600,
+      width: dimensions.width,
+      height: dimensions.height,
       backgroundColor: 'white',
       selection: true,
     });
@@ -897,11 +915,11 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
             Desenhe suas ideias, conceitos e conexões usando as ferramentas acima
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="border border-gray-300 rounded-lg overflow-hidden">
+        <CardContent className="p-4 md:p-6">
+          <div className="border border-gray-300 rounded-lg overflow-auto max-w-full">
             <canvas
               ref={canvasRef}
-              className="block"
+              className="block max-w-full h-auto"
               data-testid="drawing-canvas"
             />
           </div>
