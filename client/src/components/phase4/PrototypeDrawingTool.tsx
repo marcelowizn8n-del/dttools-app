@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Stage, Layer, Line, Text, Image as KonvaImage, Rect, Circle, Star } from 'react-konva';
 import useImage from 'use-image';
@@ -89,9 +89,10 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
   const [newDrawingTitle, setNewDrawingTitle] = useState("");
   const [newDrawingDescription, setNewDrawingDescription] = useState("");
   
-  // History for undo/redo
-  const [history, setHistory] = useState<DrawingElement[][]>([[]]);
-  const [historyStep, setHistoryStep] = useState(0);
+  // History for undo/redo - now per page
+  const [pageHistories, setPageHistories] = useState<Map<string, { history: DrawingElement[][], step: number }>>(
+    new Map([["page-1", { history: [[]], step: 0 }]])
+  );
 
   // Query para buscar desenhos existentes
   const { data: drawings = [], isLoading: isLoadingDrawings } = useQuery({
@@ -147,25 +148,42 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
   });
 
   const saveToHistory = useCallback((newElements: DrawingElement[]) => {
-    const newHistory = history.slice(0, historyStep + 1);
-    // Deep clone elements to avoid mutation issues
-    const clonedElements = newElements.map(el => ({ ...el, points: el.points ? [...el.points] : undefined }));
-    newHistory.push(clonedElements);
-    setHistory(newHistory);
-    setHistoryStep(newHistory.length - 1);
-  }, [history, historyStep]);
+    setPageHistories(prev => {
+      const currentPageHistory = prev.get(currentPageId) || { history: [[]], step: 0 };
+      const newHistory = currentPageHistory.history.slice(0, currentPageHistory.step + 1);
+      // Deep clone elements to avoid mutation issues
+      const clonedElements = newElements.map(el => ({ ...el, points: el.points ? [...el.points] : undefined }));
+      newHistory.push(clonedElements);
+      
+      const updated = new Map(prev);
+      updated.set(currentPageId, { history: newHistory, step: newHistory.length - 1 });
+      return updated;
+    });
+  }, [currentPageId]);
 
   const undo = () => {
-    if (historyStep > 0) {
-      setHistoryStep(historyStep - 1);
-      setElements([...history[historyStep - 1]]);
+    const currentPageHistory = pageHistories.get(currentPageId) || { history: [[]], step: 0 };
+    if (currentPageHistory.step > 0) {
+      const newStep = currentPageHistory.step - 1;
+      setPageHistories(prev => {
+        const updated = new Map(prev);
+        updated.set(currentPageId, { ...currentPageHistory, step: newStep });
+        return updated;
+      });
+      updateCurrentPageElements([...currentPageHistory.history[newStep]]);
     }
   };
 
   const redo = () => {
-    if (historyStep < history.length - 1) {
-      setHistoryStep(historyStep + 1);
-      setElements([...history[historyStep + 1]]);
+    const currentPageHistory = pageHistories.get(currentPageId) || { history: [[]], step: 0 };
+    if (currentPageHistory.step < currentPageHistory.history.length - 1) {
+      const newStep = currentPageHistory.step + 1;
+      setPageHistories(prev => {
+        const updated = new Map(prev);
+        updated.set(currentPageId, { ...currentPageHistory, step: newStep });
+        return updated;
+      });
+      updateCurrentPageElements([...currentPageHistory.history[newStep]]);
     }
   };
 
@@ -246,6 +264,79 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     );
   };
 
+  const generatePageThumbnail = useCallback((page: DrawingPage): string => {
+    // Create a temporary canvas to generate thumbnail
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+
+    canvas.width = 120;
+    canvas.height = 90;
+    
+    // Fill with white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Add border
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+    // Simple representation of elements count
+    if (page.elements.length > 0) {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${page.elements.length} elementos`, canvas.width / 2, canvas.height / 2);
+      
+      // Draw simple shapes to represent content
+      const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'];
+      page.elements.slice(0, 4).forEach((element, index) => {
+        const x = 10 + (index % 2) * 50;
+        const y = 20 + Math.floor(index / 2) * 25;
+        
+        ctx.fillStyle = colors[index % colors.length];
+        
+        switch (element.type) {
+          case 'rect':
+            ctx.fillRect(x, y, 40, 15);
+            break;
+          case 'circle':
+            ctx.beginPath();
+            ctx.arc(x + 20, y + 7.5, 7.5, 0, 2 * Math.PI);
+            ctx.fill();
+            break;
+          case 'line':
+            ctx.strokeStyle = colors[index % colors.length];
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + 40, y + 15);
+            ctx.stroke();
+            break;
+          default:
+            ctx.fillRect(x, y, 40, 15);
+        }
+      });
+    } else {
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Página vazia', canvas.width / 2, canvas.height / 2);
+    }
+
+    return canvas.toDataURL();
+  }, []);
+
+  // Memoized thumbnails for performance
+  const pageThumbnails = useMemo(() => {
+    const thumbnails = new Map<string, string>();
+    pages.forEach(page => {
+      thumbnails.set(page.id, generatePageThumbnail(page));
+    });
+    return thumbnails;
+  }, [pages, generatePageThumbnail]);
+
   const handleMouseDown = (e: any) => {
     if (tool === "select") return;
     
@@ -291,7 +382,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     const point = stage.getPointerPosition();
     
     if (tool === "pen") {
-      setCurrentPath([...currentPath, point.x, point.y]);
+      setCurrentPath(prev => [...prev, point.x, point.y]);
     } else {
       // Update shape dimensions while drawing - create new objects to avoid mutation
       const currentElements = getCurrentElements();
@@ -389,11 +480,10 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
               draggable: true,
             };
             
-            setElements(prev => {
-              const next = [...prev, newImage];
-              saveToHistory(next);
-              return next;
-            });
+            const currentElements = getCurrentElements();
+            const next = [...currentElements, newImage];
+            updateCurrentPageElements(next);
+            saveToHistory(next);
             
             toast({
               title: "Imagem colada!",
@@ -514,11 +604,14 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
   };
 
   const startNewDrawing = () => {
-    setElements([]);
+    updateCurrentPageElements([]);
     setCurrentPath([]);
     setCurrentDrawing(null);
-    setHistory([[]]);
-    setHistoryStep(0);
+    setPageHistories(prev => {
+      const updated = new Map(prev);
+      updated.set(currentPageId, { history: [[]], step: 0 });
+      return updated;
+    });
     setNewDrawingTitle("");
     setNewDrawingDescription("");
     
@@ -591,43 +684,76 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                 <CardTitle className="text-lg">Páginas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
+                {/* Page thumbnails grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {pages.map((page) => (
-                    <Button
+                    <div
                       key={page.id}
-                      variant={currentPageId === page.id ? "default" : "outline"}
-                      size="sm"
+                      className={`relative group cursor-pointer border-2 rounded-lg p-2 transition-all ${
+                        currentPageId === page.id 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
                       onClick={() => setCurrentPageId(page.id)}
-                      data-testid={`button-page-${page.id}`}
-                      className="relative group"
+                      data-testid={`card-page-${page.id}`}
                     >
-                      {page.name}
+                      {/* Thumbnail */}
+                      <div className="aspect-video bg-gray-100 rounded border mb-2 flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={pageThumbnails.get(page.id) || ''}
+                          alt={`Thumbnail da ${page.name}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      {/* Page info */}
+                      <div className="text-center">
+                        <h4 className="text-sm font-medium truncate">{page.name}</h4>
+                        <p className="text-xs text-gray-500">{page.elements.length} elementos</p>
+                      </div>
+                      
+                      {/* Delete button */}
                       {pages.length > 1 && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             deletePage(page.id);
                           }}
-                          className="ml-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100"
+                          className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
                           data-testid={`button-delete-page-${page.id}`}
+                          title="Excluir página"
                         >
                           ×
                         </button>
                       )}
-                    </Button>
+                      
+                      {/* Current page indicator */}
+                      {currentPageId === page.id && (
+                        <div className="absolute top-1 left-1 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">
+                          ✓
+                        </div>
+                      )}
+                    </div>
                   ))}
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  
+                  {/* Add new page card */}
+                  <div
+                    className="relative group cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-2 transition-all hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
                     onClick={addNewPage}
-                    data-testid="button-add-page"
+                    data-testid="card-add-page"
                   >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Nova Página
-                  </Button>
+                    <div className="aspect-video bg-gray-200 rounded border mb-2 flex items-center justify-center">
+                      <Plus className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <div className="text-center">
+                      <h4 className="text-sm font-medium text-gray-600">Nova Página</h4>
+                      <p className="text-xs text-gray-400">Clique para criar</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  Página atual: {getCurrentPage().name} ({getCurrentElements().length} elementos)
+                
+                <div className="text-sm text-gray-600 text-center">
+                  Página atual: <strong>{getCurrentPage().name}</strong> ({getCurrentElements().length} elementos)
                 </div>
               </CardContent>
             </Card>
@@ -775,7 +901,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                       variant="outline"
                       size="sm"
                       onClick={undo}
-                      disabled={historyStep <= 0}
+                      disabled={(pageHistories.get(currentPageId)?.step || 0) <= 0}
                       data-testid="button-undo"
                       className="flex items-center justify-center"
                     >
@@ -786,7 +912,11 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                       variant="outline"
                       size="sm"
                       onClick={redo}
-                      disabled={historyStep >= history.length - 1}
+                      disabled={(() => {
+        const pageHistory = pageHistories.get(currentPageId);
+        if (!pageHistory) return true;
+        return pageHistory.step >= pageHistory.history.length - 1;
+      })()}
                       data-testid="button-redo"
                       className="flex items-center justify-center"
                     >
