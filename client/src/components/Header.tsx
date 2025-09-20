@@ -1,11 +1,14 @@
 import { Link } from "wouter";
+import { useState } from "react";
 import { 
   Book, 
   Settings, 
   CreditCard, 
   Users,
   BarChart3,
-  MessageCircle
+  MessageCircle,
+  Menu,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +21,7 @@ import dttoolsIcon from "../assets/dttools-icon.png";
 export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
   const { t } = useLanguage();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-10">
@@ -84,8 +88,23 @@ export default function Header() {
             )}
           </nav>
 
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              data-testid="mobile-menu-button"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
+              aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
+
           {/* User Actions - Fixed width to prevent layout shift */}
-          <div className="flex items-center gap-2 flex-shrink-0 min-w-[120px] justify-end">
+          <div className="hidden lg:flex items-center gap-2 flex-shrink-0 min-w-[120px] justify-end">
             <LanguageSelector />
             {isAuthenticated ? (
               <UserMenu />
@@ -98,6 +117,79 @@ export default function Header() {
             )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div id="mobile-menu" className="lg:hidden border-t border-border bg-background">
+            <div className="container mx-auto px-4 py-4">
+              <nav className="flex flex-col space-y-2">
+                <Link href="/projects">
+                  <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-projects" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Users className="mr-2 h-4 w-4" />
+                    {t("nav.projects") || "Projects"}
+                  </Button>
+                </Link>
+                <Link href="/library">
+                  <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-library" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Book className="mr-2 h-4 w-4" />
+                    {t("nav.library")}
+                  </Button>
+                </Link>
+                {isAuthenticated && (
+                  <Link href="/chat">
+                    <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-chat" onClick={() => setIsMobileMenuOpen(false)}>
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Chat IA
+                    </Button>
+                  </Link>
+                )}
+                {isAuthenticated && (
+                  <Link href="/dashboard">
+                    <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                )}
+                <Link href="/pricing">
+                  <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-pricing" onClick={() => setIsMobileMenuOpen(false)}>
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    {t("nav.pricing")}
+                  </Button>
+                </Link>
+                {isAdmin && (
+                  <Link href="/admin">
+                    <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-admin" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      {t("nav.admin")}
+                    </Button>
+                  </Link>
+                )}
+                
+                {/* Mobile User Actions */}
+                <div className="pt-4 border-t border-border">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center justify-between">
+                      <LanguageSelector />
+                      {!isAuthenticated && (
+                        <Link href="/login">
+                          <Button size="sm" data-testid="mobile-button-login" onClick={() => setIsMobileMenuOpen(false)}>
+                            {t("nav.login")}
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                    {isAuthenticated && (
+                      <div className="pt-2">
+                        <UserMenu />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </nav>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

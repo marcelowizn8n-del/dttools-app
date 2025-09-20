@@ -160,6 +160,32 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     }
   };
 
+  // Função para calcular dimensões responsivas
+  const getCanvasDimensions = () => {
+    if (typeof window === 'undefined') return { width: 800, height: 600 };
+    
+    const containerWidth = window.innerWidth - 64; // padding
+    if (window.innerWidth < 768) {
+      return {
+        width: Math.max(300, Math.min(containerWidth, 600)),
+        height: 400
+      };
+    }
+    return { width: 800, height: 600 };
+  };
+
+  const [canvasSize, setCanvasSize] = useState(getCanvasDimensions);
+
+  // Handler para resize
+  useEffect(() => {
+    const handleResize = () => {
+      setCanvasSize(getCanvasDimensions());
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleMouseDown = (e: any) => {
     if (tool === "select") return;
     
@@ -701,8 +727,8 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                 <div className="border-2 border-dashed border-gray-300 rounded-lg overflow-auto max-w-full">
                   <Stage
                     ref={stageRef}
-                    width={window.innerWidth < 768 ? Math.max(300, window.innerWidth - 64) : 800}
-                    height={window.innerWidth < 768 ? 400 : 600}
+                    width={canvasSize.width}
+                    height={canvasSize.height}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
