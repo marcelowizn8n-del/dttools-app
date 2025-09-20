@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wrench, Monitor, Package, FileText } from "lucide-react";
+import { Wrench, Monitor, Package, FileText, Palette } from "lucide-react";
 import PrototypeTool from "./PrototypeTool";
+import PrototypeDrawingTool from "./PrototypeDrawingTool";
 
 interface Phase4ToolsProps {
   projectId: string;
@@ -27,10 +28,14 @@ export default function Phase4Tools({ projectId }: Phase4ToolsProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="prototypes" className="flex items-center gap-2">
             <Wrench className="w-4 h-4" />
             Protótipos
+          </TabsTrigger>
+          <TabsTrigger value="drawing" className="flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Desenho
           </TabsTrigger>
           <TabsTrigger value="types" className="flex items-center gap-2">
             <Monitor className="w-4 h-4" />
@@ -44,6 +49,10 @@ export default function Phase4Tools({ projectId }: Phase4ToolsProps) {
 
         <TabsContent value="prototypes" className="space-y-6">
           <PrototypeTool projectId={projectId} />
+        </TabsContent>
+
+        <TabsContent value="drawing" className="space-y-6">
+          <PrototypeDrawingTool projectId={projectId} />
         </TabsContent>
 
         <TabsContent value="types" className="space-y-6">
