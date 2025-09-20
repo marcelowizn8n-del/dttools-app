@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ArrowRight, Users, Target, Lightbulb, Wrench, TestTube, Star, CheckCircle, Zap, Globe, BookOpen, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import logoHorizontal from "../assets/logo-horizontal.png";
 import dttoolsIcon from "../assets/dttools-icon.png";
 
@@ -142,9 +143,21 @@ const testimonials = [
 
 export default function LandingPage() {
   const { t, language } = useLanguage();
+  const { isAuthenticated } = useAuth();
   const [hoveredPhase, setHoveredPhase] = useState<number | null>(null);
+  const [, setLocation] = useLocation();
 
   const isEnglish = language === 'en';
+
+  const handlePhaseClick = (phaseId: number) => {
+    if (isAuthenticated) {
+      // Se já está logado, vai para projetos
+      setLocation("/projects");
+    } else {
+      // Se não está logado, vai para o login
+      setLocation("/login");
+    }
+  };
 
   return (
     <div>
@@ -206,7 +219,7 @@ export default function LandingPage() {
               const isHovered = hoveredPhase === phase.id;
               
               return (
-                <Link href="/login" key={phase.id}>
+                <div key={phase.id} onClick={() => handlePhaseClick(phase.id)}>
                   <Card 
                     className="relative transition-all duration-300 cursor-pointer border-2 hover:shadow-lg hover:scale-105"
                     style={{
@@ -242,7 +255,7 @@ export default function LandingPage() {
                       </div>
                     )}
                   </Card>
-                </Link>
+                </div>
               );
             })}
           </div>
