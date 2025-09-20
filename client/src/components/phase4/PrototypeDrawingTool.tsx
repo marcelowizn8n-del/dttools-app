@@ -54,6 +54,12 @@ interface DrawingElement {
   draggable?: boolean;
 }
 
+interface DrawingPage {
+  id: string;
+  name: string;
+  elements: DrawingElement[];
+}
+
 const URLImage = ({ src, ...props }: { src: string } & any) => {
   const [image] = useImage(src);
   return <KonvaImage image={image} {...props} />;
@@ -66,7 +72,10 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
   
   // Drawing state
   const [tool, setTool] = useState<string>("pen");
-  const [elements, setElements] = useState<DrawingElement[]>([]);
+  const [pages, setPages] = useState<DrawingPage[]>([
+    { id: "page-1", name: "Página 1", elements: [] }
+  ]);
+  const [currentPageId, setCurrentPageId] = useState<string>("page-1");
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<number[]>([]);
   const [selectedColor, setSelectedColor] = useState<string>("#000000");
@@ -186,6 +195,57 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Helper functions for pages
+  const getCurrentPage = () => pages.find(page => page.id === currentPageId) || pages[0];
+  const getCurrentElements = () => getCurrentPage().elements;
+
+  const updateCurrentPageElements = (newElements: DrawingElement[]) => {
+    setPages(prevPages => 
+      prevPages.map(page => 
+        page.id === currentPageId 
+          ? { ...page, elements: newElements }
+          : page
+      )
+    );
+  };
+
+  const addNewPage = () => {
+    const newPageId = `page-${Date.now()}`;
+    const newPage: DrawingPage = {
+      id: newPageId,
+      name: `Página ${pages.length + 1}`,
+      elements: []
+    };
+    setPages(prev => [...prev, newPage]);
+    setCurrentPageId(newPageId);
+  };
+
+  const deletePage = (pageId: string) => {
+    if (pages.length <= 1) {
+      toast({
+        title: "Não é possível excluir",
+        description: "Você deve ter pelo menos uma página",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const newPages = pages.filter(page => page.id !== pageId);
+    setPages(newPages);
+    
+    if (currentPageId === pageId) {
+      setCurrentPageId(newPages[0].id);
+    }
+  };
+
+  const renamePage = (pageId: string, newName: string) => {
+    setPages(prevPages =>
+      prevPages.map(page =>
+        page.id === pageId ? { ...page, name: newName } : page
+      )
+    );
+  };
+
   const handleMouseDown = (e: any) => {
     if (tool === "select") return;
     
@@ -210,13 +270,15 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
         newElement.text = "Texto";
         newElement.fontSize = fontSize;
         // Finalize text immediately
-        const newElements = [...elements, newElement];
-        setElements(newElements);
+        const currentElements = getCurrentElements();
+        const newElements = [...currentElements, newElement];
+        updateCurrentPageElements(newElements);
         saveToHistory(newElements);
       } else if (tool === "rect" || tool === "circle" || tool === "star") {
         newElement.width = 1;
         newElement.height = 1;
-        setElements([...elements, newElement]);
+        const currentElements = getCurrentElements();
+        updateCurrentPageElements([...currentElements, newElement]);
         // Don't save to history until mouse up for shapes
       }
     }
@@ -232,7 +294,8 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
       setCurrentPath([...currentPath, point.x, point.y]);
     } else {
       // Update shape dimensions while drawing - create new objects to avoid mutation
-      const newElements = [...elements];
+      const currentElements = getCurrentElements();
+      const newElements = [...currentElements];
       const lastElementIndex = newElements.length - 1;
       const lastElement = newElements[lastElementIndex];
       
@@ -242,7 +305,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
           width: Math.abs(point.x - lastElement.x!),
           height: Math.abs(point.y - lastElement.y!)
         };
-        setElements(newElements);
+        updateCurrentPageElements(newElements);
       }
     }
   };
@@ -262,13 +325,14 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
         draggable: false,
       };
       
-      const newElements = [...elements, newLine];
-      setElements(newElements);
+      const currentElements = getCurrentElements();
+      const newElements = [...currentElements, newLine];
+      updateCurrentPageElements(newElements);
       saveToHistory(newElements);
       setCurrentPath([]);
     } else if (tool === "rect" || tool === "circle" || tool === "star") {
       // Save shape to history on mouse up (final state)
-      saveToHistory(elements);
+      saveToHistory(getCurrentElements());
     }
   };
 
@@ -290,8 +354,9 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
         draggable: true,
       };
       
-      const newElements = [...elements, newImage];
-      setElements(newElements);
+      const currentElements = getCurrentElements();
+      const newElements = [...currentElements, newImage];
+      updateCurrentPageElements(newElements);
       saveToHistory(newElements);
       
       toast({
@@ -367,8 +432,9 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
 
   const deleteSelected = () => {
     if (selectedElement) {
-      const newElements = elements.filter(el => el.id !== selectedElement);
-      setElements(newElements);
+      const currentElements = getCurrentElements();
+      const newElements = currentElements.filter(el => el.id !== selectedElement);
+      updateCurrentPageElements(newElements);
       saveToHistory(newElements);
       setSelectedElement(null);
       toast({
@@ -385,7 +451,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
   };
 
   const clearCanvas = () => {
-    setElements([]);
+    updateCurrentPageElements([]);
     setCurrentPath([]);
     setSelectedElement(null);
     saveToHistory([]);
@@ -406,7 +472,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     }
 
     const canvasData = {
-      elements,
+      elements: getCurrentElements(),
       width: 800,
       height: 600,
     };
@@ -429,7 +495,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
         : drawing.canvasData;
         
       if (canvasData && canvasData.elements) {
-        setElements(canvasData.elements);
+        updateCurrentPageElements(canvasData.elements);
         saveToHistory(canvasData.elements);
         setCurrentDrawing(drawing);
         
@@ -519,6 +585,53 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
 
           <TabsContent value="canvas" className="space-y-4">
             {/* Toolbar */}
+            {/* Page Management */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Páginas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {pages.map((page) => (
+                    <Button
+                      key={page.id}
+                      variant={currentPageId === page.id ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPageId(page.id)}
+                      data-testid={`button-page-${page.id}`}
+                      className="relative group"
+                    >
+                      {page.name}
+                      {pages.length > 1 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deletePage(page.id);
+                          }}
+                          className="ml-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100"
+                          data-testid={`button-delete-page-${page.id}`}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </Button>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addNewPage}
+                    data-testid="button-add-page"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Nova Página
+                  </Button>
+                </div>
+                <div className="text-sm text-gray-600">
+                  Página atual: {getCurrentPage().name} ({getCurrentElements().length} elementos)
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">Ferramentas</CardTitle>
@@ -791,7 +904,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                     onMouseUp={handleMouseUp}
                   >
                     <Layer>
-                      {elements.map(renderElement)}
+                      {getCurrentElements().map(renderElement)}
                       {isDrawing && tool === "pen" && (
                         <Line
                           points={currentPath}
