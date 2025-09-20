@@ -365,9 +365,29 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     });
   };
 
+  const deleteSelected = () => {
+    if (selectedElement) {
+      const newElements = elements.filter(el => el.id !== selectedElement);
+      setElements(newElements);
+      saveToHistory(newElements);
+      setSelectedElement(null);
+      toast({
+        title: "Elemento excluído!",
+        description: "O elemento selecionado foi removido.",
+      });
+    } else {
+      toast({
+        title: "Nenhum elemento selecionado",
+        description: "Clique em um elemento para selecioná-lo antes de excluir.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const clearCanvas = () => {
     setElements([]);
     setCurrentPath([]);
+    setSelectedElement(null);
     saveToHistory([]);
     toast({
       title: "Canvas limpo!",
@@ -443,13 +463,14 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
   };
 
   const renderElement = (element: DrawingElement) => {
+    const isSelected = selectedElement === element.id;
     const commonProps = {
       key: element.id,
       x: element.x,
       y: element.y,
       fill: element.fill,
-      stroke: element.stroke,
-      strokeWidth: element.strokeWidth,
+      stroke: isSelected ? "#ff6b6b" : element.stroke,
+      strokeWidth: isSelected ? (element.strokeWidth || 2) + 2 : element.strokeWidth,
       draggable: element.draggable,
       onClick: () => setSelectedElement(element.id),
     };
@@ -502,68 +523,82 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">Ferramentas</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Tool selection */}
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant={tool === "select" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTool("select")}
-                    data-testid="button-tool-select"
-                  >
-                    <MousePointer2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={tool === "pen" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTool("pen")}
-                    data-testid="button-tool-pen"
-                  >
-                    <Pen className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={tool === "rect" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTool("rect")}
-                    data-testid="button-tool-rect"
-                  >
-                    <Square className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={tool === "circle" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTool("circle")}
-                    data-testid="button-tool-circle"
-                  >
-                    <CircleIcon className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={tool === "star" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTool("star")}
-                    data-testid="button-tool-star"
-                  >
-                    <StarIcon className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={tool === "text" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTool("text")}
-                    data-testid="button-tool-text"
-                  >
-                    <Type className="w-4 h-4" />
-                  </Button>
-                  
-                  <Separator orientation="vertical" className="h-8" />
+              <CardContent className="space-y-6">
+                {/* Tool selection - Grid layout for better mobile responsiveness */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm text-gray-700">Ferramentas de Desenho</h4>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 lg:flex lg:flex-wrap gap-2">
+                    <Button
+                      variant={tool === "select" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setTool("select")}
+                      data-testid="button-tool-select"
+                      className="flex items-center justify-center"
+                    >
+                      <MousePointer2 className="w-4 h-4 lg:mr-1" />
+                      <span className="hidden lg:inline">Selecionar</span>
+                    </Button>
+                    <Button
+                      variant={tool === "pen" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setTool("pen")}
+                      data-testid="button-tool-pen"
+                      className="flex items-center justify-center"
+                    >
+                      <Pen className="w-4 h-4 lg:mr-1" />
+                      <span className="hidden lg:inline">Caneta</span>
+                    </Button>
+                    <Button
+                      variant={tool === "rect" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setTool("rect")}
+                      data-testid="button-tool-rect"
+                      className="flex items-center justify-center"
+                    >
+                      <Square className="w-4 h-4 lg:mr-1" />
+                      <span className="hidden lg:inline">Retângulo</span>
+                    </Button>
+                    <Button
+                      variant={tool === "circle" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setTool("circle")}
+                      data-testid="button-tool-circle"
+                      className="flex items-center justify-center"
+                    >
+                      <CircleIcon className="w-4 h-4 lg:mr-1" />
+                      <span className="hidden lg:inline">Círculo</span>
+                    </Button>
+                    <Button
+                      variant={tool === "star" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setTool("star")}
+                      data-testid="button-tool-star"
+                      className="flex items-center justify-center"
+                    >
+                      <StarIcon className="w-4 h-4 lg:mr-1" />
+                      <span className="hidden lg:inline">Estrela</span>
+                    </Button>
+                    <Button
+                      variant={tool === "text" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setTool("text")}
+                      data-testid="button-tool-text"
+                      className="flex items-center justify-center"
+                    >
+                      <Type className="w-4 h-4 lg:mr-1" />
+                      <span className="hidden lg:inline">Texto</span>
+                    </Button>
+                  </div>
                   
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     data-testid="button-upload-image"
+                    className="w-full sm:w-auto"
                   >
-                    <Upload className="w-4 h-4 mr-1" />
-                    Upload
+                    <Upload className="w-4 h-4 mr-2" />
+                    Adicionar Imagem
                   </Button>
                   <input
                     ref={fileInputRef}
@@ -574,99 +609,120 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                   />
                 </div>
 
-                {/* Color and settings */}
-                <div className="flex items-center gap-4 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium">Cor:</label>
-                    <input
-                      type="color"
-                      value={selectedColor}
-                      onChange={(e) => setSelectedColor(e.target.value)}
-                      className="w-8 h-8 rounded border border-gray-300"
-                      data-testid="input-color"
-                    />
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium">Espessura:</label>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={selectedStrokeWidth}
-                      onChange={(e) => setSelectedStrokeWidth(Number(e.target.value))}
-                      className="w-20"
-                      data-testid="input-stroke-width"
-                    />
-                  </div>
-                  
-                  {tool === "text" && (
+                {/* Color and settings - Organized in sections */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-gray-700">Configurações</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium">Tamanho da fonte:</label>
-                      <Input
-                        type="number"
-                        min="8"
-                        max="72"
-                        value={fontSize}
-                        onChange={(e) => setFontSize(Number(e.target.value))}
-                        className="w-20"
-                        data-testid="input-font-size"
+                      <label className="text-sm font-medium min-w-0 flex-shrink-0">Cor:</label>
+                      <input
+                        type="color"
+                        value={selectedColor}
+                        onChange={(e) => setSelectedColor(e.target.value)}
+                        className="w-12 h-8 rounded border border-gray-300 flex-shrink-0"
+                        data-testid="input-color"
                       />
                     </div>
-                  )}
+                    
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium min-w-0 flex-shrink-0">Espessura:</label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={selectedStrokeWidth}
+                        onChange={(e) => setSelectedStrokeWidth(Number(e.target.value))}
+                        className="w-20 flex-shrink-0"
+                        data-testid="input-stroke-width"
+                      />
+                    </div>
+                    
+                    {tool === "text" && (
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium min-w-0 flex-shrink-0">Fonte:</label>
+                        <Input
+                          type="number"
+                          min="8"
+                          max="72"
+                          value={fontSize}
+                          onChange={(e) => setFontSize(Number(e.target.value))}
+                          className="w-20 flex-shrink-0"
+                          data-testid="input-font-size"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Action buttons */}
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={undo}
-                    disabled={historyStep <= 0}
-                    data-testid="button-undo"
-                  >
-                    <Undo className="w-4 h-4 mr-1" />
-                    Desfazer
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={redo}
-                    disabled={historyStep >= history.length - 1}
-                    data-testid="button-redo"
-                  >
-                    <Redo className="w-4 h-4 mr-1" />
-                    Refazer
-                  </Button>
+                {/* Action buttons - Organized in logical groups */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm text-gray-700">Ações</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={undo}
+                      disabled={historyStep <= 0}
+                      data-testid="button-undo"
+                      className="flex items-center justify-center"
+                    >
+                      <Undo className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Desfazer</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={redo}
+                      disabled={historyStep >= history.length - 1}
+                      data-testid="button-redo"
+                      className="flex items-center justify-center"
+                    >
+                      <Redo className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Refazer</span>
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={deleteSelected}
+                      disabled={!selectedElement}
+                      data-testid="button-delete-selected"
+                      className="flex items-center justify-center"
+                    >
+                      <Trash2 className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Excluir</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearCanvas}
+                      data-testid="button-clear"
+                      className="flex items-center justify-center"
+                    >
+                      <Trash2 className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Limpar</span>
+                    </Button>
+                  </div>
                   
-                  <Separator orientation="vertical" className="h-8" />
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={clearCanvas}
-                    data-testid="button-clear"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Limpar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={exportDrawing}
-                    data-testid="button-export"
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    Exportar
-                  </Button>
-                  
-                  <Dialog open={isDrawingSelectorOpen} onOpenChange={setIsDrawingSelectorOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm" data-testid="button-save-drawing">
-                        <Save className="w-4 h-4 mr-1" />
-                        Salvar
-                      </Button>
-                    </DialogTrigger>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportDrawing}
+                      data-testid="button-export"
+                      className="flex items-center justify-center"
+                    >
+                      <Download className="w-4 h-4 mr-1" />
+                      Exportar
+                    </Button>
+                    
+                    <Dialog open={isDrawingSelectorOpen} onOpenChange={setIsDrawingSelectorOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" data-testid="button-save-drawing" className="flex items-center justify-center">
+                          <Save className="w-4 h-4 mr-1" />
+                          Salvar
+                        </Button>
+                      </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>
@@ -717,6 +773,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                       </div>
                     </DialogContent>
                   </Dialog>
+                  </div>
                 </div>
               </CardContent>
             </Card>
