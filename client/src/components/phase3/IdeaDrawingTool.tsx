@@ -66,6 +66,8 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   
   // Refs para evitar stale closures nos event handlers
   const selectedToolRef = useRef<string>("pen");
+  const selectedColorRef = useRef<string>("#000000");
+  const selectedBrushSizeRef = useRef<number>(5);
   const firstSelectedObjectRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -243,6 +245,15 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     }
   }, [canvas, selectedBrushSize, selectedColor]);
 
+  // Sync refs with state to avoid stale closures
+  useEffect(() => {
+    selectedColorRef.current = selectedColor;
+  }, [selectedColor]);
+
+  useEffect(() => {
+    selectedBrushSizeRef.current = selectedBrushSize;
+  }, [selectedBrushSize]);
+
   // Funções das ferramentas
   const handleToolChange = (tool: string) => {
     if (!canvas) return;
@@ -287,7 +298,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   };
 
   const handleShapeMouseDown = (options: any) => {
-    if (!canvas || selectedTool === "pen" || selectedTool === "select") return;
+    if (!canvas) return;
     
     setIsDrawing(true);
     const pointer = canvas.getPointer(options.e);
@@ -312,7 +323,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     
     let shape: any;
     
-    switch (selectedTool) {
+    switch (selectedToolRef.current) {
       case "rectangle":
         shape = new FabricRect({
           left,
@@ -320,7 +331,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
           width,
           height,
           fill: "transparent",
-          stroke: selectedColor,
+          stroke: selectedColorRef.current,
           strokeWidth: 2,
           opacity: 0.8,
           selectable: false,
@@ -329,14 +340,16 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       case "circle":
         const radius = Math.min(width, height) / 2;
         shape = new FabricCircle({
-          left: left + radius,
-          top: top + radius,
+          left: left + width / 2,
+          top: top + height / 2,
           radius,
           fill: "transparent",
-          stroke: selectedColor,
+          stroke: selectedColorRef.current,
           strokeWidth: 2,
           opacity: 0.8,
           selectable: false,
+          originX: 'center',
+          originY: 'center',
         });
         break;
       case "triangle":
@@ -346,7 +359,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
           width,
           height,
           fill: "transparent",
-          stroke: selectedColor,
+          stroke: selectedColorRef.current,
           strokeWidth: 2,
           opacity: 0.8,
           selectable: false,
@@ -354,8 +367,8 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         break;
       case "line":
         shape = new FabricLine([startPos.x, startPos.y, pointer.x, pointer.y], {
-          stroke: selectedColor,
-          strokeWidth: selectedBrushSize,
+          stroke: selectedColorRef.current,
+          strokeWidth: selectedBrushSizeRef.current,
           selectable: false,
         });
         break;
@@ -390,7 +403,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       
       let finalShape: any;
       
-      switch (selectedTool) {
+      switch (selectedToolRef.current) {
         case "rectangle":
           finalShape = new FabricRect({
             left,
@@ -398,7 +411,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
             width,
             height,
             fill: "transparent",
-            stroke: selectedColor,
+            stroke: selectedColorRef.current,
             strokeWidth: 2,
             opacity: 0.8,
           });
@@ -406,13 +419,15 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         case "circle":
           const radius = Math.min(width, height) / 2;
           finalShape = new FabricCircle({
-            left: left + radius,
-            top: top + radius,
+            left: left + width / 2,
+            top: top + height / 2,
             radius,
             fill: "transparent",
-            stroke: selectedColor,
+            stroke: selectedColorRef.current,
             strokeWidth: 2,
             opacity: 0.8,
+            originX: 'center',
+            originY: 'center',
           });
           break;
         case "triangle":
@@ -422,15 +437,15 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
             width,
             height,
             fill: "transparent",
-            stroke: selectedColor,
+            stroke: selectedColorRef.current,
             strokeWidth: 2,
             opacity: 0.8,
           });
           break;
         case "line":
           finalShape = new FabricLine([startPos.x, startPos.y, pointer.x, pointer.y], {
-            stroke: selectedColor,
-            strokeWidth: selectedBrushSize,
+            stroke: selectedColorRef.current,
+            strokeWidth: selectedBrushSizeRef.current,
           });
           break;
         default:
@@ -527,14 +542,14 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const createConnection = (fromObj: any, toObj: any) => {
     if (!canvas || !fromObj || !toObj) return;
 
-    // Calcular posições centrais dos objetos
-    const fromCenter = {
-      x: fromObj.left + fromObj.width / 2,
-      y: fromObj.top + fromObj.height / 2,
+    // Calcular posições centrais dos objetos usando métodos robustos do Fabric.js
+    const fromCenter = fromObj.getCenterPoint ? fromObj.getCenterPoint() : {
+      x: fromObj.left + (fromObj.width || 0) / 2,
+      y: fromObj.top + (fromObj.height || 0) / 2,
     };
-    const toCenter = {
-      x: toObj.left + toObj.width / 2,
-      y: toObj.top + toObj.height / 2,
+    const toCenter = toObj.getCenterPoint ? toObj.getCenterPoint() : {
+      x: toObj.left + (toObj.width || 0) / 2,
+      y: toObj.top + (toObj.height || 0) / 2,
     };
 
     // Criar linha conectora
@@ -570,13 +585,13 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const updateConnection = (connection: any) => {
     if (!connection.fromObject || !connection.toObject || !connection.line) return;
 
-    const fromCenter = {
-      x: connection.fromObject.left + connection.fromObject.width / 2,
-      y: connection.fromObject.top + connection.fromObject.height / 2,
+    const fromCenter = connection.fromObject.getCenterPoint ? connection.fromObject.getCenterPoint() : {
+      x: connection.fromObject.left + (connection.fromObject.width || 0) / 2,
+      y: connection.fromObject.top + (connection.fromObject.height || 0) / 2,
     };
-    const toCenter = {
-      x: connection.toObject.left + connection.toObject.width / 2,
-      y: connection.toObject.top + connection.toObject.height / 2,
+    const toCenter = connection.toObject.getCenterPoint ? connection.toObject.getCenterPoint() : {
+      x: connection.toObject.left + (connection.toObject.width || 0) / 2,
+      y: connection.toObject.top + (connection.toObject.height || 0) / 2,
     };
 
     connection.line.set({
@@ -665,6 +680,9 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       // Primeiro objeto selecionado
       setFirstSelectedObject(obj);
       firstSelectedObjectRef.current = obj;
+      // Save original properties before changing them
+      obj.originalStroke = obj.stroke;
+      obj.originalStrokeWidth = obj.strokeWidth;
       obj.set('stroke', '#ff6b6b');
       obj.set('strokeWidth', 3);
       canvas?.renderAll();
@@ -679,7 +697,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       
       // Reset selection visual
       firstSelectedObjectRef.current.set('stroke', firstSelectedObjectRef.current.originalStroke || firstSelectedObjectRef.current.fill);
-      firstSelectedObjectRef.current.set('strokeWidth', firstSelectedObjectRef.current.originalStrokeWidth || 0);
+      firstSelectedObjectRef.current.set('strokeWidth', firstSelectedObjectRef.current.originalStrokeWidth ?? firstSelectedObjectRef.current.strokeWidth ?? 1);
       
       setFirstSelectedObject(null);
       firstSelectedObjectRef.current = null;
@@ -692,7 +710,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     } else {
       // Mesmo objeto clicado novamente - cancelar
       firstSelectedObjectRef.current.set('stroke', firstSelectedObjectRef.current.originalStroke || firstSelectedObjectRef.current.fill);
-      firstSelectedObjectRef.current.set('strokeWidth', firstSelectedObjectRef.current.originalStrokeWidth || 0);
+      firstSelectedObjectRef.current.set('strokeWidth', firstSelectedObjectRef.current.originalStrokeWidth ?? firstSelectedObjectRef.current.strokeWidth ?? 1);
       setFirstSelectedObject(null);
       firstSelectedObjectRef.current = null;
       canvas?.renderAll();
