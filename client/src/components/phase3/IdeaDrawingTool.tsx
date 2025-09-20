@@ -58,6 +58,10 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   // Estados para conectores entre formas
   const [connections, setConnections] = useState<Array<{id: string; line: any; fromObject: any; toObject: any}>>([]);
   const [firstSelectedObject, setFirstSelectedObject] = useState<any>(null);
+  
+  // Refs para evitar stale closures nos event handlers
+  const selectedToolRef = useRef<string>("pen");
+  const firstSelectedObjectRef = useRef<any>(null);
 
   // Query para buscar desenhos existentes
   const { data: drawings = [], isLoading: isLoadingDrawings } = useQuery({
@@ -134,7 +138,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
 
     // Event listeners para conectores
     fabricCanvas.on('mouse:down', (options) => {
-      if (selectedTool === "connector" && options.target && options.target.type !== 'line') {
+      if (selectedToolRef.current === "connector" && options.target && options.target.type !== 'line') {
         handleObjectSelection(options.target);
       }
     });
@@ -189,10 +193,12 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     if (!canvas) return;
     
     setSelectedTool(tool);
+    selectedToolRef.current = tool; // Atualizar ref para event handlers
     
     // Reset connector state when changing tools
     if (tool !== "connector") {
       setFirstSelectedObject(null);
+      firstSelectedObjectRef.current = null;
     }
     
     switch (tool) {
@@ -423,11 +429,12 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
 
   // Lidar com cliques de objetos no modo connector
   const handleObjectSelection = (obj: any) => {
-    if (selectedTool !== "connector") return;
+    if (selectedToolRef.current !== "connector") return;
 
-    if (!firstSelectedObject) {
+    if (!firstSelectedObjectRef.current) {
       // Primeiro objeto selecionado
       setFirstSelectedObject(obj);
+      firstSelectedObjectRef.current = obj;
       obj.set('stroke', '#ff6b6b');
       obj.set('strokeWidth', 3);
       canvas?.renderAll();
@@ -436,15 +443,16 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         title: "Primeiro objeto selecionado",
         description: "Clique em outro objeto para criar a conexão",
       });
-    } else if (firstSelectedObject !== obj) {
+    } else if (firstSelectedObjectRef.current !== obj) {
       // Segundo objeto selecionado - criar conexão
-      createConnection(firstSelectedObject, obj);
+      createConnection(firstSelectedObjectRef.current, obj);
       
       // Reset selection visual
-      firstSelectedObject.set('stroke', firstSelectedObject.originalStroke || firstSelectedObject.fill);
-      firstSelectedObject.set('strokeWidth', firstSelectedObject.originalStrokeWidth || 0);
+      firstSelectedObjectRef.current.set('stroke', firstSelectedObjectRef.current.originalStroke || firstSelectedObjectRef.current.fill);
+      firstSelectedObjectRef.current.set('strokeWidth', firstSelectedObjectRef.current.originalStrokeWidth || 0);
       
       setFirstSelectedObject(null);
+      firstSelectedObjectRef.current = null;
       canvas?.renderAll();
       
       toast({
@@ -453,9 +461,10 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       });
     } else {
       // Mesmo objeto clicado novamente - cancelar
-      firstSelectedObject.set('stroke', firstSelectedObject.originalStroke || firstSelectedObject.fill);
-      firstSelectedObject.set('strokeWidth', firstSelectedObject.originalStrokeWidth || 0);
+      firstSelectedObjectRef.current.set('stroke', firstSelectedObjectRef.current.originalStroke || firstSelectedObjectRef.current.fill);
+      firstSelectedObjectRef.current.set('strokeWidth', firstSelectedObjectRef.current.originalStrokeWidth || 0);
       setFirstSelectedObject(null);
+      firstSelectedObjectRef.current = null;
       canvas?.renderAll();
       
       toast({
