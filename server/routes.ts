@@ -109,11 +109,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects", requireAuth, checkProjectLimit, async (req, res) => {
     try {
+      console.log("Creating project - Request body:", req.body);
+      console.log("User session:", req.session?.userId ? "authenticated" : "not authenticated");
+      
       const validatedData = insertProjectSchema.parse(req.body);
+      console.log("Data validated successfully:", validatedData);
+      
       const project = await storage.createProject(validatedData);
+      console.log("Project created successfully:", project.id);
+      
       res.status(201).json(project);
     } catch (error) {
-      res.status(400).json({ error: "Invalid project data" });
+      console.error("Error creating project:", error);
+      
+      // Handle validation errors specifically
+      if (error && typeof error === 'object' && 'issues' in error) {
+        return res.status(400).json({ 
+          error: "Dados do projeto inválidos", 
+          details: error.issues?.map((issue: any) => ({
+            field: issue.path?.join('.'),
+            message: issue.message
+          }))
+        });
+      }
+      
+      // Handle other errors
+      res.status(500).json({ error: "Erro interno do servidor. Tente novamente." });
     }
   });
 
