@@ -78,9 +78,9 @@ function App() {
       <TooltipProvider>
         <LanguageProvider>
           <AuthProvider>
-            <div className="bg-background">
+            <div className="min-h-screen bg-background">
               <Header />
-              <main>
+              <main className="min-h-0">
                 <Router />
               </main>
             </div>
