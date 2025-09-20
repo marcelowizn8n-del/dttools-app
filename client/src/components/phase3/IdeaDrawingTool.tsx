@@ -124,20 +124,37 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
 
   // Função para calcular dimensões responsivas do canvas
   const getCanvasDimensions = () => {
+    if (typeof window === 'undefined') return { width: 800, height: 600 };
+    
     const container = canvasRef.current?.parentElement;
     if (!container) return { width: 800, height: 600 };
     
     const containerWidth = container.clientWidth;
     // Mobile: usar largura total menos padding
-    if (containerWidth < 768) {
+    if (window.innerWidth < 768) {
       return {
-        width: Math.max(300, containerWidth - 32), // mínimo 300px, máximo container - padding
+        width: Math.max(300, Math.min(containerWidth - 32, 600)), // mínimo 300px, máximo container - padding
         height: 400 // altura menor no mobile
       };
     }
     // Desktop: dimensões padrão
     return { width: 800, height: 600 };
   };
+
+  // Handler para resize responsivo
+  useEffect(() => {
+    const handleResize = () => {
+      if (!canvas) return;
+      
+      const newDimensions = getCanvasDimensions();
+      canvas.setWidth(newDimensions.width);
+      canvas.setHeight(newDimensions.height);
+      canvas.renderAll();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [canvas]);
 
   // Inicializar canvas Fabric.js uma vez só
   useEffect(() => {
