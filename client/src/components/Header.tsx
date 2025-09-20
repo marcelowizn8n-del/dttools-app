@@ -27,15 +27,15 @@ export default function Header() {
     <header className="bg-background border-b border-border sticky top-0 z-10">
       <div className="container mx-auto px-4 md:px-6 py-3">
         <div className="flex items-center justify-between min-h-[60px] gap-4">
-          {/* Logo - Clean and sustainable approach */}
-          <div className="logo-container min-w-24 sm:min-w-32 md:min-w-[160px] max-w-[200px] flex-shrink-0">
+          {/* Logo - Container reserves space to prevent layout shifts */}
+          <div className="flex-shrink-0 min-w-[120px] md:min-w-[140px] lg:min-w-[160px]">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                {/* Mobile optimized logo sizing */}
+                {/* Stable logo - fixed height prevents shrinking during HMR */}
                 <img 
                   src={logoHorizontal} 
                   alt="DTTools" 
-                  className="logo-img h-8 sm:h-12 md:h-16 lg:h-20 w-auto object-contain"
+                  className="app-logo h-12 md:h-14 lg:h-16 w-auto object-contain shrink-0"
                   data-testid="logo-img"
                 />
               </div>
