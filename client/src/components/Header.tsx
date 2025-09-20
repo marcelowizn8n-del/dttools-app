@@ -24,14 +24,14 @@ export default function Header() {
       <div className="container mx-auto px-4 md:px-6 py-3">
         <div className="flex items-center justify-between min-h-[60px] gap-4">
           {/* Logo - Clean and sustainable approach */}
-          <div className="logo-container min-w-32 sm:min-w-[160px] md:min-w-[180px] max-w-[240px]">
+          <div className="logo-container min-w-24 sm:min-w-32 md:min-w-[160px] max-w-[200px] flex-shrink-0">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                {/* Always show horizontal logo with text */}
+                {/* Mobile optimized logo sizing */}
                 <img 
                   src={logoHorizontal} 
                   alt="DTTools" 
-                  className="logo-img h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain"
+                  className="logo-img h-8 sm:h-12 md:h-16 lg:h-20 w-auto object-contain"
                   data-testid="logo-img"
                 />
               </div>
