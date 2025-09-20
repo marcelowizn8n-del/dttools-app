@@ -61,7 +61,7 @@ export default function EditPrototypeDialog({
       images: (prototype.images as string[]) || [],
       version: prototype.version || 1,
       feedback: prototype.feedback || "",
-      ideaId: prototype.ideaId || "",
+      ideaId: prototype.ideaId || "none",
     },
   });
 
@@ -69,7 +69,7 @@ export default function EditPrototypeDialog({
     mutationFn: async (data: Partial<InsertPrototype>) => {
       const cleanData = {
         ...data,
-        ideaId: data.ideaId === "" ? undefined : data.ideaId,
+        ideaId: (data.ideaId === "" || data.ideaId === "none") ? undefined : data.ideaId,
       };
       const response = await apiRequest("PUT", `/api/prototypes/${prototype.id}`, cleanData);
       return response.json();
@@ -199,7 +199,7 @@ export default function EditPrototypeDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Nenhuma ideia</SelectItem>
+                      <SelectItem value="none">Nenhuma ideia</SelectItem>
                       {ideas.map((idea) => (
                         <SelectItem key={idea.id} value={idea.id}>
                           {idea.title}

@@ -211,7 +211,7 @@ export default function PrototypeTool({ projectId }: PrototypeToolProps) {
       images: [],
       version: 1,
       feedback: "",
-      ideaId: "",
+      ideaId: "none",
     },
   });
 
@@ -243,10 +243,10 @@ export default function PrototypeTool({ projectId }: PrototypeToolProps) {
   });
 
   const onSubmitCreate = (data: InsertPrototype) => {
-    // Clean up ideaId if it's empty string
+    // Clean up ideaId if it's empty string or "none"
     const cleanData = {
       ...data,
-      ideaId: data.ideaId === "" ? undefined : (data.ideaId || undefined),
+      ideaId: (data.ideaId === "" || data.ideaId === "none") ? undefined : (data.ideaId || undefined),
     };
     createPrototypeMutation.mutate(cleanData);
   };
@@ -337,14 +337,14 @@ export default function PrototypeTool({ projectId }: PrototypeToolProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Ideia Base (Opcional)</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || "none"}>
                           <FormControl>
                             <SelectTrigger data-testid="select-prototype-idea">
                               <SelectValue placeholder="Selecionar ideia" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Nenhuma ideia</SelectItem>
+                            <SelectItem value="none">Nenhuma ideia</SelectItem>
                             {ideas.map((idea) => (
                               <SelectItem key={idea.id} value={idea.id}>
                                 {idea.title}
