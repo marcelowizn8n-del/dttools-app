@@ -90,6 +90,11 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const [fontSize, setFontSize] = useState<number>(16);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   
+  // Connector state
+  const [connectorMode, setConnectorMode] = useState<'none' | 'selecting' | 'connecting'>('none');
+  const [sourceObject, setSourceObject] = useState<FabricObject | null>(null);
+  const [connections, setConnections] = useState<Map<string, string[]>>(new Map());
+  
   // UI state
   const [currentDrawing, setCurrentDrawing] = useState<CanvasDrawing | null>(null);
   const [newDrawingTitle, setNewDrawingTitle] = useState("");
@@ -161,12 +166,17 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     },
   });
 
-  // Initialize canvas
+  // Initialize canvas with responsive sizing
   useEffect(() => {
     if (canvasRef.current && !canvas) {
+      const container = canvasRef.current.parentElement;
+      const containerWidth = container?.clientWidth || 800;
+      const canvasWidth = Math.min(containerWidth - 32, 800); // 32px for padding
+      const canvasHeight = 500;
+      
       const fabricCanvas = new FabricCanvas(canvasRef.current, {
-        width: 800,
-        height: 500,
+        width: canvasWidth,
+        height: canvasHeight,
         backgroundColor: 'white',
       });
 
@@ -179,7 +189,18 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
 
       setCanvas(fabricCanvas);
 
+      // Responsive resize handler
+      const handleResize = () => {
+        const newContainerWidth = container?.clientWidth || 800;
+        const newCanvasWidth = Math.min(newContainerWidth - 32, 800);
+        fabricCanvas.setDimensions({ width: newCanvasWidth, height: canvasHeight });
+        fabricCanvas.renderAll();
+      };
+      
+      window.addEventListener('resize', handleResize);
+
       return () => {
+        window.removeEventListener('resize', handleResize);
         fabricCanvas.dispose();
       };
     }
@@ -213,25 +234,38 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     const newHistory = [...currentHistory.history.slice(0, currentHistory.step + 1)];
     newHistory.push(canvasState);
     
-    // Limit history size
+    // Limit history size and set step correctly
     if (newHistory.length > 20) {
       newHistory.shift();
-    } else {
-      currentHistory.step++;
     }
     
-    setPageHistories(new Map(pageHistories.set(currentPageId, {
-      history: newHistory,
-      step: currentHistory.step
-    })));
+    const newStep = newHistory.length - 1;
+    
+    setPageHistories(prev => {
+      const newMap = new Map(prev);
+      newMap.set(currentPageId, {
+        history: newHistory,
+        step: newStep
+      });
+      return newMap;
+    });
   }, [canvas, currentPageId, pageHistories]);
 
-  // Event handlers for shape creation
+  // Event handlers for canvas interactions and history
   useEffect(() => {
     if (!canvas) return;
 
     const handleMouseDown = (e: any) => {
       if (tool === "pen" || tool === "select") return;
+      
+      // Handle connector tool
+      if (tool === "connector" && connectorMode !== 'none') {
+        const target = canvas.findTarget(e.e);
+        if (target && typeof target === 'object' && 'type' in target) {
+          handleConnectorClick(target as FabricObject);
+        }
+        return;
+      }
       
       const pointer = canvas.getPointer(e.e);
       setStartPos({ x: pointer.x, y: pointer.y });
@@ -243,27 +277,57 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       
       setIsDrawing(false);
       setStartPos(null);
+    };
+
+    // Comprehensive history tracking
+    const handleObjectAdded = () => {
+      setTimeout(() => saveToHistory(), 50); // Slight delay to ensure state is updated
+    };
+    
+    const handleObjectModified = () => {
+      saveToHistory();
+    };
+    
+    const handleObjectRemoved = () => {
       saveToHistory();
     };
 
-    const handleObjectAdded = () => {
+    const handlePathCreated = () => {
       saveToHistory();
     };
 
     canvas.on('mouse:down', handleMouseDown);
     canvas.on('mouse:up', handleMouseUp);
-    canvas.on('path:created', handleObjectAdded);
+    canvas.on('object:added', handleObjectAdded);
+    canvas.on('object:modified', handleObjectModified);
+    canvas.on('object:removed', handleObjectRemoved);
+    canvas.on('path:created', handlePathCreated);
 
     return () => {
       canvas.off('mouse:down', handleMouseDown);
       canvas.off('mouse:up', handleMouseUp);
-      canvas.off('path:created', handleObjectAdded);
+      canvas.off('object:added', handleObjectAdded);
+      canvas.off('object:modified', handleObjectModified);
+      canvas.off('object:removed', handleObjectRemoved);
+      canvas.off('path:created', handlePathCreated);
     };
   }, [canvas, tool, isDrawing, startPos, saveToHistory]);
 
   // Tools
   const handleToolChange = (newTool: string) => {
     setTool(newTool);
+    
+    // Reset connector mode when changing tools
+    if (newTool !== 'connector') {
+      setConnectorMode('none');
+      setSourceObject(null);
+    } else {
+      setConnectorMode('selecting');
+      toast({
+        title: "Modo Conector",
+        description: "Clique no primeiro objeto, depois no segundo para criar uma conexão.",
+      });
+    }
   };
 
   const addRectangle = () => {
@@ -282,6 +346,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     canvas.add(rect);
     canvas.setActiveObject(rect);
     canvas.renderAll();
+    // History will be saved automatically via object:added event
   };
 
   const addCircle = () => {
@@ -299,6 +364,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     canvas.add(circle);
     canvas.setActiveObject(circle);
     canvas.renderAll();
+    // History will be saved automatically via object:added event
   };
 
   const addTriangle = () => {
@@ -317,6 +383,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     canvas.add(triangle);
     canvas.setActiveObject(triangle);
     canvas.renderAll();
+    // History will be saved automatically via object:added event
   };
 
   const addLine = () => {
@@ -330,6 +397,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     canvas.add(line);
     canvas.setActiveObject(line);
     canvas.renderAll();
+    // History will be saved automatically via object:added event
   };
 
   const addText = () => {
@@ -347,6 +415,106 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     canvas.setActiveObject(text);
     text.enterEditing();
     canvas.renderAll();
+    // History will be saved automatically via object:added event
+  };
+  
+  // Connector functionality
+  const handleConnectorClick = (target: FabricObject) => {
+    if (connectorMode === 'selecting') {
+      // First click - select source object
+      setSourceObject(target);
+      setConnectorMode('connecting');
+      
+      // Highlight the selected object
+      target.set('stroke', '#007bff');
+      target.set('strokeWidth', 3);
+      canvas?.renderAll();
+      
+      toast({
+        title: "Objeto selecionado",
+        description: "Agora clique no segundo objeto para criar a conexão.",
+      });
+    } else if (connectorMode === 'connecting' && sourceObject && target !== sourceObject) {
+      // Second click - create connection
+      createConnection(sourceObject, target);
+      
+      // Reset source object appearance
+      sourceObject.set('stroke', selectedColor);
+      sourceObject.set('strokeWidth', selectedStrokeWidth);
+      
+      // Reset connector mode
+      setConnectorMode('selecting');
+      setSourceObject(null);
+      canvas?.renderAll();
+      
+      toast({
+        title: "Conexão criada!",
+        description: "Os objetos foram conectados com sucesso.",
+      });
+    }
+  };
+  
+  const createConnection = (source: FabricObject, target: FabricObject) => {
+    if (!canvas) return;
+    
+    // Calculate connection points
+    const sourceBounds = source.getBoundingRect();
+    const targetBounds = target.getBoundingRect();
+    
+    const sourceCenter = {
+      x: sourceBounds.left + sourceBounds.width / 2,
+      y: sourceBounds.top + sourceBounds.height / 2
+    };
+    
+    const targetCenter = {
+      x: targetBounds.left + targetBounds.width / 2,
+      y: targetBounds.top + targetBounds.height / 2
+    };
+    
+    // Create connection line
+    const connectionLine = new FabricLine(
+      [sourceCenter.x, sourceCenter.y, targetCenter.x, targetCenter.y],
+      {
+        stroke: '#007bff',
+        strokeWidth: 2,
+        strokeDashArray: [5, 5],
+        selectable: true,
+        evented: true,
+        // Note: data property will be set after creation
+      }
+    );
+    
+    // Set custom data on the connector line and objects
+    (connectionLine as any).data = {
+      isConnector: true,
+      sourceId: (source as any).data?.id || `obj_${Date.now()}_1`,
+      targetId: (target as any).data?.id || `obj_${Date.now()}_2`
+    };
+    
+    // Add IDs to objects if they don't have them
+    if (!(source as any).data?.id) {
+      (source as any).data = { ...(source as any).data, id: `obj_${Date.now()}_1` };
+    }
+    if (!(target as any).data?.id) {
+      (target as any).data = { ...(target as any).data, id: `obj_${Date.now()}_2` };
+    }
+    
+    canvas.add(connectionLine);
+    canvas.renderAll();
+    
+    // Store connection mapping
+    const sourceId = (source as any).data?.id || `obj_${Date.now()}_1`;
+    const targetId = (target as any).data?.id || `obj_${Date.now()}_2`;
+    const connectionId = `conn_${Date.now()}`;
+    
+    setConnections(prev => {
+      const newConnections = new Map(prev);
+      if (!newConnections.has(sourceId)) {
+        newConnections.set(sourceId, []);
+      }
+      newConnections.get(sourceId)?.push(connectionId);
+      return newConnections;
+    });
   };
 
   const deleteSelected = () => {
@@ -355,7 +523,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     if (activeObject) {
       canvas.remove(activeObject);
       canvas.renderAll();
-      saveToHistory();
+      // History will be saved automatically via object:removed event
     }
   };
 
@@ -364,7 +532,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     canvas.clear();
     canvas.backgroundColor = 'white';
     canvas.renderAll();
-    saveToHistory();
+    saveToHistory(); // Manual save for clear action
     toast({
       title: "Canvas limpo!",
       description: "Todos os elementos foram removidos.",
@@ -529,12 +697,52 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       ctx.fillStyle = 'white';
       ctx.fillRect(0, 0, 200, 150);
       
-      // Draw current canvas content scaled down
-      const mainCanvas = canvas.getElement();
-      ctx.drawImage(mainCanvas, 0, 0, 200, 150);
+      // If pageData is provided, create a temporary Fabric canvas
+      if (pageData && pageData.canvasData) {
+        // Use current canvas for the active page or temp canvas for others
+        const mainCanvas = canvas.getElement();
+        ctx.drawImage(mainCanvas, 0, 0, 200, 150);
+      } else {
+        // Draw current canvas content scaled down
+        const mainCanvas = canvas.getElement();
+        ctx.drawImage(mainCanvas, 0, 0, 200, 150);
+      }
     }
     
     return tempCanvas.toDataURL();
+  };
+  
+  // Generate thumbnail for a specific page
+  const generatePageThumbnail = async (page: DrawingPage): Promise<string> => {
+    if (!canvas) return '';
+    
+    if (page.id === currentPageId) {
+      // Current page - use existing canvas
+      return generateThumbnail();
+    } else if (page.canvasData) {
+      // Other page - create temporary canvas
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = 200;
+      tempCanvas.height = 150;
+      const ctx = tempCanvas.getContext('2d');
+      
+      if (ctx) {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, 200, 150);
+        
+        // For now, return a placeholder for other pages
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(10, 10, 180, 130);
+        ctx.fillStyle = '#666';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(page.name, 100, 75);
+      }
+      
+      return tempCanvas.toDataURL();
+    }
+    
+    return '';
   };
 
   const exportDrawing = () => {
