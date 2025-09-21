@@ -61,30 +61,19 @@
     @apply border-border;
   }
 
-  html {
+  html, body {
     @apply font-sans antialiased bg-background text-foreground;
     font-family: var(--font-sans);
-    overflow-y: scroll !important;
-    overflow-x: auto !important;
-    height: 100% !important;
-  }
-  
-  body {
-    @apply font-sans antialiased bg-background text-foreground;
-    font-family: var(--font-sans);
-    overflow-y: scroll !important;
-    overflow-x: auto !important;
-    min-height: 100vh;
-    height: auto !important;
-    position: static !important;
+    height: auto;
+    min-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   #root {
-    overflow-y: scroll !important;
-    overflow-x: auto !important;
-    min-height: 100vh;
-    height: auto !important;
-    position: static !important;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
   }
 }
 
