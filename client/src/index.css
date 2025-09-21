@@ -62,7 +62,7 @@
   }
 
   html, body {
-    height: 100%;
+    min-height: 100vh;
     overflow-x: auto; /* Allow horizontal scroll when needed */
     overflow-y: auto;
   }
@@ -73,7 +73,6 @@
   }
 
   #root {
-    height: 100%;
     min-height: 100vh;
   }
 }
