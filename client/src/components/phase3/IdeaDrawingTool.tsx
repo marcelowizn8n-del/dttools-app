@@ -348,29 +348,45 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         title: "Modo Conector",
         description: "Clique no primeiro objeto, depois no segundo para criar uma conexão.",
       });
+      return; // Don't add shapes for connector tool
     }
     
-    // Add shapes immediately when tool is selected (with safety checks)
-    if (canvas && canvas.getElement) {
+    // Add shapes immediately when tool is selected (with better safety checks)
+    if (canvas && canvas.getElement && canvas.getContext && canvas.getContext()) {
       setTimeout(() => {
-        switch (newTool) {
-          case 'rect':
-            addRectangle();
-            break;
-          case 'circle':
-            addCircle();
-            break;
-          case 'triangle':
-            addTriangle();
-            break;
-          case 'text':
-            addText();
-            break;
-          case 'line':
-            addLine();
-            break;
+        try {
+          switch (newTool) {
+            case 'rect':
+              addRectangle();
+              break;
+            case 'circle':
+              addCircle();
+              break;
+            case 'triangle':
+              addTriangle();
+              break;
+            case 'text':
+              addText();
+              break;
+            case 'line':
+              addLine();
+              break;
+          }
+        } catch (error) {
+          console.error('Erro ao adicionar forma:', error);
+          toast({
+            title: "Erro",
+            description: "Não foi possível adicionar a forma. Tente novamente.",
+            variant: "destructive",
+          });
         }
-      }, 100);
+      }, 200);
+    } else {
+      console.warn('Canvas não está totalmente inicializado');
+      toast({
+        title: "Aguarde",
+        description: "Canvas ainda está carregando. Tente novamente em alguns segundos.",
+      });
     }
   };
 
