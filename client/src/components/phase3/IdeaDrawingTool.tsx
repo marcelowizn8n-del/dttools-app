@@ -613,9 +613,9 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
           if (canvasObjData?.id === targetId) targetObj = canvasObj;
         });
         
-        if (sourceObj && targetObj) {
-          const sourceBounds = sourceObj.getBoundingRect();
-          const targetBounds = targetObj.getBoundingRect();
+        if (sourceObj && targetObj && typeof (sourceObj as any).getBoundingRect === 'function' && typeof (targetObj as any).getBoundingRect === 'function') {
+          const sourceBounds = (sourceObj as any).getBoundingRect();
+          const targetBounds = (targetObj as any).getBoundingRect();
           
           const sourceCenter = {
             x: sourceBounds.left + sourceBounds.width / 2,
@@ -663,9 +663,9 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       
       // Remove connection IDs from other objects' lists
       const removedConnectionIds = objectsToRemove.map(obj => (obj as any).data?.connectionId).filter(Boolean);
-      for (const [key, connectionList] of newConnections.entries()) {
-        newConnections.set(key, connectionList.filter(connId => !removedConnectionIds.includes(connId)));
-      }
+      Array.from(newConnections.entries()).forEach(([key, connectionList]) => {
+        newConnections.set(key, connectionList.filter((connId: string) => !removedConnectionIds.includes(connId)));
+      });
       
       return newConnections;
     });
