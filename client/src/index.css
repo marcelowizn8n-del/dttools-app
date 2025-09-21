@@ -69,6 +69,32 @@
   .project-detail .container {
     max-width: 100%;
   }
+
+  /* URGENT FIX: Force scroll to work on project pages */
+  html, body {
+    overflow: auto !important;
+    touch-action: auto !important;
+    height: auto !important;
+  }
+  
+  #root {
+    overflow: visible !important;
+    touch-action: auto !important;
+    height: auto !important;
+  }
+  
+  .project-detail {
+    overflow: visible !important;
+    touch-action: auto !important;
+    height: auto !important;
+  }
+  
+  /* Only disable touch-action on canvas areas, not the entire page */
+  .drawing-canvas, 
+  .canvas-container canvas,
+  .konva-content {
+    touch-action: none !important;
+  }
 }
 
 /* App logo stability - prevent layout shifts and shrinking during HMR */
