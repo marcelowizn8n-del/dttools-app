@@ -606,7 +606,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (browserLang.startsWith("pt")) return "pt-BR";
     if (browserLang.startsWith("es")) return "es";
     if (browserLang.startsWith("fr")) return "fr";
-    return "en";
+    if (browserLang.startsWith("en")) return "en";
+    return "pt-BR"; // Português como padrão para usuários brasileiros
   });
 
   useEffect(() => {
