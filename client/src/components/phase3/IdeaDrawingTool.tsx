@@ -261,7 +261,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     if (!canvas) return;
 
     const handleMouseDown = (e: any) => {
-      if (tool === "pen" || tool === "select") return;
+      if (tool === "select") return;
       
       // Handle connector tool
       if (tool === "connector" && connectorMode !== 'none') {

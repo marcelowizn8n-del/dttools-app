@@ -672,7 +672,6 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
   const renderElement = (element: DrawingElement) => {
     const isSelected = selectedElement === element.id;
     const commonProps = {
-      key: element.id,
       x: element.x,
       y: element.y,
       fill: element.fill,
@@ -695,17 +694,17 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
 
     switch (element.type) {
       case 'line':
-        return <Line {...commonProps} points={element.points} draggable={false} />;
+        return <Line key={element.id} {...commonProps} points={element.points} draggable={false} />;
       case 'text':
-        return <Text {...commonProps} text={element.text} fontSize={element.fontSize} />;
+        return <Text key={element.id} {...commonProps} text={element.text} fontSize={element.fontSize} />;
       case 'rect':
-        return <Rect {...commonProps} width={element.width} height={element.height} />;
+        return <Rect key={element.id} {...commonProps} width={element.width} height={element.height} />;
       case 'circle':
-        return <Circle {...commonProps} radius={Math.min(element.width! / 2, element.height! / 2)} />;
+        return <Circle key={element.id} {...commonProps} radius={Math.min(element.width! / 2, element.height! / 2)} />;
       case 'star':
-        return <Star {...commonProps} numPoints={5} innerRadius={Math.min(element.width! / 4, element.height! / 4)} outerRadius={Math.min(element.width! / 2, element.height! / 2)} />;
+        return <Star key={element.id} {...commonProps} numPoints={5} innerRadius={Math.min(element.width! / 4, element.height! / 4)} outerRadius={Math.min(element.width! / 2, element.height! / 2)} />;
       case 'image':
-        return <URLImage {...commonProps} src={element.imageUrl!} width={element.width} height={element.height} />;
+        return <URLImage key={element.id} {...commonProps} src={element.imageUrl!} width={element.width} height={element.height} />;
       default:
         return null;
     }
