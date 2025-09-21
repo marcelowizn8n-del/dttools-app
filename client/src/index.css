@@ -64,15 +64,20 @@
     @apply font-sans antialiased bg-background text-foreground;
     font-family: var(--font-sans);
     height: auto;
-    min-height: 100%;
+    min-height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
   }
 
   #root {
     height: auto;
-    min-height: 100%;
+    min-height: 100vh;
     overflow: visible;
+  }
+
+  /* Ensure project detail pages can scroll properly */
+  .project-detail .container {
+    max-width: 100%;
   }
 }
 
