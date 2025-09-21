@@ -1,5 +1,4 @@
 import { Switch, Route } from "wouter";
-import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -74,45 +73,6 @@ function Router() {
 }
 
 function App() {
-  // Force scroll fix on mount and route changes
-  useEffect(() => {
-    const forceScroll = () => {
-      // Force scroll on html and body
-      document.documentElement.style.setProperty('overflow-y', 'scroll', 'important');
-      document.documentElement.style.setProperty('overflow-x', 'auto', 'important');
-      document.documentElement.style.setProperty('height', '100%', 'important');
-      
-      document.body.style.setProperty('overflow-y', 'scroll', 'important');
-      document.body.style.setProperty('overflow-x', 'auto', 'important');
-      document.body.style.setProperty('height', 'auto', 'important');
-      document.body.style.setProperty('min-height', '100vh', 'important');
-      
-      // Force scroll on root
-      const root = document.getElementById('root');
-      if (root) {
-        root.style.setProperty('overflow-y', 'scroll', 'important');
-        root.style.setProperty('overflow-x', 'auto', 'important');
-        root.style.setProperty('height', 'auto', 'important');
-        root.style.setProperty('min-height', '100vh', 'important');
-      }
-      
-      console.log('Scroll fix applied');
-    };
-    
-    forceScroll();
-    
-    // Apply on route changes
-    const handleRouteChange = () => {
-      setTimeout(forceScroll, 100);
-    };
-    
-    window.addEventListener('popstate', handleRouteChange);
-    
-    return () => {
-      window.removeEventListener('popstate', handleRouteChange);
-    };
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
