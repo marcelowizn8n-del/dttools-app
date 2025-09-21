@@ -347,6 +347,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     if (tool === "pen") {
       setCurrentPath([pos.x, pos.y]);
     } else if (tool === "text") {
+      const userText = prompt("Digite o texto:", "Texto") || "Texto";
       const newElement: DrawingElement = {
         id: `element-${Date.now()}`,
         type: "text",
@@ -356,7 +357,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
         stroke: selectedColor,
         strokeWidth: selectedStrokeWidth,
         draggable: true,
-        text: "Texto",
+        text: userText,
         fontSize: fontSize,
       };
       // Finalize text immediately
@@ -1085,7 +1086,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                 <div 
                   className="border-2 border-dashed border-gray-300 rounded-lg max-w-full"
                   style={{ 
-                    touchAction: 'pan-y',
+                    touchAction: 'none',
                     overflow: 'visible',
                     position: 'relative'
                   }}
@@ -1096,6 +1097,9 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                     height={canvasSize.height}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
+                    onTouchStart={handleMouseDown}
+                    onTouchMove={handleMouseMove}
+                    onTouchEnd={handleMouseUp}
                     onMouseUp={handleMouseUp}
                   >
                     <Layer>

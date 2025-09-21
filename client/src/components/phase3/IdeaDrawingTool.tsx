@@ -1397,7 +1397,6 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                 className="w-full border rounded-lg bg-white" 
                 style={{ 
                   height: '500px', 
-                  touchAction: 'pan-y',
                   overflow: 'visible'
                 }}
               >
@@ -1407,7 +1406,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   height={500}
                   className="cursor-crosshair"
                   data-testid="drawing-canvas"
-                  style={{ touchAction: 'pan-y' }}
+                  style={{ touchAction: 'none' }}
                 />
               </div>
             </CardContent>
