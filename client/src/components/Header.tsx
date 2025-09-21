@@ -24,7 +24,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-10">
+    <header className="bg-background border-b border-border">
       <div className="container mx-auto px-4 md:px-6 py-3">
         <div className="flex items-center justify-between min-h-[60px] gap-4">
           {/* Logo - Container reserves space to prevent layout shifts */}
