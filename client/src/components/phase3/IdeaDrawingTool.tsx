@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Canvas as FabricCanvas, 
@@ -76,6 +76,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [canvas, setCanvas] = useState<FabricCanvas | null>(null);
+  const [canvasReady, setCanvasReady] = useState(false);
   
   // Drawing state
   const [tool, setTool] = useState<string>("pen");
@@ -167,49 +168,52 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     },
   });
 
-  // Initialize canvas with responsive sizing
-  useEffect(() => {
-    if (canvasRef.current && !canvas) {
-      const container = canvasRef.current.parentElement;
-      const containerWidth = container?.clientWidth || 800;
-      const canvasWidth = Math.min(containerWidth - 32, 800); // 32px for padding
-      const canvasHeight = 500;
-      
-      const fabricCanvas = new FabricCanvas(canvasRef.current, {
-        width: canvasWidth,
-        height: canvasHeight,
-        backgroundColor: 'white',
-      });
+  // Initialize canvas with responsive sizing - use useLayoutEffect for deterministic timing
+  useLayoutEffect(() => {
+    if (!canvasRef.current) return;
+    
+    const container = canvasRef.current.parentElement;
+    const containerWidth = container?.clientWidth || 800;
+    const canvasWidth = Math.min(containerWidth - 32, 800); // 32px for padding
+    const canvasHeight = 500;
+    
+    const fabricCanvas = new FabricCanvas(canvasRef.current, {
+      width: canvasWidth,
+      height: canvasHeight,
+      backgroundColor: 'white',
+    });
 
-      // Configure drawing brush
-      fabricCanvas.isDrawingMode = tool === "pen";
-      if (fabricCanvas.freeDrawingBrush) {
-        fabricCanvas.freeDrawingBrush.width = selectedStrokeWidth;
-        fabricCanvas.freeDrawingBrush.color = selectedColor;
-      }
-
-      setCanvas(fabricCanvas);
-
-      // Responsive resize handler
-      const handleResize = () => {
-        const newContainerWidth = container?.clientWidth || 800;
-        const newCanvasWidth = Math.min(newContainerWidth - 32, 800);
-        fabricCanvas.setDimensions({ width: newCanvasWidth, height: canvasHeight });
-        fabricCanvas.renderAll();
-      };
-      
-      window.addEventListener('resize', handleResize);
-
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        fabricCanvas.dispose();
-      };
+    // Configure drawing brush
+    fabricCanvas.isDrawingMode = tool === "pen";
+    if (fabricCanvas.freeDrawingBrush) {
+      fabricCanvas.freeDrawingBrush.width = selectedStrokeWidth;
+      fabricCanvas.freeDrawingBrush.color = selectedColor;
     }
-  }, [canvasRef.current]);
+
+    setCanvas(fabricCanvas);
+    setCanvasReady(true);
+
+    // Responsive resize handler
+    const handleResize = () => {
+      const newContainerWidth = container?.clientWidth || 800;
+      const newCanvasWidth = Math.min(newContainerWidth - 32, 800);
+      fabricCanvas.setDimensions({ width: newCanvasWidth, height: canvasHeight });
+      fabricCanvas.renderAll();
+    };
+    
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      fabricCanvas.dispose();
+      setCanvas(null);
+      setCanvasReady(false);
+    };
+  }, []);
 
   // Update canvas when tool or settings change
   useEffect(() => {
-    if (canvas) {
+    if (canvas && canvasReady) {
       canvas.isDrawingMode = tool === "pen";
       if (canvas.freeDrawingBrush) {
         canvas.freeDrawingBrush.width = selectedStrokeWidth;
@@ -222,11 +226,11 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         canvas.defaultCursor = 'crosshair';
       }
     }
-  }, [tool, selectedColor, selectedStrokeWidth, canvas]);
+  }, [tool, selectedColor, selectedStrokeWidth, canvas, canvasReady]);
 
   // Save to history
   const saveToHistory = useCallback(() => {
-    if (!canvas || isLoadingCanvas) return; // Don't save during loading
+    if (!canvas || !canvasReady || isLoadingCanvas) return; // Don't save during loading or if canvas not ready
     
     const currentHistory = pageHistories.get(currentPageId) || { history: [null], step: 0 };
     const canvasState = canvas.toJSON();
@@ -351,47 +355,47 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       return; // Don't add shapes for connector tool
     }
     
-    // Add shapes immediately when tool is selected (with better safety checks)
-    if (canvas && canvas.getElement && canvas.getContext && canvas.getContext()) {
-      setTimeout(() => {
-        try {
-          switch (newTool) {
-            case 'rect':
-              addRectangle();
-              break;
-            case 'circle':
-              addCircle();
-              break;
-            case 'triangle':
-              addTriangle();
-              break;
-            case 'text':
-              addText();
-              break;
-            case 'line':
-              addLine();
-              break;
-          }
-        } catch (error) {
-          console.error('Erro ao adicionar forma:', error);
-          toast({
-            title: "Erro",
-            description: "Não foi possível adicionar a forma. Tente novamente.",
-            variant: "destructive",
-          });
-        }
-      }, 200);
-    } else {
-      console.warn('Canvas não está totalmente inicializado');
+    // Add shapes immediately when tool is selected - only if canvas is ready
+    if (!canvas || !canvasReady) {
       toast({
         title: "Aguarde",
         description: "Canvas ainda está carregando. Tente novamente em alguns segundos.",
       });
+      return;
     }
+    
+    setTimeout(() => {
+      try {
+        switch (newTool) {
+          case 'rect':
+            addRectangle();
+            break;
+          case 'circle':
+            addCircle();
+            break;
+          case 'triangle':
+            addTriangle();
+            break;
+          case 'text':
+            addText();
+            break;
+          case 'line':
+            addLine();
+            break;
+        }
+      } catch (error) {
+        console.error('Erro ao adicionar forma:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível adicionar a forma. Tente novamente.",
+          variant: "destructive",
+        });
+      }
+    }, 100);
   };
 
   const addRectangle = () => {
-    if (!canvas) return;
+    if (!canvas || !canvasReady) return;
     
     const rect = new FabricRect({
       left: 100,
@@ -410,7 +414,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   };
 
   const addCircle = () => {
-    if (!canvas) return;
+    if (!canvas || !canvasReady) return;
     
     const circle = new FabricCircle({
       left: 100,
@@ -428,7 +432,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   };
 
   const addTriangle = () => {
-    if (!canvas) return;
+    if (!canvas || !canvasReady) return;
     
     const triangle = new FabricTriangle({
       left: 100,
@@ -447,7 +451,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   };
 
   const addLine = () => {
-    if (!canvas) return;
+    if (!canvas || !canvasReady) return;
     
     const line = new FabricLine([50, 100, 200, 100], {
       stroke: selectedColor,
@@ -461,7 +465,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
   };
 
   const addText = () => {
-    if (!canvas) return;
+    if (!canvas || !canvasReady) return;
     
     const text = new FabricIText('Clique para editar', {
       left: 100,
@@ -1180,6 +1184,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     variant={tool === "select" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("select")}
+                    disabled={!canvasReady}
                     data-testid="button-tool-select"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1190,6 +1195,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     variant={tool === "pen" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("pen")}
+                    disabled={!canvasReady}
                     data-testid="button-tool-pen"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1200,6 +1206,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     variant={tool === "rect" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("rect")}
+                    disabled={!canvasReady}
                     data-testid="button-tool-rect"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1210,6 +1217,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     variant={tool === "circle" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("circle")}
+                    disabled={!canvasReady}
                     data-testid="button-tool-circle"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1220,6 +1228,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     variant={tool === "triangle" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("triangle")}
+                    disabled={!canvasReady}
                     data-testid="button-tool-star"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1230,6 +1239,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     variant={tool === "text" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("text")}
+                    disabled={!canvasReady}
                     data-testid="button-tool-text"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1240,6 +1250,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     variant={tool === "line" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("line")}
+                    disabled={!canvasReady}
                     data-testid="button-tool-line"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >
@@ -1250,6 +1261,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     variant={tool === "connector" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleToolChange("connector")}
+                    disabled={!canvasReady}
                     data-testid="button-tool-connector"
                     className="flex flex-col items-center justify-center h-16 sm:h-14 px-2"
                   >

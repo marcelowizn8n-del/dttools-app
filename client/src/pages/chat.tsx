@@ -182,7 +182,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex-1 p-2 sm:p-4 lg:p-6 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+    <div className="flex-1 p-2 sm:p-4 lg:p-6 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -195,9 +195,9 @@ export default function ChatPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 h-[calc(100vh-10rem)] sm:h-[calc(100vh-12rem)] lg:h-[calc(100vh-16rem)] min-h-[500px]">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 min-h-[500px]">
           {/* Configuration Panel */}
-          <div className="lg:col-span-1 space-y-3 lg:space-y-4 overflow-y-auto max-h-full">
+          <div className="lg:col-span-1 space-y-3 lg:space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Configurações</CardTitle>
@@ -359,7 +359,7 @@ export default function ChatPage() {
               
               <CardContent className="flex-1 flex flex-col min-h-0 pb-2">
                 {/* Messages */}
-                <ScrollArea className="flex-1 pr-4 min-h-0 overflow-hidden">
+                <ScrollArea className="flex-1 pr-4 min-h-0">
                   <div className="space-y-4 pb-6">
                     {messages.map((message, index) => (
                       <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
