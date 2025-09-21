@@ -63,34 +63,24 @@
   html {
     @apply font-sans antialiased bg-background text-foreground;
     font-family: var(--font-sans);
-    overflow-x: hidden;
-    overflow-y: auto;
+    height: 100%;
   }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
     font-family: var(--font-sans);
-    min-height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    position: relative;
+    height: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   #root {
-    min-height: 100vh;
-    overflow: visible;
-    position: relative;
+    height: 100%;
   }
 
   /* Ensure project detail pages can scroll properly */
   .project-detail .container {
     max-width: 100%;
-  }
-
-  /* Force scrolling for project pages */
-  .project-detail {
-    overflow-y: auto !important;
-    min-height: 100vh;
   }
 }
 
