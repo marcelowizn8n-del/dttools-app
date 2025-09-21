@@ -80,7 +80,7 @@ function App() {
           <AuthProvider>
             <div className="bg-background min-h-screen">
               <Header />
-              <main className="overflow-y-auto">
+              <main>
                 <Router />
               </main>
             </div>

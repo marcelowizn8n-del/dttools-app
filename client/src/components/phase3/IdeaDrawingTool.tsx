@@ -1393,13 +1393,21 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
               )}
             </CardHeader>
             <CardContent>
-              <div className="w-full border rounded-lg bg-white overflow-hidden" style={{ height: '500px' }}>
+              <div 
+                className="w-full border rounded-lg bg-white" 
+                style={{ 
+                  height: '500px', 
+                  touchAction: 'pan-y',
+                  overflow: 'visible'
+                }}
+              >
                 <canvas
                   ref={canvasRef}
                   width={800}
                   height={500}
-                  className="w-full h-full cursor-crosshair"
+                  className="cursor-crosshair"
                   data-testid="drawing-canvas"
+                  style={{ touchAction: 'pan-y' }}
                 />
               </div>
             </CardContent>
