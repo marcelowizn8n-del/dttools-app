@@ -65,13 +65,30 @@
     min-height: 100vh;
     @apply font-sans antialiased bg-background text-foreground;
     font-family: var(--font-sans);
-    /* Ensure scroll is never blocked */
-    overflow-y: visible !important;
-    overflow-x: auto;
+    /* Force scroll to work */
+    overflow: auto !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   #root {
     min-height: 100vh;
+    /* Force scroll container */
+    overflow: auto !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  /* Force all containers to allow scroll */
+  * {
+    max-height: none !important;
+  }
+  
+  /* Ensure main content scrolls */
+  main, .container, div[class*="bg-gradient"] {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
   }
 }
 
