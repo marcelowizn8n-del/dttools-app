@@ -124,9 +124,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Handle validation errors specifically
       if (error && typeof error === 'object' && 'issues' in error) {
+        const validationError = error as any;
         return res.status(400).json({ 
           error: "Dados do projeto inválidos", 
-          details: error.issues?.map((issue: any) => ({
+          details: validationError.issues?.map((issue: any) => ({
             field: issue.path?.join('.'),
             message: issue.message
           }))
