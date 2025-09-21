@@ -1082,7 +1082,14 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
             {/* Canvas */}
             <Card>
               <CardContent className="p-2 md:p-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg overflow-auto max-w-full">
+                <div 
+                  className="border-2 border-dashed border-gray-300 rounded-lg max-w-full"
+                  style={{ 
+                    touchAction: 'pan-y',
+                    overflow: 'visible',
+                    position: 'relative'
+                  }}
+                >
                   <Stage
                     ref={stageRef}
                     width={canvasSize.width}
