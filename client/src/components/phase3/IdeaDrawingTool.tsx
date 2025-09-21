@@ -351,7 +351,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     }
     
     // Add shapes immediately when tool is selected (with safety checks)
-    if (canvas && canvas.getContext) {
+    if (canvas && canvas.getElement) {
       setTimeout(() => {
         switch (newTool) {
           case 'rect':
