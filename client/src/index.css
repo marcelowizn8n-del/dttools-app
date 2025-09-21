@@ -61,34 +61,30 @@
     @apply border-border;
   }
 
-  html, body {
-    min-height: 100vh;
+  html {
     @apply font-sans antialiased bg-background text-foreground;
     font-family: var(--font-sans);
-    /* Force scroll to work */
-    overflow: auto !important;
+    overflow-y: scroll !important;
+    overflow-x: auto !important;
+    height: 100% !important;
+  }
+  
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: var(--font-sans);
+    overflow-y: scroll !important;
+    overflow-x: auto !important;
+    min-height: 100vh;
     height: auto !important;
-    max-height: none !important;
+    position: static !important;
   }
 
   #root {
+    overflow-y: scroll !important;
+    overflow-x: auto !important;
     min-height: 100vh;
-    /* Force scroll container */
-    overflow: auto !important;
     height: auto !important;
-    max-height: none !important;
-  }
-  
-  /* Force all containers to allow scroll */
-  * {
-    max-height: none !important;
-  }
-  
-  /* Ensure main content scrolls */
-  main, .container, div[class*="bg-gradient"] {
-    overflow: visible !important;
-    height: auto !important;
-    max-height: none !important;
+    position: static !important;
   }
 }
 
