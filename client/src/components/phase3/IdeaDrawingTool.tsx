@@ -181,6 +181,9 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       width: canvasWidth,
       height: canvasHeight,
       backgroundColor: 'white',
+      enableRetinaScaling: false, // Disable retina scaling for better mobile performance
+      allowTouchScrolling: false, // Prevent touch scrolling within canvas
+      selection: true,
     });
 
     // Configure drawing brush
@@ -188,6 +191,16 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
     if (fabricCanvas.freeDrawingBrush) {
       fabricCanvas.freeDrawingBrush.width = selectedStrokeWidth;
       fabricCanvas.freeDrawingBrush.color = selectedColor;
+    }
+
+    // Enable touch events explicitly for mobile
+    const upperCanvas = fabricCanvas.upperCanvasEl;
+    if (upperCanvas) {
+      upperCanvas.style.touchAction = 'none';
+      // Force touch events to work on mobile
+      upperCanvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+      upperCanvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+      upperCanvas.addEventListener('touchend', (e) => e.preventDefault(), { passive: false });
     }
 
     setCanvas(fabricCanvas);
@@ -1453,16 +1466,16 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
         </TabsContent>
       </Tabs>
 
-      {/* Save/Export Actions */}
-      <div className="flex gap-2">
+      {/* Save/Export Actions - Mobile Responsive */}
+      <div className="flex flex-col sm:flex-row gap-2 mt-4 mb-8">
         <Dialog>
           <DialogTrigger asChild>
-            <Button data-testid="button-save-drawing">
+            <Button className="w-full sm:w-auto" data-testid="button-save-drawing">
               <Save className="w-4 h-4 mr-2" />
               Salvar Desenho
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="mx-4 max-w-[calc(100vw-2rem)] sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Salvar Desenho de Ideação</DialogTitle>
               <DialogDescription>
@@ -1490,11 +1503,21 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                   data-testid="textarea-drawing-description"
                 />
               </div>
-              <div className="flex gap-2">
-                <Button onClick={saveDrawing} disabled={saveDrawingMutation.isPending} data-testid="button-confirm-save">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button 
+                  onClick={saveDrawing} 
+                  disabled={saveDrawingMutation.isPending} 
+                  data-testid="button-confirm-save"
+                  className="w-full sm:w-auto"
+                >
                   {saveDrawingMutation.isPending ? "Salvando..." : "Salvar"}
                 </Button>
-                <Button variant="outline" onClick={exportDrawing} data-testid="button-export">
+                <Button 
+                  variant="outline" 
+                  onClick={exportDrawing} 
+                  data-testid="button-export"
+                  className="w-full sm:w-auto"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Exportar PNG
                 </Button>
@@ -1503,7 +1526,12 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
           </DialogContent>
         </Dialog>
         
-        <Button variant="outline" onClick={exportDrawing} data-testid="button-export-drawing">
+        <Button 
+          variant="outline" 
+          onClick={exportDrawing} 
+          data-testid="button-export-drawing"
+          className="w-full sm:w-auto"
+        >
           <Download className="w-4 h-4 mr-2" />
           Exportar PNG
         </Button>
