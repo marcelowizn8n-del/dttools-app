@@ -329,6 +329,18 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
     return canvas.toDataURL();
   }, []);
 
+  // Apply touch-action to Stage container for mobile
+  useEffect(() => {
+    if (stageRef.current) {
+      const container = stageRef.current.container();
+      if (container) {
+        container.style.touchAction = 'none';
+        (container.style as any).msTouchAction = 'none';
+        (container.style as any).webkitTouchAction = 'none';
+      }
+    }
+  }, []);
+
   // Memoized thumbnails for performance
   const pageThumbnails = useMemo(() => {
     const thumbnails = new Map<string, string>();
@@ -340,6 +352,10 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
 
   const handleMouseDown = (e: any) => {
     if (tool === "select") return;
+    
+    // Enhanced mobile touch handling
+    e.evt?.preventDefault?.();
+    e.evt?.stopPropagation?.();
     
     setIsDrawing(true);
     const pos = e.target.getStage().getPointerPosition();
@@ -374,6 +390,10 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
   const handleMouseMove = (e: any) => {
     if (!isDrawing) return;
     
+    // Enhanced mobile touch handling
+    e.evt?.preventDefault?.();
+    e.evt?.stopPropagation?.();
+    
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
     
@@ -402,6 +422,10 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
 
   const handleMouseUp = (e: any) => {
     if (!isDrawing) return;
+    
+    // Enhanced mobile touch handling
+    e.evt?.preventDefault?.();
+    e.evt?.stopPropagation?.();
     
     setIsDrawing(false);
     
@@ -1006,7 +1030,7 @@ export default function PrototypeDrawingTool({ projectId }: PrototypeDrawingTool
                     </Button>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2 mt-4">
+                  <div className="grid grid-cols-2 gap-2 mt-4 mb-8">
                     <Button
                       variant="outline"
                       size="sm"

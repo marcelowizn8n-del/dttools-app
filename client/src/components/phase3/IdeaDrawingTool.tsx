@@ -186,22 +186,51 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
       selection: true,
     });
 
-    // Configure drawing brush
-    fabricCanvas.isDrawingMode = tool === "pen";
+    // Configure drawing brush - CONDITIONAL MODE
+    fabricCanvas.isDrawingMode = (tool === "pen");  // Conditional based on selected tool
     if (fabricCanvas.freeDrawingBrush) {
       fabricCanvas.freeDrawingBrush.width = selectedStrokeWidth;
       fabricCanvas.freeDrawingBrush.color = selectedColor;
     }
 
-    // Enable touch events explicitly for mobile
+    // Enable touch events explicitly for mobile - ENHANCED
     const upperCanvas = fabricCanvas.upperCanvasEl;
-    if (upperCanvas) {
-      upperCanvas.style.touchAction = 'none';
-      // Force touch events to work on mobile
-      upperCanvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
-      upperCanvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-      upperCanvas.addEventListener('touchend', (e) => e.preventDefault(), { passive: false });
-    }
+    const lowerCanvas = fabricCanvas.lowerCanvasEl;
+    
+    // Apply to both upper and lower canvas
+    [upperCanvas, lowerCanvas].forEach(canvasEl => {
+      if (canvasEl) {
+        canvasEl.style.touchAction = 'none';
+        // Cross-browser touch action
+        (canvasEl.style as any).msTouchAction = 'none'; // IE/Edge
+        (canvasEl.style as any).webkitTouchAction = 'none'; // Safari
+        
+        // Remove any existing listeners first
+        canvasEl.removeEventListener('touchstart', () => {});
+        canvasEl.removeEventListener('touchmove', () => {});
+        canvasEl.removeEventListener('touchend', () => {});
+        
+        // Add enhanced touch listeners
+        canvasEl.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // Only enable drawing mode if pen tool is selected
+          if (tool === "pen") {
+            fabricCanvas.isDrawingMode = true;
+          }
+        }, { passive: false, capture: true });
+        
+        canvasEl.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, { passive: false, capture: true });
+        
+        canvasEl.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, { passive: false, capture: true });
+      }
+    });
 
     setCanvas(fabricCanvas);
     setCanvasReady(true);
