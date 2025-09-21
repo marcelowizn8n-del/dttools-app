@@ -239,7 +239,8 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="project-detail">
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/projects">
@@ -355,10 +356,10 @@ export default function ProjectDetailPage() {
           ) : (
             <Card className="bg-blue-50 border-blue-200">
               <CardHeader>
-                <CardTitle className="text-blue-900">🚀 Em Desenvolvimento</CardTitle>
+                <CardTitle className="text-blue-900">Em Desenvolvimento</CardTitle>
                 <CardDescription className="text-blue-700">
-                  As ferramentas para esta fase estão sendo desenvolvidas. 
-                  Complete as fases anteriores para desbloquear as próximas fases!
+                  As ferramentas para esta fase estao sendo desenvolvidas. 
+                  Complete as fases anteriores para desbloquear as proximas fases!
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -369,6 +370,7 @@ export default function ProjectDetailPage() {
           <AnalysisReport projectId={project.id} />
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
