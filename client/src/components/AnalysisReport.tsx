@@ -280,12 +280,13 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Button 
                 variant="outline" 
                 onClick={handleGenerateAnalysis}
                 disabled={generateAnalysis.isPending}
                 data-testid="button-regenerate-analysis"
+                className="w-full sm:w-auto"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Reagerar
@@ -294,6 +295,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
                 onClick={handleExportPDF}
                 disabled={isExportingPDF}
                 data-testid="button-export-analysis-pdf"
+                className="w-full sm:w-auto"
               >
                 <Download className="w-4 h-4 mr-2" />
                 {isExportingPDF ? "Gerando PDF..." : "Exportar PDF"}
