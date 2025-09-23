@@ -47,6 +47,7 @@ export default function TestPlanTool({ projectId }: TestPlanToolProps) {
       tasks: [],
       metrics: [],
       status: "planned",
+      prototypeId: "none",
     },
   });
 
@@ -174,16 +175,16 @@ export default function TestPlanTool({ projectId }: TestPlanToolProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Protótipo (Opcional)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <Select onValueChange={field.onChange} value={field.value || "none"}>
                           <FormControl>
                             <SelectTrigger data-testid="select-prototype">
                               <SelectValue placeholder="Selecione um protótipo" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Nenhum protótipo</SelectItem>
+                            <SelectItem value="none">Nenhum protótipo</SelectItem>
                             {prototypes.map((prototype: any) => (
-                              <SelectItem key={prototype.id} value={prototype.id || ""}>
+                              <SelectItem key={prototype.id} value={prototype.id || "none"}>
                                 {prototype.name}
                               </SelectItem>
                             ))}
