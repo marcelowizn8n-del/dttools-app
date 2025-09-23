@@ -141,18 +141,7 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
     return splitText.length * (fontSize * 0.4); // Height of text block
   };
 
-  // Add DTTools logo to header
-  try {
-    // Simplified DTTools logo as text instead of image to avoid loading issues
-    doc.setFontSize(14);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(40, 116, 240); // DTTools blue color
-    doc.text("DTTools", 160, 25);
-    doc.setTextColor(0, 0, 0); // Reset to black
-    doc.setFont(undefined, "normal");
-  } catch (error) {
-    console.warn('Could not add logo text to PDF:', error);
-  }
+  // Logo will be added to all pages in the footer section
 
   doc.setFontSize(24);
   doc.setFont(undefined, "bold");
@@ -382,10 +371,20 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
     yPos += Math.max(10, stepHeight + 3);
   });
 
-  // Footer
+  // Footer with logo on all pages
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
+    
+    // Add DTTools logo text to each page
+    doc.setFontSize(14);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(40, 116, 240); // DTTools blue color
+    doc.text("DTTools", 160, 25);
+    doc.setTextColor(0, 0, 0); // Reset to black
+    doc.setFont(undefined, "normal");
+    
+    // Footer text
     doc.setFontSize(10);
     doc.text(`Página ${i} de ${totalPages}`, 170, 290);
     doc.text("Gerado por DT Tools - Análise IA", 20, 290);
