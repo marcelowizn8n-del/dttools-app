@@ -320,7 +320,7 @@ export class MemStorage implements IStorage {
       email: "dttools.app@gmail.com", 
       name: "Marcelo Araujo",
       password: "$2b$10$YourHashedPasswordHere", // Will be replaced with actual hash
-      role: "user",
+      role: "admin",
       company: null,
       jobRole: "Designer",
       industry: "Design",
