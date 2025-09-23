@@ -129,7 +129,12 @@ export default function ProfilePage() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (updatedProfile) => {
+      // Force update the local profile picture state
+      if (updatedProfile && updatedProfile.profile_picture) {
+        setProfilePicture(updatedProfile.profile_picture);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/users/profile"] });
       toast({
         title: "Perfil atualizado!",
