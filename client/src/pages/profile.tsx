@@ -194,7 +194,7 @@ export default function ProfilePage() {
           let currentWidth = newWidth;
           let currentHeight = newHeight;
           
-          while (sizeInMB > 1 && currentWidth > 150) {
+          while (sizeInMB > 0.5 && currentWidth > 150) {
             currentWidth = Math.floor(currentWidth * 0.8);
             currentHeight = Math.floor(currentHeight * 0.8);
             
