@@ -259,7 +259,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
   }
 
   // Analysis results display
-  const maturityColors = getMaturityColor(analysis.maturityScore);
+  const maturityColors = getMaturityColor(analysis.maturityScore ?? 0);
 
   return (
     <div className="space-y-6">
@@ -311,7 +311,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground leading-relaxed" data-testid="text-executive-summary">
-            {analysis.executiveSummary}
+            {analysis.executiveSummary || 'Análise não disponível no momento.'}
           </p>
         </CardContent>
       </Card>
@@ -329,18 +329,18 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
             <div className="text-center">
               <div className={`w-24 h-24 mx-auto rounded-full ${maturityColors.bg} flex items-center justify-center mb-3`}>
                 <span className={`text-3xl font-bold ${maturityColors.text}`} data-testid="text-maturity-score">
-                  {analysis.maturityScore}
+                  {analysis.maturityScore ?? 0}
                 </span>
               </div>
               <Progress 
-                value={analysis.maturityScore * 10} 
+                value={(analysis.maturityScore ?? 0) * 10} 
                 className="w-full"
                 data-testid="progress-maturity"
               />
               <p className={`text-sm mt-2 font-medium ${maturityColors.text}`}>
-                {analysis.maturityScore >= 8 ? 'Projeto Maduro' : 
-                 analysis.maturityScore >= 6 ? 'Projeto Desenvolvido' :
-                 analysis.maturityScore >= 4 ? 'Projeto em Desenvolvimento' : 'Projeto Inicial'}
+                {(analysis.maturityScore ?? 0) >= 8 ? 'Projeto Maduro' : 
+                 (analysis.maturityScore ?? 0) >= 6 ? 'Projeto Desenvolvido' :
+                 (analysis.maturityScore ?? 0) >= 4 ? 'Projeto em Desenvolvimento' : 'Projeto Inicial'}
               </p>
             </div>
           </CardContent>
@@ -358,16 +358,16 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Score Geral</span>
                 <Badge variant="secondary" data-testid="badge-consistency-score">
-                  {analysis.consistency.score}%
+                  {analysis.consistency?.score ?? 0}%
                 </Badge>
               </div>
               <Progress 
-                value={analysis.consistency.score} 
+                value={analysis.consistency?.score ?? 0} 
                 className="w-full"
                 data-testid="progress-consistency"
               />
               <div className="space-y-2">
-                {analysis.consistency.strengths.slice(0, 2).map((strength, index) => (
+                {(analysis.consistency?.strengths || []).slice(0, 2).map((strength, index) => (
                   <div key={index} className="flex items-center text-sm text-green-700">
                     <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
                     {strength}
@@ -391,11 +391,11 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm">Problema-Solução</span>
                   <span className="text-sm font-medium" data-testid="text-problem-solution-alignment">
-                    {analysis.alignment.problemSolutionAlignment}%
+                    {analysis.alignment?.problemSolutionAlignment ?? 0}%
                   </span>
                 </div>
                 <Progress 
-                  value={analysis.alignment.problemSolutionAlignment} 
+                  value={analysis.alignment?.problemSolutionAlignment ?? 0} 
                   className="w-full h-2"
                   data-testid="progress-problem-solution"
                 />
@@ -404,11 +404,11 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm">Research-Insights</span>
                   <span className="text-sm font-medium" data-testid="text-research-insights-alignment">
-                    {analysis.alignment.researchInsightsAlignment}%
+                    {analysis.alignment?.researchInsightsAlignment ?? 0}%
                   </span>
                 </div>
                 <Progress 
-                  value={analysis.alignment.researchInsightsAlignment} 
+                  value={analysis.alignment?.researchInsightsAlignment ?? 0} 
                   className="w-full h-2"
                   data-testid="progress-research-insights"
                 />
@@ -428,7 +428,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {analysis.phaseAnalyses.map((phase) => {
+            {(analysis.phaseAnalyses || []).map((phase) => {
               const PhaseIcon = phaseIcons[phase.phase as keyof typeof phaseIcons];
               const colors = phaseColors[phase.phase as keyof typeof phaseColors];
               
@@ -514,7 +514,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {analysis.overallInsights.map((insight, index) => (
+              {(analysis.overallInsights || []).map((insight, index) => (
                 <div key={index} className="flex items-start space-x-3">
                   <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
                   <p className="text-sm text-muted-foreground" data-testid={`text-insight-${index}`}>
@@ -535,7 +535,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {analysis.attentionPoints.map((point, index) => (
+              {(analysis.attentionPoints || []).map((point, index) => (
                 <Alert key={index} className="py-3">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription data-testid={`text-attention-point-${index}`}>
@@ -564,7 +564,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
                 Ações Imediatas
               </h4>
               <div className="space-y-2">
-                {analysis.recommendations.immediate.map((rec, index) => (
+                {(analysis.recommendations?.immediate || []).map((rec, index) => (
                   <div key={index} className="text-sm text-muted-foreground" data-testid={`text-immediate-${index}`}>
                     • {rec}
                   </div>
@@ -577,7 +577,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
                 Curto Prazo
               </h4>
               <div className="space-y-2">
-                {analysis.recommendations.shortTerm.map((rec, index) => (
+                {(analysis.recommendations?.shortTerm || []).map((rec, index) => (
                   <div key={index} className="text-sm text-muted-foreground" data-testid={`text-short-term-${index}`}>
                     • {rec}
                   </div>
@@ -590,7 +590,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
                 Longo Prazo
               </h4>
               <div className="space-y-2">
-                {analysis.recommendations.longTerm.map((rec, index) => (
+                {(analysis.recommendations?.longTerm || []).map((rec, index) => (
                   <div key={index} className="text-sm text-muted-foreground" data-testid={`text-long-term-${index}`}>
                     • {rec}
                   </div>
@@ -611,7 +611,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {analysis.priorityNextSteps.map((step, index) => (
+            {(analysis.priorityNextSteps || []).map((step, index) => (
               <div key={index} className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
                 <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
                   {index + 1}
