@@ -66,7 +66,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             <Input
               id="username"
               type="text"
-              placeholder="Digite seu nome de usuário"
+              placeholder="Digite o nome de usuário do cadastro"
               data-testid="input-username"
               {...form.register("username")}
             />
