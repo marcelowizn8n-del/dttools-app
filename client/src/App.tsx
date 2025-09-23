@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -51,22 +51,81 @@ function ProjectsRoute() {
   return isAuthenticated ? <ProjectsPage /> : <ProjectsMarketingPage />;
 }
 
+function ProtectedProjectDetail() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    setLocation('/login');
+    return null;
+  }
+  
+  return <ProjectDetailPage />;
+}
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    setLocation('/login');
+    return null;
+  }
+  
+  return <>{children}</>;
+}
+
 function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/dashboard" component={DashboardPage} />
       <Route path="/projects" component={ProjectsRoute} />
-      <Route path="/projects/:id" component={ProjectDetailPage} />
+      <Route path="/projects/:id" component={ProtectedProjectDetail} />
       <Route path="/library" component={LibraryPage} />
       <Route path="/library/article/:id" component={ArticleDetailPage} />
-      <Route path="/chat" component={ChatPage} />
-      <Route path="/profile" component={ProfilePage} />
       <Route path="/pricing" component={PricingPage} />
-      <Route path="/admin" component={AdminPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/signup" component={SignupPage} />
       <Route path="/complete-profile" component={CompleteProfilePage} />
+      
+      {/* Protected Routes */}
+      <Route path="/dashboard">
+        <ProtectedRoute>
+          <DashboardPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/chat">
+        <ProtectedRoute>
+          <ChatPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/profile">
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin">
+        <ProtectedRoute>
+          <AdminPage />
+        </ProtectedRoute>
+      </Route>
+      
       <Route component={NotFound} />
     </Switch>
   );

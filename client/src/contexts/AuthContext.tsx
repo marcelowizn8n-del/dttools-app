@@ -123,6 +123,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isAuthenticated: false,
       isLoading: false,
     });
+    
+    // Redirect to homepage after logout
+    window.location.href = '/';
   };
 
   const isAdmin = state.user?.role === "admin";
