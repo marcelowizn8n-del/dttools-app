@@ -35,7 +35,7 @@ export default function Header() {
                 <img 
                   src={logoHorizontal} 
                   alt="DTTools" 
-                  className="app-logo h-16 md:h-18 lg:h-20 w-auto object-contain shrink-0"
+                  className="app-logo h-20 sm:h-22 md:h-24 lg:h-26 w-auto object-contain shrink-0"
                   data-testid="logo-img"
                 />
               </div>

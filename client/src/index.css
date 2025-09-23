@@ -101,5 +101,5 @@
 .app-logo {
   display: block;
   /* Ensure minimum height to prevent collapse during hot reload - increased for mobile */
-  min-height: 64px;
+  min-height: 80px;
 }
