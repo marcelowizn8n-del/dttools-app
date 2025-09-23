@@ -838,6 +838,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Not authenticated" });
       }
       
+      // TEMP FIX: Refresh user data from storage if role might have changed
+      if (req.session.user && req.session.user.username === "dttools.app@gmail.com") {
+        const freshUser = await storage.getUserByUsername(req.session.user.username);
+        if (freshUser && freshUser.role !== req.session.user.role) {
+          req.session.user = {
+            id: freshUser.id,
+            username: freshUser.username,
+            role: freshUser.role,
+            createdAt: freshUser.createdAt
+          };
+        }
+      }
+      
       // Return current user data from session
       res.json({ user: req.session.user });
     } catch (error) {
