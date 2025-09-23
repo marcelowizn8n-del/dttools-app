@@ -182,15 +182,15 @@ export default function ProfilePage() {
         let compressedBase64 = canvas.toDataURL('image/jpeg', quality);
         let sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024); // Base64 to bytes conversion
         
-        // Progressive compression if needed
-        while (sizeInMB > 1 && quality > 0.3) { // Keep under 1MB, min 30% quality
+        // Progressive compression if needed - be more aggressive
+        while (sizeInMB > 0.5 && quality > 0.2) { // Keep under 500KB, min 20% quality
           quality -= 0.1;
           compressedBase64 = canvas.toDataURL('image/jpeg', quality);
           sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024);
         }
         
         // If still too large, reduce dimensions gradually
-        if (sizeInMB > 1) {
+        if (sizeInMB > 0.5) {
           let currentWidth = newWidth;
           let currentHeight = newHeight;
           
