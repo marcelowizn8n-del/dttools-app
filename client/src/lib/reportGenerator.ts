@@ -125,9 +125,6 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   const { analysis, project, generatedAt } = data;
   let yPos = 20;
 
-  // Import logo
-  const logoUrl = "/attached_assets/DT_Tools_V1_1758034593597.png";
-
   // Helper function to add new page if needed
   const checkPageBreak = (requiredSpace: number) => {
     if (yPos + requiredSpace > 280) {
@@ -144,24 +141,17 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
     return splitText.length * (fontSize * 0.4); // Height of text block
   };
 
-  // Header with Logo
+  // Add DTTools logo to header
   try {
-    // Add logo to the header
-    const response = await fetch(logoUrl);
-    const blob = await response.blob();
-    const reader = new FileReader();
-    
-    await new Promise((resolve) => {
-      reader.onload = () => {
-        const logoData = reader.result as string;
-        // Add logo on the right side of the header
-        doc.addImage(logoData, 'PNG', 160, 10, 30, 30); // x, y, width, height
-        resolve(void 0);
-      };
-      reader.readAsDataURL(blob);
-    });
+    // Simplified DTTools logo as text instead of image to avoid loading issues
+    doc.setFontSize(14);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(40, 116, 240); // DTTools blue color
+    doc.text("DTTools", 160, 25);
+    doc.setTextColor(0, 0, 0); // Reset to black
+    doc.setFont(undefined, "normal");
   } catch (error) {
-    console.warn('Could not load logo for PDF:', error);
+    console.warn('Could not add logo text to PDF:', error);
   }
 
   doc.setFontSize(24);
