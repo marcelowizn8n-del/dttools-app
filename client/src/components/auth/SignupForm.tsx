@@ -80,7 +80,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           Criar Conta
         </CardTitle>
         <CardDescription>
-          Escolha um nome de usuário e senha para começar
+          Preencha seus dados para começar a usar o DTTools
         </CardDescription>
       </CardHeader>
       <CardContent>
