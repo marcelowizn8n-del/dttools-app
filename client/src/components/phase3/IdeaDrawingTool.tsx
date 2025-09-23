@@ -872,7 +872,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                     </div>
                   ) : drawings.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {drawings.map((drawing) => (
+                      {drawings.map((drawing: CanvasDrawing) => (
                         <Card 
                           key={drawing.id} 
                           className={`cursor-pointer hover:shadow-md transition-all duration-200 ${
@@ -896,7 +896,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                               />
                             )}
                             <div className="flex flex-wrap gap-1">
-                              {drawing.tags?.map((tag, index) => (
+                              {drawing.tags?.map((tag: string, index: number) => (
                                 <Badge key={index} variant="secondary" className="text-xs">
                                   {tag}
                                 </Badge>
@@ -914,7 +914,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                         Crie seu primeiro desenho de ideação para começar.
                       </p>
                       <Button 
-                        onClick={() => document.querySelector('[data-value="new"]')?.click()}
+                        onClick={() => (document.querySelector('[data-value="new"]') as HTMLElement)?.click()}
                         data-testid="button-create-first-drawing"
                       >
                         Criar Primeiro Desenho
