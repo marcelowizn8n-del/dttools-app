@@ -381,8 +381,24 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
     doc.setPage(i);
     
     try {
-      // Add DTTools visual logo to each page  
-      doc.addImage(logoBase64, 'PNG', 155, 15, 40, 15); // x, y, width, height
+      // Draw logo background circle
+      doc.setFillColor(40, 116, 240); // DTTools blue
+      doc.circle(170, 22, 8, 'F'); // x, y, radius, style (F = filled)
+      
+      // Draw "DT" text inside circle
+      doc.setTextColor(255, 255, 255); // White text
+      doc.setFontSize(10);
+      doc.setFont(undefined, "bold");
+      doc.text("DT", 167, 25);
+      
+      // Draw "Tools" text next to circle
+      doc.setTextColor(40, 116, 240); // Blue text
+      doc.setFontSize(12);
+      doc.text("Tools", 179, 25);
+      
+      // Reset colors
+      doc.setTextColor(0, 0, 0); 
+      doc.setFont(undefined, "normal");
     } catch (error) {
       // Fallback to text logo if image fails
       doc.setFontSize(14);
