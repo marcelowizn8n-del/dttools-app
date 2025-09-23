@@ -11,13 +11,8 @@ import { UserPlus, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { Link } from "wouter";
 
 const signupSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  email: z.string().email("Email inválido"),
-  password: z.string()
-    .min(8, "Senha deve ter pelo menos 8 caracteres")
-    .regex(/[A-Z]/, "Deve conter pelo menos uma letra maiúscula")
-    .regex(/[a-z]/, "Deve conter pelo menos uma letra minúscula")
-    .regex(/[0-9]/, "Deve conter pelo menos um número"),
+  username: z.string().min(3, "Nome de usuário deve ter pelo menos 3 caracteres"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
@@ -39,8 +34,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      name: "",
-      email: "",
+      username: "",
       password: "",
       confirmPassword: "",
     },
@@ -50,11 +44,11 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
 
   const getPasswordStrength = (password: string) => {
     let score = 0;
+    if (password.length >= 6) score++;
     if (password.length >= 8) score++;
     if (/[A-Z]/.test(password)) score++;
     if (/[a-z]/.test(password)) score++;
     if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
 
     if (score <= 2) return { text: "Fraca", color: "text-red-600", bg: "bg-red-200" };
     if (score <= 3) return { text: "Média", color: "text-yellow-600", bg: "bg-yellow-200" };
@@ -89,43 +83,25 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           Criar Conta
         </CardTitle>
         <CardDescription>
-          Preencha seus dados para começar a usar o DTTools
+          Escolha um nome de usuário e senha para começar
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Nome Completo */}
+          {/* Nome de Usuário */}
           <div className="space-y-2">
-            <Label htmlFor="name">Nome Completo</Label>
+            <Label htmlFor="username">Nome de Usuário</Label>
             <Input
-              id="name"
+              id="username"
               type="text"
-              placeholder="Digite seu nome completo"
-              data-testid="input-name"
-              {...form.register("name")}
+              placeholder="Digite um nome de usuário"
+              data-testid="input-username"
+              {...form.register("username")}
             />
-            {form.formState.errors.name && (
+            {form.formState.errors.username && (
               <p className="text-sm text-red-600 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
-                {form.formState.errors.name.message}
-              </p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Digite seu email"
-              data-testid="input-email"
-              {...form.register("email")}
-            />
-            {form.formState.errors.email && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {form.formState.errors.email.message}
+                {form.formState.errors.username.message}
               </p>
             )}
           </div>
@@ -137,7 +113,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Digite uma senha segura"
+                placeholder="Digite uma senha"
                 data-testid="input-password"
                 {...form.register("password")}
               />
