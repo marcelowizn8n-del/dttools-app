@@ -13,11 +13,34 @@ export default function SignupPage() {
     return null;
   }
 
-  const handleSignupSuccess = (userData: any) => {
-    // Store signup data in localStorage temporarily
-    localStorage.setItem('signupData', JSON.stringify(userData));
-    // Redirect to complete profile page
-    navigate("/complete-profile");
+  const handleSignupSuccess = async (userData: any) => {
+    try {
+      // Call signup API directly
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: userData.username,
+          password: userData.password
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao criar conta');
+      }
+
+      const result = await response.json();
+      
+      // Success - redirect to login
+      navigate("/login");
+    } catch (error) {
+      console.error('Signup error:', error);
+      // Handle error in SignupForm
+    }
   };
 
   return (

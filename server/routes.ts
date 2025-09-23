@@ -779,40 +779,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Signup route
   app.post("/api/auth/signup", async (req, res) => {
     try {
-      const { name, email, password, company, role, industry, experience, country, state, city, zipCode, phone, bio, interests } = req.body;
+      const { username, password } = req.body;
       
-      if (!name || !email || !password) {
-        return res.status(400).json({ error: "Nome, email e senha são obrigatórios" });
+      if (!username || !password) {
+        return res.status(400).json({ error: "Nome de usuário e senha são obrigatórios" });
       }
 
       // Check if user already exists
-      const existingUser = await storage.getUserByUsername(email);
+      const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
-        return res.status(400).json({ error: "Este email já está cadastrado" });
+        return res.status(400).json({ error: "Este nome de usuário já está em uso" });
       }
 
-      // Create new user
+      // Create new user with minimal data
       const userData = {
-        username: email, // Use email as username
-        email,
-        name,
+        username,
+        email: null, // Optional field
+        name: username, // Use username as display name initially
         password,
-        company: company || null,
-        jobRole: role,
-        industry,
-        experience,
-        country,
-        state,
-        city,
-        zipCode,
-        phone: phone || null,
-        bio: bio || null,
-        interests: interests || [],
         role: "user"
       };
 
       const user = await storage.createUser(userData);
-      console.log("User created successfully:", user.username, user.email);
+      console.log("User created successfully:", user.username);
       
       // Debug: List all users
       const allUsers = await storage.getUsers();
