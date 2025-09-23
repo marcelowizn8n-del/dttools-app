@@ -62,13 +62,15 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
   const { data: project } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
     queryFn: async () => {
-      return await apiRequest("GET", `/api/projects/${projectId}`, {});
+      const response = await apiRequest("GET", `/api/projects/${projectId}`, {});
+      return await response.json();
     },
   });
 
   const generateAnalysis = useMutation({
     mutationFn: async () => {
-      return await apiRequest("POST", `/api/projects/${projectId}/ai-analysis`, {});
+      const response = await apiRequest("POST", `/api/projects/${projectId}/ai-analysis`, {});
+      return await response.json();
     },
     onSuccess: (data: AIProjectAnalysis) => {
       setAnalysis(data);
@@ -119,7 +121,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
       setIsExportingPDF(true);
       
       const pdfUrl = await generateAIAnalysisPDF({
-        project,
+        project: project!,
         analysis,
         generatedAt: new Date(),
       });
@@ -127,7 +129,7 @@ export default function AnalysisReport({ projectId, onExportPDF }: AnalysisRepor
       // Create download link
       const link = document.createElement('a');
       link.href = pdfUrl;
-      link.download = `analise-ia-${project.name.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+      link.download = `analise-ia-${project!.name.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
