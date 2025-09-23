@@ -794,7 +794,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create new user with minimal data
       const userData = {
         username,
-        email: null, // Optional field
+        email: `${username}@temp.local`, // Temporary email
         name: username, // Use username as display name initially
         password,
         role: "user"
