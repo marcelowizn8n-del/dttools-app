@@ -60,9 +60,6 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       setError("");
       setIsLoading(true);
       
-      // Simulate API call - in real app, create user here
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       // Remove confirmPassword before passing to parent
       const { confirmPassword, ...userData } = data;
       onSuccess?.(userData);
