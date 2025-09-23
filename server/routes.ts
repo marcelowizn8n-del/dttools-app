@@ -520,6 +520,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/ideas/:id", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteIdea(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Idea not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete idea" });
+    }
+  });
+
   // Phase 4: Prototype - Prototypes
   app.get("/api/projects/:projectId/prototypes", requireAuth, async (req, res) => {
     try {
