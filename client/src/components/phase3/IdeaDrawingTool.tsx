@@ -896,7 +896,7 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                               />
                             )}
                             <div className="flex flex-wrap gap-1">
-                              {drawing.tags?.map((tag: string, index: number) => (
+                              {Array.isArray(drawing.tags) && drawing.tags.map((tag: string, index: number) => (
                                 <Badge key={index} variant="secondary" className="text-xs">
                                   {tag}
                                 </Badge>
