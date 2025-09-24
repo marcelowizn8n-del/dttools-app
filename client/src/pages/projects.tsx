@@ -252,7 +252,15 @@ export default function ProjectsPage() {
             Gerencie seus projetos através das 5 fases do Design Thinking
           </p>
         </div>
-        <CreateProjectDialog />
+        <div className="flex gap-3">
+          <Link href="/benchmarking">
+            <Button variant="outline" className="border-blue-600 text-blue-700 hover:bg-blue-50" data-testid="button-benchmarking">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Benchmarking
+            </Button>
+          </Link>
+          <CreateProjectDialog />
+        </div>
       </div>
 
       {/* Stats Cards */}
