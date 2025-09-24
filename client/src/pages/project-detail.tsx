@@ -1,7 +1,7 @@
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain } from "lucide-react";
+import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain, Columns3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import Phase3Tools from "@/components/phase3/Phase3Tools";
 import Phase4Tools from "@/components/phase4/Phase4Tools";
 import Phase5Tools from "@/components/phase5/Phase5Tools";
 import AnalysisReport from "@/components/AnalysisReport";
+import { KanbanBoard } from "@/components/KanbanBoard";
 
 const phaseData = {
   1: { 
@@ -314,9 +315,13 @@ export default function ProjectDetailPage() {
 
       {/* Main Content with Tabs */}
       <Tabs defaultValue="phases" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="phases" data-testid="tab-phases">
             Fases & Ferramentas
+          </TabsTrigger>
+          <TabsTrigger value="kanban" data-testid="tab-kanban">
+            <Columns3 className="w-4 h-4 mr-2" />
+            Board Kanban
           </TabsTrigger>
           <TabsTrigger value="analysis" data-testid="tab-analysis">
             <Brain className="w-4 h-4 mr-2" />
@@ -394,6 +399,10 @@ export default function ProjectDetailPage() {
               </CardHeader>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="kanban" className="space-y-6">
+          <KanbanBoard projectId={project.id} />
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-6">

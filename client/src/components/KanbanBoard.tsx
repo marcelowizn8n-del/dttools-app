@@ -155,24 +155,27 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   });
 
   // Fetch phase cards
-  const { data: cards = [], isLoading } = useQuery({
+  const { data: cards = [], isLoading } = useQuery<PhaseCard[]>({
     queryKey: ['/api/phase-cards', projectId],
-    queryFn: async () => {
+    queryFn: async (): Promise<PhaseCard[]> => {
       const response = await fetch(`/api/phase-cards/${projectId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch phase cards');
       }
-      return response.json() as PhaseCard[];
+      return response.json();
     }
   });
 
   // Create card mutation
   const createCardMutation = useMutation({
     mutationFn: async (data: InsertPhaseCard) => {
-      return apiRequest('/api/phase-cards', {
+      const response = await fetch('/api/phase-cards', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
+      if (!response.ok) throw new Error('Failed to create card');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/phase-cards', projectId] });
@@ -184,10 +187,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   // Update card mutation
   const updateCardMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<InsertPhaseCard> }) => {
-      return apiRequest(`/api/phase-cards/${id}`, {
+      const response = await fetch(`/api/phase-cards/${id}`, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
+      if (!response.ok) throw new Error('Failed to update card');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/phase-cards', projectId] });
@@ -200,9 +206,11 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   // Delete card mutation
   const deleteCardMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/phase-cards/${id}`, {
+      const response = await fetch(`/api/phase-cards/${id}`, {
         method: 'DELETE'
       });
+      if (!response.ok) throw new Error('Failed to delete card');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/phase-cards', projectId] });
@@ -303,7 +311,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const getCardsForPhase = (phase: 1 | 2 | 3 | 4 | 5) => {
     return cards
       .filter(card => card.phase === phase)
-      .sort((a, b) => a.position - b.position);
+      .sort((a, b) => (a.position || 0) - (b.position || 0));
   };
 
   if (isLoading) {
