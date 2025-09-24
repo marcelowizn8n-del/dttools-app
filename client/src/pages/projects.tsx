@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Search, Clock, CheckCircle, BarChart3, Users, Target, Lightbulb, Wrench, TestTube, TrendingUp, Download } from "lucide-react";
+import { Plus, Search, Clock, CheckCircle, BarChart3, Users, Target, Lightbulb, Wrench, TestTube, TrendingUp, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -51,6 +52,33 @@ function ProjectCard({ project }: { project: Project }) {
       toast({
         title: "Erro na exportação",
         description: "Não foi possível gerar o arquivo PPTX. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportPDF = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent card navigation
+    e.stopPropagation();
+    
+    try {
+      // Trigger download directly
+      const link = document.createElement('a');
+      link.href = `/api/projects/${project.id}/export-pdf`;
+      link.download = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "PDF sendo gerado",
+        description: "O download do arquivo PDF iniciará em instantes.",
+      });
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast({
+        title: "Erro na exportação",
+        description: "Não foi possível gerar o arquivo PDF. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -117,16 +145,30 @@ function ProjectCard({ project }: { project: Project }) {
       </Card>
     </Link>
     
-    {/* Export PPTX Button */}
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleExportPPTX}
-      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white hover:bg-gray-50 border-gray-300 z-10"
-      data-testid={`button-export-pptx-${project.id}`}
-    >
-      <Download className="w-4 h-4" />
-    </Button>
+    {/* Export Dropdown */}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="absolute top-2 right-2 bg-white hover:bg-gray-50 border-gray-300 z-10 shadow-md"
+          data-testid={`button-export-${project.id}`}
+        >
+          <Download className="w-4 h-4 mr-1" />
+          <span className="text-xs">Exportar</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleExportPPTX} data-testid={`menu-export-pptx-${project.id}`}>
+          <FileText className="w-4 h-4 mr-2" />
+          Exportar PPTX
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleExportPDF} data-testid={`menu-export-pdf-${project.id}`}>
+          <FileText className="w-4 h-4 mr-2" />
+          Exportar PDF
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
     </div>
   );
 }
