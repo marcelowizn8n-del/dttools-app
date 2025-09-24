@@ -321,6 +321,39 @@ export default function ProjectsMarketingPage() {
               );
             })}
           </div>
+
+          {/* Benchmarking CTA */}
+          <div className="mt-16 text-center">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
+              <div className="max-w-3xl mx-auto">
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                  {isEnglish ? "Measure Your Design Thinking Maturity" : "Meça sua Maturidade em Design Thinking"}
+                </h3>
+                <p className="text-lg opacity-90 mb-6">
+                  {isEnglish 
+                    ? "Compare your team's performance with industry benchmarks and identify areas for improvement with our advanced analytics."
+                    : "Compare o desempenho da sua equipe com benchmarks da indústria e identifique áreas de melhoria com nossa análise avançada."
+                  }
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <Link href="/benchmarking">
+                    <Button 
+                      size="lg" 
+                      className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8 py-3"
+                      data-testid="button-try-benchmarking"
+                    >
+                      <BarChart3 className="w-5 h-5 mr-2" />
+                      {isEnglish ? "Try Benchmarking Tool" : "Experimente a Ferramenta"}
+                    </Button>
+                  </Link>
+                  <div className="flex items-center gap-2 text-sm opacity-80">
+                    <CheckCircle className="w-4 h-4" />
+                    {isEnglish ? "Free for all users" : "Grátis para todos os usuários"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
