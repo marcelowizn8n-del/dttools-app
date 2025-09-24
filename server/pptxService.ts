@@ -439,29 +439,117 @@ export class PPTXService {
         if (personas.length > 0) {
           this.addPersonasSlide(personas);
         }
+
+        // Add interviews slide if any
+        if (interviews.length > 0) {
+          const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+          slide.addText("Entrevistas Realizadas", {
+            x: 1, y: 1.2, w: 8, h: 0.8,
+            fontSize: 24,
+            bold: true,
+            color: "1E40AF"
+          });
+
+          interviews.slice(0, 3).forEach((interview, index) => {
+            const yPos = 2.2 + (index * 1.5);
+            
+            slide.addText(`${index + 1}. ${interview.participantName}`, {
+              x: 1, y: yPos, w: 8, h: 0.4,
+              fontSize: 14,
+              bold: true,
+              color: "1E40AF"
+            });
+
+            slide.addText(`Duração: ${interview.duration || 'N/A'} min`, {
+              x: 1, y: yPos + 0.4, w: 8, h: 0.3,
+              fontSize: 11,
+              color: "666666"
+            });
+
+            if (interview.insights) {
+              slide.addText(`Insights: ${interview.insights.slice(0, 100)}...`, {
+                x: 1, y: yPos + 0.7, w: 8, h: 0.6,
+                fontSize: 10,
+                color: "333333"
+              });
+            }
+          });
+        }
+
+        // Add observations slide if any
+        if (observations.length > 0) {
+          const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+          slide.addText("Observações de Campo", {
+            x: 1, y: 1.2, w: 8, h: 0.8,
+            fontSize: 24,
+            bold: true,
+            color: "1E40AF"
+          });
+
+          observations.slice(0, 4).forEach((observation, index) => {
+            const yPos = 2.2 + (index * 1.2);
+            
+            slide.addText(`${index + 1}. ${observation.location}`, {
+              x: 1, y: yPos, w: 8, h: 0.4,
+              fontSize: 14,
+              bold: true,
+              color: "1E40AF"
+            });
+
+            if (observation.behavior) {
+              slide.addText(`Comportamento: ${observation.behavior.slice(0, 120)}...`, {
+                x: 1, y: yPos + 0.4, w: 8, h: 0.6,
+                fontSize: 10,
+                color: "333333"
+              });
+            }
+          });
+        }
       }
 
       // Phase 2: Define
-      if (povStatements.length > 0) {
+      if (povStatements.length > 0 || hmwQuestions.length > 0) {
         this.addPhaseOverviewSlide(2, "Definir", "Defina claramente o problema e crie declarações de ponto de vista focadas.");
         
         // Add POV statements slide
-        const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
-        slide.addText("Declarações POV", {
-          x: 1, y: 1.2, w: 8, h: 0.8,
-          fontSize: 24,
-          bold: true,
-          color: "1E40AF"
-        });
-
-        povStatements.slice(0, 3).forEach((pov, index) => {
-          const yPos = 2.2 + (index * 1.5);
-          slide.addText(pov.statement, {
-            x: 1, y: yPos, w: 8, h: 1,
-            fontSize: 12,
-            color: "333333"
+        if (povStatements.length > 0) {
+          const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+          slide.addText("Declarações POV", {
+            x: 1, y: 1.2, w: 8, h: 0.8,
+            fontSize: 24,
+            bold: true,
+            color: "1E40AF"
           });
-        });
+
+          povStatements.slice(0, 3).forEach((pov, index) => {
+            const yPos = 2.2 + (index * 1.5);
+            slide.addText(pov.statement, {
+              x: 1, y: yPos, w: 8, h: 1,
+              fontSize: 12,
+              color: "333333"
+            });
+          });
+        }
+
+        // Add HMW questions slide
+        if (hmwQuestions.length > 0) {
+          const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+          slide.addText("Como Podemos (HMW)", {
+            x: 1, y: 1.2, w: 8, h: 0.8,
+            fontSize: 24,
+            bold: true,
+            color: "1E40AF"
+          });
+
+          hmwQuestions.slice(0, 5).forEach((hmw, index) => {
+            const yPos = 2.2 + (index * 0.9);
+            slide.addText(`${index + 1}. ${hmw.question}`, {
+              x: 1, y: yPos, w: 8, h: 0.8,
+              fontSize: 12,
+              color: "333333"
+            });
+          });
+        }
       }
 
       // Phase 3: Ideate
@@ -664,8 +752,8 @@ export class PPTXService {
           addText("Entrevistas:", 14, true);
           interviews.forEach((interview, index) => {
             addText(`${index + 1}. ${interview.participantName}`, 12, true);
-            if (interview.keyInsights) {
-              addText(`Insights: ${interview.keyInsights}`, 10);
+            if (interview.insights) {
+              addText(`Insights: ${interview.insights}`, 10);
             }
           });
         }
@@ -766,7 +854,7 @@ export class PPTXService {
         if (testPlans.length > 0) {
           addText("Planos de Teste:", 14, true);
           testPlans.forEach((plan, index) => {
-            addText(`${index + 1}. ${plan.objectives}`, 12, true);
+            addText(`${index + 1}. ${plan.objective}`, 12, true);
             if (plan.methodology) {
               addText(`Metodologia: ${plan.methodology}`, 10);
             }
@@ -780,8 +868,8 @@ export class PPTXService {
             if (result.insights) {
               addText(`Insights: ${result.insights}`, 10);
             }
-            if (result.improvements) {
-              addText(`Melhorias: ${result.improvements}`, 10);
+            if (result.feedback) {
+              addText(`Feedback: ${result.feedback}`, 10);
             }
           });
         }
