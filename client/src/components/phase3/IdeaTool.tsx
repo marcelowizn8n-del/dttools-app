@@ -406,7 +406,7 @@ function CreateIdeaDialog({ projectId }: { projectId: string }) {
           Nova Ideia
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Criar Nova Ideia</DialogTitle>
           <DialogDescription>
@@ -415,7 +415,7 @@ function CreateIdeaDialog({ projectId }: { projectId: string }) {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -474,18 +474,18 @@ function CreateIdeaDialog({ projectId }: { projectId: string }) {
             />
 
             {/* DVF Analysis Section */}
-            <div className="border-t pt-6">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
-                  Análise DVF (Design Thinking Framework)
+            <div className="border-t pt-4">
+              <div className="mb-3">
+                <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-purple-600" />
+                  Análise DVF (Design Thinking)
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Avalie sua ideia usando os critérios fundamentais do Design Thinking
+                <p className="text-xs text-gray-600 mt-1">
+                  Avalie sua ideia nos 3 critérios fundamentais
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                 {/* Desirability */}
                 <FormField
                   control={form.control}
@@ -598,7 +598,7 @@ function CreateIdeaDialog({ projectId }: { projectId: string }) {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Confidence Level */}
                 <FormField
                   control={form.control}
