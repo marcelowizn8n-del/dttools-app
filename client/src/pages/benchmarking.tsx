@@ -53,7 +53,7 @@ const phases = [
 
 export default function BenchmarkingPage() {
   const { toast } = useToast();
-  const [selectedProject, setSelectedProject] = useState<string>("sample-project");
+  const [selectedProject, setSelectedProject] = useState<string>("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newBenchmark, setNewBenchmark] = useState({
     name: "",
@@ -63,8 +63,18 @@ export default function BenchmarkingPage() {
     benchmarkType: "industry"
   });
 
+  // Fetch user projects
+  const { data: projects = [] } = useQuery({
+    queryKey: ['/api/projects']
+  });
+
+  // Auto-select first project if none selected
+  if (projects.length > 0 && !selectedProject) {
+    setSelectedProject(projects[0].id);
+  }
+
   // Fetch benchmarks for selected project
-  const { data: benchmarks = [], isLoading } = useQuery({
+  const { data: benchmarks = [], isLoading } = useQuery<Benchmark[]>({
     queryKey: ['/api/benchmarks', selectedProject],
     enabled: !!selectedProject
   });
