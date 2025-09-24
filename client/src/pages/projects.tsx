@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Search, Clock, CheckCircle, BarChart3, Users, Target, Lightbulb, Wrench, TestTube } from "lucide-react";
+import { Plus, Search, Clock, CheckCircle, BarChart3, Users, Target, Lightbulb, Wrench, TestTube, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -331,6 +331,39 @@ export default function ProjectsPage() {
           {filteredProjects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
+          
+          {/* Benchmarking Card */}
+          <Link href="/benchmarking">
+            <Card className="border-2 border-dashed border-purple-200 hover:border-purple-400 hover:shadow-lg transition-all duration-300 cursor-pointer bg-gradient-to-br from-purple-50 to-blue-50">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center mb-3">
+                  <BarChart3 className="w-8 h-8 text-white" />
+                </div>
+                <CardTitle className="text-xl font-bold text-gray-900">
+                  Benchmarking
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  Compare sua maturidade em Design Thinking com padrões da indústria
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center justify-center text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                    Análise de Indústria
+                  </div>
+                  <div className="flex items-center justify-center text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                    Avaliação de Maturidade
+                  </div>
+                </div>
+                <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" data-testid="button-benchmarking-projects">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Experimentar Agora
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       )}
     </div>

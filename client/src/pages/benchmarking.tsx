@@ -81,7 +81,7 @@ export default function BenchmarkingPage() {
 
   // Create benchmark mutation
   const createBenchmarkMutation = useMutation({
-    mutationFn: (data: any) => apiRequest(`/api/benchmarks`, "POST", data),
+    mutationFn: (data: any) => apiRequest("POST", `/api/benchmarks`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/benchmarks'] });
       setShowCreateForm(false);

@@ -225,7 +225,7 @@ export default function PricingPage() {
 
   const createCheckoutMutation = useMutation({
     mutationFn: async ({ planId, billingPeriod }: { planId: string; billingPeriod: "monthly" | "yearly" }) => {
-      const response = await apiRequest("/api/create-checkout-session", "POST", {
+      const response = await apiRequest("POST", "/api/create-checkout-session", {
         planId,
         billingPeriod,
       });
