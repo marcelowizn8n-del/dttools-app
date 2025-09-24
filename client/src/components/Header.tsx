@@ -123,7 +123,7 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div id="mobile-menu" className="lg:hidden border-t border-border bg-background">
+          <div id="mobile-menu" className="lg:hidden border-t border-border bg-background relative z-10">
             <div className="container mx-auto px-4 py-4">
               <nav className="flex flex-col space-y-2">
                 <Link href="/projects">
@@ -171,17 +171,21 @@ export default function Header() {
                 
                 {/* Mobile User Actions */}
                 <div className="pt-4 border-t border-border">
-                  <div className="flex flex-col space-y-2">
-                    <div className="flex items-center justify-between">
+                  <div className="flex flex-col space-y-3">
+                    <div className="flex justify-center">
                       <LanguageSelector />
-                      {!isAuthenticated && (
-                        <Link href="/login">
-                          <Button size="sm" data-testid="mobile-button-login" onClick={() => setIsMobileMenuOpen(false)}>
-                            {t("nav.login")}
-                          </Button>
-                        </Link>
-                      )}
                     </div>
+                    {isAuthenticated ? (
+                      <div className="flex justify-center">
+                        <UserMenu />
+                      </div>
+                    ) : (
+                      <Link href="/login">
+                        <Button className="w-full" data-testid="mobile-button-login" onClick={() => setIsMobileMenuOpen(false)}>
+                          {t("nav.login")}
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </nav>
