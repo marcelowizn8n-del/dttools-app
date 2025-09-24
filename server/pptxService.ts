@@ -406,6 +406,207 @@ export class PPTXService {
     });
   }
 
+  private addSummarySlide(project: Project, data: any) {
+    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+    
+    slide.addText("Resumo do Projeto", {
+      x: 1, y: 1.2, w: 8, h: 0.8,
+      fontSize: 28,
+      bold: true,
+      color: "1E40AF"
+    });
+
+    slide.addText(project.name, {
+      x: 1, y: 2, w: 8, h: 0.5,
+      fontSize: 20,
+      bold: true,
+      color: "333333"
+    });
+
+    if (project.description) {
+      slide.addText(project.description, {
+        x: 1, y: 2.6, w: 8, h: 0.6,
+        fontSize: 12,
+        color: "666666"
+      });
+    }
+
+    // Project metrics in a nice layout
+    const metrics = [
+      { label: "Fase Atual", value: `${project.currentPhase}/5` },
+      { label: "Progresso", value: `${project.completionRate || 0}%` },
+      { label: "Mapas de Empatia", value: data.empathyMaps.length.toString() },
+      { label: "Personas", value: data.personas.length.toString() },
+      { label: "Entrevistas", value: data.interviews.length.toString() },
+      { label: "Ideias", value: data.ideas.length.toString() },
+      { label: "Protótipos", value: data.prototypes.length.toString() },
+      { label: "Testes", value: data.testResults.length.toString() }
+    ];
+
+    // Create metrics grid
+    metrics.forEach((metric, index) => {
+      const col = index % 4;
+      const row = Math.floor(index / 4);
+      const xPos = 1 + (col * 2);
+      const yPos = 3.5 + (row * 0.8);
+
+      // Metric box
+      slide.addShape("rect", {
+        x: xPos, y: yPos, w: 1.8, h: 0.6,
+        fill: { color: "F8F9FA" },
+        line: { color: "E5E7EB", width: 1 }
+      });
+
+      // Metric value (large)
+      slide.addText(metric.value, {
+        x: xPos + 0.1, y: yPos + 0.05, w: 1.6, h: 0.3,
+        fontSize: 16,
+        bold: true,
+        color: "1E40AF",
+        align: "center"
+      });
+
+      // Metric label (small)
+      slide.addText(metric.label, {
+        x: xPos + 0.1, y: yPos + 0.35, w: 1.6, h: 0.2,
+        fontSize: 8,
+        color: "666666",
+        align: "center"
+      });
+    });
+
+    // DVF Analysis if available
+    if (data.ideas.length > 0) {
+      const validIdeas = data.ideas.filter((idea: any) => idea.dvfScore);
+      if (validIdeas.length > 0) {
+        const avgDVF = validIdeas.reduce((sum: number, idea: any) => sum + (idea.dvfScore || 0), 0) / validIdeas.length;
+        
+        slide.addText("Análise DVF Geral:", {
+          x: 1, y: 5.5, w: 3, h: 0.4,
+          fontSize: 14,
+          bold: true,
+          color: "1E40AF"
+        });
+
+        slide.addText(`${avgDVF.toFixed(1)}/5`, {
+          x: 4, y: 5.5, w: 1.5, h: 0.4,
+          fontSize: 20,
+          bold: true,
+          color: avgDVF >= 3.5 ? "22C55E" : avgDVF >= 2.5 ? "F59E0B" : "EF4444"
+        });
+
+        slide.addText("vs. Média da Indústria: 3.2/5", {
+          x: 6, y: 5.5, w: 2.5, h: 0.4,
+          fontSize: 11,
+          color: "666666"
+        });
+      }
+    }
+
+    // Date and time
+    slide.addText(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, {
+      x: 1, y: 6.2, w: 8, h: 0.3,
+      fontSize: 10,
+      color: "999999",
+      italic: true
+    });
+  }
+
+  private addFinalControlsSlide() {
+    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+    
+    slide.addText("Apresentação Concluída", {
+      x: 1, y: 2, w: 8, h: 1,
+      fontSize: 32,
+      bold: true,
+      color: "1E40AF",
+      align: "center"
+    });
+
+    slide.addText("Parabéns! Você completou sua jornada de Design Thinking.", {
+      x: 1, y: 3, w: 8, h: 0.6,
+      fontSize: 16,
+      color: "333333",
+      align: "center"
+    });
+
+    slide.addText("Use os controles abaixo para salvar ou fechar esta apresentação:", {
+      x: 1, y: 3.8, w: 8, h: 0.4,
+      fontSize: 12,
+      color: "666666",
+      align: "center"
+    });
+
+    // Save button
+    slide.addShape("rect", {
+      x: 2.5, y: 4.5, w: 2, h: 0.8,
+      fill: { color: "22C55E" },
+      line: { width: 0 }
+    });
+
+    slide.addText("💾 SALVAR", {
+      x: 2.5, y: 4.7, w: 2, h: 0.4,
+      fontSize: 14,
+      bold: true,
+      color: "FFFFFF",
+      align: "center"
+    });
+
+    slide.addText("Baixar apresentação", {
+      x: 2.5, y: 5, w: 2, h: 0.3,
+      fontSize: 10,
+      color: "FFFFFF",
+      align: "center"
+    });
+
+    // Close button
+    slide.addShape("rect", {
+      x: 5.5, y: 4.5, w: 2, h: 0.8,
+      fill: { color: "EF4444" },
+      line: { width: 0 }
+    });
+
+    slide.addText("✖️ FECHAR", {
+      x: 5.5, y: 4.7, w: 2, h: 0.4,
+      fontSize: 14,
+      bold: true,
+      color: "FFFFFF",
+      align: "center"
+    });
+
+    slide.addText("Sair da apresentação", {
+      x: 5.5, y: 5, w: 2, h: 0.3,
+      fontSize: 10,
+      color: "FFFFFF",
+      align: "center"
+    });
+
+    // Instructions
+    slide.addText("💡 Dica: Para usar os controles, clique nos botões durante a apresentação ou use as teclas de atalho.", {
+      x: 1, y: 5.8, w: 8, h: 0.4,
+      fontSize: 10,
+      color: "666666",
+      align: "center",
+      italic: true
+    });
+
+    // Footer with next steps
+    slide.addText("Próximos Passos:", {
+      x: 1, y: 6.4, w: 8, h: 0.3,
+      fontSize: 12,
+      bold: true,
+      color: "1E40AF",
+      align: "center"
+    });
+
+    slide.addText("• Continue iterando suas ideias • Implemente os protótipos • Colete mais feedback dos usuários", {
+      x: 1, y: 6.7, w: 8, h: 0.3,
+      fontSize: 10,
+      color: "333333",
+      align: "center"
+    });
+  }
+
   async generateProjectPPTX(projectId: string): Promise<Buffer> {
     try {
       // Fetch all project data
@@ -622,6 +823,22 @@ export class PPTXService {
           });
         }
       }
+
+      // Add summary and final slide
+      this.addSummarySlide(project, {
+        empathyMaps,
+        personas,
+        interviews,
+        observations,
+        povStatements,
+        hmwQuestions,
+        ideas,
+        prototypes,
+        testPlans,
+        testResults
+      });
+      
+      this.addFinalControlsSlide();
 
       // Generate buffer
       const buffer = await this.pres.write({ outputType: "nodebuffer" }) as Buffer;
