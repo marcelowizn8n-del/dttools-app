@@ -145,30 +145,29 @@ function ProjectCard({ project }: { project: Project }) {
       </Card>
     </Link>
     
-    {/* Export Dropdown */}
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="absolute top-2 right-2 bg-white hover:bg-gray-50 border-gray-300 z-10 shadow-md"
-          data-testid={`button-export-${project.id}`}
-        >
-          <Download className="w-4 h-4 mr-1" />
-          <span className="text-xs">Exportar</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleExportPPTX} data-testid={`menu-export-pptx-${project.id}`}>
-          <FileText className="w-4 h-4 mr-2" />
-          Exportar PPTX
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExportPDF} data-testid={`menu-export-pdf-${project.id}`}>
-          <FileText className="w-4 h-4 mr-2" />
-          Exportar PDF
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    {/* Export Buttons */}
+    <div className="absolute top-2 right-2 flex gap-1 z-10">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleExportPPTX}
+        className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 shadow-md"
+        data-testid={`button-export-pptx-${project.id}`}
+      >
+        <FileText className="w-3 h-3 mr-1" />
+        <span className="text-xs font-medium">PPTX</span>
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleExportPDF}
+        className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700 shadow-md"
+        data-testid={`button-export-pdf-${project.id}`}
+      >
+        <FileText className="w-3 h-3 mr-1" />
+        <span className="text-xs font-medium">PDF</span>
+      </Button>
+    </div>
     </div>
   );
 }
