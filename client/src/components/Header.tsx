@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   Book, 
   Settings, 
@@ -22,21 +22,6 @@ export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
   const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    // Check initial state
-    checkMobile();
-    
-    // Add resize listener
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   return (
     <header className="bg-background border-b border-border">
@@ -46,16 +31,18 @@ export default function Header() {
           <div className="flex-shrink-0">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                <img 
-                  src={isMobile ? dttoolsIcon : logoHorizontal}
-                  alt="DTTools" 
-                  className={`object-contain shrink-0 ${
-                    isMobile 
-                      ? 'h-10 w-10' 
-                      : 'h-14 lg:h-16 w-auto'
-                  }`}
-                  data-testid={isMobile ? "logo-icon" : "logo-img"}
-                />
+                <picture>
+                  <source 
+                    media="(max-width: 767px)" 
+                    srcSet={dttoolsIcon}
+                  />
+                  <img 
+                    src={logoHorizontal}
+                    alt="DTTools" 
+                    className="object-contain shrink-0 h-10 w-10 md:h-14 md:w-auto lg:h-16"
+                    data-testid="logo-img"
+                  />
+                </picture>
               </div>
             </Link>
           </div>
