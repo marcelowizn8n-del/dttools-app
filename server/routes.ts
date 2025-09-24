@@ -1629,6 +1629,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/projects/:id/export-pdf - Export project as PDF
+  app.get("/api/projects/:id/export-pdf", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Verify project ownership
+      const project = await storage.getProject(id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Generate PDF using PPTX service and convert
+      const pptxService = new PPTXService();
+      const pdfBuffer = await pptxService.generateProjectPDF(id);
+      
+      // Set response headers for file download
+      const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      
+      // Send the buffer
+      res.send(pdfBuffer);
+      
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ error: "Failed to generate PDF document" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
