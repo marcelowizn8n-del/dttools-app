@@ -11,6 +11,10 @@ npm run build
 echo "📁 Copiando arquivos para server/public..."
 cp -r dist/public server/public
 
+# 3. Copiar logo para acesso direto
+echo "🎨 Copiando logo para acesso direto..."
+cp client/src/assets/logo-horizontal.png server/public/
+
 echo "✅ Build de produção concluído com sucesso!"
 echo ""
 echo "📋 Próximos passos:"

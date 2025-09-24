@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-// Use public asset path that works in both dev and production
-const logoHorizontal = "/assets/logo-horizontal-rxsgqiTT.png";
+// Use direct path to logo in public root  
+const logoHorizontal = "/logo-horizontal.png";
 import dttoolsIcon from "../assets/dttools-icon.png";
 
 const phases = [
