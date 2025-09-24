@@ -16,7 +16,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import logoHorizontal from "../assets/logo-horizontal.png";
-import dttoolsIcon from "../assets/dttools-icon.png";
 
 export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -90,8 +89,8 @@ export default function Header() {
 
           {/* User Actions & Mobile Menu */}
           <div className="flex items-center gap-1 sm:gap-2">
-            {/* Mobile: Menu Button + User Avatar */}
-            <div className="lg:hidden flex items-center gap-1">
+            {/* Mobile: Menu Button Only */}
+            <div className="lg:hidden relative z-20">
               <Button
                 variant="ghost"
                 size="sm"
@@ -100,11 +99,10 @@ export default function Header() {
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
                 aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
-                className="p-2"
+                className="p-2 relative z-20"
               >
                 {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </Button>
-              {isAuthenticated && <UserMenu />}
             </div>
 
             {/* Desktop: Full User Actions */}
