@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowRight, Users, Target, Lightbulb, Wrench, TestTube, Star, CheckCircle, Zap, Globe, BookOpen, TrendingUp } from "lucide-react";
+import { ArrowRight, Users, Target, Lightbulb, Wrench, TestTube, Star, CheckCircle, Zap, Globe, BookOpen, TrendingUp, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -296,6 +296,160 @@ export default function LandingPage() {
                 </Card>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Benchmarking Section */}
+      <section className="py-20 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-purple-100 text-purple-700 hover:bg-purple-200">
+              🚀 DIFERENCIAL COMPETITIVO
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Sistema DVF de Benchmarking
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              {isEnglish ? 
+                "The only platform with an integrated DVF (Desirability, Viability, Feasibility) system for strategic idea evaluation and competitive benchmarking against industry standards." :
+                "A única plataforma com sistema DVF (Desejabilidade, Viabilidade, Exequibilidade) integrado para avaliação estratégica de ideias e benchmarking competitivo com padrões da indústria."
+              }
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+            {/* Left - DVF Explanation */}
+            <div>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-green-600 font-bold text-lg">D</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {isEnglish ? "Desirability" : "Desejabilidade"}
+                    </h3>
+                    <p className="text-gray-600">
+                      {isEnglish ? 
+                        "Do people really want this solution? User validation and market demand analysis." :
+                        "As pessoas realmente querem esta solução? Validação do usuário e análise de demanda do mercado."
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-blue-600 font-bold text-lg">V</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {isEnglish ? "Viability" : "Viabilidade"}
+                    </h3>
+                    <p className="text-gray-600">
+                      {isEnglish ? 
+                        "Is this a sustainable business? Financial analysis and business model validation." :
+                        "Isto é um negócio sustentável? Análise financeira e validação do modelo de negócio."
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-purple-600 font-bold text-lg">F</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {isEnglish ? "Feasibility" : "Exequibilidade"}
+                    </h3>
+                    <p className="text-gray-600">
+                      {isEnglish ? 
+                        "Can we actually build this? Technical capabilities and resource assessment." :
+                        "Conseguimos realmente construir isto? Capacidades técnicas e avaliação de recursos."
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right - Visual representation */}
+            <div className="text-center">
+              <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md mx-auto">
+                <div className="mb-6">
+                  <BarChart3 className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {isEnglish ? "Smart Benchmarking" : "Benchmarking Inteligente"}
+                  </h3>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">
+                      {isEnglish ? "Desirability" : "Desejabilidade"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-4/5 h-full bg-green-500 rounded-full"></div>
+                      </div>
+                      <span className="text-sm font-medium">4.0/5</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">
+                      {isEnglish ? "Viability" : "Viabilidade"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-3/5 h-full bg-blue-500 rounded-full"></div>
+                      </div>
+                      <span className="text-sm font-medium">3.2/5</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">
+                      {isEnglish ? "Feasibility" : "Exequibilidade"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-4/5 h-full bg-purple-500 rounded-full"></div>
+                      </div>
+                      <span className="text-sm font-medium">4.1/5</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="text-sm text-gray-600 mb-1">
+                    {isEnglish ? "Overall Score" : "Pontuação Geral"}
+                  </div>
+                  <div className="text-2xl font-bold text-blue-600">3.8/5</div>
+                  <div className="text-xs text-green-600 font-medium">
+                    {isEnglish ? "✓ Above Industry Average" : "✓ Acima da Média da Indústria"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center">
+            <Link href="/benchmarking">
+              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-6" data-testid="button-try-benchmarking">
+                {isEnglish ? "Try Benchmarking Tool" : "Experimente o Benchmarking"}
+                <BarChart3 className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <p className="text-sm text-gray-500 mt-2">
+              {isEnglish ? 
+                "No registration required • Instant strategic analysis" :
+                "Não precisa se registrar • Análise estratégica instantânea"
+              }
+            </p>
           </div>
         </div>
       </section>
