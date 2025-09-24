@@ -26,7 +26,7 @@ export default function Header() {
   return (
     <header className="bg-background border-b border-border">
       <div className="container mx-auto px-4 md:px-6 py-3">
-        <div className="flex items-center justify-between min-h-[60px] gap-2 md:gap-4">
+        <div className="flex items-center justify-between min-h-[60px] gap-1 sm:gap-2 md:gap-4">
           {/* Logo - Container reserves space to prevent layout shifts */}
           <div className="flex-shrink-0">
             <Link href="/" className="block">
@@ -89,10 +89,9 @@ export default function Header() {
           </nav>
 
           {/* User Actions & Mobile Menu */}
-          <div className="flex items-center gap-2">
-            {/* Mobile: User Avatar + Menu Button */}
-            <div className="lg:hidden flex items-center gap-2">
-              {isAuthenticated && <UserMenu />}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Mobile: Menu Button + User Avatar */}
+            <div className="lg:hidden flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -101,9 +100,11 @@ export default function Header() {
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
                 aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+                className="p-2"
               >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </Button>
+              {isAuthenticated && <UserMenu />}
             </div>
 
             {/* Desktop: Full User Actions */}
