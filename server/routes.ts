@@ -32,6 +32,7 @@ import {
   getSubscriptionInfo 
 } from "./subscriptionMiddleware";
 import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "./aiService";
+import { PPTXService } from "./pptxService";
 
 // Initialize Stripe with secret key - validate environment variable
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -1595,6 +1596,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting benchmark assessment:", error);
       res.status(500).json({ error: "Failed to delete benchmark assessment" });
+    }
+  });
+
+  // GET /api/projects/:id/export-pptx - Export project as PPTX
+  app.get("/api/projects/:id/export-pptx", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Verify project ownership
+      const project = await storage.getProject(id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Generate PPTX
+      const pptxService = new PPTXService();
+      const pptxBuffer = await pptxService.generateProjectPPTX(id);
+      
+      // Set response headers for file download
+      const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pptx`;
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pptxBuffer.length);
+      
+      // Send the buffer
+      res.send(pptxBuffer);
+      
+    } catch (error) {
+      console.error("Error generating PPTX:", error);
+      res.status(500).json({ error: "Failed to generate PPTX presentation" });
     }
   });
 
