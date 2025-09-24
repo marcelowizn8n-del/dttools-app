@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Search, Clock, CheckCircle, BarChart3, Users, Target, Lightbulb, Wrench, TestTube, TrendingUp } from "lucide-react";
+import { Plus, Search, Clock, CheckCircle, BarChart3, Users, Target, Lightbulb, Wrench, TestTube, TrendingUp, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,13 +27,42 @@ const phaseIcons = {
 function ProjectCard({ project }: { project: Project }) {
   const currentPhase = phaseIcons[project.currentPhase as keyof typeof phaseIcons] || phaseIcons[1];
   const Icon = currentPhase.icon;
+  const { toast } = useToast();
+
+  const handleExportPPTX = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent card navigation
+    e.stopPropagation();
+    
+    try {
+      // Trigger download directly
+      const link = document.createElement('a');
+      link.href = `/api/projects/${project.id}/export-pptx`;
+      link.download = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pptx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "PPTX sendo gerado",
+        description: "O download do arquivo de apresentação iniciará em instantes.",
+      });
+    } catch (error) {
+      console.error("Error exporting PPTX:", error);
+      toast({
+        title: "Erro na exportação",
+        description: "Não foi possível gerar o arquivo PPTX. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <Link href={`/projects/${project.id}`}>
-      <Card 
-        className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
-        data-testid={`card-project-${project.id}`}
-      >
+    <div className="relative group">
+      <Link href={`/projects/${project.id}`}>
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
+          data-testid={`card-project-${project.id}`}
+        >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -87,6 +116,18 @@ function ProjectCard({ project }: { project: Project }) {
         </CardContent>
       </Card>
     </Link>
+    
+    {/* Export PPTX Button */}
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleExportPPTX}
+      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white hover:bg-gray-50 border-gray-300 z-10"
+      data-testid={`button-export-pptx-${project.id}`}
+    >
+      <Download className="w-4 h-4" />
+    </Button>
+    </div>
   );
 }
 
