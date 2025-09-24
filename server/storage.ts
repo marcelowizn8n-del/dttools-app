@@ -16,6 +16,7 @@ import {
   type SubscriptionPlan, type InsertSubscriptionPlan,
   type UserSubscription, type InsertUserSubscription,
   type CanvasDrawing, type InsertCanvasDrawing,
+  type PhaseCard, type InsertPhaseCard,
   type Benchmark, type InsertBenchmark,
   type BenchmarkAssessment, type InsertBenchmarkAssessment
 } from "@shared/schema";
@@ -119,6 +120,13 @@ export interface IStorage {
   updateCanvasDrawing(id: string, drawing: Partial<InsertCanvasDrawing>): Promise<CanvasDrawing | undefined>;
   deleteCanvasDrawing(id: string): Promise<boolean>;
 
+  // Phase Cards (Kanban)
+  getPhaseCards(projectId: string): Promise<PhaseCard[]>;
+  getPhaseCard(id: string): Promise<PhaseCard | undefined>;
+  createPhaseCard(card: InsertPhaseCard): Promise<PhaseCard>;
+  updatePhaseCard(id: string, card: Partial<InsertPhaseCard>): Promise<PhaseCard | undefined>;
+  deletePhaseCard(id: string): Promise<boolean>;
+
   // Subscription Plans
   getSubscriptionPlans(): Promise<SubscriptionPlan[]>;
   getSubscriptionPlan(id: string): Promise<SubscriptionPlan | undefined>;
@@ -165,6 +173,7 @@ export class MemStorage implements IStorage {
   private subscriptionPlans: Map<string, SubscriptionPlan>;
   private userSubscriptions: Map<string, UserSubscription>;
   private canvasDrawings: Map<string, CanvasDrawing>;
+  private phaseCards: Map<string, PhaseCard>;
   private benchmarks: Map<string, Benchmark>;
   private benchmarkAssessments: Map<string, BenchmarkAssessment>;
 
@@ -186,6 +195,7 @@ export class MemStorage implements IStorage {
     this.subscriptionPlans = new Map();
     this.userSubscriptions = new Map();
     this.canvasDrawings = new Map();
+    this.phaseCards = new Map();
     this.benchmarks = new Map();
     this.benchmarkAssessments = new Map();
     
@@ -1558,6 +1568,55 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
 
   async deleteBenchmarkAssessment(id: string): Promise<boolean> {
     return this.benchmarkAssessments.delete(id);
+  }
+
+  // Phase Cards (Kanban) methods
+  async getPhaseCards(projectId: string): Promise<PhaseCard[]> {
+    const cards = Array.from(this.phaseCards.values())
+      .filter(card => card.projectId === projectId)
+      .sort((a, b) => {
+        // First sort by phase, then by position
+        if (a.phase !== b.phase) {
+          return a.phase - b.phase;
+        }
+        return a.position - b.position;
+      });
+    return cards;
+  }
+
+  async getPhaseCard(id: string): Promise<PhaseCard | undefined> {
+    return this.phaseCards.get(id);
+  }
+
+  async createPhaseCard(card: InsertPhaseCard): Promise<PhaseCard> {
+    const newCard: PhaseCard = {
+      id: randomUUID(),
+      ...card,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.phaseCards.set(newCard.id, newCard);
+    return newCard;
+  }
+
+  async updatePhaseCard(id: string, card: Partial<InsertPhaseCard>): Promise<PhaseCard | undefined> {
+    const existingCard = this.phaseCards.get(id);
+    if (!existingCard) {
+      return undefined;
+    }
+
+    const updatedCard: PhaseCard = {
+      ...existingCard,
+      ...card,
+      updatedAt: new Date(),
+    };
+    
+    this.phaseCards.set(id, updatedCard);
+    return updatedCard;
+  }
+
+  async deletePhaseCard(id: string): Promise<boolean> {
+    return this.phaseCards.delete(id);
   }
 }
 
