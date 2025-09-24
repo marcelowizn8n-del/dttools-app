@@ -124,8 +124,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading: false,
     });
     
-    // Redirect to homepage after logout
-    window.location.href = '/';
+    // Force page reload and redirect to homepage after logout
+    window.location.replace('/');
   };
 
   const isAdmin = state.user?.role === "admin";
