@@ -15,8 +15,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { LanguageSelector } from "@/components/LanguageSelector";
-// Use public asset path that works in both dev and production
-const logoHorizontal = "/assets/logo-horizontal-rxsgqiTT.png";
+// Use direct path to logo in public root
+const logoHorizontal = "/logo-horizontal.png";
 
 export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
