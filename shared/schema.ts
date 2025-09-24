@@ -103,9 +103,21 @@ export const ideas = pgTable("ideas", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   category: text("category"),
-  feasibility: integer("feasibility"), // 1-5 scale
+  // Legacy fields (kept for compatibility)
+  feasibility: integer("feasibility"), // 1-5 scale - now maps to DVF Feasibility/Exequibilidade
   impact: integer("impact"), // 1-5 scale
   votes: integer("votes").default(0),
+  // DVF (Desejabilidade, Viabilidade, Exequibilidade) System
+  desirability: integer("desirability"), // 1-5 scale - user need satisfaction
+  viability: integer("viability"), // 1-5 scale - business/profit potential  
+  // feasibility already exists above - technical implementability
+  confidenceLevel: integer("confidence_level"), // 1-5 scale - overall confidence
+  dvfScore: real("dvf_score"), // Calculated: (desirability + viability + feasibility) / 3
+  dvfAnalysis: text("dvf_analysis"), // Detailed justification for scores
+  actionDecision: text("action_decision").default("evaluate"), // love_it, leave_it, change_it, evaluate
+  // Priority and iteration fields
+  priorityRank: integer("priority_rank"), // 1-n ranking based on DVF analysis
+  iterationNotes: text("iteration_notes"), // Notes for "change_it" decisions
   status: text("status").default("idea"), // idea, selected, prototype, tested
   canvasData: jsonb("canvas_data"), // Fabric.js canvas data for drawings/sketches
   createdAt: timestamp("created_at").default(sql`now()`),
