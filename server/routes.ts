@@ -19,6 +19,7 @@ import {
   insertSubscriptionPlanSchema,
   insertUserSubscriptionSchema,
   insertCanvasDrawingSchema,
+  insertPhaseCardSchema,
   insertBenchmarkSchema,
   insertBenchmarkAssessmentSchema,
   updateProfileSchema
@@ -1459,6 +1460,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting canvas drawing:", error);
       res.status(500).json({ error: "Failed to delete canvas drawing" });
+    }
+  });
+
+  // Phase Cards (Kanban) Routes
+  // GET /api/phase-cards/:projectId
+  app.get("/api/phase-cards/:projectId", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const cards = await storage.getPhaseCards(projectId);
+      res.json(cards);
+    } catch (error) {
+      console.error("Error fetching phase cards:", error);
+      res.status(500).json({ error: "Failed to fetch phase cards" });
+    }
+  });
+
+  // POST /api/phase-cards
+  app.post("/api/phase-cards", requireAuth, async (req, res) => {
+    try {
+      const parsed = insertPhaseCardSchema.parse(req.body);
+      const card = await storage.createPhaseCard(parsed);
+      res.status(201).json(card);
+    } catch (error) {
+      console.error("Error creating phase card:", error);
+      res.status(500).json({ error: "Failed to create phase card" });
+    }
+  });
+
+  // PUT /api/phase-cards/:id
+  app.put("/api/phase-cards/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const parsed = insertPhaseCardSchema.partial().parse(req.body);
+      const card = await storage.updatePhaseCard(id, parsed);
+      
+      if (!card) {
+        return res.status(404).json({ error: "Phase card not found" });
+      }
+      
+      res.json(card);
+    } catch (error) {
+      console.error("Error updating phase card:", error);
+      res.status(500).json({ error: "Failed to update phase card" });
+    }
+  });
+
+  // DELETE /api/phase-cards/:id
+  app.delete("/api/phase-cards/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deletePhaseCard(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Phase card not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting phase card:", error);
+      res.status(500).json({ error: "Failed to delete phase card" });
     }
   });
 
