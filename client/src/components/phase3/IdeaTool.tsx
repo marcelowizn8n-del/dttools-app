@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Edit2, Trash2, Lightbulb, ThumbsUp, Star, TrendingUp, Tag, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -183,45 +183,135 @@ function IdeaCard({ idea, projectId }: { idea: Idea; projectId: string }) {
           </p>
         </div>
 
-        {/* Feasibility and Impact Ratings */}
-        {(idea.feasibility || idea.impact) && (
-          <div className="grid grid-cols-2 gap-4">
-            {idea.feasibility && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <h4 className="font-medium text-xs text-gray-700 mb-1">Viabilidade</h4>
+        {/* DVF Analysis Section */}
+        {(idea.desirability || idea.viability || idea.feasibility || idea.dvfScore) && (
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+            <h4 className="font-medium text-sm text-gray-700 mb-3 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-purple-600" />
+              Análise DVF (Design Thinking Framework)
+            </h4>
+            
+            {/* DVF Scores Grid */}
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              {/* Desirability */}
+              <div className="bg-white border border-purple-200 rounded-lg p-3">
+                <h5 className="font-medium text-xs text-gray-700 mb-1">Desejabilidade</h5>
+                <p className="text-xs text-gray-600 mb-2">Satisfaz necessidade do usuário</p>
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
-                      className={`w-4 h-4 ${
+                      className={`w-3 h-3 ${
+                        star <= (idea.desirability || 0) 
+                          ? "fill-pink-500 text-pink-500" 
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                  <span className="text-xs text-gray-600 ml-1">
+                    {idea.desirability || 0}/5
+                  </span>
+                </div>
+              </div>
+
+              {/* Viability */}
+              <div className="bg-white border border-purple-200 rounded-lg p-3">
+                <h5 className="font-medium text-xs text-gray-700 mb-1">Viabilidade</h5>
+                <p className="text-xs text-gray-600 mb-2">Potencial de negócio/lucro</p>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-3 h-3 ${
+                        star <= (idea.viability || 0) 
+                          ? "fill-green-500 text-green-500" 
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                  <span className="text-xs text-gray-600 ml-1">
+                    {idea.viability || 0}/5
+                  </span>
+                </div>
+              </div>
+
+              {/* Feasibility */}
+              <div className="bg-white border border-purple-200 rounded-lg p-3">
+                <h5 className="font-medium text-xs text-gray-700 mb-1">Exequibilidade</h5>
+                <p className="text-xs text-gray-600 mb-2">Implementação técnica</p>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-3 h-3 ${
                         star <= (idea.feasibility || 0) 
                           ? "fill-blue-500 text-blue-500" 
                           : "text-gray-300"
                       }`}
                     />
                   ))}
-                  <span className="text-xs text-gray-600 ml-1">({idea.feasibility}/5)</span>
+                  <span className="text-xs text-gray-600 ml-1">
+                    {idea.feasibility || 0}/5
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* DVF Score and Action Decision */}
+            {idea.dvfScore && (
+              <div className="bg-white border border-purple-200 rounded-lg p-3 mb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h5 className="font-medium text-sm text-gray-700">Score DVF</h5>
+                    <p className="text-xs text-gray-600">Média dos critérios</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-purple-600">{idea.dvfScore.toFixed(1)}/5</div>
+                    {idea.actionDecision && (
+                      <Badge 
+                        variant={
+                          idea.actionDecision === 'love_it' ? 'default' : 
+                          idea.actionDecision === 'change_it' ? 'secondary' : 'destructive'
+                        }
+                        className="text-xs mt-1"
+                      >
+                        {idea.actionDecision === 'love_it' ? '💖 Amar' :
+                         idea.actionDecision === 'change_it' ? '🔄 Mudar' : 
+                         idea.actionDecision === 'leave_it' ? '❌ Deixar' : '📊 Avaliar'}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
-            {idea.impact && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <h4 className="font-medium text-xs text-gray-700 mb-1">Impacto</h4>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <TrendingUp
-                      key={star}
-                      className={`w-4 h-4 ${
-                        star <= (idea.impact || 0) 
-                          ? "text-green-500" 
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                  <span className="text-xs text-gray-600 ml-1">({idea.impact}/5)</span>
-                </div>
+
+            {/* DVF Analysis Text */}
+            {idea.dvfAnalysis && (
+              <div className="bg-white border border-purple-200 rounded-lg p-3">
+                <h5 className="font-medium text-xs text-gray-700 mb-2">Análise Detalhada</h5>
+                <p className="text-xs text-gray-600">{idea.dvfAnalysis}</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Legacy Impact Section (if no DVF but has impact) */}
+        {!idea.dvfScore && idea.impact && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <h4 className="font-medium text-xs text-gray-700 mb-1">Impacto</h4>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TrendingUp
+                  key={star}
+                  className={`w-4 h-4 ${
+                    star <= (idea.impact || 0) 
+                      ? "text-green-500" 
+                      : "text-gray-300"
+                  }`}
+                />
+              ))}
+              <span className="text-xs text-gray-600 ml-1">{idea.impact}/5</span>
+            </div>
           </div>
         )}
       </CardContent>
@@ -249,11 +339,32 @@ function CreateIdeaDialog({ projectId }: { projectId: string }) {
       title: "",
       description: "",
       category: "",
+      // Legacy fields
       feasibility: undefined,
       impact: undefined,
+      // DVF fields
+      desirability: undefined,
+      viability: undefined,
+      confidenceLevel: undefined,
+      dvfScore: undefined,
+      dvfAnalysis: "",
+      actionDecision: "evaluate",
+      priorityRank: undefined,
+      iterationNotes: "",
       status: "idea",
     },
   });
+
+  // Auto-calculate DVF Score when DVF fields change
+  const watchedFields = form.watch(['desirability', 'viability', 'feasibility']);
+  
+  useEffect(() => {
+    const [desirability, viability, feasibility] = watchedFields;
+    if (desirability && viability && feasibility) {
+      const dvfScore = (desirability + viability + feasibility) / 3;
+      form.setValue('dvfScore', dvfScore);
+    }
+  }, [watchedFields, form]);
 
   const createIdeaMutation = useMutation({
     mutationFn: async (data: InsertIdea) => {
@@ -362,57 +473,232 @@ function CreateIdeaDialog({ projectId }: { projectId: string }) {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="feasibility"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Viabilidade (Opcional)</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-idea-feasibility">
-                          <SelectValue placeholder="Avaliar viabilidade" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="1">1 - Muito difícil</SelectItem>
-                        <SelectItem value="2">2 - Difícil</SelectItem>
-                        <SelectItem value="3">3 - Moderado</SelectItem>
-                        <SelectItem value="4">4 - Fácil</SelectItem>
-                        <SelectItem value="5">5 - Muito fácil</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* DVF Analysis Section */}
+            <div className="border-t pt-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-purple-600" />
+                  Análise DVF (Design Thinking Framework)
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Avalie sua ideia usando os critérios fundamentais do Design Thinking
+                </p>
+              </div>
 
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                {/* Desirability */}
+                <FormField
+                  control={form.control}
+                  name="desirability"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        <div className="flex items-center gap-1">
+                          <span className="w-3 h-3 bg-pink-500 rounded-full"></span>
+                          Desejabilidade
+                        </div>
+                      </FormLabel>
+                      <p className="text-xs text-gray-600 mb-2">Satisfaz necessidade do usuário?</p>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-idea-desirability">
+                            <SelectValue placeholder="1-5" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="1">1 - Não desejável</SelectItem>
+                          <SelectItem value="2">2 - Pouco desejável</SelectItem>
+                          <SelectItem value="3">3 - Moderadamente desejável</SelectItem>
+                          <SelectItem value="4">4 - Muito desejável</SelectItem>
+                          <SelectItem value="5">5 - Extremamente desejável</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Viability */}
+                <FormField
+                  control={form.control}
+                  name="viability"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        <div className="flex items-center gap-1">
+                          <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                          Viabilidade
+                        </div>
+                      </FormLabel>
+                      <p className="text-xs text-gray-600 mb-2">Potencial de negócio/lucro?</p>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-idea-viability">
+                            <SelectValue placeholder="1-5" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="1">1 - Não viável</SelectItem>
+                          <SelectItem value="2">2 - Pouco viável</SelectItem>
+                          <SelectItem value="3">3 - Moderadamente viável</SelectItem>
+                          <SelectItem value="4">4 - Muito viável</SelectItem>
+                          <SelectItem value="5">5 - Extremamente viável</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Feasibility */}
+                <FormField
+                  control={form.control}
+                  name="feasibility"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        <div className="flex items-center gap-1">
+                          <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
+                          Exequibilidade
+                        </div>
+                      </FormLabel>
+                      <p className="text-xs text-gray-600 mb-2">Implementação técnica?</p>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-idea-feasibility">
+                            <SelectValue placeholder="1-5" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="1">1 - Muito difícil</SelectItem>
+                          <SelectItem value="2">2 - Difícil</SelectItem>
+                          <SelectItem value="3">3 - Moderado</SelectItem>
+                          <SelectItem value="4">4 - Fácil</SelectItem>
+                          <SelectItem value="5">5 - Muito fácil</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* DVF Score Display */}
+              {form.watch('dvfScore') && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-700">Score DVF Calculado</h4>
+                      <p className="text-xs text-gray-600">Média dos três critérios</p>
+                    </div>
+                    <div className="text-lg font-bold text-purple-600">
+                      {form.watch('dvfScore')?.toFixed(1)}/5
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Confidence Level */}
+                <FormField
+                  control={form.control}
+                  name="confidenceLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nível de Confiança (Opcional)</FormLabel>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-idea-confidence">
+                            <SelectValue placeholder="Quão confiante está?" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="1">1 - Muito incerto</SelectItem>
+                          <SelectItem value="2">2 - Incerto</SelectItem>
+                          <SelectItem value="3">3 - Moderadamente confiante</SelectItem>
+                          <SelectItem value="4">4 - Confiante</SelectItem>
+                          <SelectItem value="5">5 - Muito confiante</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Action Decision */}
+                <FormField
+                  control={form.control}
+                  name="actionDecision"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Decisão de Ação</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || undefined}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-idea-action">
+                            <SelectValue placeholder="Love it, Leave it, or Change it?" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="evaluate">📊 Avaliar mais</SelectItem>
+                          <SelectItem value="love_it">💖 Amar (continuar)</SelectItem>
+                          <SelectItem value="change_it">🔄 Mudar (iterar)</SelectItem>
+                          <SelectItem value="leave_it">❌ Deixar (abandonar)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* DVF Analysis */}
               <FormField
                 control={form.control}
-                name="impact"
+                name="dvfAnalysis"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Impacto (Opcional)</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-idea-impact">
-                          <SelectValue placeholder="Avaliar impacto" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="1">1 - Baixo impacto</SelectItem>
-                        <SelectItem value="2">2 - Impacto menor</SelectItem>
-                        <SelectItem value="3">3 - Impacto moderado</SelectItem>
-                        <SelectItem value="4">4 - Alto impacto</SelectItem>
-                        <SelectItem value="5">5 - Impacto transformador</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Análise Detalhada (Opcional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Justifique suas pontuações DVF. Por que esta ideia é desejável, viável e exequível? Quais são os riscos e oportunidades?"
+                        className="resize-none"
+                        rows={3}
+                        {...field}
+                        value={field.value || ""}
+                        data-testid="input-idea-dvf-analysis"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
+            {/* Legacy Impact Field (for backward compatibility) */}
+            <FormField
+              control={form.control}
+              name="impact"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Impacto Geral (Opcional - Campo Legado)</FormLabel>
+                  <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-idea-impact">
+                        <SelectValue placeholder="Avaliar impacto geral" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="1">1 - Baixo impacto</SelectItem>
+                      <SelectItem value="2">2 - Impacto menor</SelectItem>
+                      <SelectItem value="3">3 - Impacto moderado</SelectItem>
+                      <SelectItem value="4">4 - Alto impacto</SelectItem>
+                      <SelectItem value="5">5 - Impacto transformador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex justify-end gap-2">
               <Button
