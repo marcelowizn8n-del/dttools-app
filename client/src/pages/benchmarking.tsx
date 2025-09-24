@@ -297,11 +297,11 @@ export default function BenchmarkingPage() {
                       </div>
                       <span className="font-medium">{phase.name}</span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="text-gray-600">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm">
+                      <span className="text-gray-600 text-xs sm:text-sm">
                         Atual: <strong>{currentScore}/5</strong>
                       </span>
-                      <span className="text-gray-600">
+                      <span className="text-gray-600 text-xs sm:text-sm">
                         Indústria: <strong>{industryAverage}/5</strong>
                       </span>
                     </div>

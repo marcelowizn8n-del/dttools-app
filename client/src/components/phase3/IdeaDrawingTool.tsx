@@ -914,7 +914,13 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
                         Crie seu primeiro desenho de ideação para começar.
                       </p>
                       <Button 
-                        onClick={() => (document.querySelector('[data-value="new"]') as HTMLElement)?.click()}
+                        onClick={() => {
+                          setIsDrawingSelectorOpen(true);
+                          setTimeout(() => {
+                            const newTab = document.querySelector('[data-value="new"]') as HTMLElement;
+                            newTab?.click();
+                          }, 100);
+                        }}
                         data-testid="button-create-first-drawing"
                       >
                         Criar Primeiro Desenho
@@ -1136,6 +1142,32 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
               data-testid="button-redo"
             >
               <Redo className="h-4 w-4" />
+            </Button>
+
+            <Separator orientation="vertical" className="h-6" />
+            
+            {/* Quick Save Button */}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => {
+                if (!currentDrawing && !newDrawingTitle.trim()) {
+                  // Open dialog to get title
+                  setIsDrawingSelectorOpen(true);
+                  // Auto-switch to "new" tab
+                  setTimeout(() => {
+                    const newTab = document.querySelector('[data-value="new"]') as HTMLElement;
+                    newTab?.click();
+                  }, 100);
+                } else {
+                  saveDrawing();
+                }
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white"
+              data-testid="button-quick-save"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              Salvar
             </Button>
           </div>
 
