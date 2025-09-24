@@ -124,8 +124,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading: false,
     });
     
-    // Force page reload and redirect to homepage after logout
-    window.location.replace('/');
+    // Force complete navigation reset for Safari compatibility
+    setTimeout(() => {
+      window.location.href = window.location.origin;
+    }, 100);
   };
 
   const isAdmin = state.user?.role === "admin";
