@@ -19,6 +19,8 @@ import {
   insertSubscriptionPlanSchema,
   insertUserSubscriptionSchema,
   insertCanvasDrawingSchema,
+  insertBenchmarkSchema,
+  insertBenchmarkAssessmentSchema,
   updateProfileSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
@@ -1456,6 +1458,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting canvas drawing:", error);
       res.status(500).json({ error: "Failed to delete canvas drawing" });
+    }
+  });
+
+  // Benchmarking Routes
+  // GET /api/benchmarks/:projectId
+  app.get("/api/benchmarks/:projectId", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const benchmarks = await storage.getBenchmarks(projectId);
+      res.json(benchmarks);
+    } catch (error) {
+      console.error("Error fetching benchmarks:", error);
+      res.status(500).json({ error: "Failed to fetch benchmarks" });
+    }
+  });
+
+  // GET /api/benchmarks/detail/:id
+  app.get("/api/benchmarks/detail/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const benchmark = await storage.getBenchmark(id);
+      
+      if (!benchmark) {
+        return res.status(404).json({ error: "Benchmark not found" });
+      }
+      
+      res.json(benchmark);
+    } catch (error) {
+      console.error("Error fetching benchmark:", error);
+      res.status(500).json({ error: "Failed to fetch benchmark" });
+    }
+  });
+
+  // POST /api/benchmarks
+  app.post("/api/benchmarks", requireAuth, async (req, res) => {
+    try {
+      const parsed = insertBenchmarkSchema.parse(req.body);
+      const benchmark = await storage.createBenchmark(parsed);
+      res.status(201).json(benchmark);
+    } catch (error) {
+      console.error("Error creating benchmark:", error);
+      res.status(500).json({ error: "Failed to create benchmark" });
+    }
+  });
+
+  // PUT /api/benchmarks/:id
+  app.put("/api/benchmarks/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const parsed = insertBenchmarkSchema.partial().parse(req.body);
+      const benchmark = await storage.updateBenchmark(id, parsed);
+      
+      if (!benchmark) {
+        return res.status(404).json({ error: "Benchmark not found" });
+      }
+      
+      res.json(benchmark);
+    } catch (error) {
+      console.error("Error updating benchmark:", error);
+      res.status(500).json({ error: "Failed to update benchmark" });
+    }
+  });
+
+  // DELETE /api/benchmarks/:id
+  app.delete("/api/benchmarks/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteBenchmark(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Benchmark not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting benchmark:", error);
+      res.status(500).json({ error: "Failed to delete benchmark" });
+    }
+  });
+
+  // Benchmark Assessment Routes
+  // GET /api/benchmark-assessments/:benchmarkId
+  app.get("/api/benchmark-assessments/:benchmarkId", requireAuth, async (req, res) => {
+    try {
+      const { benchmarkId } = req.params;
+      const assessments = await storage.getBenchmarkAssessments(benchmarkId);
+      res.json(assessments);
+    } catch (error) {
+      console.error("Error fetching benchmark assessments:", error);
+      res.status(500).json({ error: "Failed to fetch benchmark assessments" });
+    }
+  });
+
+  // POST /api/benchmark-assessments
+  app.post("/api/benchmark-assessments", requireAuth, async (req, res) => {
+    try {
+      const parsed = insertBenchmarkAssessmentSchema.parse(req.body);
+      const assessment = await storage.createBenchmarkAssessment(parsed);
+      res.status(201).json(assessment);
+    } catch (error) {
+      console.error("Error creating benchmark assessment:", error);
+      res.status(500).json({ error: "Failed to create benchmark assessment" });
+    }
+  });
+
+  // PUT /api/benchmark-assessments/:id
+  app.put("/api/benchmark-assessments/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const parsed = insertBenchmarkAssessmentSchema.partial().parse(req.body);
+      const assessment = await storage.updateBenchmarkAssessment(id, parsed);
+      
+      if (!assessment) {
+        return res.status(404).json({ error: "Benchmark assessment not found" });
+      }
+      
+      res.json(assessment);
+    } catch (error) {
+      console.error("Error updating benchmark assessment:", error);
+      res.status(500).json({ error: "Failed to update benchmark assessment" });
+    }
+  });
+
+  // DELETE /api/benchmark-assessments/:id
+  app.delete("/api/benchmark-assessments/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteBenchmarkAssessment(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Benchmark assessment not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting benchmark assessment:", error);
+      res.status(500).json({ error: "Failed to delete benchmark assessment" });
     }
   });
 

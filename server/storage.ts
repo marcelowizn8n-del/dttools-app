@@ -1495,6 +1495,7 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
       ...insertBenchmark,
       id,
       description: insertBenchmark.description || null,
+      benchmarkType: insertBenchmark.benchmarkType || "industry",
       maturityScores: insertBenchmark.maturityScores || {},
       targetScores: insertBenchmark.targetScores || {},
       improvementAreas: insertBenchmark.improvementAreas || [],
