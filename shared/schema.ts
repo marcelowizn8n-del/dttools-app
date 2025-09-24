@@ -497,6 +497,26 @@ export interface AIProjectAnalysis {
   };
 }
 
+// Kanban Phase Cards - Cards that can move between project phases
+export const phaseCards = pgTable("phase_cards", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  phase: integer("phase").notNull().default(1), // 1-5 phases (Empatizar, Definir, Idear, Prototipar, Testar)
+  status: text("status").default("todo"), // todo, in_progress, done
+  priority: text("priority").default("medium"), // low, medium, high
+  assignee: text("assignee"), // Optional assignee
+  tags: jsonb("tags").default([]), // Array of tags for categorization
+  dueDate: timestamp("due_date"),
+  position: integer("position").default(0), // Order within the phase column
+  color: text("color").default("blue"), // Card color for visual organization
+  attachments: jsonb("attachments").default([]), // File attachments metadata
+  comments: jsonb("comments").default([]), // Comments/notes
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
 // Benchmarking - Compare Design Thinking maturity across organizations
 export const benchmarks = pgTable("benchmarks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -541,6 +561,17 @@ export const insertBenchmarkAssessmentSchema = createInsertSchema(benchmarkAsses
   createdAt: true,
   updatedAt: true,
 });
+
+// Insert schemas for phase cards
+export const insertPhaseCardSchema = createInsertSchema(phaseCards).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Export types for phase cards
+export type PhaseCard = typeof phaseCards.$inferSelect;
+export type InsertPhaseCard = z.infer<typeof insertPhaseCardSchema>;
 
 // Export types for benchmarking
 export type Benchmark = typeof benchmarks.$inferSelect;
