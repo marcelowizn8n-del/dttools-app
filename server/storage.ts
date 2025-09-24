@@ -15,7 +15,9 @@ import {
   type Article, type InsertArticle,
   type SubscriptionPlan, type InsertSubscriptionPlan,
   type UserSubscription, type InsertUserSubscription,
-  type CanvasDrawing, type InsertCanvasDrawing
+  type CanvasDrawing, type InsertCanvasDrawing,
+  type Benchmark, type InsertBenchmark,
+  type BenchmarkAssessment, type InsertBenchmarkAssessment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
@@ -131,6 +133,18 @@ export interface IStorage {
   createUserSubscription(subscription: InsertUserSubscription): Promise<UserSubscription>;
   updateUserSubscription(id: string, subscription: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined>;
   cancelUserSubscription(id: string): Promise<boolean>;
+
+  // Benchmarking
+  getBenchmarks(projectId: string): Promise<Benchmark[]>;
+  getBenchmark(id: string): Promise<Benchmark | undefined>;
+  createBenchmark(benchmark: InsertBenchmark): Promise<Benchmark>;
+  updateBenchmark(id: string, benchmark: Partial<InsertBenchmark>): Promise<Benchmark | undefined>;
+  deleteBenchmark(id: string): Promise<boolean>;
+
+  getBenchmarkAssessments(benchmarkId: string): Promise<BenchmarkAssessment[]>;
+  createBenchmarkAssessment(assessment: InsertBenchmarkAssessment): Promise<BenchmarkAssessment>;
+  updateBenchmarkAssessment(id: string, assessment: Partial<InsertBenchmarkAssessment>): Promise<BenchmarkAssessment | undefined>;
+  deleteBenchmarkAssessment(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -151,6 +165,8 @@ export class MemStorage implements IStorage {
   private subscriptionPlans: Map<string, SubscriptionPlan>;
   private userSubscriptions: Map<string, UserSubscription>;
   private canvasDrawings: Map<string, CanvasDrawing>;
+  private benchmarks: Map<string, Benchmark>;
+  private benchmarkAssessments: Map<string, BenchmarkAssessment>;
 
   constructor() {
     this.projects = new Map();
@@ -170,6 +186,8 @@ export class MemStorage implements IStorage {
     this.subscriptionPlans = new Map();
     this.userSubscriptions = new Map();
     this.canvasDrawings = new Map();
+    this.benchmarks = new Map();
+    this.benchmarkAssessments = new Map();
     
     this.initializeData();
   }
@@ -1022,6 +1040,7 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
       impact: insertIdea.impact || null,
       votes: insertIdea.votes || 0,
       status: insertIdea.status || "idea",
+      canvasData: insertIdea.canvasData || null,
       createdAt: new Date(),
     };
     this.ideas.set(id, idea);
@@ -1056,6 +1075,7 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
       images: insertPrototype.images || [],
       version: insertPrototype.version || 1,
       feedback: insertPrototype.feedback || null,
+      canvasData: insertPrototype.canvasData || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -1458,6 +1478,85 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
 
   async deleteCanvasDrawing(id: string): Promise<boolean> {
     return this.canvasDrawings.delete(id);
+  }
+
+  // Benchmarking Methods
+  async getBenchmarks(projectId: string): Promise<Benchmark[]> {
+    return Array.from(this.benchmarks.values()).filter(benchmark => benchmark.projectId === projectId);
+  }
+
+  async getBenchmark(id: string): Promise<Benchmark | undefined> {
+    return this.benchmarks.get(id);
+  }
+
+  async createBenchmark(insertBenchmark: InsertBenchmark): Promise<Benchmark> {
+    const id = randomUUID();
+    const benchmark: Benchmark = {
+      ...insertBenchmark,
+      id,
+      description: insertBenchmark.description || null,
+      maturityScores: insertBenchmark.maturityScores || {},
+      targetScores: insertBenchmark.targetScores || {},
+      improvementAreas: insertBenchmark.improvementAreas || [],
+      recommendations: insertBenchmark.recommendations || [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.benchmarks.set(id, benchmark);
+    return benchmark;
+  }
+
+  async updateBenchmark(id: string, updateBenchmark: Partial<InsertBenchmark>): Promise<Benchmark | undefined> {
+    const benchmark = this.benchmarks.get(id);
+    if (!benchmark) return undefined;
+    
+    const updatedBenchmark: Benchmark = { 
+      ...benchmark, 
+      ...updateBenchmark, 
+      updatedAt: new Date() 
+    };
+    this.benchmarks.set(id, updatedBenchmark);
+    return updatedBenchmark;
+  }
+
+  async deleteBenchmark(id: string): Promise<boolean> {
+    return this.benchmarks.delete(id);
+  }
+
+  async getBenchmarkAssessments(benchmarkId: string): Promise<BenchmarkAssessment[]> {
+    return Array.from(this.benchmarkAssessments.values()).filter(assessment => assessment.benchmarkId === benchmarkId);
+  }
+
+  async createBenchmarkAssessment(insertAssessment: InsertBenchmarkAssessment): Promise<BenchmarkAssessment> {
+    const id = randomUUID();
+    const assessment: BenchmarkAssessment = {
+      ...insertAssessment,
+      id,
+      industryAverage: insertAssessment.industryAverage || null,
+      evidence: insertAssessment.evidence || null,
+      improvementPlan: insertAssessment.improvementPlan || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.benchmarkAssessments.set(id, assessment);
+    return assessment;
+  }
+
+  async updateBenchmarkAssessment(id: string, updateAssessment: Partial<InsertBenchmarkAssessment>): Promise<BenchmarkAssessment | undefined> {
+    const assessment = this.benchmarkAssessments.get(id);
+    if (!assessment) return undefined;
+    
+    const updatedAssessment: BenchmarkAssessment = { 
+      ...assessment, 
+      ...updateAssessment, 
+      updatedAt: new Date() 
+    };
+    this.benchmarkAssessments.set(id, updatedAssessment);
+    return updatedAssessment;
+  }
+
+  async deleteBenchmarkAssessment(id: string): Promise<boolean> {
+    return this.benchmarkAssessments.delete(id);
   }
 }
 

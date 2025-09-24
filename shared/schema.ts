@@ -484,3 +484,55 @@ export interface AIProjectAnalysis {
     longTerm: string[];
   };
 }
+
+// Benchmarking - Compare Design Thinking maturity across organizations
+export const benchmarks = pgTable("benchmarks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  industry: text("industry").notNull(), // tech, healthcare, finance, retail, etc.
+  companySize: text("company_size").notNull(), // startup, small, medium, large, enterprise
+  maturityScores: jsonb("maturity_scores").default({}), // { empathize: 4, define: 3, ideate: 5, prototype: 2, test: 3 }
+  benchmarkType: text("benchmark_type").notNull().default("industry"), // industry, internal, custom
+  targetScores: jsonb("target_scores").default({}), // Goals for each phase
+  improvementAreas: jsonb("improvement_areas").default([]), // Array of focus areas
+  recommendations: jsonb("recommendations").default([]), // AI-generated suggestions
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Individual benchmark assessments
+export const benchmarkAssessments = pgTable("benchmark_assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  benchmarkId: varchar("benchmark_id").references(() => benchmarks.id).notNull(),
+  phase: integer("phase").notNull(), // 1-5 for DT phases
+  criteria: text("criteria").notNull(), // What is being assessed
+  currentScore: real("current_score").notNull(), // 1-5 rating
+  targetScore: real("target_score").notNull(), // Goal score
+  industryAverage: real("industry_average"), // Benchmark comparison
+  evidence: text("evidence"), // Supporting evidence for the score
+  improvementPlan: text("improvement_plan"), // How to improve
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Insert schemas for benchmarking
+export const insertBenchmarkSchema = createInsertSchema(benchmarks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBenchmarkAssessmentSchema = createInsertSchema(benchmarkAssessments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Export types for benchmarking
+export type Benchmark = typeof benchmarks.$inferSelect;
+export type InsertBenchmark = z.infer<typeof insertBenchmarkSchema>;
+
+export type BenchmarkAssessment = typeof benchmarkAssessments.$inferSelect;
+export type InsertBenchmarkAssessment = z.infer<typeof insertBenchmarkAssessmentSchema>;
