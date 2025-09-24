@@ -55,10 +55,10 @@ app.use(session({
   saveUninitialized: false,
   store: sessionStore,
   cookie: {
-    secure: isProduction, // true in production with HTTPS
+    secure: false, // Allow HTTP in development and Replit production
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: isProduction ? 'strict' : 'lax'
+    sameSite: 'lax' // Allow cross-site requests for better compatibility
   }
 }));
 
