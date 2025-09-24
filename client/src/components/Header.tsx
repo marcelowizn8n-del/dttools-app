@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Book, 
   Settings, 
@@ -22,6 +22,21 @@ export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
   const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Check initial state
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <header className="bg-background border-b border-border">
@@ -31,18 +46,15 @@ export default function Header() {
           <div className="flex-shrink-0">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                {/* Mobile: Show icon only, Desktop: Show full logo */}
                 <img 
-                  src={dttoolsIcon} 
+                  src={isMobile ? dttoolsIcon : logoHorizontal}
                   alt="DTTools" 
-                  className="app-logo h-12 w-12 object-contain shrink-0 md:hidden"
-                  data-testid="logo-icon"
-                />
-                <img 
-                  src={logoHorizontal} 
-                  alt="DTTools" 
-                  className="app-logo hidden md:block h-16 lg:h-20 w-auto object-contain shrink-0"
-                  data-testid="logo-img"
+                  className={`object-contain shrink-0 ${
+                    isMobile 
+                      ? 'h-10 w-10' 
+                      : 'h-14 lg:h-16 w-auto'
+                  }`}
+                  data-testid={isMobile ? "logo-icon" : "logo-img"}
                 />
               </div>
             </Link>
