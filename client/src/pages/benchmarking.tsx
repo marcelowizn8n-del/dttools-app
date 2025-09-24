@@ -22,7 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Benchmark } from "@shared/schema";
+import type { Benchmark, Project } from "@shared/schema";
 
 const industries = [
   { value: "tech", label: "Tecnologia" },
@@ -64,13 +64,13 @@ export default function BenchmarkingPage() {
   });
 
   // Fetch user projects
-  const { data: projects = [] } = useQuery({
+  const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ['/api/projects']
   });
 
   // Auto-select first project if none selected
-  if (projects.length > 0 && !selectedProject) {
-    setSelectedProject(projects[0].id);
+  if ((projects as Project[]).length > 0 && !selectedProject) {
+    setSelectedProject((projects as Project[])[0].id);
   }
 
   // Fetch benchmarks for selected project
@@ -97,7 +97,8 @@ export default function BenchmarkingPage() {
         description: "Benchmark criado com sucesso.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Benchmark creation error:', error);
       toast({
         title: "Erro",
         description: "Falha ao criar benchmark.",
@@ -107,6 +108,29 @@ export default function BenchmarkingPage() {
   });
 
   const handleCreateBenchmark = () => {
+    console.log('Creating benchmark with data:', {
+      ...newBenchmark,
+      projectId: selectedProject
+    });
+    
+    if (!selectedProject) {
+      toast({
+        title: "Erro",
+        description: "Nenhum projeto selecionado.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!newBenchmark.name.trim()) {
+      toast({
+        title: "Erro",
+        description: "Nome do benchmark é obrigatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createBenchmarkMutation.mutate({
       ...newBenchmark,
       projectId: selectedProject,
