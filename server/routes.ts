@@ -849,7 +849,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: freshUser.id,
             username: freshUser.username,
             role: freshUser.role,
-            createdAt: freshUser.createdAt
+            createdAt: freshUser.createdAt || new Date()
           };
         }
       }
