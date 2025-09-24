@@ -26,16 +26,22 @@ export default function Header() {
   return (
     <header className="bg-background border-b border-border">
       <div className="container mx-auto px-4 md:px-6 py-3">
-        <div className="flex items-center justify-between min-h-[60px] gap-4">
+        <div className="flex items-center justify-between min-h-[60px] gap-2 md:gap-4">
           {/* Logo - Container reserves space to prevent layout shifts */}
-          <div className="flex-shrink-0 min-w-[120px] md:min-w-[140px] lg:min-w-[160px]">
+          <div className="flex-shrink-0">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                {/* Stable logo - fixed height prevents shrinking during HMR */}
+                {/* Mobile: Show icon only, Desktop: Show full logo */}
+                <img 
+                  src={dttoolsIcon} 
+                  alt="DTTools" 
+                  className="app-logo h-12 w-12 object-contain shrink-0 md:hidden"
+                  data-testid="logo-icon"
+                />
                 <img 
                   src={logoHorizontal} 
                   alt="DTTools" 
-                  className="app-logo h-20 sm:h-22 md:h-24 lg:h-26 w-auto object-contain shrink-0"
+                  className="app-logo hidden md:block h-16 lg:h-20 w-auto object-contain shrink-0"
                   data-testid="logo-img"
                 />
               </div>
@@ -88,33 +94,37 @@ export default function Header() {
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              data-testid="mobile-menu-button"
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-menu"
-              aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
-          </div>
+          {/* User Actions & Mobile Menu */}
+          <div className="flex items-center gap-2">
+            {/* Mobile: User Avatar + Menu Button */}
+            <div className="lg:hidden flex items-center gap-2">
+              {isAuthenticated && <UserMenu />}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                data-testid="mobile-menu-button"
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-menu"
+                aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+              >
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+            </div>
 
-          {/* User Actions - Fixed width to prevent layout shift */}
-          <div className="hidden lg:flex items-center gap-2 flex-shrink-0 min-w-[120px] justify-end">
-            <LanguageSelector />
-            {isAuthenticated ? (
-              <UserMenu />
-            ) : (
-              <Link href="/login">
-                <Button data-testid="button-login">
-                  {t("nav.login")}
-                </Button>
-              </Link>
-            )}
+            {/* Desktop: Full User Actions */}
+            <div className="hidden lg:flex items-center gap-2 flex-shrink-0 min-w-[120px] justify-end">
+              <LanguageSelector />
+              {isAuthenticated ? (
+                <UserMenu />
+              ) : (
+                <Link href="/login">
+                  <Button data-testid="button-login">
+                    {t("nav.login")}
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
@@ -179,11 +189,6 @@ export default function Header() {
                         </Link>
                       )}
                     </div>
-                    {isAuthenticated && (
-                      <div className="pt-2">
-                        <UserMenu />
-                      </div>
-                    )}
                   </div>
                 </div>
               </nav>
