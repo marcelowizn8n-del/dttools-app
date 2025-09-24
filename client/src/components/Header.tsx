@@ -31,18 +31,20 @@ export default function Header() {
           <div className="flex-shrink-0">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                <picture>
-                  <source 
-                    media="(max-width: 767px)" 
-                    srcSet={dttoolsIcon}
-                  />
-                  <img 
-                    src={logoHorizontal}
-                    alt="DTTools" 
-                    className="object-contain shrink-0 h-10 w-10 md:h-14 md:w-auto lg:h-16"
-                    data-testid="logo-img"
-                  />
-                </picture>
+                {/* Mobile Logo - Icon only */}
+                <img 
+                  src={dttoolsIcon}
+                  alt="DTTools" 
+                  className="md:hidden object-contain shrink-0 h-10 w-10"
+                  data-testid="logo-icon-mobile"
+                />
+                {/* Desktop Logo - Full horizontal logo */}
+                <img 
+                  src={logoHorizontal}
+                  alt="DTTools" 
+                  className="hidden md:block object-contain shrink-0 h-14 w-auto lg:h-16"
+                  data-testid="logo-img-desktop"
+                />
               </div>
             </Link>
           </div>
