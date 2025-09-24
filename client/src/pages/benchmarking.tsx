@@ -55,6 +55,8 @@ export default function BenchmarkingPage() {
   const { toast } = useToast();
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedBenchmark, setSelectedBenchmark] = useState<Benchmark | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [newBenchmark, setNewBenchmark] = useState({
     name: "",
     description: "",
@@ -106,6 +108,37 @@ export default function BenchmarkingPage() {
       });
     },
   });
+
+  // Delete benchmark mutation
+  const deleteBenchmarkMutation = useMutation({
+    mutationFn: (benchmarkId: string) => apiRequest("DELETE", `/api/benchmarks/${benchmarkId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/benchmarks'] });
+      toast({
+        title: "Sucesso!",
+        description: "Benchmark deletado com sucesso.",
+      });
+    },
+    onError: (error) => {
+      console.error('Benchmark deletion error:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao deletar benchmark.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleViewDetails = (benchmark: Benchmark) => {
+    setSelectedBenchmark(benchmark);
+    setShowDetailsModal(true);
+  };
+
+  const handleDeleteBenchmark = (benchmarkId: string) => {
+    if (confirm('Tem certeza que deseja deletar este benchmark?')) {
+      deleteBenchmarkMutation.mutate(benchmarkId);
+    }
+  };
 
   const handleCreateBenchmark = () => {
     console.log('Creating benchmark with data:', {
@@ -344,10 +377,21 @@ export default function BenchmarkingPage() {
                         <CardDescription>{benchmark.description}</CardDescription>
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleViewDetails(benchmark)}
+                          data-testid={`button-edit-benchmark-${benchmark.id}`}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteBenchmark(benchmark.id)}
+                          disabled={deleteBenchmarkMutation.isPending}
+                          data-testid={`button-delete-benchmark-${benchmark.id}`}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -374,7 +418,12 @@ export default function BenchmarkingPage() {
                         </Badge>
                       </div>
                       <div className="pt-2">
-                        <Button className="w-full" variant="outline">
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={() => handleViewDetails(benchmark)}
+                          data-testid={`button-view-details-${benchmark.id}`}
+                        >
                           <FileText className="h-4 w-4 mr-2" />
                           Ver Detalhes
                         </Button>
@@ -473,6 +522,98 @@ export default function BenchmarkingPage() {
                   data-testid="button-cancel-benchmark"
                 >
                   Cancelar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Benchmark Details Modal */}
+      {showDetailsModal && selectedBenchmark && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-xl">{selectedBenchmark.name}</CardTitle>
+                  <CardDescription>{selectedBenchmark.description}</CardDescription>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowDetailsModal(false)}
+                  data-testid="button-close-details"
+                >
+                  ×
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Basic Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Indústria</h4>
+                  <Badge variant="outline">
+                    {industries.find(i => i.value === selectedBenchmark.industry)?.label}
+                  </Badge>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Tamanho da Empresa</h4>
+                  <Badge variant="outline">
+                    {companySizes.find(s => s.value === selectedBenchmark.companySize)?.label}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Maturity Scores */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Pontuações de Maturidade</h4>
+                <div className="space-y-3">
+                  {phases.map((phase) => {
+                    const Icon = phase.icon;
+                    const scoreKey = phase.name.toLowerCase();
+                    const currentScore = (selectedBenchmark.maturityScores as any)?.[scoreKey] || 0;
+                    const targetScore = (selectedBenchmark.targetScores as any)?.[scoreKey] || 0;
+                    
+                    return (
+                      <div key={phase.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Icon className="w-4 h-4" style={{ color: phase.color }} />
+                          <span className="text-sm font-medium">{phase.name}</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-sm">
+                            <span className="text-gray-600">Atual: </span>
+                            <span className="font-medium">{currentScore}/5</span>
+                          </div>
+                          <div className="text-sm">
+                            <span className="text-gray-600">Meta: </span>
+                            <span className="font-medium">{targetScore}/5</span>
+                          </div>
+                          <Progress value={(currentScore / 5) * 100} className="w-20" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Created Date */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">Criado em</h4>
+                <p className="text-sm text-gray-600">
+                  {selectedBenchmark.createdAt ? new Date(selectedBenchmark.createdAt).toLocaleDateString('pt-BR') : 'Data não disponível'}
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  className="flex-1"
+                  onClick={() => setShowDetailsModal(false)}
+                  data-testid="button-close-details-footer"
+                >
+                  Fechar
                 </Button>
               </div>
             </CardContent>
