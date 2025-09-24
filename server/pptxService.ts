@@ -1,4 +1,5 @@
 import pptxgen from "pptxgenjs";
+import jsPDF from "jspdf";
 import { storage } from "./storage";
 import type { 
   Project, 
@@ -541,6 +542,269 @@ export class PPTXService {
     } catch (error) {
       console.error("Error generating PPTX:", error);
       throw new Error("Failed to generate PPTX presentation");
+    }
+  }
+
+  async generateProjectPDF(projectId: string): Promise<Buffer> {
+    try {
+      // Fetch all project data
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        throw new Error("Project not found");
+      }
+
+      const empathyMaps = await storage.getEmpathyMaps(projectId);
+      const personas = await storage.getPersonas(projectId);
+      const interviews = await storage.getInterviews(projectId);
+      const observations = await storage.getObservations(projectId);
+      const povStatements = await storage.getPovStatements(projectId);
+      const hmwQuestions = await storage.getHmwQuestions(projectId);
+      const ideas = await storage.getIdeas(projectId);
+      const prototypes = await storage.getPrototypes(projectId);
+      const testPlans = await storage.getTestPlans(projectId);
+      const testResults = await storage.getTestResults(projectId);
+
+      // Create PDF document
+      const doc = new jsPDF();
+      let yPosition = 20;
+
+      // Helper function to add text with word wrap
+      const addText = (text: string, fontSize: number = 12, isBold: boolean = false) => {
+        doc.setFontSize(fontSize);
+        if (isBold) {
+          doc.setFont("helvetica", "bold");
+        } else {
+          doc.setFont("helvetica", "normal");
+        }
+        
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        
+        const lines = doc.splitTextToSize(text, 170);
+        doc.text(lines, 20, yPosition);
+        yPosition += lines.length * (fontSize / 2.5) + 5;
+      };
+
+      const addSectionHeader = (title: string) => {
+        yPosition += 10;
+        addText(title, 16, true);
+        yPosition += 5;
+      };
+
+      // Title page
+      doc.setFillColor(30, 64, 175); // DTTools blue
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont("helvetica", "bold");
+      doc.text("DTTools - Design Thinking", 105, 20, { align: "center" });
+      
+      doc.setFontSize(18);
+      doc.text(project.name, 105, 30, { align: "center" });
+
+      doc.setTextColor(0, 0, 0);
+      yPosition = 60;
+
+      if (project.description) {
+        addText(`Descrição: ${project.description}`, 14);
+      }
+
+      addText(`Data de criação: ${project.createdAt ? new Date(project.createdAt).toLocaleDateString('pt-BR') : 'N/A'}`, 12);
+      addText(`Fase atual: ${project.currentPhase}/5`, 12);
+      addText(`Progresso: ${project.completionRate || 0}%`, 12);
+
+      // Phase 1: Empathize
+      if (empathyMaps.length > 0 || personas.length > 0 || interviews.length > 0) {
+        addSectionHeader("FASE 1: EMPATIZAR");
+        addText("Compreenda profundamente seus usuários através de pesquisas, entrevistas e observações.");
+
+        // Empathy Maps
+        if (empathyMaps.length > 0) {
+          addText("Mapas de Empatia:", 14, true);
+          empathyMaps.forEach((empathyMap, index) => {
+            addText(`${index + 1}. ${empathyMap.title}`, 12, true);
+            
+            if (empathyMap.says && Array.isArray(empathyMap.says)) {
+              addText(`Diz: ${(empathyMap.says as string[]).join(", ")}`, 10);
+            }
+            if (empathyMap.thinks && Array.isArray(empathyMap.thinks)) {
+              addText(`Pensa: ${(empathyMap.thinks as string[]).join(", ")}`, 10);
+            }
+            if (empathyMap.does && Array.isArray(empathyMap.does)) {
+              addText(`Faz: ${(empathyMap.does as string[]).join(", ")}`, 10);
+            }
+            if (empathyMap.feels && Array.isArray(empathyMap.feels)) {
+              addText(`Sente: ${(empathyMap.feels as string[]).join(", ")}`, 10);
+            }
+            yPosition += 5;
+          });
+        }
+
+        // Personas
+        if (personas.length > 0) {
+          addText("Personas:", 14, true);
+          personas.forEach((persona, index) => {
+            addText(`${index + 1}. ${persona.name}`, 12, true);
+            addText(`${persona.age} anos • ${persona.occupation}`, 10);
+            if (persona.bio) {
+              addText(`Bio: ${persona.bio}`, 10);
+            }
+            if (persona.goals && Array.isArray(persona.goals)) {
+              addText(`Objetivos: ${(persona.goals as string[]).join(", ")}`, 10);
+            }
+            yPosition += 5;
+          });
+        }
+
+        // Interviews
+        if (interviews.length > 0) {
+          addText("Entrevistas:", 14, true);
+          interviews.forEach((interview, index) => {
+            addText(`${index + 1}. ${interview.participantName}`, 12, true);
+            if (interview.keyInsights) {
+              addText(`Insights: ${interview.keyInsights}`, 10);
+            }
+          });
+        }
+      }
+
+      // Phase 2: Define
+      if (povStatements.length > 0 || hmwQuestions.length > 0) {
+        addSectionHeader("FASE 2: DEFINIR");
+        addText("Defina claramente o problema e crie declarações de ponto de vista focadas.");
+
+        if (povStatements.length > 0) {
+          addText("Declarações POV:", 14, true);
+          povStatements.forEach((pov, index) => {
+            addText(`${index + 1}. ${pov.statement}`, 10);
+          });
+        }
+
+        if (hmwQuestions.length > 0) {
+          addText("Como Podemos (HMW):", 14, true);
+          hmwQuestions.forEach((hmw, index) => {
+            addText(`${index + 1}. ${hmw.question}`, 10);
+          });
+        }
+      }
+
+      // Phase 3: Ideate
+      if (ideas.length > 0) {
+        addSectionHeader("FASE 3: IDEAR");
+        addText("Gere uma ampla gama de ideias criativas através de brainstorming estruturado.");
+
+        // Sort ideas by DVF score
+        const sortedIdeas = ideas.sort((a, b) => (b.dvfScore || 0) - (a.dvfScore || 0));
+
+        addText("Ideias Geradas:", 14, true);
+        sortedIdeas.forEach((idea, index) => {
+          addText(`${index + 1}. ${idea.title}`, 12, true);
+          addText(`Descrição: ${idea.description}`, 10);
+          
+          if (idea.dvfScore) {
+            addText(`Pontuação DVF: ${idea.dvfScore.toFixed(1)}/5`, 10);
+            addText(`- Desejabilidade: ${idea.desirability || 0}/5`, 9);
+            addText(`- Viabilidade: ${idea.viability || 0}/5`, 9);
+            addText(`- Exequibilidade: ${idea.feasibility || 0}/5`, 9);
+          }
+
+          if (idea.actionDecision && idea.actionDecision !== "evaluate") {
+            const actionTexts = {
+              love_it: "💚 AMAR",
+              change_it: "🔄 MUDAR",
+              leave_it: "❌ DEIXAR"
+            };
+            addText(`Decisão: ${actionTexts[idea.actionDecision as keyof typeof actionTexts] || idea.actionDecision}`, 10);
+          }
+          yPosition += 5;
+        });
+
+        // DVF Analysis
+        const validIdeas = ideas.filter(idea => idea.dvfScore);
+        if (validIdeas.length > 0) {
+          addText("Análise DVF - Métricas do Projeto:", 14, true);
+          
+          const avgDesirability = validIdeas.reduce((sum, idea) => sum + (idea.desirability || 0), 0) / validIdeas.length;
+          const avgViability = validIdeas.reduce((sum, idea) => sum + (idea.viability || 0), 0) / validIdeas.length;
+          const avgFeasibility = validIdeas.reduce((sum, idea) => sum + (idea.feasibility || 0), 0) / validIdeas.length;
+          const avgDVF = validIdeas.reduce((sum, idea) => sum + (idea.dvfScore || 0), 0) / validIdeas.length;
+
+          addText(`Desejabilidade Média: ${avgDesirability.toFixed(1)}/5`, 12);
+          addText(`Viabilidade Média: ${avgViability.toFixed(1)}/5`, 12);
+          addText(`Exequibilidade Média: ${avgFeasibility.toFixed(1)}/5`, 12);
+          addText(`Pontuação DVF Geral: ${avgDVF.toFixed(1)}/5`, 12, true);
+          addText(`vs. Média da Indústria: 3.2/5`, 10);
+        }
+      }
+
+      // Phase 4: Prototype
+      if (prototypes.length > 0) {
+        addSectionHeader("FASE 4: PROTOTIPAR");
+        addText("Construa protótipos rápidos e baratos para testar suas melhores ideias.");
+
+        addText("Protótipos Criados:", 14, true);
+        prototypes.forEach((prototype, index) => {
+          addText(`${index + 1}. ${prototype.name} (${prototype.type})`, 12, true);
+          if (prototype.description) {
+            addText(`Descrição: ${prototype.description}`, 10);
+          }
+          if (prototype.materials) {
+            addText(`Materiais: ${prototype.materials}`, 10);
+          }
+          yPosition += 5;
+        });
+      }
+
+      // Phase 5: Test
+      if (testPlans.length > 0 || testResults.length > 0) {
+        addSectionHeader("FASE 5: TESTAR");
+        addText("Teste seus protótipos com usuários reais e colete feedback valioso.");
+
+        if (testPlans.length > 0) {
+          addText("Planos de Teste:", 14, true);
+          testPlans.forEach((plan, index) => {
+            addText(`${index + 1}. ${plan.objectives}`, 12, true);
+            if (plan.methodology) {
+              addText(`Metodologia: ${plan.methodology}`, 10);
+            }
+          });
+        }
+
+        if (testResults.length > 0) {
+          addText("Resultados dos Testes:", 14, true);
+          testResults.forEach((result, index) => {
+            addText(`${index + 1}. Participante: ${result.participantId}`, 12, true);
+            if (result.insights) {
+              addText(`Insights: ${result.insights}`, 10);
+            }
+            if (result.improvements) {
+              addText(`Melhorias: ${result.improvements}`, 10);
+            }
+          });
+        }
+      }
+
+      // Footer
+      yPosition += 20;
+      if (yPosition > 270) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      
+      doc.setTextColor(100, 100, 100);
+      addText("Gerado pelo DTTools • dttools.app", 10);
+      addText(`Data de geração: ${new Date().toLocaleDateString('pt-BR')}`, 10);
+
+      // Convert to buffer
+      const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
+      return pdfBuffer;
+
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      throw new Error("Failed to generate PDF document");
     }
   }
 }
