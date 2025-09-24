@@ -19,6 +19,7 @@ import CompleteProfilePage from "@/pages/complete-profile";
 import PricingPage from "@/pages/pricing";
 import ChatPage from "@/pages/chat";
 import ProfilePage from "@/pages/profile";
+import BenchmarkingPage from "@/pages/benchmarking";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardPage from "@/pages/dashboard";
@@ -123,6 +124,11 @@ function Router() {
       <Route path="/admin">
         <ProtectedRoute>
           <AdminPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/benchmarking">
+        <ProtectedRoute>
+          <BenchmarkingPage />
         </ProtectedRoute>
       </Route>
       
