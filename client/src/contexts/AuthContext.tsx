@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { User } from "@shared/schema";
+import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 
 interface AuthState {
@@ -164,20 +166,36 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ 
   children, 
   adminOnly = false, 
-  fallback = <div>Access denied</div> 
+  fallback 
 }: ProtectedRouteProps) {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
-    return fallback;
+    setLocation('/login');
+    return null;
   }
 
   if (adminOnly && !isAdmin) {
-    return fallback;
+    return fallback || (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-destructive mb-2">Acesso Negado</h1>
+          <p className="text-muted-foreground">Você não tem permissão para acessar esta área.</p>
+          <Button onClick={() => setLocation('/')} className="mt-4">
+            Voltar ao início
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
