@@ -123,7 +123,7 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/admin">
-        <ProtectedRoute>
+        <ProtectedRoute adminOnly={true}>
           <AdminPage />
         </ProtectedRoute>
       </Route>
