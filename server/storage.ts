@@ -18,10 +18,16 @@ import {
   type CanvasDrawing, type InsertCanvasDrawing,
   type PhaseCard, type InsertPhaseCard,
   type Benchmark, type InsertBenchmark,
-  type BenchmarkAssessment, type InsertBenchmarkAssessment
+  type BenchmarkAssessment, type InsertBenchmarkAssessment,
+  projects, empathyMaps, personas, interviews, observations,
+  povStatements, hmwQuestions, ideas, prototypes, testPlans, testResults,
+  userProgress, users, articles, subscriptionPlans, userSubscriptions,
+  canvasDrawings, phaseCards, benchmarks, benchmarkAssessments
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
+import { db } from "./db";
+import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Projects
@@ -155,1028 +161,359 @@ export interface IStorage {
   deleteBenchmarkAssessment(id: string): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private projects: Map<string, Project>;
-  private empathyMaps: Map<string, EmpathyMap>;
-  private personas: Map<string, Persona>;
-  private interviews: Map<string, Interview>;
-  private observations: Map<string, Observation>;
-  private povStatements: Map<string, PovStatement>;
-  private hmwQuestions: Map<string, HmwQuestion>;
-  private ideas: Map<string, Idea>;
-  private prototypes: Map<string, Prototype>;
-  private testPlans: Map<string, TestPlan>;
-  private testResults: Map<string, TestResult>;
-  private userProgress: Map<string, UserProgress>;
-  private users: Map<string, User>;
-  private articles: Map<string, Article>;
-  private subscriptionPlans: Map<string, SubscriptionPlan>;
-  private userSubscriptions: Map<string, UserSubscription>;
-  private canvasDrawings: Map<string, CanvasDrawing>;
-  private phaseCards: Map<string, PhaseCard>;
-  private benchmarks: Map<string, Benchmark>;
-  private benchmarkAssessments: Map<string, BenchmarkAssessment>;
-
-  constructor() {
-    this.projects = new Map();
-    this.empathyMaps = new Map();
-    this.personas = new Map();
-    this.interviews = new Map();
-    this.observations = new Map();
-    this.povStatements = new Map();
-    this.hmwQuestions = new Map();
-    this.ideas = new Map();
-    this.prototypes = new Map();
-    this.testPlans = new Map();
-    this.testResults = new Map();
-    this.userProgress = new Map();
-    this.users = new Map();
-    this.articles = new Map();
-    this.subscriptionPlans = new Map();
-    this.userSubscriptions = new Map();
-    this.canvasDrawings = new Map();
-    this.phaseCards = new Map();
-    this.benchmarks = new Map();
-    this.benchmarkAssessments = new Map();
-    
-    this.initializeData();
-  }
-
-  private initializeData() {
-    // Initialize with sample Design Thinking project
-    const sampleProject: Project = {
-      id: randomUUID(),
-      name: "App de Delivery Sustentável",
-      description: "Projeto para criar um aplicativo de delivery focado em sustentabilidade e impacto social",
-      status: "in_progress",
-      currentPhase: 1,
-      completionRate: 15,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.projects.set(sampleProject.id, sampleProject);
-
-    // Sample Empathy Map
-    const sampleEmpathyMap: EmpathyMap = {
-      id: randomUUID(),
-      projectId: sampleProject.id,
-      title: "Consumidor Sustentável",
-      says: ["Quero opções mais sustentáveis", "O preço não pode ser muito alto"],
-      thinks: ["Será que faz diferença mesmo?", "Como posso ter certeza que é sustentável?"],
-      does: ["Pesquisa sobre sustentabilidade", "Compra produtos orgânicos ocasionalmente"],
-      feels: ["Preocupado com o meio ambiente", "Frustrado com poucas opções"],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.empathyMaps.set(sampleEmpathyMap.id, sampleEmpathyMap);
-
-    // Sample Persona
-    const samplePersona: Persona = {
-      id: randomUUID(),
-      projectId: sampleProject.id,
-      name: "Maria Silva",
-      age: 32,
-      occupation: "Designer Gráfico",
-      bio: "Profissional criativa que valoriza sustentabilidade e praticidade no dia a dia",
-      goals: ["Reduzir impacto ambiental", "Economizar tempo", "Apoiar negócios locais"],
-      frustrations: ["Poucas opções sustentáveis", "Informações confusas", "Preços altos"],
-      motivations: ["Responsabilidade ambiental", "Conveniência", "Qualidade"],
-      techSavviness: "high",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.personas.set(samplePersona.id, samplePersona);
-
-    // Sample Interview
-    const sampleInterview: Interview = {
-      id: randomUUID(),
-      projectId: sampleProject.id,
-      participantName: "João Santos",
-      date: new Date(),
-      duration: 45,
-      questions: [
-        "Como você escolhe onde pedir comida?",
-        "O que sustentabilidade significa para você?",
-        "Que dificuldades você tem para ser mais sustentável?"
-      ],
-      responses: [
-        "Geralmente escolho pela conveniência e preço",
-        "É importante para o futuro do planeta",
-        "Falta informação e as opções são limitadas"
-      ],
-      insights: "Usuário valoriza sustentabilidade mas prioriza conveniência no dia a dia",
-      createdAt: new Date(),
-    };
-    this.interviews.set(sampleInterview.id, sampleInterview);
-
-    // Sample User Progress
-    const sampleProgress: UserProgress = {
-      id: randomUUID(),
-      userId: "user_001",
-      projectId: sampleProject.id,
-      phase: 1,
-      completedTools: ["empathy_map", "personas", "interviews"],
-      badges: ["first_project", "empathy_expert"],
-      points: 150,
-      timeSpent: 120, // 2 hours
-      updatedAt: new Date(),
-    };
-    this.userProgress.set(`${sampleProgress.userId}_${sampleProject.id}`, sampleProgress);
-
-    // Sample Users
-    const adminUser: User = {
-      id: randomUUID(),
-      username: "admin",
-      email: "admin@dttools.app",
-      name: "Administrator",
-      password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password"
-      role: "admin",
-      company: null,
-      jobRole: "Administrator",
-      industry: "Technology", 
-      experience: "Expert",
-      country: "Brasil",
-      state: "São Paulo",
-      city: "São Paulo",
-      zipCode: "00000000",
-      phone: null,
-      bio: null,
-      profilePicture: null,
-      interests: [],
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      subscriptionPlanId: null,
-      subscriptionStatus: null,
-      subscriptionEndDate: null,
-      createdAt: new Date(),
-    };
-    this.users.set(adminUser.id, adminUser);
-
-    const regularUser: User = {
-      id: randomUUID(),
-      username: "usuario",
-      email: "usuario@test.com",
-      name: "Usuario Teste",
-      password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password" 
-      role: "user",
-      company: null,
-      jobRole: null,
-      industry: null,
-      experience: null,
-      country: null,
-      state: null,
-      city: null,
-      zipCode: null,
-      phone: null,
-      bio: null,
-      profilePicture: null,
-      interests: [],
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      subscriptionPlanId: null,
-      subscriptionStatus: null,
-      subscriptionEndDate: null,
-      createdAt: new Date(),
-    };
-    this.users.set(regularUser.id, regularUser);
-
-    // Create Marcelo's user account with proper hashed password
-    const marceloUser: User = {
-      id: randomUUID(),
-      username: "dttools.app@gmail.com",
-      email: "dttools.app@gmail.com", 
-      name: "Marcelo Araujo",
-      password: "$2b$10$tXArzwjNNviYkx0xsJuNF.ceJW4LrnRbyI6XcLAnYSuvLngs5k.lm", // Gulex0519!@
-      role: "admin",
-      company: null,
-      jobRole: "Designer",
-      industry: "Design",
-      experience: "Sênior (6-10 anos)",
-      country: "Brasil",
-      state: "São Paulo",
-      city: "São Paulo",
-      zipCode: "05616090",
-      phone: null,
-      bio: null,
-      profilePicture: null,
-      interests: ["UX/UI Design", "Design Thinking"],
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      subscriptionPlanId: null,
-      subscriptionStatus: null,
-      subscriptionEndDate: null,
-      createdAt: new Date(),
-    };
-    this.users.set(marceloUser.id, marceloUser);
-
-    const adminUserUpdated: User = {
-      id: randomUUID(),
-      username: "admin",
-      email: "admin@dttools.app",
-      name: "Administrator",
-      password: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password: "password"
-      role: "admin",
-      company: null,
-      jobRole: "Administrator",
-      industry: "Technology",
-      experience: "Expert",
-      country: "Brasil",
-      state: "São Paulo",
-      city: "São Paulo",
-      zipCode: "00000000",
-      phone: null,
-      bio: null,
-      profilePicture: null,
-      interests: [],
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      subscriptionPlanId: null,
-      subscriptionStatus: null,
-      subscriptionEndDate: null,
-      createdAt: new Date(),
-    };
-    // Replace the admin user
-    this.users.delete(adminUser.id);
-    this.users.set(adminUserUpdated.id, adminUserUpdated);
-
-    // Sample Articles
-    const articles = [
-      {
-        id: randomUUID(),
-        title: "Introdução ao Design Thinking",
-        content: `# Introdução ao Design Thinking
-
-O Design Thinking é uma abordagem centrada no ser humano para inovação que integra as necessidades das pessoas, as possibilidades da tecnologia e os requisitos para o sucesso empresarial.
-
-## O que é Design Thinking?
-
-Design Thinking é uma metodologia que usa elementos do kit de ferramentas do designer para integrar as necessidades das pessoas, as possibilidades da tecnologia e os requisitos para o sucesso empresarial.
-
-## Os 5 Estágios do Design Thinking
-
-### 1. Empatizar
-Compreender profundamente as necessidades dos usuários através de observação, engajamento e imersão.
-
-### 2. Definir  
-Sintetizar observações para definir os problemas principais que você identificou.
-
-### 3. Idear
-Brainstorm e gerar soluções criativas usando técnicas como brainstorming, brainwriting e worst possible idea.
-
-### 4. Prototipar
-Construir representações simples e rápidas de suas ideias para mostrar aos outros.
-
-### 5. Testar
-Testar protótipos com usuários reais e iterar baseado no feedback recebido.
-
-## Benefícios
-
-- **Inovação centrada no usuário**: Soluções que realmente atendem necessidades reais
-- **Colaboração multidisciplinar**: Equipes diversas geram melhores resultados  
-- **Iteração rápida**: Falhe rápido e barato para aprender mais cedo
-- **Tangibilização**: Torne ideias abstratas em algo concreto
-
-O Design Thinking não é apenas para designers - é uma mentalidade que pode ser aplicada em qualquer área para resolver problemas complexos.`,
-        category: "empathize",
-        author: "Design Thinking Expert",
-        description: "Uma introdução completa ao Design Thinking, sua metodologia e benefícios",
-        tags: ["introdução", "metodologia", "inovação", "processo"],
-        published: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: randomUUID(),
-        title: "Técnicas de Empatia: Como Entender Seus Usuários",
-        content: `# Técnicas de Empatia: Como Entender Seus Usuários
-
-A empatia é o coração do Design Thinking. É sobre entender profundamente as necessidades, pensamentos, emoções e motivações dos seus usuários.
-
-## Por que a Empatia é Importante?
-
-A empatia permite que você:
-- Compreenda as necessidades reais dos usuários
-- Identifique problemas que os usuários podem nem saber que têm
-- Desenvolva soluções mais relevantes e eficazes
-- Reduza o risco de criar produtos que ninguém quer
-
-## Principais Técnicas de Empatia
-
-### 1. Entrevistas com Usuários
-Conversas estruturadas para entender motivações, comportamentos e necessidades.
-
-**Dicas para entrevistas eficazes:**
-- Faça perguntas abertas
-- Escute mais do que fale
-- Pergunte "por quê?" para ir mais fundo
-- Observe linguagem corporal e emoções
-
-### 2. Observação
-Observe usuários em seu ambiente natural sem interferir.
-
-**O que observar:**
-- Comportamentos inconscientes
-- Frustrações não expressas
-- Workarounds criativos
-- Contexto de uso
-
-### 3. Mapas de Empatia
-Visualize o que os usuários pensam, sentem, veem, fazem, ouvem, suas dores e ganhos.
-
-### 4. Jornada do Usuário
-Mapeie toda a experiência do usuário, identificando pontos de dor e oportunidades.
-
-### 5. Shadowing
-Acompanhe usuários durante suas atividades diárias.
-
-## Ferramentas Práticas
-
-- **Personas**: Representações fictícias de usuários reais
-- **Cenários**: Histórias que descrevem como usuários interagem com soluções
-- **Storyboards**: Visualização da jornada do usuário
-
-## Dicas para Desenvolver Empatia
-
-1. **Deixe seus preconceitos de lado**
-2. **Seja genuinamente curioso**
-3. **Pratique escuta ativa**
-4. **Documente insights imediatamente**
-5. **Busque diversidade de perspectivas**
-
-Lembre-se: empatia é uma habilidade que pode ser desenvolvida com prática e dedicação.`,
-        category: "empathize",
-        author: "UX Researcher",
-        description: "Aprenda técnicas essenciais para desenvolver empatia e entender profundamente seus usuários",
-        tags: ["empatia", "pesquisa", "usuários", "entrevistas", "observação"],
-        published: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: randomUUID(),
-        title: "Como Definir o Problema Certo",
-        content: `# Como Definir o Problema Certo
-
-Definir o problema corretamente é crucial para o sucesso de qualquer projeto. Um problema bem definido está meio resolvido.
-
-## A Importância da Definição do Problema
-
-- **Direcionamento**: Guia todas as decisões subsequentes
-- **Alinhamento**: Mantém a equipe focada no mesmo objetivo  
-- **Eficiência**: Evita desperdício de tempo e recursos
-- **Inovação**: Problemas bem definidos inspiram soluções criativas
-
-## Ferramentas para Definir Problemas
-
-### 1. Problem Statement (Declaração do Problema)
-Formato: "O usuário [tipo de usuário] precisa de [necessidade] porque [insight]"
-
-### 2. How Might We (Como Podemos)
-Transforme desafios em oportunidades:
-- "Como podemos ajudar pais ocupados a preparar refeições saudáveis rapidamente?"
-- "Como podemos tornar a experiência de transporte público mais agradável?"
-
-### 3. 5 Porquês
-Técnica para chegar à raiz do problema fazendo "por quê?" repetidamente.
-
-## Critérios de um Bom Problem Statement
-
-### Específico
-- Evite generalidades
-- Use dados concretos
-- Seja preciso sobre o contexto
-
-### Orientado ao Usuário
-- Foque nas necessidades humanas
-- Use linguagem do usuário
-- Considere diferentes tipos de usuários
-
-### Inspirador
-- Motive a equipe
-- Sugira múltiplas soluções
-- Seja otimista mas realista
-
-### Acionável
-- Seja possível de resolver
-- Tenha escopo apropriado
-- Permita medição de sucesso
-
-## Processo de Definição
-
-### 1. Coleta de Insights
-- Analise dados da fase de empatia
-- Identifique padrões e temas
-- Priorize insights mais importantes
-
-### 2. Síntese
-- Agrupe insights relacionados
-- Identifique oportunidades
-- Crie hipóteses sobre necessidades
-
-### 3. Formulação
-- Escreva múltiplas versões do problema
-- Teste com stakeholders
-- Refine baseado no feedback
-
-### 4. Validação
-- Confirme com usuários
-- Verifique viabilidade
-- Ajuste se necessário
-
-## Armadilhas Comuns
-
-- **Pular direto para soluções**
-- **Definir problemas muito amplos**
-- **Focar em sintomas, não causas**
-- **Ignorar o contexto do usuário**
-- **Não validar com usuários**
-
-Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a equipe alinhada.`,
-        category: "define",
-        author: "Product Manager",
-        description: "Aprenda a arte de definir problemas de forma clara e inspiradora para impulsionar a inovação",
-        tags: ["problema", "definição", "metodologia", "process"],
-        published: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-    ];
-
-    articles.forEach(articleData => {
-      const article: Article = {
-        ...articleData,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      this.articles.set(article.id, article);
-    });
-
-    // Initialize subscription plans
-    const subscriptionPlanData = [
-      {
-        id: randomUUID(),
-        name: "free",
-        displayName: "Grátis",
-        description: "Perfeito para começar e explorar o Design Thinking",
-        priceMonthly: 0,
-        priceYearly: 0,
-        stripePriceIdMonthly: null,
-        stripePriceIdYearly: null,
-        maxProjects: 2,
-        maxPersonasPerProject: 2,
-        maxUsersPerTeam: null,
-        aiChatLimit: 10,
-        libraryArticlesCount: 3,
-        features: [
-          "Acesso às 5 fases do Design Thinking",
-          "Ferramentas básicas (Personas, Mapa de Empatia)",
-          "Até 2 projetos simultâneos",
-          "Até 2 personas por projeto",
-          "10 mensagens no Chat IA por mês",
-          "Biblioteca básica (3 artigos)"
-        ],
-        exportFormats: [],
-        hasCollaboration: false,
-        hasPermissionManagement: false,
-        hasSharedWorkspace: false,
-        hasCommentsAndFeedback: false,
-        hasSso: false,
-        hasCustomApi: false,
-        hasCustomIntegrations: false,
-        has24x7Support: false,
-        order: 0,
-        isActive: true,
-        createdAt: new Date()
-      },
-      {
-        id: randomUUID(),
-        name: "pro",
-        displayName: "Pro",
-        description: "Ideal para profissionais e freelancers",
-        priceMonthly: 2900, // R$ 29.00 in cents
-        priceYearly: 31320, // R$ 29 * 12 * 0.9 (10% discount yearly)
-        stripePriceIdMonthly: null,
-        stripePriceIdYearly: null,
-        maxProjects: null, // unlimited
-        maxPersonasPerProject: null, // unlimited
-        maxUsersPerTeam: null,
-        aiChatLimit: null, // unlimited
-        libraryArticlesCount: null, // all articles
-        features: [
-          "Tudo do plano Gratuito",
-          "Projetos ilimitados",
-          "Personas ilimitadas",
-          "Chat IA ilimitado",
-          "Biblioteca completa (todos os artigos)",
-          "Exportação em PDF, PNG, CSV"
-        ],
-        exportFormats: ["pdf", "png", "csv"],
-        hasCollaboration: false,
-        hasPermissionManagement: false,
-        hasSharedWorkspace: false,
-        hasCommentsAndFeedback: false,
-        hasSso: false,
-        hasCustomApi: false,
-        hasCustomIntegrations: false,
-        has24x7Support: false,
-        order: 1,
-        isActive: true,
-        createdAt: new Date()
-      },
-      {
-        id: randomUUID(),
-        name: "team",
-        displayName: "Team",
-        description: "Perfeito para equipes e startups",
-        priceMonthly: 14900, // R$ 149.00 in cents
-        priceYearly: 161280, // R$ 149 * 12 * 0.9 (10% discount yearly)
-        stripePriceIdMonthly: null,
-        stripePriceIdYearly: null,
-        maxProjects: null, // unlimited
-        maxPersonasPerProject: null, // unlimited
-        maxUsersPerTeam: 10,
-        aiChatLimit: null, // unlimited
-        libraryArticlesCount: null, // all articles
-        features: [
-          "Tudo do plano Pro",
-          "Até 10 usuários na equipe",
-          "Colaboração em tempo real",
-          "Gestão de permissões",
-          "Workspace compartilhado",
-          "Comentários e feedback"
-        ],
-        exportFormats: ["pdf", "png", "csv"],
-        hasCollaboration: true,
-        hasPermissionManagement: true,
-        hasSharedWorkspace: true,
-        hasCommentsAndFeedback: true,
-        hasSso: false,
-        hasCustomApi: false,
-        hasCustomIntegrations: false,
-        has24x7Support: false,
-        order: 2,
-        isActive: true,
-        createdAt: new Date()
-      },
-      {
-        id: randomUUID(),
-        name: "enterprise",
-        displayName: "Enterprise",
-        description: "Soluções completas para grandes empresas",
-        priceMonthly: 29900, // R$ 299.00 in cents
-        priceYearly: 323280, // R$ 299 * 12 * 0.9 (10% discount yearly)
-        stripePriceIdMonthly: null,
-        stripePriceIdYearly: null,
-        maxProjects: null, // unlimited
-        maxPersonasPerProject: null, // unlimited
-        maxUsersPerTeam: null, // unlimited
-        aiChatLimit: null, // unlimited
-        libraryArticlesCount: null, // all articles
-        features: [
-          "Tudo do plano Team",
-          "Usuários ilimitados",
-          "SSO (Single Sign-On)",
-          "API personalizada",
-          "Integrações customizadas",
-          "Suporte 24/7"
-        ],
-        exportFormats: ["pdf", "png", "csv"],
-        hasCollaboration: true,
-        hasPermissionManagement: true,
-        hasSharedWorkspace: true,
-        hasCommentsAndFeedback: true,
-        hasSso: true,
-        hasCustomApi: true,
-        hasCustomIntegrations: true,
-        has24x7Support: true,
-        order: 3,
-        isActive: true,
-        createdAt: new Date()
-      }
-    ];
-
-    subscriptionPlanData.forEach(planData => {
-      const plan: SubscriptionPlan = {
-        ...planData,
-        createdAt: new Date(),
-      };
-      this.subscriptionPlans.set(plan.id, plan);
-    });
-  }
-
+// Database implementation using PostgreSQL via Drizzle ORM
+export class DatabaseStorage implements IStorage {
   // Projects
   async getProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values());
+    return await db.select().from(projects).orderBy(desc(projects.createdAt));
   }
 
   async getProject(id: string): Promise<Project | undefined> {
-    return this.projects.get(id);
-  }
-
-  async createProject(insertProject: InsertProject): Promise<Project> {
-    const id = randomUUID();
-    const project: Project = {
-      ...insertProject,
-      id,
-      description: insertProject.description || null,
-      status: insertProject.status || "in_progress",
-      currentPhase: insertProject.currentPhase || 1,
-      completionRate: insertProject.completionRate || 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.projects.set(id, project);
+    const [project] = await db.select().from(projects).where(eq(projects.id, id));
     return project;
   }
 
-  async updateProject(id: string, updateProject: Partial<InsertProject>): Promise<Project | undefined> {
-    const project = this.projects.get(id);
-    if (!project) return undefined;
-    
-    const updatedProject: Project = {
-      ...project,
-      ...updateProject,
-      updatedAt: new Date(),
-    };
-    this.projects.set(id, updatedProject);
+  async createProject(project: InsertProject): Promise<Project> {
+    const [newProject] = await db.insert(projects).values(project).returning();
+    return newProject;
+  }
+
+  async updateProject(id: string, project: Partial<InsertProject>): Promise<Project | undefined> {
+    const [updatedProject] = await db.update(projects)
+      .set({ ...project, updatedAt: new Date() })
+      .where(eq(projects.id, id))
+      .returning();
     return updatedProject;
   }
 
   async deleteProject(id: string): Promise<boolean> {
-    return this.projects.delete(id);
+    const result = await db.delete(projects).where(eq(projects.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Phase 1: Empathize - Empathy Maps
+  // Users
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
+  }
+
+  async updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined> {
+    const [updatedUser] = await db.update(users)
+      .set(user)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Articles
+  async getArticles(): Promise<Article[]> {
+    return await db.select().from(articles).orderBy(desc(articles.createdAt));
+  }
+
+  async getArticlesByCategory(category: string): Promise<Article[]> {
+    return await db.select().from(articles)
+      .where(eq(articles.category, category))
+      .orderBy(desc(articles.createdAt));
+  }
+
+  async getArticle(id: string): Promise<Article | undefined> {
+    const [article] = await db.select().from(articles).where(eq(articles.id, id));
+    return article;
+  }
+
+  async createArticle(article: InsertArticle): Promise<Article> {
+    const [newArticle] = await db.insert(articles).values(article).returning();
+    return newArticle;
+  }
+
+  async updateArticle(id: string, article: Partial<InsertArticle>): Promise<Article | undefined> {
+    const [updatedArticle] = await db.update(articles)
+      .set({ ...article, updatedAt: new Date() })
+      .where(eq(articles.id, id))
+      .returning();
+    return updatedArticle;
+  }
+
+  async deleteArticle(id: string): Promise<boolean> {
+    const result = await db.delete(articles).where(eq(articles.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Phase 1: Empathize
   async getEmpathyMaps(projectId: string): Promise<EmpathyMap[]> {
-    return Array.from(this.empathyMaps.values()).filter(map => map.projectId === projectId);
+    return await db.select().from(empathyMaps)
+      .where(eq(empathyMaps.projectId, projectId))
+      .orderBy(desc(empathyMaps.createdAt));
   }
 
-  async createEmpathyMap(insertEmpathyMap: InsertEmpathyMap): Promise<EmpathyMap> {
-    const id = randomUUID();
-    const empathyMap: EmpathyMap = {
-      ...insertEmpathyMap,
-      id,
-      says: insertEmpathyMap.says || [],
-      thinks: insertEmpathyMap.thinks || [],
-      does: insertEmpathyMap.does || [],
-      feels: insertEmpathyMap.feels || [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.empathyMaps.set(id, empathyMap);
-    return empathyMap;
+  async createEmpathyMap(empathyMap: InsertEmpathyMap): Promise<EmpathyMap> {
+    const [newMap] = await db.insert(empathyMaps).values(empathyMap).returning();
+    return newMap;
   }
 
-  async updateEmpathyMap(id: string, updateEmpathyMap: Partial<InsertEmpathyMap>): Promise<EmpathyMap | undefined> {
-    const empathyMap = this.empathyMaps.get(id);
-    if (!empathyMap) return undefined;
-    
-    const updatedEmpathyMap: EmpathyMap = {
-      ...empathyMap,
-      ...updateEmpathyMap,
-      updatedAt: new Date(),
-    };
-    this.empathyMaps.set(id, updatedEmpathyMap);
-    return updatedEmpathyMap;
+  async updateEmpathyMap(id: string, empathyMap: Partial<InsertEmpathyMap>): Promise<EmpathyMap | undefined> {
+    const [updatedMap] = await db.update(empathyMaps)
+      .set({ ...empathyMap, updatedAt: new Date() })
+      .where(eq(empathyMaps.id, id))
+      .returning();
+    return updatedMap;
   }
 
   async deleteEmpathyMap(id: string): Promise<boolean> {
-    return this.empathyMaps.delete(id);
+    const result = await db.delete(empathyMaps).where(eq(empathyMaps.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Phase 1: Empathize - Personas
   async getPersonas(projectId: string): Promise<Persona[]> {
-    return Array.from(this.personas.values()).filter(persona => persona.projectId === projectId);
+    return await db.select().from(personas)
+      .where(eq(personas.projectId, projectId))
+      .orderBy(desc(personas.createdAt));
   }
 
-  async createPersona(insertPersona: InsertPersona): Promise<Persona> {
-    const id = randomUUID();
-    const persona: Persona = {
-      ...insertPersona,
-      id,
-      age: insertPersona.age || null,
-      occupation: insertPersona.occupation || null,
-      bio: insertPersona.bio || null,
-      goals: insertPersona.goals || [],
-      frustrations: insertPersona.frustrations || [],
-      motivations: insertPersona.motivations || [],
-      techSavviness: insertPersona.techSavviness || null,
-      avatar: insertPersona.avatar || null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.personas.set(id, persona);
-    return persona;
+  async createPersona(persona: InsertPersona): Promise<Persona> {
+    const [newPersona] = await db.insert(personas).values(persona).returning();
+    return newPersona;
   }
 
-  async updatePersona(id: string, updatePersona: Partial<InsertPersona>): Promise<Persona | undefined> {
-    const persona = this.personas.get(id);
-    if (!persona) return undefined;
-    
-    const updatedPersona: Persona = {
-      ...persona,
-      ...updatePersona,
-      updatedAt: new Date(),
-    };
-    this.personas.set(id, updatedPersona);
+  async updatePersona(id: string, persona: Partial<InsertPersona>): Promise<Persona | undefined> {
+    const [updatedPersona] = await db.update(personas)
+      .set({ ...persona, updatedAt: new Date() })
+      .where(eq(personas.id, id))
+      .returning();
     return updatedPersona;
   }
 
   async deletePersona(id: string): Promise<boolean> {
-    return this.personas.delete(id);
+    const result = await db.delete(personas).where(eq(personas.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Phase 1: Empathize - Interviews
   async getInterviews(projectId: string): Promise<Interview[]> {
-    return Array.from(this.interviews.values()).filter(interview => interview.projectId === projectId);
+    return await db.select().from(interviews)
+      .where(eq(interviews.projectId, projectId))
+      .orderBy(desc(interviews.createdAt));
   }
 
-  async createInterview(insertInterview: InsertInterview): Promise<Interview> {
-    const id = randomUUID();
-    const interview: Interview = {
-      ...insertInterview,
-      id,
-      duration: insertInterview.duration || null,
-      questions: insertInterview.questions || [],
-      responses: insertInterview.responses || [],
-      insights: insertInterview.insights || null,
-      createdAt: new Date(),
-    };
-    this.interviews.set(id, interview);
-    return interview;
+  async createInterview(interview: InsertInterview): Promise<Interview> {
+    const [newInterview] = await db.insert(interviews).values(interview).returning();
+    return newInterview;
   }
 
-  async updateInterview(id: string, updateInterview: Partial<InsertInterview>): Promise<Interview | undefined> {
-    const interview = this.interviews.get(id);
-    if (!interview) return undefined;
-    
-    const updatedInterview: Interview = {
-      ...interview,
-      ...updateInterview,
-    };
-    this.interviews.set(id, updatedInterview);
+  async updateInterview(id: string, interview: Partial<InsertInterview>): Promise<Interview | undefined> {
+    const [updatedInterview] = await db.update(interviews)
+      .set(interview)
+      .where(eq(interviews.id, id))
+      .returning();
     return updatedInterview;
   }
 
   async deleteInterview(id: string): Promise<boolean> {
-    return this.interviews.delete(id);
+    const result = await db.delete(interviews).where(eq(interviews.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Phase 1: Empathize - Observations
   async getObservations(projectId: string): Promise<Observation[]> {
-    return Array.from(this.observations.values()).filter(observation => observation.projectId === projectId);
+    return await db.select().from(observations)
+      .where(eq(observations.projectId, projectId))
+      .orderBy(desc(observations.createdAt));
   }
 
-  async createObservation(insertObservation: InsertObservation): Promise<Observation> {
-    const id = randomUUID();
-    const observation: Observation = {
-      ...insertObservation,
-      id,
-      insights: insertObservation.insights || null,
-      createdAt: new Date(),
-    };
-    this.observations.set(id, observation);
-    return observation;
+  async createObservation(observation: InsertObservation): Promise<Observation> {
+    const [newObservation] = await db.insert(observations).values(observation).returning();
+    return newObservation;
   }
 
-  async updateObservation(id: string, updateObservation: Partial<InsertObservation>): Promise<Observation | undefined> {
-    const observation = this.observations.get(id);
-    if (!observation) return undefined;
-    
-    const updatedObservation: Observation = {
-      ...observation,
-      ...updateObservation,
-      insights: updateObservation.insights !== undefined ? updateObservation.insights : observation.insights,
-    };
-    this.observations.set(id, updatedObservation);
+  async updateObservation(id: string, observation: Partial<InsertObservation>): Promise<Observation | undefined> {
+    const [updatedObservation] = await db.update(observations)
+      .set(observation)
+      .where(eq(observations.id, id))
+      .returning();
     return updatedObservation;
   }
 
   async deleteObservation(id: string): Promise<boolean> {
-    return this.observations.delete(id);
+    const result = await db.delete(observations).where(eq(observations.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Phase 2: Define - POV Statements
+  // Phase 2: Define
   async getPovStatements(projectId: string): Promise<PovStatement[]> {
-    return Array.from(this.povStatements.values()).filter(pov => pov.projectId === projectId);
+    return await db.select().from(povStatements)
+      .where(eq(povStatements.projectId, projectId))
+      .orderBy(desc(povStatements.createdAt));
   }
 
   async getPovStatement(id: string): Promise<PovStatement | undefined> {
-    return this.povStatements.get(id);
+    const [statement] = await db.select().from(povStatements).where(eq(povStatements.id, id));
+    return statement;
   }
 
-  async createPovStatement(insertPov: InsertPovStatement): Promise<PovStatement> {
-    const id = randomUUID();
-    const pov: PovStatement = {
-      ...insertPov,
-      id,
-      priority: insertPov.priority || "medium",
-      createdAt: new Date(),
-    };
-    this.povStatements.set(id, pov);
-    return pov;
+  async createPovStatement(pov: InsertPovStatement): Promise<PovStatement> {
+    const [newStatement] = await db.insert(povStatements).values(pov).returning();
+    return newStatement;
   }
 
-  async updatePovStatement(id: string, updatePov: Partial<InsertPovStatement>): Promise<PovStatement | undefined> {
-    const pov = this.povStatements.get(id);
-    if (!pov) return undefined;
-    
-    const updatedPov: PovStatement = { ...pov, ...updatePov };
-    this.povStatements.set(id, updatedPov);
-    return updatedPov;
+  async updatePovStatement(id: string, pov: Partial<InsertPovStatement>): Promise<PovStatement | undefined> {
+    const [updatedStatement] = await db.update(povStatements)
+      .set(pov)
+      .where(eq(povStatements.id, id))
+      .returning();
+    return updatedStatement;
   }
 
   async deletePovStatement(id: string): Promise<boolean> {
-    return this.povStatements.delete(id);
+    const result = await db.delete(povStatements).where(eq(povStatements.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Phase 2: Define - HMW Questions
   async getHmwQuestions(projectId: string): Promise<HmwQuestion[]> {
-    return Array.from(this.hmwQuestions.values()).filter(hmw => hmw.projectId === projectId);
+    return await db.select().from(hmwQuestions)
+      .where(eq(hmwQuestions.projectId, projectId))
+      .orderBy(desc(hmwQuestions.createdAt));
   }
 
   async getHmwQuestion(id: string): Promise<HmwQuestion | undefined> {
-    return this.hmwQuestions.get(id);
+    const [question] = await db.select().from(hmwQuestions).where(eq(hmwQuestions.id, id));
+    return question;
   }
 
-  async createHmwQuestion(insertHmw: InsertHmwQuestion): Promise<HmwQuestion> {
-    const id = randomUUID();
-    const hmw: HmwQuestion = {
-      ...insertHmw,
-      id,
-      challenge: insertHmw.challenge || null,
-      scope: insertHmw.scope || null,
-      context: insertHmw.context || null,
-      priority: insertHmw.priority || null,
-      category: insertHmw.category || null,
-      votes: insertHmw.votes || 0,
-      createdAt: new Date(),
-    };
-    this.hmwQuestions.set(id, hmw);
-    return hmw;
+  async createHmwQuestion(hmw: InsertHmwQuestion): Promise<HmwQuestion> {
+    const [newQuestion] = await db.insert(hmwQuestions).values(hmw).returning();
+    return newQuestion;
   }
 
-  async updateHmwQuestion(id: string, updateHmw: Partial<InsertHmwQuestion>): Promise<HmwQuestion | undefined> {
-    const hmw = this.hmwQuestions.get(id);
-    if (!hmw) return undefined;
-    
-    const updatedHmw: HmwQuestion = { ...hmw, ...updateHmw };
-    this.hmwQuestions.set(id, updatedHmw);
-    return updatedHmw;
+  async updateHmwQuestion(id: string, hmw: Partial<InsertHmwQuestion>): Promise<HmwQuestion | undefined> {
+    const [updatedQuestion] = await db.update(hmwQuestions)
+      .set(hmw)
+      .where(eq(hmwQuestions.id, id))
+      .returning();
+    return updatedQuestion;
   }
 
   async deleteHmwQuestion(id: string): Promise<boolean> {
-    return this.hmwQuestions.delete(id);
+    const result = await db.delete(hmwQuestions).where(eq(hmwQuestions.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Phase 3: Ideate - Ideas
+  // Phase 3: Ideate
   async getIdeas(projectId: string): Promise<Idea[]> {
-    return Array.from(this.ideas.values()).filter(idea => idea.projectId === projectId);
+    return await db.select().from(ideas)
+      .where(eq(ideas.projectId, projectId))
+      .orderBy(desc(ideas.createdAt));
   }
 
-  async createIdea(insertIdea: InsertIdea): Promise<Idea> {
-    const id = randomUUID();
-    const idea: Idea = {
-      ...insertIdea,
-      id,
-      category: insertIdea.category || null,
-      feasibility: insertIdea.feasibility || null,
-      impact: insertIdea.impact || null,
-      votes: insertIdea.votes || 0,
-      status: insertIdea.status || "idea",
-      canvasData: insertIdea.canvasData || null,
-      createdAt: new Date(),
-    };
-    this.ideas.set(id, idea);
-    return idea;
+  async createIdea(idea: InsertIdea): Promise<Idea> {
+    const [newIdea] = await db.insert(ideas).values(idea).returning();
+    return newIdea;
   }
 
-  async updateIdea(id: string, updateIdea: Partial<InsertIdea>): Promise<Idea | undefined> {
-    const idea = this.ideas.get(id);
-    if (!idea) return undefined;
-    
-    const updatedIdea: Idea = { ...idea, ...updateIdea };
-    this.ideas.set(id, updatedIdea);
+  async updateIdea(id: string, idea: Partial<InsertIdea>): Promise<Idea | undefined> {
+    const [updatedIdea] = await db.update(ideas)
+      .set(idea)
+      .where(eq(ideas.id, id))
+      .returning();
     return updatedIdea;
   }
 
   async deleteIdea(id: string): Promise<boolean> {
-    return this.ideas.delete(id);
+    const result = await db.delete(ideas).where(eq(ideas.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Phase 4: Prototype - Prototypes
+  // Phase 4: Prototype
   async getPrototypes(projectId: string): Promise<Prototype[]> {
-    return Array.from(this.prototypes.values()).filter(prototype => prototype.projectId === projectId);
+    return await db.select().from(prototypes)
+      .where(eq(prototypes.projectId, projectId))
+      .orderBy(desc(prototypes.createdAt));
   }
 
-  async createPrototype(insertPrototype: InsertPrototype): Promise<Prototype> {
-    const id = randomUUID();
-    const prototype: Prototype = {
-      ...insertPrototype,
-      id,
-      ideaId: insertPrototype.ideaId || null,
-      materials: insertPrototype.materials || [],
-      images: insertPrototype.images || [],
-      version: insertPrototype.version || 1,
-      feedback: insertPrototype.feedback || null,
-      canvasData: insertPrototype.canvasData || null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.prototypes.set(id, prototype);
-    return prototype;
+  async createPrototype(prototype: InsertPrototype): Promise<Prototype> {
+    const [newPrototype] = await db.insert(prototypes).values(prototype).returning();
+    return newPrototype;
   }
 
-  async updatePrototype(id: string, updatePrototype: Partial<InsertPrototype>): Promise<Prototype | undefined> {
-    const prototype = this.prototypes.get(id);
-    if (!prototype) return undefined;
-    
-    const updatedPrototype: Prototype = {
-      ...prototype,
-      ...updatePrototype,
-      updatedAt: new Date(),
-    };
-    this.prototypes.set(id, updatedPrototype);
+  async updatePrototype(id: string, prototype: Partial<InsertPrototype>): Promise<Prototype | undefined> {
+    const [updatedPrototype] = await db.update(prototypes)
+      .set(prototype)
+      .where(eq(prototypes.id, id))
+      .returning();
     return updatedPrototype;
   }
 
   async deletePrototype(id: string): Promise<boolean> {
-    return this.prototypes.delete(id);
+    const result = await db.delete(prototypes).where(eq(prototypes.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Phase 5: Test - Test Plans
+  // Phase 5: Test
   async getTestPlans(projectId: string): Promise<TestPlan[]> {
-    return Array.from(this.testPlans.values()).filter(plan => plan.projectId === projectId);
+    return await db.select().from(testPlans)
+      .where(eq(testPlans.projectId, projectId))
+      .orderBy(desc(testPlans.createdAt));
   }
 
-  async createTestPlan(insertTestPlan: InsertTestPlan): Promise<TestPlan> {
-    const id = randomUUID();
-    const testPlan: TestPlan = {
-      ...insertTestPlan,
-      id,
-      prototypeId: insertTestPlan.prototypeId || null,
-      duration: insertTestPlan.duration || null,
-      tasks: insertTestPlan.tasks || [],
-      metrics: insertTestPlan.metrics || [],
-      status: insertTestPlan.status || "planned",
-      createdAt: new Date(),
-    };
-    this.testPlans.set(id, testPlan);
-    return testPlan;
+  async createTestPlan(testPlan: InsertTestPlan): Promise<TestPlan> {
+    const [newPlan] = await db.insert(testPlans).values(testPlan).returning();
+    return newPlan;
   }
 
-  async updateTestPlan(id: string, updateTestPlan: Partial<InsertTestPlan>): Promise<TestPlan | undefined> {
-    const testPlan = this.testPlans.get(id);
-    if (!testPlan) return undefined;
-    
-    const updatedTestPlan: TestPlan = { ...testPlan, ...updateTestPlan };
-    this.testPlans.set(id, updatedTestPlan);
-    return updatedTestPlan;
+  async updateTestPlan(id: string, testPlan: Partial<InsertTestPlan>): Promise<TestPlan | undefined> {
+    const [updatedPlan] = await db.update(testPlans)
+      .set(testPlan)
+      .where(eq(testPlans.id, id))
+      .returning();
+    return updatedPlan;
   }
 
-  // Phase 5: Test - Test Results
   async getTestResults(testPlanId: string): Promise<TestResult[]> {
-    return Array.from(this.testResults.values()).filter(result => result.testPlanId === testPlanId);
+    return await db.select().from(testResults)
+      .where(eq(testResults.testPlanId, testPlanId))
+      .orderBy(desc(testResults.createdAt));
   }
 
-  async createTestResult(insertTestResult: InsertTestResult): Promise<TestResult> {
-    const id = randomUUID();
-    const testResult: TestResult = {
-      ...insertTestResult,
-      id,
-      taskResults: insertTestResult.taskResults || [],
-      feedback: insertTestResult.feedback || null,
-      successRate: insertTestResult.successRate || null,
-      completionTime: insertTestResult.completionTime || null,
-      insights: insertTestResult.insights || null,
-      createdAt: new Date(),
-    };
-    this.testResults.set(id, testResult);
-    return testResult;
+  async createTestResult(testResult: InsertTestResult): Promise<TestResult> {
+    const [newResult] = await db.insert(testResults).values(testResult).returning();
+    return newResult;
   }
 
   // User Progress
   async getUserProgress(userId: string, projectId: string): Promise<UserProgress | undefined> {
-    return this.userProgress.get(`${userId}_${projectId}`);
+    const [progress] = await db.select().from(userProgress)
+      .where(and(eq(userProgress.userId, userId), eq(userProgress.projectId, projectId)));
+    return progress;
   }
 
-  async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
-    const key = `${insertProgress.userId}_${insertProgress.projectId}`;
-    const existing = this.userProgress.get(key);
-    
-    const progress: UserProgress = {
-      id: existing?.id || randomUUID(),
-      ...insertProgress,
-      completedTools: insertProgress.completedTools || [],
-      badges: insertProgress.badges || [],
-      points: insertProgress.points || 0,
-      timeSpent: insertProgress.timeSpent || 0,
-      updatedAt: new Date(),
-    };
-    
-    this.userProgress.set(key, progress);
-    return progress;
+  async updateUserProgress(progress: InsertUserProgress): Promise<UserProgress> {
+    const existing = await this.getUserProgress(progress.userId, progress.projectId);
+    if (existing) {
+      const [updated] = await db.update(userProgress)
+        .set({ ...progress, updatedAt: new Date() })
+        .where(and(eq(userProgress.userId, progress.userId), eq(userProgress.projectId, progress.projectId)))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(userProgress).values(progress).returning();
+      return created;
+    }
   }
 
   // Analytics
@@ -1186,433 +523,271 @@ Lembre-se: um problema bem definido inspira soluções inovadoras e mantém a eq
     currentPhase: number;
     completionRate: number;
   }> {
-    const project = this.projects.get(projectId);
-    if (!project) {
-      return { totalTools: 0, completedTools: 0, currentPhase: 1, completionRate: 0 };
-    }
-
-    const totalTools = 15; // Total tools across all phases
-    const empathyMaps = await this.getEmpathyMaps(projectId);
-    const personas = await this.getPersonas(projectId);
-    const interviews = await this.getInterviews(projectId);
-    const povStatements = await this.getPovStatements(projectId);
-    const ideas = await this.getIdeas(projectId);
-    const prototypes = await this.getPrototypes(projectId);
-    const testPlans = await this.getTestPlans(projectId);
-
-    const completedTools = 
-      empathyMaps.length + personas.length + interviews.length + 
-      povStatements.length + ideas.length + prototypes.length + testPlans.length;
-
+    // Basic implementation - can be enhanced with more sophisticated logic
+    const project = await this.getProject(projectId);
     return {
-      totalTools,
-      completedTools,
-      currentPhase: project.currentPhase || 1,
-      completionRate: Math.round((completedTools / totalTools) * 100),
+      totalTools: 15, // Total tools across all 5 phases
+      completedTools: 0, // Would count actual completed tools
+      currentPhase: project?.currentPhase || 1,
+      completionRate: project?.completionRate || 0,
     };
-  }
-
-  // Users
-  async getUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
-  }
-
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
-    
-    const user: User = {
-      ...insertUser,
-      id,
-      password: hashedPassword,
-      role: insertUser.role || "user",
-      company: insertUser.company || null,
-      jobRole: insertUser.jobRole || null,
-      industry: insertUser.industry || null,
-      experience: insertUser.experience || null,
-      country: insertUser.country || null,
-      state: insertUser.state || null,
-      city: insertUser.city || null,
-      zipCode: insertUser.zipCode || null,
-      phone: insertUser.phone || null,
-      bio: insertUser.bio || null,
-      profilePicture: insertUser.profilePicture || null,
-      interests: insertUser.interests || [],
-      stripeCustomerId: insertUser.stripeCustomerId || null,
-      stripeSubscriptionId: insertUser.stripeSubscriptionId || null,
-      subscriptionPlanId: insertUser.subscriptionPlanId || null,
-      subscriptionStatus: insertUser.subscriptionStatus || null,
-      subscriptionEndDate: insertUser.subscriptionEndDate || null,
-      createdAt: new Date(),
-    };
-    
-    this.users.set(id, user);
-    return user;
-  }
-
-  async updateUser(id: string, updateUser: Partial<InsertUser>): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (!user) return undefined;
-    
-    // Hash password if it's being updated
-    let updatedData = { ...updateUser };
-    if (updateUser.password) {
-      updatedData.password = await bcrypt.hash(updateUser.password, 10);
-    }
-    
-    const updatedUser: User = { ...user, ...updatedData };
-    this.users.set(id, updatedUser);
-    return updatedUser;
-  }
-
-  async deleteUser(id: string): Promise<boolean> {
-    return this.users.delete(id);
-  }
-
-  // Articles
-  async getArticles(): Promise<Article[]> {
-    return Array.from(this.articles.values()).filter(article => article.published);
-  }
-
-  async getArticlesByCategory(category: string): Promise<Article[]> {
-    return Array.from(this.articles.values()).filter(
-      article => article.published && article.category === category
-    );
-  }
-
-  async getArticle(id: string): Promise<Article | undefined> {
-    const article = this.articles.get(id);
-    return article?.published ? article : undefined;
-  }
-
-  async createArticle(insertArticle: InsertArticle): Promise<Article> {
-    const id = randomUUID();
-    const article: Article = {
-      ...insertArticle,
-      id,
-      description: insertArticle.description || null,
-      tags: insertArticle.tags || [],
-      published: insertArticle.published ?? true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    this.articles.set(id, article);
-    return article;
-  }
-
-  async updateArticle(id: string, updateArticle: Partial<InsertArticle>): Promise<Article | undefined> {
-    const article = this.articles.get(id);
-    if (!article) return undefined;
-    
-    const updatedArticle: Article = { 
-      ...article, 
-      ...updateArticle, 
-      updatedAt: new Date() 
-    };
-    this.articles.set(id, updatedArticle);
-    return updatedArticle;
-  }
-
-  async deleteArticle(id: string): Promise<boolean> {
-    return this.articles.delete(id);
-  }
-
-  // Subscription Plans
-  async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
-    return Array.from(this.subscriptionPlans.values()).filter(plan => plan.isActive);
-  }
-
-  async getSubscriptionPlan(id: string): Promise<SubscriptionPlan | undefined> {
-    return this.subscriptionPlans.get(id);
-  }
-
-  async getSubscriptionPlanByName(name: string): Promise<SubscriptionPlan | undefined> {
-    return Array.from(this.subscriptionPlans.values()).find(plan => plan.name === name);
-  }
-
-  async createSubscriptionPlan(insertPlan: InsertSubscriptionPlan): Promise<SubscriptionPlan> {
-    const id = randomUUID();
-    const plan: SubscriptionPlan = {
-      ...insertPlan,
-      id,
-      description: insertPlan.description || null,
-      stripePriceIdMonthly: insertPlan.stripePriceIdMonthly || null,
-      stripePriceIdYearly: insertPlan.stripePriceIdYearly || null,
-      maxProjects: insertPlan.maxProjects || null,
-      maxPersonasPerProject: insertPlan.maxPersonasPerProject || null,
-      maxUsersPerTeam: insertPlan.maxUsersPerTeam || null,
-      aiChatLimit: insertPlan.aiChatLimit || null,
-      libraryArticlesCount: insertPlan.libraryArticlesCount || null,
-      features: insertPlan.features || [],
-      exportFormats: insertPlan.exportFormats || [],
-      hasCollaboration: insertPlan.hasCollaboration ?? false,
-      hasPermissionManagement: insertPlan.hasPermissionManagement ?? false,
-      hasSharedWorkspace: insertPlan.hasSharedWorkspace ?? false,
-      hasCommentsAndFeedback: insertPlan.hasCommentsAndFeedback ?? false,
-      hasSso: insertPlan.hasSso ?? false,
-      hasCustomApi: insertPlan.hasCustomApi ?? false,
-      hasCustomIntegrations: insertPlan.hasCustomIntegrations ?? false,
-      has24x7Support: insertPlan.has24x7Support ?? false,
-      order: insertPlan.order ?? 0,
-      isActive: insertPlan.isActive ?? true,
-      createdAt: new Date(),
-    };
-    
-    this.subscriptionPlans.set(id, plan);
-    return plan;
-  }
-
-  async updateSubscriptionPlan(id: string, updatePlan: Partial<InsertSubscriptionPlan>): Promise<SubscriptionPlan | undefined> {
-    const plan = this.subscriptionPlans.get(id);
-    if (!plan) return undefined;
-    
-    const updatedPlan: SubscriptionPlan = { 
-      ...plan, 
-      ...updatePlan
-    };
-    this.subscriptionPlans.set(id, updatedPlan);
-    return updatedPlan;
-  }
-
-  async deleteSubscriptionPlan(id: string): Promise<boolean> {
-    return this.subscriptionPlans.delete(id);
-  }
-
-  // User Subscriptions
-  async getUserSubscriptions(userId: string): Promise<UserSubscription[]> {
-    return Array.from(this.userSubscriptions.values()).filter(sub => sub.userId === userId);
-  }
-
-  async getUserActiveSubscription(userId: string): Promise<UserSubscription | undefined> {
-    return Array.from(this.userSubscriptions.values()).find(
-      sub => sub.userId === userId && sub.status === 'active'
-    );
-  }
-
-  async createUserSubscription(insertSubscription: InsertUserSubscription): Promise<UserSubscription> {
-    const id = randomUUID();
-    const subscription: UserSubscription = {
-      ...insertSubscription,
-      id,
-      stripeSubscriptionId: insertSubscription.stripeSubscriptionId || null,
-      currentPeriodStart: insertSubscription.currentPeriodStart || null,
-      currentPeriodEnd: insertSubscription.currentPeriodEnd || null,
-      cancelAtPeriodEnd: insertSubscription.cancelAtPeriodEnd ?? false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    this.userSubscriptions.set(id, subscription);
-    return subscription;
-  }
-
-  async updateUserSubscription(id: string, updateSubscription: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined> {
-    const subscription = this.userSubscriptions.get(id);
-    if (!subscription) return undefined;
-    
-    const updatedSubscription: UserSubscription = { 
-      ...subscription, 
-      ...updateSubscription, 
-      updatedAt: new Date() 
-    };
-    this.userSubscriptions.set(id, updatedSubscription);
-    return updatedSubscription;
-  }
-
-  async cancelUserSubscription(id: string): Promise<boolean> {
-    const subscription = this.userSubscriptions.get(id);
-    if (!subscription) return false;
-    
-    const updatedSubscription: UserSubscription = { 
-      ...subscription, 
-      status: 'canceled',
-      cancelAtPeriodEnd: true,
-      updatedAt: new Date() 
-    };
-    this.userSubscriptions.set(id, updatedSubscription);
-    return true;
   }
 
   // Canvas Drawings
   async getCanvasDrawings(projectId: string): Promise<CanvasDrawing[]> {
-    return Array.from(this.canvasDrawings.values()).filter(drawing => drawing.projectId === projectId);
+    return await db.select().from(canvasDrawings)
+      .where(eq(canvasDrawings.projectId, projectId))
+      .orderBy(desc(canvasDrawings.createdAt));
   }
 
   async getCanvasDrawing(id: string): Promise<CanvasDrawing | undefined> {
-    return this.canvasDrawings.get(id);
-  }
-
-  async createCanvasDrawing(insertDrawing: InsertCanvasDrawing): Promise<CanvasDrawing> {
-    const id = randomUUID();
-    const drawing: CanvasDrawing = {
-      ...insertDrawing,
-      id,
-      description: insertDrawing.description || null,
-      thumbnailData: insertDrawing.thumbnailData || null,
-      tags: insertDrawing.tags || [],
-      isTemplate: insertDrawing.isTemplate ?? false,
-      parentId: insertDrawing.parentId || null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.canvasDrawings.set(id, drawing);
+    const [drawing] = await db.select().from(canvasDrawings).where(eq(canvasDrawings.id, id));
     return drawing;
   }
 
-  async updateCanvasDrawing(id: string, updateDrawing: Partial<InsertCanvasDrawing>): Promise<CanvasDrawing | undefined> {
-    const drawing = this.canvasDrawings.get(id);
-    if (!drawing) return undefined;
-    
-    const updatedDrawing: CanvasDrawing = { 
-      ...drawing, 
-      ...updateDrawing, 
-      updatedAt: new Date() 
-    };
-    this.canvasDrawings.set(id, updatedDrawing);
+  async createCanvasDrawing(drawing: InsertCanvasDrawing): Promise<CanvasDrawing> {
+    const [newDrawing] = await db.insert(canvasDrawings).values(drawing).returning();
+    return newDrawing;
+  }
+
+  async updateCanvasDrawing(id: string, drawing: Partial<InsertCanvasDrawing>): Promise<CanvasDrawing | undefined> {
+    const [updatedDrawing] = await db.update(canvasDrawings)
+      .set({ ...drawing, updatedAt: new Date() })
+      .where(eq(canvasDrawings.id, id))
+      .returning();
     return updatedDrawing;
   }
 
   async deleteCanvasDrawing(id: string): Promise<boolean> {
-    return this.canvasDrawings.delete(id);
+    const result = await db.delete(canvasDrawings).where(eq(canvasDrawings.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Benchmarking Methods
-  async getBenchmarks(projectId: string): Promise<Benchmark[]> {
-    return Array.from(this.benchmarks.values()).filter(benchmark => benchmark.projectId === projectId);
-  }
-
-  async getBenchmark(id: string): Promise<Benchmark | undefined> {
-    return this.benchmarks.get(id);
-  }
-
-  async createBenchmark(insertBenchmark: InsertBenchmark): Promise<Benchmark> {
-    const id = randomUUID();
-    const benchmark: Benchmark = {
-      ...insertBenchmark,
-      id,
-      description: insertBenchmark.description || null,
-      benchmarkType: insertBenchmark.benchmarkType || "industry",
-      maturityScores: insertBenchmark.maturityScores || {},
-      targetScores: insertBenchmark.targetScores || {},
-      improvementAreas: insertBenchmark.improvementAreas || [],
-      recommendations: insertBenchmark.recommendations || [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.benchmarks.set(id, benchmark);
-    return benchmark;
-  }
-
-  async updateBenchmark(id: string, updateBenchmark: Partial<InsertBenchmark>): Promise<Benchmark | undefined> {
-    const benchmark = this.benchmarks.get(id);
-    if (!benchmark) return undefined;
-    
-    const updatedBenchmark: Benchmark = { 
-      ...benchmark, 
-      ...updateBenchmark, 
-      updatedAt: new Date() 
-    };
-    this.benchmarks.set(id, updatedBenchmark);
-    return updatedBenchmark;
-  }
-
-  async deleteBenchmark(id: string): Promise<boolean> {
-    return this.benchmarks.delete(id);
-  }
-
-  async getBenchmarkAssessments(benchmarkId: string): Promise<BenchmarkAssessment[]> {
-    return Array.from(this.benchmarkAssessments.values()).filter(assessment => assessment.benchmarkId === benchmarkId);
-  }
-
-  async createBenchmarkAssessment(insertAssessment: InsertBenchmarkAssessment): Promise<BenchmarkAssessment> {
-    const id = randomUUID();
-    const assessment: BenchmarkAssessment = {
-      ...insertAssessment,
-      id,
-      industryAverage: insertAssessment.industryAverage || null,
-      evidence: insertAssessment.evidence || null,
-      improvementPlan: insertAssessment.improvementPlan || null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.benchmarkAssessments.set(id, assessment);
-    return assessment;
-  }
-
-  async updateBenchmarkAssessment(id: string, updateAssessment: Partial<InsertBenchmarkAssessment>): Promise<BenchmarkAssessment | undefined> {
-    const assessment = this.benchmarkAssessments.get(id);
-    if (!assessment) return undefined;
-    
-    const updatedAssessment: BenchmarkAssessment = { 
-      ...assessment, 
-      ...updateAssessment, 
-      updatedAt: new Date() 
-    };
-    this.benchmarkAssessments.set(id, updatedAssessment);
-    return updatedAssessment;
-  }
-
-  async deleteBenchmarkAssessment(id: string): Promise<boolean> {
-    return this.benchmarkAssessments.delete(id);
-  }
-
-  // Phase Cards (Kanban) methods
+  // Phase Cards (Kanban)
   async getPhaseCards(projectId: string): Promise<PhaseCard[]> {
-    const cards = Array.from(this.phaseCards.values())
-      .filter(card => card.projectId === projectId)
-      .sort((a, b) => {
-        // First sort by phase, then by position
-        if (a.phase !== b.phase) {
-          return a.phase - b.phase;
-        }
-        return a.position - b.position;
-      });
-    return cards;
+    return await db.select().from(phaseCards)
+      .where(eq(phaseCards.projectId, projectId))
+      .orderBy(desc(phaseCards.createdAt));
   }
 
   async getPhaseCard(id: string): Promise<PhaseCard | undefined> {
-    return this.phaseCards.get(id);
+    const [card] = await db.select().from(phaseCards).where(eq(phaseCards.id, id));
+    return card;
   }
 
   async createPhaseCard(card: InsertPhaseCard): Promise<PhaseCard> {
-    const newCard: PhaseCard = {
-      id: randomUUID(),
-      ...card,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.phaseCards.set(newCard.id, newCard);
+    const [newCard] = await db.insert(phaseCards).values(card).returning();
     return newCard;
   }
 
   async updatePhaseCard(id: string, card: Partial<InsertPhaseCard>): Promise<PhaseCard | undefined> {
-    const existingCard = this.phaseCards.get(id);
-    if (!existingCard) {
-      return undefined;
-    }
-
-    const updatedCard: PhaseCard = {
-      ...existingCard,
-      ...card,
-      updatedAt: new Date(),
-    };
-    
-    this.phaseCards.set(id, updatedCard);
+    const [updatedCard] = await db.update(phaseCards)
+      .set({ ...card, updatedAt: new Date() })
+      .where(eq(phaseCards.id, id))
+      .returning();
     return updatedCard;
   }
 
   async deletePhaseCard(id: string): Promise<boolean> {
-    return this.phaseCards.delete(id);
+    const result = await db.delete(phaseCards).where(eq(phaseCards.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Subscription Plans
+  async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
+    return await db.select().from(subscriptionPlans).orderBy(desc(subscriptionPlans.createdAt));
+  }
+
+  async getSubscriptionPlan(id: string): Promise<SubscriptionPlan | undefined> {
+    const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, id));
+    return plan;
+  }
+
+  async getSubscriptionPlanByName(name: string): Promise<SubscriptionPlan | undefined> {
+    const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.name, name));
+    return plan;
+  }
+
+  async createSubscriptionPlan(plan: InsertSubscriptionPlan): Promise<SubscriptionPlan> {
+    const [newPlan] = await db.insert(subscriptionPlans).values(plan).returning();
+    return newPlan;
+  }
+
+  async updateSubscriptionPlan(id: string, plan: Partial<InsertSubscriptionPlan>): Promise<SubscriptionPlan | undefined> {
+    const [updatedPlan] = await db.update(subscriptionPlans)
+      .set(plan)
+      .where(eq(subscriptionPlans.id, id))
+      .returning();
+    return updatedPlan;
+  }
+
+  async deleteSubscriptionPlan(id: string): Promise<boolean> {
+    const result = await db.delete(subscriptionPlans).where(eq(subscriptionPlans.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // User Subscriptions
+  async getUserSubscriptions(userId: string): Promise<UserSubscription[]> {
+    return await db.select().from(userSubscriptions)
+      .where(eq(userSubscriptions.userId, userId))
+      .orderBy(desc(userSubscriptions.createdAt));
+  }
+
+  async getUserActiveSubscription(userId: string): Promise<UserSubscription | undefined> {
+    const [subscription] = await db.select().from(userSubscriptions)
+      .where(and(
+        eq(userSubscriptions.userId, userId),
+        eq(userSubscriptions.status, 'active')
+      ));
+    return subscription;
+  }
+
+  async createUserSubscription(subscription: InsertUserSubscription): Promise<UserSubscription> {
+    const [newSubscription] = await db.insert(userSubscriptions).values(subscription).returning();
+    return newSubscription;
+  }
+
+  async updateUserSubscription(id: string, subscription: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined> {
+    const [updatedSubscription] = await db.update(userSubscriptions)
+      .set(subscription)
+      .where(eq(userSubscriptions.id, id))
+      .returning();
+    return updatedSubscription;
+  }
+
+  async cancelUserSubscription(id: string): Promise<boolean> {
+    const result = await db.update(userSubscriptions)
+      .set({ status: 'cancelled' })
+      .where(eq(userSubscriptions.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Benchmarking
+  async getBenchmarks(projectId: string): Promise<Benchmark[]> {
+    return await db.select().from(benchmarks)
+      .where(eq(benchmarks.projectId, projectId))
+      .orderBy(desc(benchmarks.createdAt));
+  }
+
+  async getBenchmark(id: string): Promise<Benchmark | undefined> {
+    const [benchmark] = await db.select().from(benchmarks).where(eq(benchmarks.id, id));
+    return benchmark;
+  }
+
+  async createBenchmark(benchmark: InsertBenchmark): Promise<Benchmark> {
+    const [newBenchmark] = await db.insert(benchmarks).values(benchmark).returning();
+    return newBenchmark;
+  }
+
+  async updateBenchmark(id: string, benchmark: Partial<InsertBenchmark>): Promise<Benchmark | undefined> {
+    const [updatedBenchmark] = await db.update(benchmarks)
+      .set(benchmark)
+      .where(eq(benchmarks.id, id))
+      .returning();
+    return updatedBenchmark;
+  }
+
+  async deleteBenchmark(id: string): Promise<boolean> {
+    const result = await db.delete(benchmarks).where(eq(benchmarks.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getBenchmarkAssessments(benchmarkId: string): Promise<BenchmarkAssessment[]> {
+    return await db.select().from(benchmarkAssessments)
+      .where(eq(benchmarkAssessments.benchmarkId, benchmarkId))
+      .orderBy(desc(benchmarkAssessments.createdAt));
+  }
+
+  async createBenchmarkAssessment(assessment: InsertBenchmarkAssessment): Promise<BenchmarkAssessment> {
+    const [newAssessment] = await db.insert(benchmarkAssessments).values(assessment).returning();
+    return newAssessment;
+  }
+
+  async updateBenchmarkAssessment(id: string, assessment: Partial<InsertBenchmarkAssessment>): Promise<BenchmarkAssessment | undefined> {
+    const [updatedAssessment] = await db.update(benchmarkAssessments)
+      .set(assessment)
+      .where(eq(benchmarkAssessments.id, id))
+      .returning();
+    return updatedAssessment;
+  }
+
+  async deleteBenchmarkAssessment(id: string): Promise<boolean> {
+    const result = await db.delete(benchmarkAssessments).where(eq(benchmarkAssessments.id, id));
+    return (result.rowCount || 0) > 0;
   }
 }
 
-export const storage = new MemStorage();
+// Use DatabaseStorage in production, keep reference to blueprint:javascript_database integration
+export const storage = new DatabaseStorage();
+
+// Initialize default admin user and sample data
+export async function initializeDefaultData() {
+  try {
+    // Check if admin user exists
+    const adminUser = await storage.getUserByUsername('dttools.app@gmail.com');
+    
+    if (!adminUser) {
+      // Create admin user with proper password hash
+      const hashedPassword = await bcrypt.hash('Gulex0519!@', 10);
+      await storage.createUser({
+        username: 'dttools.app@gmail.com',
+        email: 'dttools.app@gmail.com',
+        name: 'DTTools Admin',
+        password: hashedPassword,
+        role: 'admin',
+        company: 'DTTools',
+        jobRole: 'Administrator',
+        industry: 'Design Thinking',
+        experience: 'expert',
+        country: 'Brasil',
+        state: 'SP',
+        city: 'São Paulo'
+      });
+      console.log('✅ Admin user created successfully');
+    }
+
+    // Initialize subscription plans
+    const existingPlans = await storage.getSubscriptionPlans();
+    if (existingPlans.length === 0) {
+      await storage.createSubscriptionPlan({
+        name: 'Free',
+        displayName: 'Plano Gratuito',
+        description: 'Plan gratuito com recursos básicos',
+        priceMonthly: 0,
+        priceYearly: 0,
+        features: ['3 projetos', 'Ferramentas básicas', 'Suporte por email'],
+        maxProjects: 3,
+        maxTeamMembers: 1,
+        isActive: true
+      });
+
+      await storage.createSubscriptionPlan({
+        name: 'Pro',
+        displayName: 'Plano Pro',
+        description: 'Plan profissional com recursos avançados',
+        priceMonthly: 2990, // in cents
+        priceYearly: 29900, // in cents
+        features: ['Projetos ilimitados', 'Todas as ferramentas', 'Análise AI', 'Suporte prioritário'],
+        maxProjects: -1, // unlimited
+        maxTeamMembers: 5,
+        isActive: true
+      });
+
+      await storage.createSubscriptionPlan({
+        name: 'Enterprise',
+        displayName: 'Plano Enterprise',
+        description: 'Plan empresarial com recursos completos',
+        priceMonthly: 9990, // in cents
+        priceYearly: 99900, // in cents
+        features: ['Tudo do Pro', 'Time ilimitado', 'Suporte dedicado', 'Treinamentos'],
+        maxProjects: -1, // unlimited
+        maxTeamMembers: -1, // unlimited
+        isActive: true
+      });
+      console.log('✅ Subscription plans created');
+    }
+
+  } catch (error) {
+    console.error('❌ Error initializing default data:', error);
+  }
+}
