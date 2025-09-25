@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
@@ -191,17 +191,23 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
-        <div className="flex flex-col h-full max-h-[90vh]">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle data-testid="editor-title">
-              {article ? "Editar Artigo" : "Criar Novo Artigo"}
-            </DialogTitle>
-          </DialogHeader>
+      <DialogContent className="w-full max-w-5xl h-[95vh] max-h-[95vh] p-0 gap-0 overflow-hidden">
+        <DialogDescription className="sr-only">
+          {article ? "Editar artigo existente" : "Criar novo artigo para a biblioteca"}
+        </DialogDescription>
+        
+        {/* Header fixo */}
+        <DialogHeader className="flex-shrink-0 px-6 py-4 border-b bg-background">
+          <DialogTitle data-testid="editor-title" className="text-xl font-semibold">
+            {article ? "Editar Artigo" : "Criar Novo Artigo"}
+          </DialogTitle>
+        </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-6">
+        {/* Conteúdo principal com scroll */}
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto px-6 py-4">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-24">
                 {/* Basic Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
@@ -370,42 +376,47 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                     </TabsContent>
                   </Tabs>
                 </div>
-
-                {/* Actions */}
-                <div className="flex justify-between pt-4 sticky bottom-0 bg-background border-t mt-6 -mx-6 px-6 py-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onClose}
-                    data-testid="button-cancel"
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    Cancelar
-                  </Button>
-
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setActiveTab("preview")}
-                      data-testid="button-preview"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      Visualizar
-                    </Button>
-
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      data-testid="button-save"
-                    >
-                      <Save className="mr-2 h-4 w-4" />
-                      {isLoading ? "Salvando..." : "Salvar"}
-                    </Button>
-                  </div>
-                </div>
               </form>
             </Form>
+          </div>
+
+          {/* Footer com botões fixos */}
+          <div className="flex-shrink-0 border-t bg-background px-6 py-4">
+            <div className="flex justify-between items-center">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                data-testid="button-cancel"
+                disabled={isLoading}
+              >
+                <X className="mr-2 h-4 w-4" />
+                Cancelar
+              </Button>
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setActiveTab("preview")}
+                  data-testid="button-preview"
+                  disabled={isLoading}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Visualizar
+                </Button>
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  data-testid="button-save"
+                  onClick={form.handleSubmit(onSubmit)}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {isLoading ? "Salvando..." : "Salvar"}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>
