@@ -20,6 +20,7 @@ import PricingPage from "@/pages/pricing";
 import ChatPage from "@/pages/chat";
 import ProfilePage from "@/pages/profile";
 import BenchmarkingPage from "@/pages/benchmarking";
+import ScreenshotCapture from "@/components/ScreenshotCapture";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardPage from "@/pages/dashboard";
@@ -131,6 +132,7 @@ function Router() {
           <BenchmarkingPage />
         </ProtectedRoute>
       </Route>
+      <Route path="/screenshots" component={ScreenshotCapture} />
       
       <Route component={NotFound} />
     </Switch>
