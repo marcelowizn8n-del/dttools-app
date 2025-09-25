@@ -347,7 +347,7 @@ export class MemStorage implements IStorage {
       username: "dttools.app@gmail.com",
       email: "dttools.app@gmail.com", 
       name: "Marcelo Araujo",
-      password: "$2b$10$nOUIs5kJ7naTuTFkBy1veuK0kSxUFXfuaOyudy.xS.6ZKk4A/1DH.", // Gulex0519!@
+      password: "$2b$10$tXArzwjNNviYkx0xsJuNF.ceJW4LrnRbyI6XcLAnYSuvLngs5k.lm", // Gulex0519!@
       role: "admin",
       company: null,
       jobRole: "Designer",
