@@ -341,13 +341,13 @@ export class MemStorage implements IStorage {
     };
     this.users.set(regularUser.id, regularUser);
 
-    // Create Marcelo's user account
+    // Create Marcelo's user account with proper hashed password
     const marceloUser: User = {
       id: randomUUID(),
       username: "dttools.app@gmail.com",
       email: "dttools.app@gmail.com", 
       name: "Marcelo Araujo",
-      password: "$2b$10$YourHashedPasswordHere", // Will be replaced with actual hash
+      password: "$2b$10$nOUIs5kJ7naTuTFkBy1veuK0kSxUFXfuaOyudy.xS.6ZKk4A/1DH.", // Gulex0519!@
       role: "admin",
       company: null,
       jobRole: "Designer",
@@ -368,12 +368,7 @@ export class MemStorage implements IStorage {
       subscriptionEndDate: null,
       createdAt: new Date(),
     };
-    
-    // Hash the password for Marcelo's account
-    bcrypt.hash("Gulex0519!@", 10).then(hashedPassword => {
-      marceloUser.password = hashedPassword;
-      this.users.set(marceloUser.id, marceloUser);
-    });
+    this.users.set(marceloUser.id, marceloUser);
 
     const adminUserUpdated: User = {
       id: randomUUID(),
