@@ -62,6 +62,8 @@ function MarkdownPreview({ content }: { content: string }) {
 
 export default function ArticleEditor({ article, isOpen, onClose }: ArticleEditorProps) {
   const [activeTab, setActiveTab] = useState("edit");
+  const [customCategory, setCustomCategory] = useState("");
+  const [isCustomCategorySelected, setIsCustomCategorySelected] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<ArticleFormData>({
@@ -107,6 +109,8 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
   useEffect(() => {
     if (!isOpen) {
       setActiveTab("edit");
+      setIsCustomCategorySelected(false);
+      setCustomCategory("");
       // Clear form when modal closes to prevent stale data
       form.reset({
         title: "",
@@ -198,6 +202,10 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
     { value: "ideate", label: "Idear" },
     { value: "prototype", label: "Prototipar" },
     { value: "test", label: "Testar" },
+    { value: "design-thinking", label: "Design Thinking" },
+    { value: "creativity", label: "Criatividade" },
+    { value: "ux-ui", label: "UX/UI" },
+    { value: "custom", label: "📝 Categoria Personalizada" },
   ];
 
   return (
@@ -265,7 +273,19 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Categoria</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select 
+                          onValueChange={(value) => {
+                            if (value === "custom") {
+                              setIsCustomCategorySelected(true);
+                              field.onChange("");
+                            } else {
+                              setIsCustomCategorySelected(false);
+                              setCustomCategory("");
+                              field.onChange(value);
+                            }
+                          }} 
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger data-testid="select-category">
                               <SelectValue placeholder="Selecione uma categoria" />
@@ -279,6 +299,19 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                             ))}
                           </SelectContent>
                         </Select>
+                        {isCustomCategorySelected && (
+                          <FormControl className="mt-2">
+                            <Input
+                              placeholder="Digite uma categoria personalizada"
+                              value={customCategory}
+                              onChange={(e) => {
+                                setCustomCategory(e.target.value);
+                                field.onChange(e.target.value);
+                              }}
+                              data-testid="input-custom-category"
+                            />
+                          </FormControl>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
