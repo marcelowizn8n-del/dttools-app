@@ -90,7 +90,8 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
         tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
         published: article.published,
       });
-    } else {
+    } else if (isOpen && !article) {
+      // Force complete reset when creating new article
       form.reset({
         title: "",
         author: "",
@@ -101,13 +102,23 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
         published: true,
       });
     }
-  }, [article, form]);
+  }, [article, isOpen, form]);
 
   useEffect(() => {
     if (!isOpen) {
       setActiveTab("edit");
+      // Clear form when modal closes to prevent stale data
+      form.reset({
+        title: "",
+        author: "",
+        category: "",
+        description: "",
+        content: "",
+        tags: "",
+        published: true,
+      });
     }
-  }, [isOpen]);
+  }, [isOpen, form]);
 
   const createArticleMutation = useMutation({
     mutationFn: async (data: ArticleFormData) => {
