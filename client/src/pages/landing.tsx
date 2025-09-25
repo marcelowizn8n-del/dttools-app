@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowRight, Users, Target, Lightbulb, Wrench, TestTube, Star, CheckCircle, Zap, Globe, BookOpen, TrendingUp, BarChart3 } from "lucide-react";
+import { ArrowRight, Users, Target, Lightbulb, Wrench, TestTube, Star, CheckCircle, Zap, Globe, BookOpen, TrendingUp, BarChart3, Trello } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -115,6 +115,13 @@ const features = [
     titleEn: "Professional Export",
     description: "Exporte seus projetos em PDF, PNG e CSV para apresentações",
     descriptionEn: "Export your projects in PDF, PNG and CSV for presentations"
+  },
+  {
+    icon: Trello,
+    title: "Sistema Kanban Integrado",
+    titleEn: "Integrated Kanban System",
+    description: "Gerencie suas ideias e atividades com boards Kanban visual e intuitivo",
+    descriptionEn: "Manage your ideas and activities with visual and intuitive Kanban boards"
   }
 ];
 
