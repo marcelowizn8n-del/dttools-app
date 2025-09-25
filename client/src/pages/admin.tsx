@@ -111,7 +111,10 @@ function ArticlesTab() {
             Crie, edite e gerencie os artigos da biblioteca
           </p>
         </div>
-        <Button onClick={() => setIsCreating(true)} data-testid="button-create-article">
+        <Button onClick={() => {
+          setEditingArticle(null); // Limpa qualquer artigo em edição
+          setIsCreating(true);
+        }} data-testid="button-create-article">
           <Plus className="mr-2 h-4 w-4" />
           Novo Artigo
         </Button>
