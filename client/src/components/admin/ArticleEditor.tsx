@@ -56,12 +56,11 @@ function MarkdownPreview({ content }: { content: string }) {
     <div 
       className="p-4 border rounded-lg bg-muted/50 min-h-[400px]"
       dangerouslySetInnerHTML={{ __html: processMarkdown(content || '') }}
-      data-testid="markdown-preview"
     />
   );
 }
 
-export function ArticleEditor({ article, isOpen, onClose }: ArticleEditorProps) {
+export default function ArticleEditor({ article, isOpen, onClose }: ArticleEditorProps) {
   const [activeTab, setActiveTab] = useState("edit");
   const { toast } = useToast();
 
@@ -69,58 +68,55 @@ export function ArticleEditor({ article, isOpen, onClose }: ArticleEditorProps) 
     resolver: zodResolver(articleFormSchema),
     defaultValues: {
       title: "",
-      content: "",
-      category: "empathize",
       author: "",
+      category: "",
       description: "",
+      content: "",
       tags: "",
       published: true,
     },
   });
 
-  const contentValue = form.watch("content");
+  const contentValue = form.watch("content") || "";
 
-  // Reset form when article changes
   useEffect(() => {
     if (article) {
       form.reset({
         title: article.title,
-        content: article.content,
-        category: article.category,
         author: article.author,
+        category: article.category,
         description: article.description || "",
-        tags: Array.isArray(article.tags) ? (article.tags as string[]).join(", ") : "",
+        content: article.content,
+        tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
         published: article.published,
       });
     } else {
       form.reset({
         title: "",
-        content: "",
-        category: "empathize",
         author: "",
+        category: "",
         description: "",
+        content: "",
         tags: "",
         published: true,
       });
     }
   }, [article, form]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setActiveTab("edit");
+    }
+  }, [isOpen]);
+
   const createArticleMutation = useMutation({
     mutationFn: async (data: ArticleFormData) => {
-      const tagsArray = data.tags ? data.tags.split(",").map(tag => tag.trim()).filter(Boolean) : [];
-      const articleData = {
+      const payload = {
         ...data,
-        tags: tagsArray,
+        tags: data.tags ? data.tags.split(",").map(tag => tag.trim()).filter(Boolean) : [],
       };
 
-      const response = await apiRequest("/api/articles", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(articleData),
-      });
-
+      const response = await apiRequest("POST", "/api/articles", payload);
       if (!response.ok) {
         throw new Error("Failed to create article");
       }
@@ -146,22 +142,12 @@ export function ArticleEditor({ article, isOpen, onClose }: ArticleEditorProps) 
 
   const updateArticleMutation = useMutation({
     mutationFn: async (data: ArticleFormData) => {
-      if (!article) throw new Error("No article to update");
-
-      const tagsArray = data.tags ? data.tags.split(",").map(tag => tag.trim()).filter(Boolean) : [];
-      const articleData = {
+      const payload = {
         ...data,
-        tags: tagsArray,
+        tags: data.tags ? data.tags.split(",").map(tag => tag.trim()).filter(Boolean) : [],
       };
 
-      const response = await apiRequest(`/api/articles/${article.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(articleData),
-      });
-
+      const response = await apiRequest("PUT", `/api/articles/${article?.id}`, payload);
       if (!response.ok) {
         throw new Error("Failed to update article");
       }
@@ -205,220 +191,223 @@ export function ArticleEditor({ article, isOpen, onClose }: ArticleEditorProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle data-testid="editor-title">
-            {article ? "Editar Artigo" : "Criar Novo Artigo"}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+        <div className="flex flex-col h-full max-h-[90vh]">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle data-testid="editor-title">
+              {article ? "Editar Artigo" : "Criar Novo Artigo"}
+            </DialogTitle>
+          </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Basic Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Título</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Digite o título do artigo"
-                        data-testid="input-title"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="author"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Autor</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nome do autor"
-                        data-testid="input-author"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Categoria</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-category">
-                          <SelectValue placeholder="Selecione uma categoria" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.value} value={category.value}>
-                            {category.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="published"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Publicado</FormLabel>
-                      <div className="text-sm text-muted-foreground">
-                        O artigo será visível na biblioteca
-                      </div>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="switch-published"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição (opcional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Breve descrição do artigo"
-                      className="resize-none"
-                      data-testid="textarea-description"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tags (opcional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Digite as tags separadas por vírgula"
-                      data-testid="input-tags"
-                      {...field}
-                    />
-                  </FormControl>
-                  <div className="text-sm text-muted-foreground">
-                    Exemplo: empatia, pesquisa, usuários
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Content Editor with Preview */}
-            <div className="space-y-4">
-              <Label>Conteúdo</Label>
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="edit" data-testid="tab-edit">
-                    Editar
-                  </TabsTrigger>
-                  <TabsTrigger value="preview" data-testid="tab-preview">
-                    Visualizar
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="edit" className="space-y-2">
+          <div className="flex-1 overflow-y-auto p-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Basic Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="content"
+                    name="title"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>Título</FormLabel>
                         <FormControl>
-                          <Textarea
-                            placeholder="Escreva o conteúdo do artigo em Markdown..."
-                            className="min-h-[400px] resize-none font-mono text-sm"
-                            data-testid="textarea-content"
+                          <Input
+                            placeholder="Digite o título do artigo"
+                            data-testid="input-title"
                             {...field}
                           />
                         </FormControl>
-                        <div className="text-sm text-muted-foreground">
-                          Use Markdown para formatação: **negrito**, *itálico*, # títulos, - listas
-                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </TabsContent>
 
-                <TabsContent value="preview">
-                  <MarkdownPreview content={contentValue} />
-                </TabsContent>
-              </Tabs>
-            </div>
+                  <FormField
+                    control={form.control}
+                    name="author"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Autor</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Nome do autor"
+                            data-testid="input-author"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-            {/* Actions */}
-            <div className="flex justify-between pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                data-testid="button-cancel"
-              >
-                <X className="mr-2 h-4 w-4" />
-                Cancelar
-              </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoria</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-category">
+                              <SelectValue placeholder="Selecione uma categoria" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category.value} value={category.value}>
+                                {category.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setActiveTab("preview")}
-                  data-testid="button-preview"
-                >
-                  <Eye className="mr-2 h-4 w-4" />
-                  Visualizar
-                </Button>
+                  <FormField
+                    control={form.control}
+                    name="published"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Publicado</FormLabel>
+                          <div className="text-sm text-muted-foreground">
+                            O artigo será visível na biblioteca
+                          </div>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="switch-published"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  data-testid="button-save"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  {isLoading ? "Salvando..." : "Salvar"}
-                </Button>
-              </div>
-            </div>
-          </form>
-        </Form>
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descrição (opcional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Breve descrição do artigo"
+                          data-testid="textarea-description"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags (opcional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Digite as tags separadas por vírgula"
+                          data-testid="input-tags"
+                          {...field}
+                        />
+                      </FormControl>
+                      <div className="text-sm text-muted-foreground">
+                        Exemplo: empatia, pesquisa, usuários
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Content Editor with Preview */}
+                <div className="space-y-4">
+                  <Label>Conteúdo</Label>
+                  <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="edit" data-testid="tab-edit">
+                        Editar
+                      </TabsTrigger>
+                      <TabsTrigger value="preview" data-testid="tab-preview">
+                        Visualizar
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="edit" className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name="content"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Escreva o conteúdo do artigo em Markdown..."
+                                className="min-h-[400px] resize-none font-mono text-sm"
+                                data-testid="textarea-content"
+                                {...field}
+                              />
+                            </FormControl>
+                            <div className="text-sm text-muted-foreground">
+                              Use Markdown para formatação: **negrito**, *itálico*, # títulos, - listas
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="preview">
+                      <MarkdownPreview content={contentValue} />
+                    </TabsContent>
+                  </Tabs>
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-between pt-4 sticky bottom-0 bg-background border-t mt-6 -mx-6 px-6 py-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    data-testid="button-cancel"
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Cancelar
+                  </Button>
+
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setActiveTab("preview")}
+                      data-testid="button-preview"
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      Visualizar
+                    </Button>
+
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      data-testid="button-save"
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      {isLoading ? "Salvando..." : "Salvar"}
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            </Form>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
