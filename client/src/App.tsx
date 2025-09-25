@@ -22,7 +22,7 @@ import ProfilePage from "@/pages/profile";
 import BenchmarkingPage from "@/pages/benchmarking";
 import ScreenshotCapture from "@/components/ScreenshotCapture";
 import NotFound from "@/pages/not-found";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, ProtectedRoute } from "@/contexts/AuthContext";
 import DashboardPage from "@/pages/dashboard";
 
 function HomePage() {
@@ -73,25 +73,6 @@ function ProtectedProjectDetail() {
   return <ProjectDetailPage />;
 }
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-  const [, setLocation] = useLocation();
-  
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    setLocation('/login');
-    return null;
-  }
-  
-  return <>{children}</>;
-}
 
 function Router() {
   return (
