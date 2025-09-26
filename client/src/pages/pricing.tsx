@@ -118,7 +118,7 @@ function PricingCard({ plan, isYearly, isPopular, onSelectPlan, isLoading }: Pri
 
   return (
     <Card 
-      className={`relative h-full ${isPopular ? 'border-blue-500 shadow-lg scale-105' : 'border-gray-200'}`}
+      className={`relative h-full ${isPopular ? 'border-blue-500 shadow-lg' : 'border-gray-200'} transition-transform hover:scale-105`}
       data-testid={`card-plan-${plan.name}`}
     >
       {isPopular && (
@@ -301,7 +301,7 @@ export default function PricingPage() {
 
       {/* Pricing Cards */}
       <div className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {sortedPlans.map((plan: SubscriptionPlan) => (
             <PricingCard
               key={plan.id}
