@@ -196,19 +196,19 @@ export default function ProfilePage() {
         
         let sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024); // Base64 to bytes conversion
         
-        // Progressive compression - target 250KB max
-        while (sizeInMB > 0.25 && quality > 0.2) { // Keep under 250KB, min 20% quality
+        // Progressive compression - target 100KB max (more aggressive)
+        while (sizeInMB > 0.1 && quality > 0.2) { // Keep under 100KB, min 20% quality
           quality -= 0.1;
           compressedBase64 = canvas.toDataURL(format, quality);
           sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024);
         }
         
         // If still too large, reduce dimensions gradually
-        if (sizeInMB > 0.25) {
+        if (sizeInMB > 0.1) {
           let currentWidth = newWidth;
           let currentHeight = newHeight;
           
-          while (sizeInMB > 0.25 && currentWidth > 100) {
+          while (sizeInMB > 0.1 && currentWidth > 100) {
             currentWidth = Math.floor(currentWidth * 0.9);
             currentHeight = Math.floor(currentHeight * 0.9);
             
@@ -244,11 +244,11 @@ export default function ProfilePage() {
         return;
       }
 
-      // Increased limit to 10MB
-      if (file.size > 10 * 1024 * 1024) {
+      // Increased limit to 5MB (more conservative for base64)
+      if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Arquivo muito grande",
-          description: `A imagem deve ter no máximo 10MB. Sua foto tem ${(file.size / (1024 * 1024)).toFixed(1)}MB`,
+          description: `A imagem deve ter no máximo 5MB. Sua foto tem ${(file.size / (1024 * 1024)).toFixed(1)}MB`,
           variant: "destructive",
         });
         return;
