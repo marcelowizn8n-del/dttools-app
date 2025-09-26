@@ -324,14 +324,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects/:projectId/observations", requireAuth, async (req, res) => {
     try {
-      const validatedData = insertObservationSchema.parse({
+      console.log("Creating observation - Request body:", JSON.stringify(req.body, null, 2));
+      console.log("Project ID:", req.params.projectId);
+      
+      const dataToValidate = {
         ...req.body,
         projectId: req.params.projectId
-      });
+      };
+      console.log("Data to validate:", JSON.stringify(dataToValidate, null, 2));
+      
+      const validatedData = insertObservationSchema.parse(dataToValidate);
+      console.log("Data validated successfully:", JSON.stringify(validatedData, null, 2));
+      
       const observation = await storage.createObservation(validatedData);
       res.status(201).json(observation);
     } catch (error) {
-      res.status(400).json({ error: "Invalid observation data" });
+      console.error("Observation validation error:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+      }
+      res.status(400).json({ error: "Invalid observation data", details: error.message });
     }
   });
 
