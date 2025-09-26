@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit2, Trash2, User, Briefcase, Target, Frown, Heart } from "lucide-react";
+import { Plus, Edit2, Trash2, User, Briefcase, Target, Frown, Heart, Upload, X, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ImageUpload } from "@/components/ui/image-upload";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -429,12 +428,82 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
                   <FormItem>
                     <FormLabel>Foto da Persona</FormLabel>
                     <FormControl>
-                      <ImageUpload
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        onRemove={() => field.onChange("")}
-                        disabled={createPersonaMutation.isPending}
-                      />
+                      <div className="space-y-2">
+                        {field.value ? (
+                          <div className="relative group">
+                            <img
+                              src={field.value}
+                              alt="Avatar"
+                              className="w-24 h-24 rounded-full object-cover mx-auto border-2 border-gray-200"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute -top-2 -right-2 rounded-full w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => field.onChange("")}
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  const input = document.createElement('input');
+                                  input.type = 'file';
+                                  input.accept = 'image/*';
+                                  input.onchange = async (e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0];
+                                    if (file) {
+                                      const formData = new FormData();
+                                      formData.append('avatar', file);
+                                      try {
+                                        const response = await fetch('/api/upload/avatar', {
+                                          method: 'POST',
+                                          body: formData,
+                                          credentials: 'include',
+                                        });
+                                        if (response.ok) {
+                                          const data = await response.json();
+                                          field.onChange(data.url);
+                                        }
+                                      } catch (error) {
+                                        console.error('Upload failed:', error);
+                                      }
+                                    }
+                                  };
+                                  input.click();
+                                }}
+                                disabled={createPersonaMutation.isPending}
+                                className="flex-1"
+                              >
+                                <Upload className="w-4 h-4 mr-2" />
+                                Carregar Foto
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => {
+                                  const url = prompt('Digite a URL da imagem:');
+                                  if (url) field.onChange(url);
+                                }}
+                              >
+                                URL
+                              </Button>
+                            </div>
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center">
+                              <ImageIcon className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                              <p className="text-xs text-gray-500">
+                                PNG, JPG, GIF até 10MB
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
