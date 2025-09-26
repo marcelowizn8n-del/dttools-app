@@ -166,10 +166,12 @@ function CreateObservationDialog({ projectId }: { projectId: string }) {
     },
   });
 
-  const onSubmit = (formData: any) => {
+  const onSubmit = (formData: Omit<InsertObservation, 'projectId'>) => {
     const observationData: InsertObservation = {
       ...formData,
       projectId,
+      // Garantir que a data seja um objeto Date válido
+      date: formData.date instanceof Date ? formData.date : new Date(formData.date),
     };
     createObservationMutation.mutate(observationData);
   };
@@ -219,8 +221,12 @@ function CreateObservationDialog({ projectId }: { projectId: string }) {
                       <Input 
                         type="date"
                         {...field}
-                        value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                        onChange={(e) => field.onChange(new Date(e.target.value))}
+                        value={field.value ? (field.value instanceof Date ? field.value.toISOString().split('T')[0] : new Date(field.value).toISOString().split('T')[0]) : ''}
+                        onChange={(e) => {
+                          // Criar Date object e ajustar para o timezone local
+                          const selectedDate = new Date(e.target.value + 'T12:00:00');
+                          field.onChange(selectedDate);
+                        }}
                         data-testid="input-observation-date"
                       />
                     </FormControl>
