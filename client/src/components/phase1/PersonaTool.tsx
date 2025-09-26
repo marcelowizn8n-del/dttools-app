@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -426,13 +427,13 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
                 name="avatar"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Avatar (URL)</FormLabel>
+                    <FormLabel>Foto da Persona</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="https://example.com/avatar.jpg" 
-                        {...field}
+                      <ImageUpload
                         value={field.value || ""}
-                        data-testid="input-persona-avatar"
+                        onChange={field.onChange}
+                        onRemove={() => field.onChange("")}
+                        disabled={createPersonaMutation.isPending}
                       />
                     </FormControl>
                     <FormMessage />
