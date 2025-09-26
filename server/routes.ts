@@ -1,5 +1,9 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
+import multer from "multer";
+import sharp from "sharp";
+import path from "path";
+import fs from "fs";
 import { storage } from "./storage";
 import { 
   insertProjectSchema,
@@ -83,6 +87,31 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
   // Set user data on request
   req.user = req.session.user;
   next();
+}
+
+// Configuração do multer para upload de arquivos
+const storage_config = multer.memoryStorage();
+const upload = multer({
+  storage: storage_config,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas arquivos de imagem são permitidos'));
+    }
+  },
+});
+
+// Função para garantir que o diretório de uploads existe
+function ensureUploadDirectory() {
+  const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'avatars');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+  return uploadDir;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -213,6 +242,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete empathy map" });
+    }
+  });
+
+  // Endpoint para upload de imagens
+  app.post("/api/upload/avatar", requireAuth, upload.single('avatar'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "Nenhum arquivo enviado" });
+      }
+
+      const uploadDir = ensureUploadDirectory();
+      const fileName = `avatar-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+      const filePath = path.join(uploadDir, fileName);
+
+      // Redimensionar e otimizar a imagem usando Sharp
+      await sharp(req.file.buffer)
+        .resize(200, 200, { 
+          fit: 'cover',
+          position: 'center'
+        })
+        .jpeg({ 
+          quality: 85,
+          progressive: true
+        })
+        .toFile(filePath);
+
+      // Retornar a URL relativa do arquivo
+      const avatarUrl = `/uploads/avatars/${fileName}`;
+      res.json({ url: avatarUrl });
+
+    } catch (error) {
+      console.error("Erro no upload:", error);
+      res.status(500).json({ error: "Erro ao processar upload" });
     }
   });
 
