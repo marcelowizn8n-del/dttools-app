@@ -406,8 +406,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Observation validation error:", error);
       if (error instanceof Error) {
         console.error("Error message:", error.message);
+        res.status(400).json({ error: "Invalid observation data", details: error.message });
+      } else {
+        res.status(400).json({ error: "Invalid observation data" });
       }
-      res.status(400).json({ error: "Invalid observation data", details: error.message });
     }
   });
 
