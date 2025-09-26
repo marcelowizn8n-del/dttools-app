@@ -112,13 +112,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async (): Promise<void> => {
     try {
-      // Call logout endpoint (even if it fails, we still log out locally)
+      // Call logout endpoint
       await apiRequest("POST", "/api/auth/logout");
     } catch {
       // Ignore logout API errors
     }
 
-    // Clear local storage and state
+    // Clear local storage and state immediately
     localStorage.removeItem("auth_user");
     setState({
       user: null,
@@ -126,10 +126,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading: false,
     });
     
-    // Force complete navigation reset for Safari compatibility
-    setTimeout(() => {
-      window.location.href = window.location.origin;
-    }, 100);
+    // Force complete page reload to reset all state
+    window.location.reload();
   };
 
   const isAdmin = state.user?.role === "admin";
