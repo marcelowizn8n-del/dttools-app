@@ -17,6 +17,7 @@ import { UserMenu } from "@/components/auth/UserMenu";
 import { LanguageSelector } from "@/components/LanguageSelector";
 // Use direct path to logo in public root
 const logoHorizontal = "/logo-horizontal.png";
+const logoIcon = "/logo-icon.png";
 
 export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -27,16 +28,23 @@ export default function Header() {
     <header className="bg-background border-b border-border">
       <div className="container mx-auto px-4 md:px-6 py-3">
         <div className="flex items-center justify-between min-h-[60px] gap-1 sm:gap-2 md:gap-4">
-          {/* Logo - Container reserves space to prevent layout shifts */}
+          {/* Logo - Responsive logo component */}
           <div className="flex-shrink-0">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                {/* Full logo for all screen sizes */}
+                {/* Mobile: Show only icon */}
+                <img 
+                  src={logoIcon}
+                  alt="DTTools" 
+                  className="block sm:hidden object-contain shrink-0 h-10 w-10 min-h-[40px] min-w-[40px]"
+                  data-testid="logo-icon-mobile"
+                />
+                {/* Desktop: Show full horizontal logo */}
                 <img 
                   src={logoHorizontal}
                   alt="DTTools" 
-                  className="object-contain shrink-0 h-8 w-auto sm:h-10 md:h-14 lg:h-16"
-                  data-testid="logo-img"
+                  className="hidden sm:block object-contain shrink-0 h-8 w-auto sm:h-10 md:h-14 lg:h-16 min-h-[32px]"
+                  data-testid="logo-img-desktop"
                 />
               </div>
             </Link>
