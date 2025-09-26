@@ -131,7 +131,7 @@ img {
 
 /* Force cache busting for updated assets */
 body::before {
-  content: "v1.0.4-mobile-definitive-fix";
+  content: "v1.0.5-mobile-final-fix";
   display: none;
 }
 
