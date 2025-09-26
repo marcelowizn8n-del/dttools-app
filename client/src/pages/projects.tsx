@@ -140,34 +140,35 @@ function ProjectCard({ project }: { project: Project }) {
                 Criado em {project.createdAt ? new Date(project.createdAt).toLocaleDateString('pt-BR') : 'N/A'}
               </span>
             </div>
+            
+            {/* Export Buttons - Moved to bottom */}
+            <div className="flex gap-2 pt-2 border-t border-gray-100">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportPPTX}
+                className="flex-1 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 shadow-sm"
+                data-testid={`button-export-pptx-${project.id}`}
+              >
+                <FileText className="w-3 h-3 mr-1" />
+                <span className="text-xs font-medium">PPTX</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportPDF}
+                className="flex-1 bg-red-50 hover:bg-red-100 border-red-200 text-red-700 shadow-sm"
+                data-testid={`button-export-pdf-${project.id}`}
+              >
+                <FileText className="w-3 h-3 mr-1" />
+                <span className="text-xs font-medium">PDF</span>
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
     </Link>
     
-    {/* Export Buttons */}
-    <div className="absolute top-2 right-2 flex gap-1 z-10">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleExportPPTX}
-        className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 shadow-md"
-        data-testid={`button-export-pptx-${project.id}`}
-      >
-        <FileText className="w-3 h-3 mr-1" />
-        <span className="text-xs font-medium">PPTX</span>
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleExportPDF}
-        className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700 shadow-md"
-        data-testid={`button-export-pdf-${project.id}`}
-      >
-        <FileText className="w-3 h-3 mr-1" />
-        <span className="text-xs font-medium">PDF</span>
-      </Button>
-    </div>
     </div>
   );
 }
