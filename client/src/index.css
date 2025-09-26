@@ -114,3 +114,23 @@ img {
   object-fit: cover;
   object-position: center;
 }
+
+/* Mobile-responsive logo fixes */
+.mobile-logo {
+  min-width: 40px;
+  min-height: 40px;
+  max-width: 40px;
+  max-height: 40px;
+}
+
+.desktop-logo {
+  min-height: 32px;
+  height: auto;
+  width: auto;
+}
+
+/* Force cache busting for updated assets */
+body::before {
+  content: "v1.0.3-mobile-fixes";
+  display: none;
+}
