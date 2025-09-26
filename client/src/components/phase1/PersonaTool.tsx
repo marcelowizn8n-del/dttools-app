@@ -448,6 +448,7 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
                           </div>
                         ) : (
                           <div className="space-y-2">
+                            <p className="text-sm text-gray-600 mb-2">Adicione uma foto para sua persona:</p>
                             <div className="flex gap-2">
                               <Button
                                 type="button"
@@ -473,6 +474,9 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
                                         }
                                       } catch (error) {
                                         console.error('Upload failed:', error);
+                                        const errorMessage = error instanceof Error ? error.message : 'Erro no upload';
+                                        // Show toast with error feedback
+                                        alert(`Erro ao fazer upload: ${errorMessage}`);
                                       }
                                     }
                                   };
@@ -480,6 +484,7 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
                                 }}
                                 disabled={createPersonaMutation.isPending}
                                 className="flex-1"
+                                data-testid="button-upload-persona-photo"
                               >
                                 <Upload className="w-4 h-4 mr-2" />
                                 Carregar Foto
@@ -498,7 +503,7 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center">
                               <ImageIcon className="w-6 h-6 text-gray-400 mx-auto mb-1" />
                               <p className="text-xs text-gray-500">
-                                PNG, JPG, GIF até 10MB
+                                PNG, JPG, GIF até 50MB
                               </p>
                             </div>
                           </div>

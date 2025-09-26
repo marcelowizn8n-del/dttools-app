@@ -94,7 +94,7 @@ const storage_config = multer.memoryStorage();
 const upload = multer({
   storage: storage_config,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 50 * 1024 * 1024, // 50MB limit - increased to match express.json
   },
   fileFilter: (req: any, file: any, cb: any) => {
     if (file.mimetype.startsWith('image/')) {
