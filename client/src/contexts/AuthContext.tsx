@@ -111,13 +111,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = async (): Promise<void> => {
+    console.log("AuthContext: Starting logout...");
     try {
       // Call logout endpoint
-      await apiRequest("POST", "/api/auth/logout");
-    } catch {
-      // Ignore logout API errors
+      console.log("AuthContext: Calling logout API...");
+      const response = await apiRequest("POST", "/api/auth/logout");
+      console.log("AuthContext: Logout API response:", response.status);
+    } catch (error) {
+      // Log error but continue with logout
+      console.error("AuthContext: Logout API error (continuing anyway):", error);
     }
 
+    console.log("AuthContext: Clearing local storage and state...");
     // Clear local storage and state immediately
     localStorage.removeItem("auth_user");
     setState({
@@ -126,6 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading: false,
     });
     
+    console.log("AuthContext: Forcing page reload...");
     // Force complete page reload to reset all state
     window.location.reload();
   };
