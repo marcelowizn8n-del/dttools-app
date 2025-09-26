@@ -96,7 +96,7 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: any, file: any, cb: any) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
@@ -246,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Endpoint para upload de imagens
-  app.post("/api/upload/avatar", requireAuth, upload.single('avatar'), async (req, res) => {
+  app.post("/api/upload/avatar", requireAuth, upload.single('avatar'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "Nenhum arquivo enviado" });
@@ -272,7 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const avatarUrl = `/uploads/avatars/${fileName}`;
       res.json({ url: avatarUrl });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro no upload:", error);
       res.status(500).json({ error: "Erro ao processar upload" });
     }

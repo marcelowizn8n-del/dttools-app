@@ -1,5 +1,5 @@
-import { useState, useRef, DragEvent, ChangeEvent } from "react";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { useState, useRef, ChangeEvent } from "react";
+import { X, ImageIcon } from "lucide-react";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
 
@@ -19,31 +19,7 @@ export function ImageUpload({
   disabled = false,
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleDrag = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (disabled) return;
-
-    const files = e.dataTransfer.files;
-    if (files && files[0]) {
-      handleFile(files[0]);
-    }
-  };
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -121,14 +97,9 @@ export function ImageUpload({
         <div
           className={cn(
             "border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-colors",
-            dragActive && "border-blue-500 bg-blue-50",
             disabled && "cursor-not-allowed opacity-50",
             !disabled && "hover:border-gray-400"
           )}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
           onClick={openFileDialog}
         >
           <div className="flex flex-col items-center space-y-2">
@@ -139,9 +110,8 @@ export function ImageUpload({
                 <ImageIcon className="w-8 h-8 text-gray-400" />
                 <div className="text-sm text-gray-600">
                   <span className="font-medium text-blue-600 hover:text-blue-500">
-                    Clique para fazer upload
-                  </span>{" "}
-                  ou arraste e solte
+                    Clique para selecionar uma foto
+                  </span>
                 </div>
                 <p className="text-xs text-gray-500">
                   PNG, JPG, GIF até 10MB
