@@ -25,19 +25,20 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-background border-b border-border">
-      <div className="container mx-auto px-4 md:px-6 py-3">
-        <div className="flex items-center justify-between min-h-[60px] gap-1 sm:gap-2 md:gap-4">
+    <header className="site-header bg-background border-b border-border">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-2 sm:py-3">
+        <div className="flex items-center justify-between min-h-[56px] sm:min-h-[60px] gap-2 sm:gap-3 md:gap-4">
           {/* Logo - Responsive logo component */}
           <div className="flex-shrink-0">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                {/* Mobile: Show only icon */}
+                {/* Mobile: Show only icon - INCREASED SIZE */}
                 <img 
                   src={logoIcon}
                   alt="DTTools" 
-                  className="block sm:hidden object-contain shrink-0 h-10 w-10 min-h-[40px] min-w-[40px]"
+                  className="block sm:hidden object-contain shrink-0 h-12 w-12 min-h-[48px] min-w-[48px] sm:h-10 sm:w-10"
                   data-testid="logo-icon-mobile"
+                  onError={(e) => console.error('Logo icon failed to load:', e)}
                 />
                 {/* Desktop: Show full horizontal logo */}
                 <img 
@@ -97,21 +98,31 @@ export default function Header() {
           </nav>
 
           {/* User Actions & Mobile Menu */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            {/* Mobile: Menu Button Only */}
-            <div className="lg:hidden relative z-20">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                data-testid="mobile-menu-button"
-                aria-expanded={isMobileMenuOpen}
-                aria-controls="mobile-menu"
-                aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
-                className="p-2 relative z-20"
-              >
-                {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-              </Button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mobile: User Avatar + Menu Button */}
+            <div className="lg:hidden flex items-center gap-2">
+              {/* Mobile User Avatar - shows when authenticated */}
+              {isAuthenticated && (
+                <div className="relative z-10">
+                  <UserMenu />
+                </div>
+              )}
+              
+              {/* Mobile Menu Button */}
+              <div className="relative z-30">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  data-testid="mobile-menu-button"
+                  aria-expanded={isMobileMenuOpen}
+                  aria-controls="mobile-menu"
+                  aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+                  className="p-2 h-10 w-10 hover:bg-gray-100 relative z-30"
+                >
+                  {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
+              </div>
             </div>
 
             {/* Desktop: Full User Actions */}
@@ -130,9 +141,9 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Fixed positioning issues */}
         {isMobileMenuOpen && (
-          <div id="mobile-menu" className="lg:hidden border-t border-border bg-background relative z-10">
+          <div id="mobile-menu" className="lg:hidden border-t border-border bg-background relative z-20 shadow-lg">
             <div className="container mx-auto px-4 py-4">
               <nav className="flex flex-col space-y-2">
                 <Link href="/projects">
@@ -178,17 +189,13 @@ export default function Header() {
                   </Link>
                 )}
                 
-                {/* Mobile User Actions */}
+                {/* Mobile User Actions - Simplified */}
                 <div className="pt-4 border-t border-border">
                   <div className="flex flex-col space-y-3">
                     <div className="flex justify-center">
                       <LanguageSelector />
                     </div>
-                    {isAuthenticated ? (
-                      <div className="flex justify-center">
-                        <UserMenu />
-                      </div>
-                    ) : (
+                    {!isAuthenticated && (
                       <Link href="/login">
                         <Button className="w-full" data-testid="mobile-button-login" onClick={() => setIsMobileMenuOpen(false)}>
                           {t("nav.login")}
