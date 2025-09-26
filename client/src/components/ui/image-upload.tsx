@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
-import { X, ImageIcon } from "lucide-react";
+import { Upload, X, ImageIcon } from "lucide-react";
 import { Button } from "./button";
+import { Input } from "./input";
 import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
@@ -19,6 +20,7 @@ export function ImageUpload({
   disabled = false,
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,30 +96,51 @@ export function ImageUpload({
           )}
         </div>
       ) : (
-        <div
-          className={cn(
-            "border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-colors",
-            disabled && "cursor-not-allowed opacity-50",
-            !disabled && "hover:border-gray-400"
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={openFileDialog}
+              disabled={disabled || isUploading}
+              className="flex-1"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {isUploading ? "Enviando..." : "Carregar Foto"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowUrlInput(!showUrlInput)}
+              disabled={disabled}
+            >
+              URL
+            </Button>
+          </div>
+          
+          {showUrlInput && (
+            <Input
+              placeholder="https://example.com/avatar.jpg"
+              value={value || ""}
+              onChange={(e) => onChange(e.target.value)}
+              disabled={disabled}
+            />
           )}
-          onClick={openFileDialog}
-        >
-          <div className="flex flex-col items-center space-y-2">
-            {isUploading ? (
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            ) : (
-              <>
-                <ImageIcon className="w-8 h-8 text-gray-400" />
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium text-blue-600 hover:text-blue-500">
-                    Clique para selecionar uma foto
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500">
-                  PNG, JPG, GIF até 10MB
-                </p>
-              </>
+          
+          <div
+            className={cn(
+              "border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer transition-colors",
+              disabled && "cursor-not-allowed opacity-50",
+              !disabled && "hover:border-gray-400"
             )}
+            onClick={openFileDialog}
+          >
+            <div className="flex flex-col items-center space-y-1">
+              <ImageIcon className="w-6 h-6 text-gray-400" />
+              <p className="text-xs text-gray-500">
+                PNG, JPG, GIF até 10MB
+              </p>
+            </div>
           </div>
         </div>
       )}
