@@ -257,12 +257,10 @@ export default function PricingPage() {
     createCheckoutMutation.mutate({ planId, billingPeriod });
   };
 
-  // Sort plans by order
-  const sortedPlans = (plans as SubscriptionPlan[]).sort((a, b) => (a.order || 0) - (b.order || 0));
-  
-  // Debug: verificar se os planos estão sendo carregados
-  console.log("Plans data:", plans);
-  console.log("Sorted plans:", sortedPlans);
+  // Sort plans by order and filter active plans
+  const sortedPlans = (plans as SubscriptionPlan[])
+    .filter(plan => plan.isActive !== false) // Allow for undefined/null
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   if (isLoading) {
     return (
