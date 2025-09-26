@@ -479,11 +479,13 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
                         variant="outline"
                         size="sm"
                         onClick={() => addListInput(section.key)}
-                        className="w-full"
+                        className="w-full text-xs leading-tight h-auto py-2 px-3"
                         data-testid={`button-add-${section.key}`}
                       >
-                        <Plus className="w-3 h-3 mr-1" />
-                        Adicionar {section.label.slice(0, -1)}
+                        <Plus className="w-3 h-3 mr-1 flex-shrink-0" />
+                        <span className="text-center">
+                          Adicionar {section.label.slice(0, -1)}
+                        </span>
                       </Button>
                     </div>
                   </div>
