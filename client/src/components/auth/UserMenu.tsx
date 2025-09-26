@@ -22,9 +22,12 @@ export function UserMenu() {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
+      console.log("UserMenu: Starting logout process...");
       await logout();
+      console.log("UserMenu: Logout completed successfully");
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("UserMenu: Logout error:", error);
+      alert(`Erro no logout: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setIsLoggingOut(false);
     }
