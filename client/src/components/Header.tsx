@@ -32,11 +32,11 @@ export default function Header() {
           <div className="flex-shrink-0">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                {/* Mobile: Show only icon - INCREASED SIZE */}
+                {/* Mobile: Show only icon - MUCH LARGER SIZE */}
                 <img 
                   src={logoIcon}
                   alt="DTTools" 
-                  className="block sm:hidden object-contain shrink-0 h-12 w-12 min-h-[48px] min-w-[48px] sm:h-10 sm:w-10"
+                  className="block sm:hidden object-contain shrink-0 h-16 w-16 min-h-[64px] min-w-[64px]"
                   data-testid="logo-icon-mobile"
                   onError={(e) => console.error('Logo icon failed to load:', e)}
                 />
@@ -99,30 +99,20 @@ export default function Header() {
 
           {/* User Actions & Mobile Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Mobile: User Avatar + Menu Button */}
-            <div className="lg:hidden flex items-center gap-2">
-              {/* Mobile User Avatar - shows when authenticated */}
-              {isAuthenticated && (
-                <div className="relative z-10">
-                  <UserMenu />
-                </div>
-              )}
-              
-              {/* Mobile Menu Button */}
-              <div className="relative z-30">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  data-testid="mobile-menu-button"
-                  aria-expanded={isMobileMenuOpen}
-                  aria-controls="mobile-menu"
-                  aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
-                  className="p-2 h-10 w-10 hover:bg-gray-100 relative z-30"
-                >
-                  {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                </Button>
-              </div>
+            {/* Mobile: ONLY Menu Button - User avatar goes inside menu */}
+            <div className="lg:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                data-testid="mobile-menu-button"
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-menu"
+                aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+                className="p-2 h-12 w-12 hover:bg-gray-100 relative z-30"
+              >
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
             </div>
 
             {/* Desktop: Full User Actions */}
@@ -189,13 +179,17 @@ export default function Header() {
                   </Link>
                 )}
                 
-                {/* Mobile User Actions - Simplified */}
+                {/* Mobile User Actions - WITH UserMenu */}
                 <div className="pt-4 border-t border-border">
                   <div className="flex flex-col space-y-3">
                     <div className="flex justify-center">
                       <LanguageSelector />
                     </div>
-                    {!isAuthenticated && (
+                    {isAuthenticated ? (
+                      <div className="flex justify-center py-2">
+                        <UserMenu />
+                      </div>
+                    ) : (
                       <Link href="/login">
                         <Button className="w-full" data-testid="mobile-button-login" onClick={() => setIsMobileMenuOpen(false)}>
                           {t("nav.login")}
