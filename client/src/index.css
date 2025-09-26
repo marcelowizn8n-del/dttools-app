@@ -131,6 +131,30 @@ img {
 
 /* Force cache busting for updated assets */
 body::before {
-  content: "v1.0.3-mobile-fixes";
+  content: "v1.0.4-mobile-definitive-fix";
   display: none;
+}
+
+/* Mobile layout fixes - SCOPED to avoid conflicts */
+@media (max-width: 640px) {
+  /* Site header specific fixes only */
+  .site-header {
+    position: relative;
+    z-index: 40;
+  }
+  
+  /* Mobile menu dropdown fixes */
+  .site-header [data-radix-popper-content-wrapper] {
+    z-index: 9999 !important;
+  }
+  
+  /* Mobile menu fixes */
+  .site-header #mobile-menu {
+    z-index: 30 !important;
+  }
+  
+  /* Mobile user menu button fixes */
+  .site-header [data-testid="button-user-menu"] {
+    z-index: 50;
+  }
 }

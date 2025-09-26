@@ -37,15 +37,15 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="button-user-menu">
-          <Avatar className="h-8 w-8">
+        <Button variant="ghost" className="relative h-9 w-9 sm:h-8 sm:w-8 rounded-full hover:bg-gray-100" data-testid="button-user-menu">
+          <Avatar className="h-9 w-9 sm:h-8 sm:w-8">
             <AvatarFallback className="bg-blue-600 text-white text-sm font-medium">
               {getUserInitials(user.username)}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56 z-50" align="end" forceMount sideOffset={8}>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none" data-testid="text-username">
