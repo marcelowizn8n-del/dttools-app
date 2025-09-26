@@ -329,7 +329,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const dataToValidate = {
         ...req.body,
-        projectId: req.params.projectId
+        projectId: req.params.projectId,
+        // Converter string de data para Date object se necessário
+        date: req.body.date ? new Date(req.body.date) : new Date(),
       };
       console.log("Data to validate:", JSON.stringify(dataToValidate, null, 2));
       
