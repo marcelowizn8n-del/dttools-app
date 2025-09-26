@@ -259,6 +259,10 @@ export default function PricingPage() {
 
   // Sort plans by order
   const sortedPlans = (plans as SubscriptionPlan[]).sort((a, b) => (a.order || 0) - (b.order || 0));
+  
+  // Debug: verificar se os planos estão sendo carregados
+  console.log("Plans data:", plans);
+  console.log("Sorted plans:", sortedPlans);
 
   if (isLoading) {
     return (
