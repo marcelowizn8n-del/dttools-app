@@ -102,3 +102,15 @@
   display: block;
   /* Remove min-height as it was causing mobile issues */
 }
+
+/* Fix image orientation issues from mobile uploads */
+img {
+  image-orientation: from-image;
+}
+
+/* Ensure avatar images maintain proper aspect ratio and center positioning */
+.persona-avatar {
+  image-orientation: from-image;
+  object-fit: cover;
+  object-position: center;
+}

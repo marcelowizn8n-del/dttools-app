@@ -434,7 +434,7 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
                             <img
                               src={field.value}
                               alt="Avatar"
-                              className="w-24 h-24 rounded-full object-cover mx-auto border-2 border-gray-200"
+                              className="w-24 h-24 rounded-full object-cover mx-auto border-2 border-gray-200 persona-avatar"
                             />
                             <Button
                               type="button"
