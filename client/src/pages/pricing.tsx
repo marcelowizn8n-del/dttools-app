@@ -219,9 +219,13 @@ export default function PricingPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const { data: plans = [], isLoading } = useQuery({
+  const { data: plans = [], isLoading, error } = useQuery({
     queryKey: ["/api/subscription-plans"],
   });
+  
+  // Debug logs
+  console.log("Query state:", { plans, isLoading, error });
+  console.log("Plans length:", Array.isArray(plans) ? plans.length : "not array");
 
   const createCheckoutMutation = useMutation({
     mutationFn: async ({ planId, billingPeriod }: { planId: string; billingPeriod: "monthly" | "yearly" }) => {
@@ -266,6 +270,15 @@ export default function PricingPage() {
     return (
       <div className="bg-gradient-to-b from-blue-50 to-white flex items-center justify-center py-20">
         <div className="text-lg">{t("loading.plans")}</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error("Error loading plans:", error);
+    return (
+      <div className="bg-gradient-to-b from-blue-50 to-white flex items-center justify-center py-20">
+        <div className="text-lg text-red-600">Erro ao carregar planos</div>
       </div>
     );
   }
