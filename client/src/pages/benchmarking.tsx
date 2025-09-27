@@ -13,8 +13,16 @@ import {
   Plus,
   Edit,
   Trash2,
-  Download
+  Download,
+  Heart,
+  CheckCircle,
+  Activity,
+  Zap
 } from "lucide-react";
+import DvfAssessmentComponent from "@/components/benchmarking/DvfAssessment";
+import LovabilityMetricsComponent from "@/components/benchmarking/LovabilityMetrics";
+import ProjectAnalyticsComponent from "@/components/benchmarking/ProjectAnalytics";
+import CompetitiveAnalysisComponent from "@/components/benchmarking/CompetitiveAnalysis";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +65,13 @@ export default function BenchmarkingPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedBenchmark, setSelectedBenchmark] = useState<Benchmark | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  
+  // New benchmarking features states
+  const [showDvfAssessment, setShowDvfAssessment] = useState(false);
+  const [showLovabilityMetrics, setShowLovabilityMetrics] = useState(false);
+  const [showProjectAnalytics, setShowProjectAnalytics] = useState(false);
+  const [showCompetitiveAnalysis, setShowCompetitiveAnalysis] = useState(false);
+  const [selectedProjectForAnalysis, setSelectedProjectForAnalysis] = useState<Project | null>(null);
   const [newBenchmark, setNewBenchmark] = useState({
     name: "",
     description: "",
@@ -266,6 +281,101 @@ export default function BenchmarkingPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Advanced Benchmarking Tools */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5" />
+            Análises Avançadas de Benchmarking
+          </CardTitle>
+          <CardDescription>
+            Ferramentas especializadas para análise profunda e benchmarking competitivo
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* DVF Assessment */}
+            <Card className="cursor-pointer border-2 hover:border-blue-500 transition-colors"
+                  onClick={() => {
+                    if (projects.length > 0) {
+                      setSelectedProjectForAnalysis(projects[0] as Project);
+                      setShowDvfAssessment(true);
+                    }
+                  }}>
+              <CardContent className="p-4 text-center">
+                <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-3" />
+                <h3 className="font-semibold mb-1">Avaliação DVF</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Desejabilidade, Viabilidade e Exequibilidade
+                </p>
+                <Badge className="bg-green-100 text-green-800">Metodologia</Badge>
+              </CardContent>
+            </Card>
+
+            {/* Lovability Metrics */}
+            <Card className="cursor-pointer border-2 hover:border-pink-500 transition-colors"
+                  onClick={() => {
+                    if (projects.length > 0) {
+                      setSelectedProjectForAnalysis(projects[0] as Project);
+                      setShowLovabilityMetrics(true);
+                    }
+                  }}>
+              <CardContent className="p-4 text-center">
+                <Heart className="w-8 h-8 text-pink-600 mx-auto mb-3" />
+                <h3 className="font-semibold mb-1">Métricas de Amabilidade</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Análise emocional e engajamento
+                </p>
+                <Badge className="bg-pink-100 text-pink-800">Qualitativo</Badge>
+              </CardContent>
+            </Card>
+
+            {/* Project Analytics */}
+            <Card className="cursor-pointer border-2 hover:border-purple-500 transition-colors"
+                  onClick={() => {
+                    if (projects.length > 0) {
+                      setSelectedProjectForAnalysis(projects[0] as Project);
+                      setShowProjectAnalytics(true);
+                    }
+                  }}>
+              <CardContent className="p-4 text-center">
+                <Activity className="w-8 h-8 text-purple-600 mx-auto mb-3" />
+                <h3 className="font-semibold mb-1">Analytics do Projeto</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  KPIs e métricas detalhadas
+                </p>
+                <Badge className="bg-purple-100 text-purple-800">Quantitativo</Badge>
+              </CardContent>
+            </Card>
+
+            {/* Competitive Analysis */}
+            <Card className="cursor-pointer border-2 hover:border-orange-500 transition-colors"
+                  onClick={() => {
+                    if (projects.length > 0) {
+                      setSelectedProjectForAnalysis(projects[0] as Project);
+                      setShowCompetitiveAnalysis(true);
+                    }
+                  }}>
+              <CardContent className="p-4 text-center">
+                <Target className="w-8 h-8 text-orange-600 mx-auto mb-3" />
+                <h3 className="font-semibold mb-1">Análise Competitiva</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Benchmarks externos e gaps
+                </p>
+                <Badge className="bg-orange-100 text-orange-800">Estratégico</Badge>
+              </CardContent>
+            </Card>
+          </div>
+
+          {projects.length === 0 && (
+            <div className="text-center py-6 text-gray-500">
+              <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>Crie um projeto primeiro para acessar as análises avançadas</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Phases Performance Chart */}
       <Card className="mb-8">
@@ -619,6 +729,56 @@ export default function BenchmarkingPage() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* DVF Assessment Modal */}
+      {showDvfAssessment && selectedProjectForAnalysis && (
+        <DvfAssessmentComponent
+          projectId={selectedProjectForAnalysis.id}
+          itemId="project-assessment"
+          itemName={selectedProjectForAnalysis.name}
+          itemType="solution"
+          onClose={() => {
+            setShowDvfAssessment(false);
+            setSelectedProjectForAnalysis(null);
+          }}
+        />
+      )}
+
+      {/* Lovability Metrics Modal */}
+      {showLovabilityMetrics && selectedProjectForAnalysis && (
+        <LovabilityMetricsComponent
+          projectId={selectedProjectForAnalysis.id}
+          projectName={selectedProjectForAnalysis.name}
+          onClose={() => {
+            setShowLovabilityMetrics(false);
+            setSelectedProjectForAnalysis(null);
+          }}
+        />
+      )}
+
+      {/* Project Analytics Modal */}
+      {showProjectAnalytics && selectedProjectForAnalysis && (
+        <ProjectAnalyticsComponent
+          projectId={selectedProjectForAnalysis.id}
+          projectName={selectedProjectForAnalysis.name}
+          onClose={() => {
+            setShowProjectAnalytics(false);
+            setSelectedProjectForAnalysis(null);
+          }}
+        />
+      )}
+
+      {/* Competitive Analysis Modal */}
+      {showCompetitiveAnalysis && selectedProjectForAnalysis && (
+        <CompetitiveAnalysisComponent
+          projectId={selectedProjectForAnalysis.id}
+          projectName={selectedProjectForAnalysis.name}
+          onClose={() => {
+            setShowCompetitiveAnalysis(false);
+            setSelectedProjectForAnalysis(null);
+          }}
+        />
       )}
     </div>
   );
