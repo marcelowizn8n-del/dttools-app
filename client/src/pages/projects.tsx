@@ -178,7 +178,7 @@ function ProjectCard({ project }: { project: Project }) {
                 data-testid={`button-export-pptx-${project.id}`}
               >
                 <FileText className="w-3 h-3 mr-1" />
-                <span className="font-medium">PPTX</span>
+                <span className="font-medium">PPTX-TEST</span>
               </Button>
               <Button
                 variant="outline"
