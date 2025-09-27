@@ -1969,6 +1969,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Benchmarking Recommendations Route
+  // POST /api/benchmarking/ai-recommendations/:projectId
+  app.post("/api/benchmarking/ai-recommendations/:projectId", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      
+      // Verify project ownership
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Collect all benchmarking data
+      const [dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalyses] = await Promise.all([
+        storage.getDvfAssessments(projectId),
+        storage.getLovabilityMetrics(projectId),
+        storage.getProjectAnalytics(projectId),
+        storage.getCompetitiveAnalyses(projectId)
+      ]);
+
+      // Transform data for AI analysis
+      const benchmarkingData = {
+        projectId: project.id,
+        projectName: project.name,
+        projectDescription: project.description,
+        
+        // DVF data with calculated scores
+        dvfAssessments: dvfAssessments.map((assessment: any) => ({
+          desirabilityScore: assessment.desirabilityScore || 0,
+          feasibilityScore: assessment.feasibilityScore || 0,
+          viabilityScore: assessment.viabilityScore || 0,
+          recommendation: assessment.recommendation || 'modify',
+          overallScore: Math.round(((assessment.desirabilityScore || 0) + 
+                                   (assessment.feasibilityScore || 0) + 
+                                   (assessment.viabilityScore || 0)) / 3 * 10) / 10
+        })),
+        
+        // Lovability metrics
+        lovabilityMetrics: projectAnalytics.length > 0 ? {
+          npsScore: lovabilityMetrics[0]?.npsScore || 0,
+          satisfactionScore: lovabilityMetrics[0]?.satisfactionScore || 0,
+          engagementRate: lovabilityMetrics[0]?.engagementRate || 0,
+          emotionalDistribution: lovabilityMetrics[0]?.emotionalDistribution || {},
+          overallLovabilityScore: lovabilityMetrics[0]?.overallScore || 0
+        } : undefined,
+        
+        // Project analytics
+        projectAnalytics: projectAnalytics.length > 0 ? {
+          completionRate: projectAnalytics[0]?.completionRate || 0,
+          totalTimeSpent: projectAnalytics[0]?.totalTimeSpent || 0,
+          teamSize: projectAnalytics[0]?.teamSize || 1,
+          innovationLevel: projectAnalytics[0]?.innovationLevel || 0,
+          overallSuccess: projectAnalytics[0]?.overallSuccess || 0,
+          topPerformingTools: (projectAnalytics[0]?.topPerformingTools as string[]) || [],
+          timeBottlenecks: (projectAnalytics[0]?.timeBottlenecks as string[]) || []
+        } : undefined,
+        
+        // Competitive analysis
+        competitiveAnalysis: competitiveAnalyses.map((analysis: any) => {
+          const advantagesCount = Array.isArray(analysis.ourAdvantages) ? analysis.ourAdvantages.length : 0;
+          const gapsCount = Array.isArray(analysis.functionalGaps) ? analysis.functionalGaps.length : 0;
+          
+          return {
+            competitorName: analysis.competitorName || '',
+            competitorType: analysis.competitorType || 'direct',
+            marketPosition: analysis.marketPosition || 'challenger',
+            ourAdvantages: (analysis.ourAdvantages as string[]) || [],
+            functionalGaps: (analysis.functionalGaps as string[]) || [],
+            competitivenessScore: Math.max(0, Math.min(10, (advantagesCount * 2) - (gapsCount * 0.5)))
+          };
+        })
+      };
+
+      // Import Gemini service
+      const { designThinkingGeminiAI } = await import("./geminiService");
+      
+      // Generate AI recommendations
+      const recommendations = await designThinkingGeminiAI.generateBenchmarkingRecommendations(benchmarkingData);
+      
+      res.json({
+        success: true,
+        data: {
+          projectInfo: {
+            name: project.name,
+            description: project.description
+          },
+          dataCollected: {
+            dvfAssessments: dvfAssessments.length,
+            lovabilityMetrics: lovabilityMetrics.length,
+            projectAnalytics: projectAnalytics.length,
+            competitiveAnalyses: competitiveAnalyses.length
+          },
+          recommendations
+        }
+      });
+      
+    } catch (error) {
+      console.error("Error generating AI benchmarking recommendations:", error);
+      res.status(500).json({ 
+        error: "Failed to generate AI recommendations",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // GET /api/projects/:id/export-pptx - Export project as PPTX
   app.get("/api/projects/:id/export-pptx", requireAuth, async (req, res) => {
     try {

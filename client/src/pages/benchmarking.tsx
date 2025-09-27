@@ -17,12 +17,14 @@ import {
   Heart,
   CheckCircle,
   Activity,
-  Zap
+  Zap,
+  Brain
 } from "lucide-react";
 import DvfAssessmentComponent from "@/components/benchmarking/DvfAssessment";
 import LovabilityMetricsComponent from "@/components/benchmarking/LovabilityMetrics";
 import ProjectAnalyticsComponent from "@/components/benchmarking/ProjectAnalytics";
 import CompetitiveAnalysisComponent from "@/components/benchmarking/CompetitiveAnalysis";
+import AIRecommendationsComponent from "@/components/benchmarking/AIRecommendations";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +73,7 @@ export default function BenchmarkingPage() {
   const [showLovabilityMetrics, setShowLovabilityMetrics] = useState(false);
   const [showProjectAnalytics, setShowProjectAnalytics] = useState(false);
   const [showCompetitiveAnalysis, setShowCompetitiveAnalysis] = useState(false);
+  const [showAIRecommendations, setShowAIRecommendations] = useState(false);
   const [selectedProjectForAnalysis, setSelectedProjectForAnalysis] = useState<Project | null>(null);
   const [newBenchmark, setNewBenchmark] = useState({
     name: "",
@@ -294,7 +297,7 @@ export default function BenchmarkingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {/* DVF Assessment */}
             <Card className="cursor-pointer border-2 hover:border-blue-500 transition-colors"
                   onClick={() => {
@@ -364,6 +367,24 @@ export default function BenchmarkingPage() {
                   Benchmarks externos e gaps
                 </p>
                 <Badge className="bg-orange-100 text-orange-800">Estratégico</Badge>
+              </CardContent>
+            </Card>
+
+            {/* AI Recommendations */}
+            <Card className="cursor-pointer border-2 hover:border-purple-500 transition-colors"
+                  onClick={() => {
+                    if (projects.length > 0) {
+                      setSelectedProjectForAnalysis(projects[0] as Project);
+                      setShowAIRecommendations(true);
+                    }
+                  }}>
+              <CardContent className="p-4 text-center">
+                <Brain className="w-8 h-8 text-purple-600 mx-auto mb-3" />
+                <h3 className="font-semibold mb-1">Recomendações IA</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Insights inteligentes e análise cruzada
+                </p>
+                <Badge className="bg-purple-100 text-purple-800">Inteligência</Badge>
               </CardContent>
             </Card>
           </div>
@@ -776,6 +797,18 @@ export default function BenchmarkingPage() {
           projectName={selectedProjectForAnalysis.name}
           onClose={() => {
             setShowCompetitiveAnalysis(false);
+            setSelectedProjectForAnalysis(null);
+          }}
+        />
+      )}
+
+      {/* AI Recommendations Modal */}
+      {showAIRecommendations && selectedProjectForAnalysis && (
+        <AIRecommendationsComponent
+          projectId={selectedProjectForAnalysis.id}
+          projectName={selectedProjectForAnalysis.name}
+          onClose={() => {
+            setShowAIRecommendations(false);
             setSelectedProjectForAnalysis(null);
           }}
         />
