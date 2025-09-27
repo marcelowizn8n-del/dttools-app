@@ -1,5 +1,5 @@
 import pptxgen from "pptxgenjs";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import { storage } from "./storage";
 import type { 
   Project, 
@@ -1110,6 +1110,208 @@ export class PPTXService {
     } catch (error) {
       console.error("Error generating PDF:", error);
       throw new Error("Failed to generate PDF document");
+    }
+  }
+
+  async generateProjectMarkdown(projectId: string): Promise<string> {
+    try {
+      // Fetch all project data
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        throw new Error("Project not found");
+      }
+
+      const empathyMaps = await storage.getEmpathyMaps(projectId);
+      const personas = await storage.getPersonas(projectId);
+      const interviews = await storage.getInterviews(projectId);
+      const observations = await storage.getObservations(projectId);
+      const povStatements = await storage.getPovStatements(projectId);
+      const hmwQuestions = await storage.getHmwQuestions(projectId);
+      const ideas = await storage.getIdeas(projectId);
+      const prototypes = await storage.getPrototypes(projectId);
+      const testPlans = await storage.getTestPlans(projectId);
+      const testResults = await storage.getTestResults(projectId);
+
+      let markdown = "";
+
+      // Title and Header
+      markdown += `# ${project.name}\n\n`;
+      markdown += `> **Projeto de Design Thinking**  \n`;
+      markdown += `> Gerado pelo [DTTools](https://dttools.app) • ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+      
+      markdown += `---\n\n`;
+
+      // Project overview
+      markdown += `## 📋 Visão Geral do Projeto\n\n`;
+      markdown += `**Descrição:** ${project.description}\n\n`;
+      markdown += `**Status:** ${project.status}\n\n`;
+      markdown += `**Fase atual:** ${project.currentPhase}\n\n`;
+      markdown += `**Taxa de conclusão:** ${project.completionRate}%\n\n`;
+
+      markdown += `---\n\n`;
+
+      // Phase 1: Empatizar
+      markdown += `## 🤝 Fase 1: Empatizar\n\n`;
+
+      if (empathyMaps.length > 0) {
+        markdown += `### 🗺️ Mapas de Empatia\n\n`;
+        empathyMaps.forEach((map, index) => {
+          markdown += `#### ${index + 1}. ${map.title}\n\n`;
+          markdown += `**O que diz:**\n`;
+          if (Array.isArray(map.says)) {
+            map.says.forEach(item => markdown += `- ${item}\n`);
+          }
+          markdown += `\n**O que pensa:**\n`;
+          if (Array.isArray(map.thinks)) {
+            map.thinks.forEach(item => markdown += `- ${item}\n`);
+          }
+          markdown += `\n**O que faz:**\n`;
+          if (Array.isArray(map.does)) {
+            map.does.forEach(item => markdown += `- ${item}\n`);
+          }
+          markdown += `\n**O que sente:**\n`;
+          if (Array.isArray(map.feels)) {
+            map.feels.forEach(item => markdown += `- ${item}\n`);
+          }
+          markdown += `\n`;
+        });
+      }
+
+      if (personas.length > 0) {
+        markdown += `### 👤 Personas\n\n`;
+        personas.forEach((persona, index) => {
+          markdown += `#### ${index + 1}. ${persona.name}\n\n`;
+          markdown += `- **Idade:** ${persona.age} anos\n`;
+          markdown += `- **Ocupação:** ${persona.occupation}\n`;
+          if (persona.bio) markdown += `- **Bio:** ${persona.bio}\n`;
+          if (persona.goals) markdown += `- **Objetivos:** ${persona.goals}\n`;
+          if (persona.frustrations) markdown += `- **Frustrações:** ${persona.frustrations}\n`;
+          if (persona.motivations) markdown += `- **Motivações:** ${persona.motivations}\n`;
+          if (persona.techSavviness) markdown += `- **Nível técnico:** ${persona.techSavviness}\n`;
+          markdown += `\n`;
+        });
+      }
+
+      if (interviews.length > 0) {
+        markdown += `### 🎤 Entrevistas\n\n`;
+        interviews.forEach((interview, index) => {
+          markdown += `#### ${index + 1}. ${interview.participantName}\n\n`;
+          markdown += `- **Data:** ${interview.date}\n`;
+          if (interview.duration) markdown += `- **Duração:** ${interview.duration} minutos\n`;
+          if (interview.questions) markdown += `- **Perguntas:** ${interview.questions}\n`;
+          if (interview.responses) markdown += `- **Respostas:** ${interview.responses}\n`;
+          if (interview.insights) markdown += `- **Insights:** ${interview.insights}\n`;
+          markdown += `\n`;
+        });
+      }
+
+      if (observations.length > 0) {
+        markdown += `### 👀 Observações\n\n`;
+        observations.forEach((obs, index) => {
+          markdown += `#### ${index + 1}. ${obs.location}\n\n`;
+          markdown += `- **Data:** ${obs.date}\n`;
+          if (obs.context) markdown += `- **Contexto:** ${obs.context}\n`;
+          if (obs.behavior) markdown += `- **Comportamento:** ${obs.behavior}\n`;
+          if (obs.insights) markdown += `- **Insights:** ${obs.insights}\n`;
+          markdown += `\n`;
+        });
+      }
+
+      // Phase 2: Definir
+      markdown += `## 🎯 Fase 2: Definir\n\n`;
+
+      if (povStatements.length > 0) {
+        markdown += `### 📝 Declarações de Ponto de Vista (POV)\n\n`;
+        povStatements.forEach((pov, index) => {
+          markdown += `#### ${index + 1}. ${pov.user}\n\n`;
+          markdown += `> **${pov.user}** precisa **${pov.need}** porque **${pov.insight}**.\n\n`;
+        });
+      }
+
+      if (hmwQuestions.length > 0) {
+        markdown += `### ❓ Perguntas "Como Podemos" (HMW)\n\n`;
+        hmwQuestions.forEach((hmw, index) => {
+          markdown += `${index + 1}. **${hmw.question}**`;
+          if (hmw.category) markdown += ` *(${hmw.category})*`;
+          markdown += `\n`;
+        });
+        markdown += `\n`;
+      }
+
+      // Phase 3: Idear
+      markdown += `## 💡 Fase 3: Idear\n\n`;
+
+      if (ideas.length > 0) {
+        markdown += `### 🚀 Ideias Geradas\n\n`;
+        ideas.forEach((idea, index) => {
+          markdown += `#### ${index + 1}. ${idea.title}\n\n`;
+          markdown += `${idea.description}\n\n`;
+          if (idea.category) markdown += `**Categoria:** ${idea.category}\n\n`;
+          
+          // DVF Scores if available
+          if (idea.feasibility || idea.impact || idea.desirability) {
+            markdown += `**Avaliação DVF:**\n`;
+            if (idea.desirability) markdown += `- Desejabilidade: ${idea.desirability}/10\n`;
+            if (idea.feasibility) markdown += `- Viabilidade: ${idea.feasibility}/10\n`;
+            if (idea.impact) markdown += `- Exequibilidade: ${idea.impact}/10\n`;
+            markdown += `\n`;
+          }
+        });
+      }
+
+      // Phase 4: Prototipar
+      markdown += `## 🔧 Fase 4: Prototipar\n\n`;
+
+      if (prototypes.length > 0) {
+        markdown += `### 🛠️ Protótipos Desenvolvidos\n\n`;
+        prototypes.forEach((prototype, index) => {
+          markdown += `#### ${index + 1}. ${prototype.name}\n\n`;
+          markdown += `${prototype.description}\n\n`;
+          if (prototype.type) markdown += `**Tipo:** ${prototype.type}\n\n`;
+          if (prototype.materials && Array.isArray(prototype.materials)) {
+            markdown += `**Materiais:**\n`;
+            prototype.materials.forEach(material => markdown += `- ${material}\n`);
+            markdown += `\n`;
+          }
+          if (prototype.feedback) markdown += `**Feedback:** ${prototype.feedback}\n\n`;
+        });
+      }
+
+      // Phase 5: Testar
+      markdown += `## 🧪 Fase 5: Testar\n\n`;
+
+      if (testPlans.length > 0) {
+        markdown += `### 📋 Planos de Teste\n\n`;
+        testPlans.forEach((plan, index) => {
+          markdown += `#### ${index + 1}. ${plan.name}\n\n`;
+          if (plan.objective) markdown += `**Objetivo:** ${plan.objective}\n\n`;
+          if (plan.methodology) markdown += `**Metodologia:** ${plan.methodology}\n\n`;
+          if (plan.participants) markdown += `**Participantes:** ${plan.participants}\n\n`;
+          if (plan.duration) markdown += `**Duração:** ${plan.duration} dias\n\n`;
+        });
+      }
+
+      if (testResults.length > 0) {
+        markdown += `### 📊 Resultados dos Testes\n\n`;
+        testResults.forEach((result, index) => {
+          markdown += `#### ${index + 1}. ${result.participantId}\n\n`;
+          if (result.feedback) markdown += `**Feedback:** ${result.feedback}\n\n`;
+          if (result.insights) markdown += `**Insights:** ${result.insights}\n\n`;
+          if (result.successRate) markdown += `**Taxa de sucesso:** ${result.successRate}%\n\n`;
+        });
+      }
+
+      // Footer
+      markdown += `---\n\n`;
+      markdown += `*Relatório gerado pelo **DTTools** - Plataforma de Design Thinking*  \n`;
+      markdown += `*Acesse: [dttools.app](https://dttools.app)*  \n`;
+      markdown += `*Data: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}*\n`;
+
+      return markdown;
+
+    } catch (error) {
+      console.error("Error generating Markdown:", error);
+      throw new Error("Failed to generate Markdown document");
     }
   }
 }
