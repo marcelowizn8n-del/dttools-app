@@ -169,36 +169,36 @@ function ProjectCard({ project }: { project: Project }) {
             </div>
             
             {/* Export Buttons - Moved to bottom */}
-            <div className="flex gap-1 pt-2 border-t border-gray-100">
+            <div className="grid grid-cols-3 gap-1 pt-2 border-t border-gray-100">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleExportPPTX}
-                className="flex-1 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 shadow-sm"
+                className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 shadow-sm text-xs"
                 data-testid={`button-export-pptx-${project.id}`}
               >
                 <FileText className="w-3 h-3 mr-1" />
-                <span className="text-xs font-medium">PPTX</span>
+                <span className="font-medium">PPTX</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleExportPDF}
-                className="flex-1 bg-red-50 hover:bg-red-100 border-red-200 text-red-700 shadow-sm"
+                className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700 shadow-sm text-xs"
                 data-testid={`button-export-pdf-${project.id}`}
               >
                 <FileText className="w-3 h-3 mr-1" />
-                <span className="text-xs font-medium">PDF</span>
+                <span className="font-medium">PDF</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleExportMarkdown}
-                className="flex-1 bg-green-50 hover:bg-green-100 border-green-200 text-green-700 shadow-sm"
+                className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 shadow-sm text-xs"
                 data-testid={`button-export-markdown-${project.id}`}
               >
                 <FileText className="w-3 h-3 mr-1" />
-                <span className="text-xs font-medium">MD</span>
+                <span className="font-medium">MD</span>
               </Button>
             </div>
           </div>
