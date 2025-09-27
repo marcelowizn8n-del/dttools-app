@@ -26,6 +26,10 @@ import {
   insertPhaseCardSchema,
   insertBenchmarkSchema,
   insertBenchmarkAssessmentSchema,
+  insertDvfAssessmentSchema,
+  insertLovabilityMetricSchema,
+  insertProjectAnalyticsSchema,
+  insertCompetitiveAnalysisSchema,
   updateProfileSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
@@ -1739,6 +1743,229 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting benchmark assessment:", error);
       res.status(500).json({ error: "Failed to delete benchmark assessment" });
+    }
+  });
+
+  // DVF Assessment Routes (Desirability, Feasibility, Viability)
+  // GET /api/dvf-assessments/:projectId
+  app.get("/api/dvf-assessments/:projectId", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const assessments = await storage.getDvfAssessments(projectId);
+      res.json(assessments);
+    } catch (error) {
+      console.error("Error fetching DVF assessments:", error);
+      res.status(500).json({ error: "Failed to fetch DVF assessments" });
+    }
+  });
+
+  // POST /api/dvf-assessments
+  app.post("/api/dvf-assessments", requireAuth, async (req, res) => {
+    try {
+      const parsed = insertDvfAssessmentSchema.parse(req.body);
+      const assessment = await storage.createDvfAssessment(parsed);
+      res.status(201).json(assessment);
+    } catch (error) {
+      console.error("Error creating DVF assessment:", error);
+      res.status(500).json({ error: "Failed to create DVF assessment" });
+    }
+  });
+
+  // PUT /api/dvf-assessments/:id
+  app.put("/api/dvf-assessments/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const parsed = insertDvfAssessmentSchema.partial().parse(req.body);
+      const assessment = await storage.updateDvfAssessment(id, parsed);
+      
+      if (!assessment) {
+        return res.status(404).json({ error: "DVF assessment not found" });
+      }
+      
+      res.json(assessment);
+    } catch (error) {
+      console.error("Error updating DVF assessment:", error);
+      res.status(500).json({ error: "Failed to update DVF assessment" });
+    }
+  });
+
+  // DELETE /api/dvf-assessments/:id
+  app.delete("/api/dvf-assessments/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteDvfAssessment(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "DVF assessment not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting DVF assessment:", error);
+      res.status(500).json({ error: "Failed to delete DVF assessment" });
+    }
+  });
+
+  // Lovability Metrics Routes
+  // GET /api/lovability-metrics/:projectId
+  app.get("/api/lovability-metrics/:projectId", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const metrics = await storage.getLovabilityMetrics(projectId);
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching lovability metrics:", error);
+      res.status(500).json({ error: "Failed to fetch lovability metrics" });
+    }
+  });
+
+  // POST /api/lovability-metrics
+  app.post("/api/lovability-metrics", requireAuth, async (req, res) => {
+    try {
+      const parsed = insertLovabilityMetricSchema.parse(req.body);
+      const metric = await storage.createLovabilityMetric(parsed);
+      res.status(201).json(metric);
+    } catch (error) {
+      console.error("Error creating lovability metric:", error);
+      res.status(500).json({ error: "Failed to create lovability metric" });
+    }
+  });
+
+  // PUT /api/lovability-metrics/:id
+  app.put("/api/lovability-metrics/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const parsed = insertLovabilityMetricSchema.partial().parse(req.body);
+      const metric = await storage.updateLovabilityMetric(id, parsed);
+      
+      if (!metric) {
+        return res.status(404).json({ error: "Lovability metric not found" });
+      }
+      
+      res.json(metric);
+    } catch (error) {
+      console.error("Error updating lovability metric:", error);
+      res.status(500).json({ error: "Failed to update lovability metric" });
+    }
+  });
+
+  // DELETE /api/lovability-metrics/:id
+  app.delete("/api/lovability-metrics/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteLovabilityMetric(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Lovability metric not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting lovability metric:", error);
+      res.status(500).json({ error: "Failed to delete lovability metric" });
+    }
+  });
+
+  // Project Analytics Routes
+  // GET /api/project-analytics/:projectId
+  app.get("/api/project-analytics/:projectId", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const analytics = await storage.getProjectAnalytics(projectId);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching project analytics:", error);
+      res.status(500).json({ error: "Failed to fetch project analytics" });
+    }
+  });
+
+  // POST /api/project-analytics
+  app.post("/api/project-analytics", requireAuth, async (req, res) => {
+    try {
+      const parsed = insertProjectAnalyticsSchema.parse(req.body);
+      const analytics = await storage.createProjectAnalytics(parsed);
+      res.status(201).json(analytics);
+    } catch (error) {
+      console.error("Error creating project analytics:", error);
+      res.status(500).json({ error: "Failed to create project analytics" });
+    }
+  });
+
+  // PUT /api/project-analytics/:id
+  app.put("/api/project-analytics/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const parsed = insertProjectAnalyticsSchema.partial().parse(req.body);
+      const analytics = await storage.updateProjectAnalytics(id, parsed);
+      
+      if (!analytics) {
+        return res.status(404).json({ error: "Project analytics not found" });
+      }
+      
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error updating project analytics:", error);
+      res.status(500).json({ error: "Failed to update project analytics" });
+    }
+  });
+
+  // Competitive Analysis Routes
+  // GET /api/competitive-analysis/:projectId
+  app.get("/api/competitive-analysis/:projectId", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const analyses = await storage.getCompetitiveAnalyses(projectId);
+      res.json(analyses);
+    } catch (error) {
+      console.error("Error fetching competitive analyses:", error);
+      res.status(500).json({ error: "Failed to fetch competitive analyses" });
+    }
+  });
+
+  // POST /api/competitive-analysis
+  app.post("/api/competitive-analysis", requireAuth, async (req, res) => {
+    try {
+      const parsed = insertCompetitiveAnalysisSchema.parse(req.body);
+      const analysis = await storage.createCompetitiveAnalysis(parsed);
+      res.status(201).json(analysis);
+    } catch (error) {
+      console.error("Error creating competitive analysis:", error);
+      res.status(500).json({ error: "Failed to create competitive analysis" });
+    }
+  });
+
+  // PUT /api/competitive-analysis/:id
+  app.put("/api/competitive-analysis/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const parsed = insertCompetitiveAnalysisSchema.partial().parse(req.body);
+      const analysis = await storage.updateCompetitiveAnalysis(id, parsed);
+      
+      if (!analysis) {
+        return res.status(404).json({ error: "Competitive analysis not found" });
+      }
+      
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error updating competitive analysis:", error);
+      res.status(500).json({ error: "Failed to update competitive analysis" });
+    }
+  });
+
+  // DELETE /api/competitive-analysis/:id
+  app.delete("/api/competitive-analysis/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteCompetitiveAnalysis(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Competitive analysis not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting competitive analysis:", error);
+      res.status(500).json({ error: "Failed to delete competitive analysis" });
     }
   });
 

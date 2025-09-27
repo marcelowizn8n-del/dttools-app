@@ -573,9 +573,186 @@ export const insertPhaseCardSchema = createInsertSchema(phaseCards).omit({
 export type PhaseCard = typeof phaseCards.$inferSelect;
 export type InsertPhaseCard = z.infer<typeof insertPhaseCardSchema>;
 
+// DVF Assessment - Desirability, Feasibility, Viability evaluation for ideas
+export const dvfAssessments = pgTable("dvf_assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  itemType: text("item_type").notNull(), // idea, prototype, solution, etc.
+  itemId: varchar("item_id").notNull(), // Reference to the evaluated item
+  itemName: text("item_name").notNull(),
+  
+  // Desirability - User desirability
+  desirabilityScore: real("desirability_score").notNull().default(0), // 1-5 scale
+  desirabilityEvidence: text("desirability_evidence"), // Supporting evidence
+  userFeedback: text("user_feedback"), // Direct user feedback
+  marketDemand: real("market_demand").default(0), // Market demand indicator
+  
+  // Feasibility - Technical feasibility  
+  feasibilityScore: real("feasibility_score").notNull().default(0), // 1-5 scale
+  feasibilityEvidence: text("feasibility_evidence"),
+  technicalComplexity: text("technical_complexity"), // low, medium, high
+  resourceRequirements: jsonb("resource_requirements").default([]), // Required resources
+  timeToImplement: integer("time_to_implement"), // Estimated time in days
+  
+  // Viability - Economic viability
+  viabilityScore: real("viability_score").notNull().default(0), // 1-5 scale  
+  viabilityEvidence: text("viability_evidence"),
+  businessModel: text("business_model"), // How it generates value
+  costEstimate: real("cost_estimate"), // Implementation cost
+  revenueProjection: real("revenue_projection"), // Expected revenue
+  
+  // Overall DVF analysis
+  overallScore: real("overall_score").default(0), // Average of the three pillars
+  recommendation: text("recommendation"), // proceed, modify, stop
+  nextSteps: jsonb("next_steps").default([]), // Recommended actions
+  risksIdentified: jsonb("risks_identified").default([]), // Potential risks
+  
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Lovability Metrics - Emotional response and satisfaction tracking
+export const lovabilityMetrics = pgTable("lovability_metrics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  sourceType: text("source_type").notNull(), // feedback, interview, survey, observation
+  sourceId: varchar("source_id"), // Reference to source item
+  
+  // Emotional metrics
+  lovabilityScore: real("lovability_score").notNull().default(0), // 1-10 scale
+  emotionalValence: text("emotional_valence"), // positive, negative, neutral
+  delightPoints: jsonb("delight_points").default([]), // What users love
+  painPoints: jsonb("pain_points").default([]), // What frustrates users
+  
+  // Feedback analysis
+  feedbackText: text("feedback_text"), // Original feedback
+  sentiment: text("sentiment"), // positive, negative, neutral
+  sentimentScore: real("sentiment_score"), // -1 to 1
+  keyEmotions: jsonb("key_emotions").default([]), // joy, frustration, surprise, etc.
+  
+  // Context
+  userSegment: text("user_segment"), // Which user group
+  useCase: text("use_case"), // Specific use case being evaluated
+  phase: integer("phase"), // Which DT phase this relates to
+  
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Project Analytics - Detailed usage and success metrics
+export const projectAnalytics = pgTable("project_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  
+  // Usage metrics
+  totalTimeSpent: integer("total_time_spent").default(0), // minutes
+  timePerPhase: jsonb("time_per_phase").default({}), // { phase1: 120, phase2: 90, ... }
+  toolsUsed: jsonb("tools_used").default([]), // List of tools/features used
+  toolUsageCount: jsonb("tool_usage_count").default({}), // Usage frequency per tool
+  
+  // Progress metrics
+  completionRate: real("completion_rate").default(0), // 0-100%
+  phasesCompleted: jsonb("phases_completed").default([]), // Which phases are done
+  stageProgressions: integer("stage_progressions").default(0), // Times moved between phases
+  iterationsCount: integer("iterations_count").default(0), // Number of iterations
+  
+  // Success indicators
+  prototypesCreated: integer("prototypes_created").default(0),
+  testsCompleted: integer("tests_completed").default(0),
+  userFeedbackCollected: integer("user_feedback_collected").default(0),
+  ideasGenerated: integer("ideas_generated").default(0),
+  ideasImplemented: integer("ideas_implemented").default(0),
+  
+  // Collaboration metrics  
+  teamMembers: integer("team_members").default(1),
+  collaborationScore: real("collaboration_score").default(0), // Team engagement
+  documentsShared: integer("documents_shared").default(0),
+  
+  // Outcomes
+  finalOutcome: text("final_outcome"), // success, ongoing, stopped
+  impactScore: real("impact_score").default(0), // Business impact
+  userSatisfaction: real("user_satisfaction").default(0), // End user satisfaction
+  
+  lastUpdated: timestamp("last_updated").default(sql`now()`),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Competitive Analysis - External benchmarking data
+export const competitiveAnalysis = pgTable("competitive_analysis", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  
+  // Competitor info
+  competitorName: text("competitor_name").notNull(), // Miro, Figma, Notion, etc.
+  competitorType: text("competitor_type").notNull(), // direct, indirect, substitute
+  marketPosition: text("market_position"), // leader, challenger, niche
+  
+  // Feature comparison
+  features: jsonb("features").default({}), // Feature matrix comparison
+  functionalGaps: jsonb("functional_gaps").default([]), // What they lack
+  functionalOverages: jsonb("functional_overages").default([]), // What they overdo
+  
+  // Pricing comparison
+  pricingModel: text("pricing_model"), // freemium, subscription, one-time
+  pricePoints: jsonb("price_points").default([]), // Their pricing tiers
+  valueProposition: text("value_proposition"), // Their main value prop
+  
+  // Market gaps
+  underservedOutcomes: jsonb("underserved_outcomes").default([]), // Market gaps
+  overservedOutcomes: jsonb("overserved_outcomes").default([]), // Overcomplicated areas
+  
+  // Our positioning
+  ourAdvantages: jsonb("our_advantages").default([]), // Where we're better
+  ourDisadvantages: jsonb("our_disadvantages").default([]), // Where we lack
+  recommendations: jsonb("recommendations").default([]), // Strategic recommendations
+  
+  analysisDate: timestamp("analysis_date").default(sql`now()`),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Insert schemas for new tables
+export const insertDvfAssessmentSchema = createInsertSchema(dvfAssessments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLovabilityMetricSchema = createInsertSchema(lovabilityMetrics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertProjectAnalyticsSchema = createInsertSchema(projectAnalytics).omit({
+  id: true,
+  createdAt: true,
+  lastUpdated: true,
+});
+
+export const insertCompetitiveAnalysisSchema = createInsertSchema(competitiveAnalysis).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  analysisDate: true,
+});
+
 // Export types for benchmarking
 export type Benchmark = typeof benchmarks.$inferSelect;
 export type InsertBenchmark = z.infer<typeof insertBenchmarkSchema>;
 
 export type BenchmarkAssessment = typeof benchmarkAssessments.$inferSelect;
 export type InsertBenchmarkAssessment = z.infer<typeof insertBenchmarkAssessmentSchema>;
+
+// Export types for new benchmarking features
+export type DvfAssessment = typeof dvfAssessments.$inferSelect;
+export type InsertDvfAssessment = z.infer<typeof insertDvfAssessmentSchema>;
+
+export type LovabilityMetric = typeof lovabilityMetrics.$inferSelect;
+export type InsertLovabilityMetric = z.infer<typeof insertLovabilityMetricSchema>;
+
+export type ProjectAnalytics = typeof projectAnalytics.$inferSelect;
+export type InsertProjectAnalytics = z.infer<typeof insertProjectAnalyticsSchema>;
+
+export type CompetitiveAnalysis = typeof competitiveAnalysis.$inferSelect;
+export type InsertCompetitiveAnalysis = z.infer<typeof insertCompetitiveAnalysisSchema>;
