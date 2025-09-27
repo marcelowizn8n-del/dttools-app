@@ -15,7 +15,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertProjectSchema, type Project, type InsertProject } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 const phaseIcons = {
   1: { icon: Users, label: "Empatizar", color: "bg-red-100 text-red-700" },
@@ -29,6 +29,11 @@ function ProjectCard({ project }: { project: Project }) {
   const currentPhase = phaseIcons[project.currentPhase as keyof typeof phaseIcons] || phaseIcons[1];
   const Icon = currentPhase.icon;
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
+  const handleCardClick = () => {
+    setLocation(`/projects/${project.id}`);
+  };
 
   const handleExportPPTX = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent card navigation
@@ -113,11 +118,11 @@ function ProjectCard({ project }: { project: Project }) {
 
   return (
     <div className="relative group">
-      <Link href={`/projects/${project.id}`}>
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
-          data-testid={`card-project-${project.id}`}
-        >
+      <Card 
+        onClick={handleCardClick}
+        className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
+        data-testid={`card-project-${project.id}`}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -204,8 +209,6 @@ function ProjectCard({ project }: { project: Project }) {
           </div>
         </CardContent>
       </Card>
-    </Link>
-    
     </div>
   );
 }
