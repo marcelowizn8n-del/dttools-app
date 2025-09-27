@@ -677,15 +677,29 @@ export const projectAnalytics = pgTable("project_analytics", {
   ideasGenerated: integer("ideas_generated").default(0),
   ideasImplemented: integer("ideas_implemented").default(0),
   
-  // Collaboration metrics  
-  teamMembers: integer("team_members").default(1),
-  collaborationScore: real("collaboration_score").default(0), // Team engagement
-  documentsShared: integer("documents_shared").default(0),
+  // Team collaboration metrics
+  teamSize: integer("team_size").default(1),
+  collaborationEvents: integer("collaboration_events").default(0),
+  meetingsHeld: integer("meetings_held").default(0),
+  decisionsMade: integer("decisions_made").default(0),
   
-  // Outcomes
-  finalOutcome: text("final_outcome"), // success, ongoing, stopped
-  impactScore: real("impact_score").default(0), // Business impact
-  userSatisfaction: real("user_satisfaction").default(0), // End user satisfaction
+  // Innovation metrics
+  originalityScore: real("originality_score").default(0), // 1-10
+  feasibilityScore: real("feasibility_score").default(0), // 1-10
+  impactPotential: real("impact_potential").default(0), // 1-10
+  marketFit: real("market_fit").default(0), // 1-10
+  
+  // Success metrics
+  overallSuccess: real("overall_success").default(0), // 0-100%
+  userSatisfaction: real("user_satisfaction").default(0), // 0-10
+  goalAchievement: real("goal_achievement").default(0), // 0-100%
+  innovationLevel: real("innovation_level").default(0), // 1-5
+  
+  // Key insights
+  topPerformingTools: jsonb("top_performing_tools").default([]),
+  timeBottlenecks: jsonb("time_bottlenecks").default([]),
+  successFactors: jsonb("success_factors").default([]),
+  improvementAreas: jsonb("improvement_areas").default([]),
   
   lastUpdated: timestamp("last_updated").default(sql`now()`),
   createdAt: timestamp("created_at").default(sql`now()`),
