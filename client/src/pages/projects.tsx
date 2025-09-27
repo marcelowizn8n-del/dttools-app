@@ -84,6 +84,33 @@ function ProjectCard({ project }: { project: Project }) {
     }
   };
 
+  const handleExportMarkdown = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent card navigation
+    e.stopPropagation();
+    
+    try {
+      // Trigger download directly
+      const link = document.createElement('a');
+      link.href = `/api/projects/${project.id}/export-markdown`;
+      link.download = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.md`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Markdown sendo gerado",
+        description: "O download do arquivo Markdown iniciará em instantes.",
+      });
+    } catch (error) {
+      console.error("Error exporting Markdown:", error);
+      toast({
+        title: "Erro na exportação",
+        description: "Não foi possível gerar o arquivo Markdown. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="relative group">
       <Link href={`/projects/${project.id}`}>
@@ -142,7 +169,7 @@ function ProjectCard({ project }: { project: Project }) {
             </div>
             
             {/* Export Buttons - Moved to bottom */}
-            <div className="flex gap-2 pt-2 border-t border-gray-100">
+            <div className="flex gap-1 pt-2 border-t border-gray-100">
               <Button
                 variant="outline"
                 size="sm"
@@ -162,6 +189,16 @@ function ProjectCard({ project }: { project: Project }) {
               >
                 <FileText className="w-3 h-3 mr-1" />
                 <span className="text-xs font-medium">PDF</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportMarkdown}
+                className="flex-1 bg-green-50 hover:bg-green-100 border-green-200 text-green-700 shadow-sm"
+                data-testid={`button-export-markdown-${project.id}`}
+              >
+                <FileText className="w-3 h-3 mr-1" />
+                <span className="text-xs font-medium">MD</span>
               </Button>
             </div>
           </div>
