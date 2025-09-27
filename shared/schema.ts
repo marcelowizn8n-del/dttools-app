@@ -615,25 +615,39 @@ export const dvfAssessments = pgTable("dvf_assessments", {
 export const lovabilityMetrics = pgTable("lovability_metrics", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: varchar("project_id").references(() => projects.id).notNull(),
-  sourceType: text("source_type").notNull(), // feedback, interview, survey, observation
-  sourceId: varchar("source_id"), // Reference to source item
+  itemType: text("item_type").notNull(), // idea, prototype, solution
+  itemId: varchar("item_id").notNull(), // Reference to the item being evaluated
+  itemName: text("item_name").notNull(),
   
-  // Emotional metrics
-  lovabilityScore: real("lovability_score").notNull().default(0), // 1-10 scale
-  emotionalValence: text("emotional_valence"), // positive, negative, neutral
-  delightPoints: jsonb("delight_points").default([]), // What users love
-  painPoints: jsonb("pain_points").default([]), // What frustrates users
+  // Core Metrics
+  npsScore: real("nps_score").default(0), // -100 to 100
+  satisfactionScore: real("satisfaction_score").default(0), // 0-10
+  retentionRate: real("retention_rate").default(0), // 0-100%
+  engagementTime: real("engagement_time").default(0), // minutes
   
-  // Feedback analysis
-  feedbackText: text("feedback_text"), // Original feedback
-  sentiment: text("sentiment"), // positive, negative, neutral
-  sentimentScore: real("sentiment_score"), // -1 to 1
-  keyEmotions: jsonb("key_emotions").default([]), // joy, frustration, surprise, etc.
+  // Emotional Distribution
+  emotionalDistribution: jsonb("emotional_distribution").default({}), // delight, satisfaction, neutral, frustration percentages
   
-  // Context
-  userSegment: text("user_segment"), // Which user group
-  useCase: text("use_case"), // Specific use case being evaluated
-  phase: integer("phase"), // Which DT phase this relates to
+  // Feedback Analysis
+  positiveComments: jsonb("positive_comments").default([]),
+  negativeComments: jsonb("negative_comments").default([]),
+  improvementSuggestions: jsonb("improvement_suggestions").default([]),
+  
+  // User Behavior
+  userTestingSessions: integer("user_testing_sessions").default(0),
+  completionRate: real("completion_rate").default(0), // 0-100%
+  errorRate: real("error_rate").default(0), // 0-100%
+  supportTickets: integer("support_tickets").default(0),
+  
+  // Qualitative Insights
+  emotionalStory: text("emotional_story"),
+  userPersonas: jsonb("user_personas").default([]),
+  keyMoments: jsonb("key_moments").default([]),
+  painPoints: jsonb("pain_points").default([]),
+  
+  // Overall Assessment
+  lovabilityScore: real("lovability_score").default(0), // 0-10 calculated score
+  recommendations: jsonb("recommendations").default([]),
   
   createdAt: timestamp("created_at").default(sql`now()`),
   updatedAt: timestamp("updated_at").default(sql`now()`),
