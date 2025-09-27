@@ -19,10 +19,15 @@ import {
   type PhaseCard, type InsertPhaseCard,
   type Benchmark, type InsertBenchmark,
   type BenchmarkAssessment, type InsertBenchmarkAssessment,
+  type DvfAssessment, type InsertDvfAssessment,
+  type LovabilityMetric, type InsertLovabilityMetric,
+  type ProjectAnalytics, type InsertProjectAnalytics,
+  type CompetitiveAnalysis, type InsertCompetitiveAnalysis,
   projects, empathyMaps, personas, interviews, observations,
   povStatements, hmwQuestions, ideas, prototypes, testPlans, testResults,
   userProgress, users, articles, subscriptionPlans, userSubscriptions,
-  canvasDrawings, phaseCards, benchmarks, benchmarkAssessments
+  canvasDrawings, phaseCards, benchmarks, benchmarkAssessments,
+  dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
@@ -159,6 +164,32 @@ export interface IStorage {
   createBenchmarkAssessment(assessment: InsertBenchmarkAssessment): Promise<BenchmarkAssessment>;
   updateBenchmarkAssessment(id: string, assessment: Partial<InsertBenchmarkAssessment>): Promise<BenchmarkAssessment | undefined>;
   deleteBenchmarkAssessment(id: string): Promise<boolean>;
+
+  // DVF Assessment - Desirability, Feasibility, Viability
+  getDvfAssessments(projectId: string): Promise<DvfAssessment[]>;
+  getDvfAssessment(id: string): Promise<DvfAssessment | undefined>;
+  createDvfAssessment(assessment: InsertDvfAssessment): Promise<DvfAssessment>;
+  updateDvfAssessment(id: string, assessment: Partial<InsertDvfAssessment>): Promise<DvfAssessment | undefined>;
+  deleteDvfAssessment(id: string): Promise<boolean>;
+
+  // Lovability Metrics
+  getLovabilityMetrics(projectId: string): Promise<LovabilityMetric[]>;
+  getLovabilityMetric(id: string): Promise<LovabilityMetric | undefined>;
+  createLovabilityMetric(metric: InsertLovabilityMetric): Promise<LovabilityMetric>;
+  updateLovabilityMetric(id: string, metric: Partial<InsertLovabilityMetric>): Promise<LovabilityMetric | undefined>;
+  deleteLovabilityMetric(id: string): Promise<boolean>;
+
+  // Project Analytics
+  getProjectAnalytics(projectId: string): Promise<ProjectAnalytics | undefined>;
+  createProjectAnalytics(analytics: InsertProjectAnalytics): Promise<ProjectAnalytics>;
+  updateProjectAnalytics(id: string, analytics: Partial<InsertProjectAnalytics>): Promise<ProjectAnalytics | undefined>;
+
+  // Competitive Analysis
+  getCompetitiveAnalyses(projectId: string): Promise<CompetitiveAnalysis[]>;
+  getCompetitiveAnalysis(id: string): Promise<CompetitiveAnalysis | undefined>;
+  createCompetitiveAnalysis(analysis: InsertCompetitiveAnalysis): Promise<CompetitiveAnalysis>;
+  updateCompetitiveAnalysis(id: string, analysis: Partial<InsertCompetitiveAnalysis>): Promise<CompetitiveAnalysis | undefined>;
+  deleteCompetitiveAnalysis(id: string): Promise<boolean>;
 }
 
 // Database implementation using PostgreSQL via Drizzle ORM
@@ -713,6 +744,116 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBenchmarkAssessment(id: string): Promise<boolean> {
     const result = await db.delete(benchmarkAssessments).where(eq(benchmarkAssessments.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // DVF Assessment - Desirability, Feasibility, Viability
+  async getDvfAssessments(projectId: string): Promise<DvfAssessment[]> {
+    return await db.select().from(dvfAssessments)
+      .where(eq(dvfAssessments.projectId, projectId))
+      .orderBy(desc(dvfAssessments.createdAt));
+  }
+
+  async getDvfAssessment(id: string): Promise<DvfAssessment | undefined> {
+    const [assessment] = await db.select().from(dvfAssessments).where(eq(dvfAssessments.id, id));
+    return assessment;
+  }
+
+  async createDvfAssessment(assessment: InsertDvfAssessment): Promise<DvfAssessment> {
+    const [newAssessment] = await db.insert(dvfAssessments).values(assessment).returning();
+    return newAssessment;
+  }
+
+  async updateDvfAssessment(id: string, assessment: Partial<InsertDvfAssessment>): Promise<DvfAssessment | undefined> {
+    const [updatedAssessment] = await db.update(dvfAssessments)
+      .set({ ...assessment, updatedAt: new Date() })
+      .where(eq(dvfAssessments.id, id))
+      .returning();
+    return updatedAssessment;
+  }
+
+  async deleteDvfAssessment(id: string): Promise<boolean> {
+    const result = await db.delete(dvfAssessments).where(eq(dvfAssessments.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Lovability Metrics
+  async getLovabilityMetrics(projectId: string): Promise<LovabilityMetric[]> {
+    return await db.select().from(lovabilityMetrics)
+      .where(eq(lovabilityMetrics.projectId, projectId))
+      .orderBy(desc(lovabilityMetrics.createdAt));
+  }
+
+  async getLovabilityMetric(id: string): Promise<LovabilityMetric | undefined> {
+    const [metric] = await db.select().from(lovabilityMetrics).where(eq(lovabilityMetrics.id, id));
+    return metric;
+  }
+
+  async createLovabilityMetric(metric: InsertLovabilityMetric): Promise<LovabilityMetric> {
+    const [newMetric] = await db.insert(lovabilityMetrics).values(metric).returning();
+    return newMetric;
+  }
+
+  async updateLovabilityMetric(id: string, metric: Partial<InsertLovabilityMetric>): Promise<LovabilityMetric | undefined> {
+    const [updatedMetric] = await db.update(lovabilityMetrics)
+      .set({ ...metric, updatedAt: new Date() })
+      .where(eq(lovabilityMetrics.id, id))
+      .returning();
+    return updatedMetric;
+  }
+
+  async deleteLovabilityMetric(id: string): Promise<boolean> {
+    const result = await db.delete(lovabilityMetrics).where(eq(lovabilityMetrics.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Project Analytics
+  async getProjectAnalytics(projectId: string): Promise<ProjectAnalytics | undefined> {
+    const [analytics] = await db.select().from(projectAnalytics)
+      .where(eq(projectAnalytics.projectId, projectId));
+    return analytics;
+  }
+
+  async createProjectAnalytics(analytics: InsertProjectAnalytics): Promise<ProjectAnalytics> {
+    const [newAnalytics] = await db.insert(projectAnalytics).values(analytics).returning();
+    return newAnalytics;
+  }
+
+  async updateProjectAnalytics(id: string, analytics: Partial<InsertProjectAnalytics>): Promise<ProjectAnalytics | undefined> {
+    const [updatedAnalytics] = await db.update(projectAnalytics)
+      .set({ ...analytics, lastUpdated: new Date() })
+      .where(eq(projectAnalytics.id, id))
+      .returning();
+    return updatedAnalytics;
+  }
+
+  // Competitive Analysis
+  async getCompetitiveAnalyses(projectId: string): Promise<CompetitiveAnalysis[]> {
+    return await db.select().from(competitiveAnalysis)
+      .where(eq(competitiveAnalysis.projectId, projectId))
+      .orderBy(desc(competitiveAnalysis.createdAt));
+  }
+
+  async getCompetitiveAnalysis(id: string): Promise<CompetitiveAnalysis | undefined> {
+    const [analysis] = await db.select().from(competitiveAnalysis).where(eq(competitiveAnalysis.id, id));
+    return analysis;
+  }
+
+  async createCompetitiveAnalysis(analysis: InsertCompetitiveAnalysis): Promise<CompetitiveAnalysis> {
+    const [newAnalysis] = await db.insert(competitiveAnalysis).values(analysis).returning();
+    return newAnalysis;
+  }
+
+  async updateCompetitiveAnalysis(id: string, analysis: Partial<InsertCompetitiveAnalysis>): Promise<CompetitiveAnalysis | undefined> {
+    const [updatedAnalysis] = await db.update(competitiveAnalysis)
+      .set({ ...analysis, updatedAt: new Date() })
+      .where(eq(competitiveAnalysis.id, id))
+      .returning();
+    return updatedAnalysis;
+  }
+
+  async deleteCompetitiveAnalysis(id: string): Promise<boolean> {
+    const result = await db.delete(competitiveAnalysis).where(eq(competitiveAnalysis.id, id));
     return (result.rowCount || 0) > 0;
   }
 }
