@@ -2134,6 +2134,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/projects/:id/export-markdown - Export project as Markdown
+  app.get("/api/projects/:id/export-markdown", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Verify project ownership
+      const project = await storage.getProject(id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Generate Markdown
+      const pptxService = new PPTXService();
+      const markdown = await pptxService.generateProjectMarkdown(id);
+      
+      // Set response headers for file download
+      const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.md`;
+      res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', Buffer.byteLength(markdown, 'utf8'));
+      
+      // Send the markdown content
+      res.send(markdown);
+      
+    } catch (error) {
+      console.error("Error generating Markdown:", error);
+      res.status(500).json({ error: "Failed to generate Markdown document" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
