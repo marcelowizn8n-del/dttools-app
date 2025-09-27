@@ -37,6 +37,7 @@ import {
   getSubscriptionInfo 
 } from "./subscriptionMiddleware";
 import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "./aiService";
+import { designThinkingGeminiAI } from "./geminiService";
 import { PPTXService } from "./pptxService";
 
 // Initialize Stripe with secret key - validate environment variable
@@ -1354,7 +1355,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Valid context with currentPhase is required" });
       }
 
-      const response = await designThinkingAI.chat(messages, context);
+      // Use Gemini AI instead of OpenAI for cost efficiency
+      const lastMessage = messages[messages.length - 1];
+      const response = await designThinkingGeminiAI.chat(lastMessage.content, context);
       res.json({ message: response });
     } catch (error) {
       console.error("Error in AI chat:", error);
@@ -1375,7 +1378,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Topic is required" });
       }
 
-      const suggestions = await designThinkingAI.generateSuggestions(context, topic);
+      // Use Gemini AI instead of OpenAI for cost efficiency
+      const suggestions = await designThinkingGeminiAI.generateSuggestions(context);
       res.json({ suggestions });
     } catch (error) {
       console.error("Error generating suggestions:", error);
