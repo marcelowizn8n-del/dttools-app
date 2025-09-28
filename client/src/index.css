@@ -131,7 +131,7 @@ img {
 
 /* Force cache busting for updated assets */
 body::before {
-  content: "v1.0.5-mobile-final-fix";
+  content: "v1.0.6-mobile-touch-optimized";
   display: none;
 }
 
@@ -156,5 +156,36 @@ body::before {
   /* Mobile user menu button fixes */
   .site-header [data-testid="button-user-menu"] {
     z-index: 50;
+  }
+  
+  /* Mobile touch target improvements */
+  button, 
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  /* Project card improvements for mobile */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* Login form mobile improvements */
+  .min-h-screen {
+    padding-top: 1rem !important;
+  }
+  
+  /* Mobile input improvements */
+  input, textarea, select {
+    min-height: 44px !important;
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  /* Card improvements */
+  .grid {
+    gap: 1rem !important;
   }
 }

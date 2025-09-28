@@ -173,36 +173,36 @@ function ProjectCard({ project }: { project: Project }) {
               </span>
             </div>
             
-            {/* Export Buttons - Moved to bottom */}
-            <div className="grid grid-cols-3 gap-1 pt-2 border-t border-gray-100">
+            {/* Export Buttons - Mobile Optimized */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-1 pt-3 border-t border-gray-100">
               <Button
                 variant="outline"
-                size="sm"
+                size="default"
                 onClick={handleExportPPTX}
-                className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 shadow-sm text-xs"
+                className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 shadow-sm text-xs sm:text-xs h-10 sm:h-8 min-h-[44px] sm:min-h-[32px]"
                 data-testid={`button-export-pptx-${project.id}`}
               >
-                <FileText className="w-3 h-3 mr-1" />
+                <FileText className="w-4 h-4 sm:w-3 sm:h-3 mr-1" />
                 <span className="font-medium">PPTX</span>
               </Button>
               <Button
                 variant="outline"
-                size="sm"
+                size="default"
                 onClick={handleExportPDF}
-                className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700 shadow-sm text-xs"
+                className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700 shadow-sm text-xs sm:text-xs h-10 sm:h-8 min-h-[44px] sm:min-h-[32px]"
                 data-testid={`button-export-pdf-${project.id}`}
               >
-                <FileText className="w-3 h-3 mr-1" />
+                <FileText className="w-4 h-4 sm:w-3 sm:h-3 mr-1" />
                 <span className="font-medium">PDF</span>
               </Button>
               <Button
                 variant="outline"
-                size="sm"
+                size="default"
                 onClick={handleExportMarkdown}
-                className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 shadow-sm text-xs"
+                className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 shadow-sm text-xs sm:text-xs h-10 sm:h-8 min-h-[44px] sm:min-h-[32px]"
                 data-testid={`button-export-markdown-${project.id}`}
               >
-                <FileText className="w-3 h-3 mr-1" />
+                <FileText className="w-4 h-4 sm:w-3 sm:h-3 mr-1" />
                 <span className="font-medium">MD</span>
               </Button>
             </div>
@@ -364,9 +364,9 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900" data-testid="heading-projects">
             Projetos de Design Thinking
@@ -375,7 +375,7 @@ export default function ProjectsPage() {
             Gerencie seus projetos através das 5 fases do Design Thinking
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Link href="/benchmarking">
             <Button variant="outline" className="border-blue-600 text-blue-700 hover:bg-blue-50" data-testid="button-benchmarking">
               <BarChart3 className="w-4 h-4 mr-2" />
@@ -450,7 +450,7 @@ export default function ProjectsPage() {
           {projects.length === 0 && <CreateProjectDialog />}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredProjects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
