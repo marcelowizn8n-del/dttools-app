@@ -131,7 +131,7 @@ img {
 
 /* Force cache busting for updated assets */
 body::before {
-  content: "v1.0.6-mobile-touch-optimized";
+  content: "v1.0.7-export-fix-logo-cache-bust";
   display: none;
 }
 
