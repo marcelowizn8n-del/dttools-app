@@ -27,16 +27,16 @@ export default function Header() {
   return (
     <header className="site-header bg-background border-b border-border">
       <div className="container mx-auto px-3 sm:px-4 md:px-6 py-2 sm:py-3">
-        <div className="flex items-center justify-between min-h-[56px] sm:min-h-[60px] gap-2 sm:gap-3 md:gap-4">
+        <div className="flex items-center justify-between min-h-[48px] sm:min-h-[60px] gap-2 sm:gap-3 md:gap-4">
           {/* Logo - Responsive logo component */}
           <div className="flex-shrink-0">
             <Link href="/" className="block">
               <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-testid="header-logo">
-                {/* Mobile: Show only icon - MUCH LARGER SIZE */}
+                {/* Mobile: Show only icon - Mobile Optimized */}
                 <img 
                   src={logoIcon}
                   alt="DTTools" 
-                  className="block sm:hidden object-contain shrink-0 h-16 w-16 min-h-[64px] min-w-[64px]"
+                  className="block sm:hidden object-contain shrink-0 h-10 w-10 min-h-[40px] min-w-[40px]"
                   data-testid="logo-icon-mobile"
                   onError={(e) => console.error('Logo icon failed to load:', e)}
                 />
@@ -109,7 +109,7 @@ export default function Header() {
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
                 aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
-                className="p-2 h-12 w-12 hover:bg-gray-100 relative z-30"
+                className="p-2 h-10 w-10 hover:bg-gray-100 relative z-30 min-h-[44px] min-w-[44px]"
               >
                 {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
