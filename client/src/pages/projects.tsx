@@ -40,23 +40,54 @@ function ProjectCard({ project }: { project: Project }) {
     e.stopPropagation();
     
     try {
-      // Trigger download directly
+      toast({
+        title: "Gerando PPTX...",
+        description: "Aguarde enquanto preparamos o arquivo para download.",
+      });
+
+      // Fetch the PPTX with proper authentication
+      const response = await fetch(`/api/projects/${project.id}/export-pptx`, {
+        method: 'GET',
+        credentials: 'include', // Include session cookies
+        headers: {
+          'Accept': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
+      // Get the PPTX as blob
+      const pptxBlob = await response.blob();
+      
+      // Create download URL and trigger download
+      const url = URL.createObjectURL(pptxBlob);
+      
       const link = document.createElement('a');
-      link.href = `/api/projects/${project.id}/export-pptx`;
+      link.href = url;
       link.download = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pptx`;
+      link.style.display = 'none';
+      
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
+      // Clean up the URL object
+      URL.revokeObjectURL(url);
+      
       toast({
-        title: "PPTX sendo gerado",
-        description: "O download do arquivo de apresentação iniciará em instantes.",
+        title: "Download concluído!",
+        description: "O arquivo PPTX foi baixado com sucesso.",
       });
     } catch (error) {
       console.error("Error exporting PPTX:", error);
       toast({
         title: "Erro na exportação",
-        description: "Não foi possível gerar o arquivo PPTX. Tente novamente.",
+        description: error instanceof Error ? error.message : "Não foi possível gerar o arquivo PPTX. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -67,23 +98,54 @@ function ProjectCard({ project }: { project: Project }) {
     e.stopPropagation();
     
     try {
-      // Trigger download directly
+      toast({
+        title: "Gerando PDF...",
+        description: "Aguarde enquanto preparamos o arquivo para download.",
+      });
+
+      // Fetch the PDF with proper authentication
+      const response = await fetch(`/api/projects/${project.id}/export-pdf`, {
+        method: 'GET',
+        credentials: 'include', // Include session cookies
+        headers: {
+          'Accept': 'application/pdf',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
+      // Get the PDF as blob
+      const pdfBlob = await response.blob();
+      
+      // Create download URL and trigger download
+      const url = URL.createObjectURL(pdfBlob);
+      
       const link = document.createElement('a');
-      link.href = `/api/projects/${project.id}/export-pdf`;
+      link.href = url;
       link.download = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pdf`;
+      link.style.display = 'none';
+      
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
+      // Clean up the URL object
+      URL.revokeObjectURL(url);
+      
       toast({
-        title: "PDF sendo gerado",
-        description: "O download do arquivo PDF iniciará em instantes.",
+        title: "Download concluído!",
+        description: "O arquivo PDF foi baixado com sucesso.",
       });
     } catch (error) {
       console.error("Error exporting PDF:", error);
       toast({
         title: "Erro na exportação",
-        description: "Não foi possível gerar o arquivo PDF. Tente novamente.",
+        description: error instanceof Error ? error.message : "Não foi possível gerar o arquivo PDF. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -94,23 +156,55 @@ function ProjectCard({ project }: { project: Project }) {
     e.stopPropagation();
     
     try {
-      // Trigger download directly
+      toast({
+        title: "Gerando Markdown...",
+        description: "Aguarde enquanto preparamos o arquivo para download.",
+      });
+
+      // Fetch the markdown content with proper authentication
+      const response = await fetch(`/api/projects/${project.id}/export-markdown`, {
+        method: 'GET',
+        credentials: 'include', // Include session cookies
+        headers: {
+          'Accept': 'text/markdown',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
+      // Get the markdown content as text
+      const markdownContent = await response.text();
+      
+      // Create blob and download
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      
       const link = document.createElement('a');
-      link.href = `/api/projects/${project.id}/export-markdown`;
+      link.href = url;
       link.download = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.md`;
+      link.style.display = 'none';
+      
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
+      // Clean up the URL object
+      URL.revokeObjectURL(url);
+      
       toast({
-        title: "Markdown sendo gerado",
-        description: "O download do arquivo Markdown iniciará em instantes.",
+        title: "Download concluído!",
+        description: "O arquivo Markdown foi baixado com sucesso.",
       });
     } catch (error) {
       console.error("Error exporting Markdown:", error);
       toast({
         title: "Erro na exportação",
-        description: "Não foi possível gerar o arquivo Markdown. Tente novamente.",
+        description: error instanceof Error ? error.message : "Não foi possível gerar o arquivo Markdown. Tente novamente.",
         variant: "destructive",
       });
     }

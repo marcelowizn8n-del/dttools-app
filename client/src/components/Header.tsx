@@ -15,9 +15,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { LanguageSelector } from "@/components/LanguageSelector";
-// Use direct path to logo in public root
-const logoHorizontal = "/logo-horizontal.png";
-const logoIcon = "/logo-icon.png";
+// Use direct path to logo in public root with cache busting
+const logoHorizontal = `/logo-horizontal.png?v=${Date.now()}`;
+const logoIcon = `/logo-icon.png?v=${Date.now()}`;
 
 export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
