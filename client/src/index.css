@@ -131,8 +131,14 @@ img {
 
 /* Force cache busting for updated assets */
 body::before {
-  content: "v1.0.7-export-fix-logo-cache-bust";
+  content: "v1.0.9-logo-force-refresh";
   display: none;
+}
+
+/* Force logo refresh styles */
+.site-header img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* Mobile layout fixes - SCOPED to avoid conflicts */
