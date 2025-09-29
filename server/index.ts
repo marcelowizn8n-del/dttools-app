@@ -81,6 +81,9 @@ app.use(session({
 // Servir arquivos estáticos da pasta uploads
 app.use('/uploads', express.static('public/uploads'));
 
+// Servir arquivos estáticos da pasta public (downloads, etc.)
+app.use(express.static('server/public'));
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
