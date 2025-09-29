@@ -16,8 +16,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { LanguageSelector } from "@/components/LanguageSelector";
 // Use direct path to logo in public root with cache busting
-const logoHorizontal = `/logo-horizontal.png?v=${Date.now()}`;
-const logoIcon = `/logo-icon.png?v=${Date.now()}`;
+const logoHorizontal = "/logo-horizontal.png?v=1.0.9&t=" + Math.floor(Date.now() / 1000);
+const logoIcon = "/logo-icon.png?v=1.0.9&t=" + Math.floor(Date.now() / 1000);
 
 export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -38,7 +38,14 @@ export default function Header() {
                   alt="DTTools" 
                   className="block sm:hidden object-contain shrink-0 h-10 w-10 min-h-[40px] min-w-[40px]"
                   data-testid="logo-icon-mobile"
-                  onError={(e) => console.error('Logo icon failed to load:', e)}
+                  onError={(e) => {
+                    console.error('Logo icon failed to load:', e);
+                    console.error('Failed URL:', logoIcon);
+                    // Force reload attempt
+                    setTimeout(() => {
+                      (e.target as HTMLImageElement).src = `/logo-icon.png?force=${Date.now()}`;
+                    }, 1000);
+                  }}
                 />
                 {/* Desktop: Show full horizontal logo */}
                 <img 
@@ -46,6 +53,14 @@ export default function Header() {
                   alt="DTTools" 
                   className="hidden sm:block object-contain shrink-0 h-8 w-auto sm:h-10 md:h-14 lg:h-16 min-h-[32px]"
                   data-testid="logo-img-desktop"
+                  onError={(e) => {
+                    console.error('Logo horizontal failed to load:', e);
+                    console.error('Failed URL:', logoHorizontal);
+                    // Force reload attempt
+                    setTimeout(() => {
+                      (e.target as HTMLImageElement).src = `/logo-horizontal.png?force=${Date.now()}`;
+                    }, 1000);
+                  }}
                 />
               </div>
             </Link>
