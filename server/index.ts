@@ -28,6 +28,21 @@ const app = express();
 // Trust proxy for secure cookies behind load balancer
 app.set('trust proxy', 1);
 
+// Add CORS headers for external browser access
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 // Increase limits for image uploads (base64 encoded images can be large)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
@@ -59,7 +74,7 @@ app.use(session({
     secure: false, // Allow HTTP in development and Replit production
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'lax' // Allow cross-site requests for better compatibility
+    sameSite: 'none' // Allow cross-origin requests for external browser access
   }
 }));
 
