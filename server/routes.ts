@@ -343,7 +343,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects/:projectId/interviews", requireAuth, async (req, res) => {
     try {
-      console.log("Received interview data:", req.body);
       // Converter string de data para objeto Date se necessário
       const dataToValidate = {
         ...req.body,
@@ -351,11 +350,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         date: typeof req.body.date === 'string' ? new Date(req.body.date) : req.body.date,
       };
       const validatedData = insertInterviewSchema.parse(dataToValidate);
-      console.log("Validated interview data:", validatedData);
       const interview = await storage.createInterview(validatedData);
       res.status(201).json(interview);
     } catch (error) {
-      console.error("Error creating interview:", error);
       res.status(400).json({ 
         error: "Invalid interview data",
         details: error instanceof Error ? error.message : String(error)
