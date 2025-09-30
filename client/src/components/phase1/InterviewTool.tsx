@@ -309,12 +309,16 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
                   <FormControl>
                     <Input 
                       type="date"
-                      {...field}
                       value={field.value instanceof Date && !isNaN(field.value.getTime()) 
                         ? field.value.toISOString().split('T')[0] 
                         : ''}
                       onChange={(e) => {
-                        field.onChange(e.target.value ? new Date(e.target.value) : undefined);
+                        const value = e.target.value;
+                        if (value) {
+                          field.onChange(new Date(value + 'T00:00:00'));
+                        } else {
+                          field.onChange(undefined);
+                        }
                       }}
                       data-testid="input-interview-date"
                     />
