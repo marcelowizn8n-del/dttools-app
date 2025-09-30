@@ -344,11 +344,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects/:projectId/interviews", requireAuth, async (req, res) => {
     try {
       // Converter string de data para objeto Date se necessário
+      const questions = Array.isArray(req.body.questions) ? req.body.questions : [];
+      const responses = Array.isArray(req.body.responses) ? req.body.responses : [];
+      
+      // Filtrar e alinhar pares pergunta/resposta
+      const validPairs = questions
+        .map((q: string, i: number) => ({ 
+          question: String(q || '').trim(), 
+          response: String(responses[i] || '').trim() 
+        }))
+        .filter(pair => pair.question !== '');
+      
       const dataToValidate = {
         ...req.body,
         projectId: req.params.projectId,
         date: typeof req.body.date === 'string' ? new Date(req.body.date) : req.body.date,
+        questions: validPairs.map(p => p.question),
+        responses: validPairs.map(p => p.response),
       };
+      
       const validatedData = insertInterviewSchema.parse(dataToValidate);
       const interview = await storage.createInterview(validatedData);
       res.status(201).json(interview);
