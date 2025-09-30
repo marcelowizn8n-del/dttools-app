@@ -343,14 +343,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects/:projectId/interviews", requireAuth, async (req, res) => {
     try {
+      console.log("Received interview data:", req.body);
       const validatedData = insertInterviewSchema.parse({
         ...req.body,
         projectId: req.params.projectId
       });
+      console.log("Validated interview data:", validatedData);
       const interview = await storage.createInterview(validatedData);
       res.status(201).json(interview);
     } catch (error) {
-      res.status(400).json({ error: "Invalid interview data" });
+      console.error("Error creating interview:", error);
+      res.status(400).json({ 
+        error: "Invalid interview data",
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
