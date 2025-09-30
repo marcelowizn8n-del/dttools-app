@@ -459,7 +459,9 @@ export default function InterviewTool({ projectId }: InterviewToolProps) {
   const { data: interviews = [], isLoading } = useQuery<Interview[]>({
     queryKey: ["/api/projects", projectId, "interviews"],
     queryFn: async () => {
-      const response = await fetch(`/api/projects/${projectId}/interviews`);
+      const response = await fetch(`/api/projects/${projectId}/interviews`, {
+        credentials: "include",
+      });
       if (!response.ok) throw new Error("Failed to fetch interviews");
       return response.json();
     },
