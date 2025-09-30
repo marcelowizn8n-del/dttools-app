@@ -305,12 +305,12 @@ export const insertPersonaSchema = createInsertSchema(personas).omit({
   updatedAt: true,
 });
 
-export const insertInterviewSchema = createInsertSchema(interviews).omit({
+export const insertInterviewSchema = createInsertSchema(interviews, {
+  questions: z.array(z.string()).optional(),
+  responses: z.array(z.string()).optional(),
+}).omit({
   id: true,
   createdAt: true,
-}).extend({
-  questions: z.array(z.string()).optional().default([]),
-  responses: z.array(z.string()).optional().default([]),
 });
 
 export const insertObservationSchema = createInsertSchema(observations).omit({
