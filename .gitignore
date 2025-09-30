@@ -77,6 +77,8 @@ out
 # Gatsby files
 .cache/
 public
+# But allow DTTools logos
+!client/public/logo-*.png
 
 # Vite build outputs
 dist-ssr
