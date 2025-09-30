@@ -226,11 +226,16 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
   };
 
   const onSubmit = (formData: any) => {
+    // Filtrar apenas pares onde a pergunta não está vazia
+    const validPairs = questions
+      .map((q, i) => ({ question: q, response: responses[i] || "" }))
+      .filter(pair => pair.question.trim() !== "");
+    
     const interviewData: InsertInterview = {
       ...formData,
       projectId,
-      questions: questions.filter(q => q.trim() !== ""),
-      responses: responses.filter(r => r.trim() !== ""),
+      questions: validPairs.map(p => p.question),
+      responses: validPairs.map(p => p.response),
     };
     createInterviewMutation.mutate(interviewData);
   };
