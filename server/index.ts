@@ -5,6 +5,7 @@ import ConnectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDefaultData } from "./storage";
+import { execSync } from "child_process";
 
 // Extend session data type
 declare module 'express-session' {
@@ -71,10 +72,10 @@ app.use(session({
   saveUninitialized: false,
   store: sessionStore,
   cookie: {
-    secure: false, // Allow HTTP in development and Replit production
+    secure: 'auto', // Use secure cookies in production
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'none' // Allow cross-origin requests for external browser access
+    sameSite: isProduction ? 'lax' : 'none' // Lax for production, none for development
   }
 }));
 
@@ -115,6 +116,18 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Run database migration in production
+  if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+    try {
+      log('Running database migration...');
+      execSync('npm run db:push', { stdio: 'inherit' });
+      log('✅ Database migration completed');
+    } catch (error) {
+      log('❌ Database migration failed:', String(error));
+      // Continue anyway - tables might already exist
+    }
+  }
+
   const server = await registerRoutes(app);
 
   // Initialize default data (admin user, subscription plans, etc.)
