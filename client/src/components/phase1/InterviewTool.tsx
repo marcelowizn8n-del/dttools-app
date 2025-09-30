@@ -173,7 +173,6 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
 
   const createInterviewMutation = useMutation({
     mutationFn: async (data: InsertInterview) => {
-      console.log("Sending interview data:", data);
       const response = await fetch(`/api/projects/${projectId}/interviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -181,8 +180,7 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Failed to create interview:", errorData);
-        throw new Error(errorData.error || "Failed to create interview");
+        throw new Error(errorData.details || errorData.error || "Failed to create interview");
       }
       return response.json();
     },
@@ -198,7 +196,6 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
       setResponses([""]);
     },
     onError: (error: any) => {
-      console.error("Error creating interview:", error);
       toast({
         title: "Erro",
         description: error.message || "Não foi possível criar a entrevista.",
