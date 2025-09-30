@@ -898,7 +898,6 @@ export async function initializeDefaultData() {
         priceYearly: 0,
         features: ['3 projetos', 'Ferramentas básicas', 'Suporte por email'],
         maxProjects: 3,
-        maxTeamMembers: 1,
         isActive: true
       });
 
@@ -910,7 +909,6 @@ export async function initializeDefaultData() {
         priceYearly: 29900, // in cents
         features: ['Projetos ilimitados', 'Todas as ferramentas', 'Análise AI', 'Suporte prioritário'],
         maxProjects: -1, // unlimited
-        maxTeamMembers: 5,
         isActive: true
       });
 
@@ -922,10 +920,24 @@ export async function initializeDefaultData() {
         priceYearly: 99900, // in cents
         features: ['Tudo do Pro', 'Time ilimitado', 'Suporte dedicado', 'Treinamentos'],
         maxProjects: -1, // unlimited
-        maxTeamMembers: -1, // unlimited
         isActive: true
       });
       console.log('✅ Subscription plans created');
+    }
+
+    // Create sample project for admin user if no projects exist
+    const adminUserFinal = await storage.getUserByUsername('dttools.app@gmail.com');
+    if (adminUserFinal) {
+      const existingProjects = await storage.getProjects();
+      if (existingProjects.length === 0) {
+        await storage.createProject({
+          name: 'App de Delivery Sustentável',
+          description: 'Projeto para criar um aplicativo de delivery focado em sustentabilidade e impacto social',
+          currentPhase: 1,
+          status: 'in_progress'
+        });
+        console.log('✅ Sample project created');
+      }
     }
 
   } catch (error) {
