@@ -313,11 +313,19 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
                         ? field.value.toISOString().split('T')[0] 
                         : ''}
                       onChange={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         const value = e.target.value;
                         if (value) {
                           field.onChange(new Date(value + 'T00:00:00'));
                         } else {
                           field.onChange(undefined);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        // Prevenir digitação manual - apenas permitir Tab e Escape
+                        if (e.key !== 'Tab' && e.key !== 'Escape') {
+                          e.preventDefault();
                         }
                       }}
                       data-testid="input-interview-date"
