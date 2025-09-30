@@ -358,9 +358,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects/:projectId/interviews", requireAuth, async (req, res) => {
     try {
+      console.log('Interview creation request:', {
+        projectId: req.params.projectId,
+        body: req.body
+      });
+      
       // Converter string de data para objeto Date se necessário
       const questions = Array.isArray(req.body.questions) ? req.body.questions : [];
       const responses = Array.isArray(req.body.responses) ? req.body.responses : [];
+      
+      console.log('Questions/Responses:', { questions, responses });
       
       // Filtrar e alinhar pares pergunta/resposta
       const validPairs = questions
@@ -368,20 +375,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           question: String(q || '').trim(), 
           response: String(responses[i] || '').trim() 
         }))
-        .filter(pair => pair.question !== '');
+        .filter((pair: { question: string; response: string }) => pair.question !== '');
+      
+      console.log('Valid pairs:', validPairs);
       
       const dataToValidate = {
         ...req.body,
         projectId: req.params.projectId,
         date: typeof req.body.date === 'string' ? new Date(req.body.date) : req.body.date,
-        questions: validPairs.map(p => p.question),
-        responses: validPairs.map(p => p.response),
+        questions: validPairs.map((p: { question: string; response: string }) => p.question),
+        responses: validPairs.map((p: { question: string; response: string }) => p.response),
       };
       
+      console.log('Data to validate:', dataToValidate);
+      
       const validatedData = insertInterviewSchema.parse(dataToValidate);
+      console.log('Data validated successfully');
+      
       const interview = await storage.createInterview(validatedData);
+      console.log('Interview created:', interview.id);
+      
       res.status(201).json(interview);
     } catch (error) {
+      console.error('Interview creation error:', error);
       res.status(400).json({ 
         error: "Invalid interview data",
         details: error instanceof Error ? error.message : String(error)
