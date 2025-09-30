@@ -115,8 +115,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       // Call logout endpoint
       console.log("AuthContext: Calling logout API...");
-      const response = await apiRequest("POST", "/api/auth/logout");
-      console.log("AuthContext: Logout API response:", response.status);
+      await apiRequest("POST", "/api/auth/logout");
+      console.log("AuthContext: Logout API completed");
     } catch (error) {
       // Log error but continue with logout
       console.error("AuthContext: Logout API error (continuing anyway):", error);
@@ -131,9 +131,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading: false,
     });
     
-    console.log("AuthContext: Forcing page reload...");
-    // Force complete page reload to reset all state
-    window.location.reload();
+    console.log("AuthContext: Redirecting to login...");
+    // Redirect to login page
+    window.location.href = '/login';
   };
 
   const isAdmin = state.user?.role === "admin";
