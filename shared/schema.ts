@@ -742,6 +742,26 @@ export const competitiveAnalysis = pgTable("competitive_analysis", {
   updatedAt: timestamp("updated_at").default(sql`now()`),
 });
 
+// Project Backups - Automatic versioning and recovery
+export const projectBackups = pgTable("project_backups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  
+  // Backup metadata
+  backupType: text("backup_type").notNull(), // auto, manual
+  description: text("description"),
+  
+  // Project snapshot at backup time
+  projectSnapshot: jsonb("project_snapshot").notNull(), // Complete project data
+  
+  // Statistics at backup time
+  phaseSnapshot: integer("phase_snapshot"), // Current phase at backup
+  completionSnapshot: real("completion_snapshot"), // Completion rate at backup
+  itemCount: integer("item_count"), // Total items in backup
+  
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
 // Insert schemas for new tables
 export const insertDvfAssessmentSchema = createInsertSchema(dvfAssessments).omit({
   id: true,
@@ -787,3 +807,11 @@ export type InsertProjectAnalytics = z.infer<typeof insertProjectAnalyticsSchema
 
 export type CompetitiveAnalysis = typeof competitiveAnalysis.$inferSelect;
 export type InsertCompetitiveAnalysis = z.infer<typeof insertCompetitiveAnalysisSchema>;
+
+export const insertProjectBackupSchema = createInsertSchema(projectBackups).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type ProjectBackup = typeof projectBackups.$inferSelect;
+export type InsertProjectBackup = z.infer<typeof insertProjectBackupSchema>;

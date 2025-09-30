@@ -184,6 +184,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
+      
+      // Create automatic backup after significant project update
+      try {
+        const existingBackups = await storage.getProjectBackups(req.params.id);
+        const lastBackup = existingBackups[0];
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        
+        // Only create auto backup if last one was > 1 hour ago
+        if (!lastBackup || new Date(lastBackup.createdAt) < oneHourAgo) {
+          await storage.createProjectBackup(req.params.id, 'auto', 'Backup automático após atualização');
+        }
+      } catch (backupError) {
+        console.error('Error creating automatic backup:', backupError);
+      }
+      
       res.json(project);
     } catch (error) {
       res.status(400).json({ error: "Invalid project data" });
@@ -1626,6 +1641,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting phase card:", error);
       res.status(500).json({ error: "Failed to delete phase card" });
+    }
+  });
+
+  // Project Backup Routes
+  // POST /api/projects/:projectId/backups - Create manual backup
+  app.post("/api/projects/:projectId/backups", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const { description } = req.body;
+      
+      const backup = await storage.createProjectBackup(projectId, 'manual', description);
+      res.status(201).json(backup);
+    } catch (error) {
+      console.error("Error creating backup:", error);
+      res.status(500).json({ error: "Failed to create backup" });
+    }
+  });
+
+  // GET /api/projects/:projectId/backups - List all backups for a project
+  app.get("/api/projects/:projectId/backups", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const backups = await storage.getProjectBackups(projectId);
+      res.json(backups);
+    } catch (error) {
+      console.error("Error fetching backups:", error);
+      res.status(500).json({ error: "Failed to fetch backups" });
+    }
+  });
+
+  // GET /api/backups/:id - Get specific backup details
+  app.get("/api/backups/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const backup = await storage.getProjectBackup(id);
+      
+      if (!backup) {
+        return res.status(404).json({ error: "Backup not found" });
+      }
+      
+      res.json(backup);
+    } catch (error) {
+      console.error("Error fetching backup:", error);
+      res.status(500).json({ error: "Failed to fetch backup" });
+    }
+  });
+
+  // POST /api/backups/:id/restore - Restore project from backup
+  app.post("/api/backups/:id/restore", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.restoreProjectBackup(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Backup not found or restore failed" });
+      }
+      
+      res.json({ success: true, message: "Project restored successfully" });
+    } catch (error) {
+      console.error("Error restoring backup:", error);
+      res.status(500).json({ error: "Failed to restore backup" });
+    }
+  });
+
+  // DELETE /api/backups/:id - Delete a backup
+  app.delete("/api/backups/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteProjectBackup(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Backup not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting backup:", error);
+      res.status(500).json({ error: "Failed to delete backup" });
     }
   });
 

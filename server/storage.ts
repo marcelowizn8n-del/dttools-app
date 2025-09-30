@@ -23,11 +23,13 @@ import {
   type LovabilityMetric, type InsertLovabilityMetric,
   type ProjectAnalytics, type InsertProjectAnalytics,
   type CompetitiveAnalysis, type InsertCompetitiveAnalysis,
+  type ProjectBackup, type InsertProjectBackup,
   projects, empathyMaps, personas, interviews, observations,
   povStatements, hmwQuestions, ideas, prototypes, testPlans, testResults,
   userProgress, users, articles, subscriptionPlans, userSubscriptions,
   canvasDrawings, phaseCards, benchmarks, benchmarkAssessments,
-  dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis
+  dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis,
+  projectBackups
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
@@ -190,6 +192,13 @@ export interface IStorage {
   createCompetitiveAnalysis(analysis: InsertCompetitiveAnalysis): Promise<CompetitiveAnalysis>;
   updateCompetitiveAnalysis(id: string, analysis: Partial<InsertCompetitiveAnalysis>): Promise<CompetitiveAnalysis | undefined>;
   deleteCompetitiveAnalysis(id: string): Promise<boolean>;
+
+  // Project Backups
+  createProjectBackup(projectId: string, backupType: 'auto' | 'manual', description?: string): Promise<any>;
+  getProjectBackups(projectId: string): Promise<any[]>;
+  getProjectBackup(id: string): Promise<any | undefined>;
+  restoreProjectBackup(backupId: string): Promise<boolean>;
+  deleteProjectBackup(id: string): Promise<boolean>;
 }
 
 // Database implementation using PostgreSQL via Drizzle ORM
@@ -854,6 +863,182 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCompetitiveAnalysis(id: string): Promise<boolean> {
     const result = await db.delete(competitiveAnalysis).where(eq(competitiveAnalysis.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Project Backups
+  async createProjectBackup(projectId: string, backupType: 'auto' | 'manual', description?: string): Promise<ProjectBackup> {
+    const project = await this.getProject(projectId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    // Get all project data
+    const [empathyMapsData, personasData, interviewsData, observationsData, 
+           povStatementsData, hmwQuestionsData, ideasData, prototypesData, 
+           testPlansData] = await Promise.all([
+      this.getEmpathyMaps(projectId),
+      this.getPersonas(projectId),
+      this.getInterviews(projectId),
+      this.getObservations(projectId),
+      this.getPovStatements(projectId),
+      this.getHmwQuestions(projectId),
+      this.getIdeas(projectId),
+      this.getPrototypes(projectId),
+      this.getTestPlans(projectId),
+    ]);
+
+    const projectSnapshot = {
+      project,
+      empathyMaps: empathyMapsData,
+      personas: personasData,
+      interviews: interviewsData,
+      observations: observationsData,
+      povStatements: povStatementsData,
+      hmwQuestions: hmwQuestionsData,
+      ideas: ideasData,
+      prototypes: prototypesData,
+      testPlans: testPlansData,
+    };
+
+    const totalItems = empathyMapsData.length + personasData.length + interviewsData.length + 
+                      observationsData.length + povStatementsData.length + hmwQuestionsData.length +
+                      ideasData.length + prototypesData.length + testPlansData.length;
+
+    const [backup] = await db.insert(projectBackups).values({
+      projectId,
+      backupType,
+      description,
+      projectSnapshot,
+      phaseSnapshot: project.currentPhase,
+      completionSnapshot: project.completionRate,
+      itemCount: totalItems,
+    }).returning();
+
+    return backup;
+  }
+
+  async getProjectBackups(projectId: string): Promise<ProjectBackup[]> {
+    return await db.select().from(projectBackups)
+      .where(eq(projectBackups.projectId, projectId))
+      .orderBy(desc(projectBackups.createdAt));
+  }
+
+  async getProjectBackup(id: string): Promise<ProjectBackup | undefined> {
+    const [backup] = await db.select().from(projectBackups).where(eq(projectBackups.id, id));
+    return backup;
+  }
+
+  async restoreProjectBackup(backupId: string): Promise<boolean> {
+    const backup = await this.getProjectBackup(backupId);
+    if (!backup || !backup.projectSnapshot) {
+      return false;
+    }
+
+    const snapshot = backup.projectSnapshot as any;
+    const projectId = backup.projectId;
+
+    // Delete existing project data
+    await Promise.all([
+      db.delete(empathyMaps).where(eq(empathyMaps.projectId, projectId)),
+      db.delete(personas).where(eq(personas.projectId, projectId)),
+      db.delete(interviews).where(eq(interviews.projectId, projectId)),
+      db.delete(observations).where(eq(observations.projectId, projectId)),
+      db.delete(povStatements).where(eq(povStatements.projectId, projectId)),
+      db.delete(hmwQuestions).where(eq(hmwQuestions.projectId, projectId)),
+      db.delete(ideas).where(eq(ideas.projectId, projectId)),
+      db.delete(prototypes).where(eq(prototypes.projectId, projectId)),
+      db.delete(testPlans).where(eq(testPlans.projectId, projectId)),
+    ]);
+
+    // Restore project data
+    await this.updateProject(projectId, {
+      name: snapshot.project.name,
+      description: snapshot.project.description,
+      status: snapshot.project.status,
+      currentPhase: snapshot.project.currentPhase,
+      completionRate: snapshot.project.completionRate,
+    });
+
+    // Restore all data (remove IDs to let DB generate new ones)
+    if (snapshot.empathyMaps?.length > 0) {
+      await db.insert(empathyMaps).values(
+        snapshot.empathyMaps.map((em: any) => {
+          const { id, createdAt, updatedAt, ...rest } = em;
+          return rest;
+        })
+      );
+    }
+    if (snapshot.personas?.length > 0) {
+      await db.insert(personas).values(
+        snapshot.personas.map((p: any) => {
+          const { id, createdAt, updatedAt, ...rest } = p;
+          return rest;
+        })
+      );
+    }
+    if (snapshot.interviews?.length > 0) {
+      await db.insert(interviews).values(
+        snapshot.interviews.map((i: any) => {
+          const { id, createdAt, ...rest } = i;
+          return rest;
+        })
+      );
+    }
+    if (snapshot.observations?.length > 0) {
+      await db.insert(observations).values(
+        snapshot.observations.map((o: any) => {
+          const { id, createdAt, ...rest } = o;
+          return rest;
+        })
+      );
+    }
+    if (snapshot.povStatements?.length > 0) {
+      await db.insert(povStatements).values(
+        snapshot.povStatements.map((p: any) => {
+          const { id, createdAt, ...rest } = p;
+          return rest;
+        })
+      );
+    }
+    if (snapshot.hmwQuestions?.length > 0) {
+      await db.insert(hmwQuestions).values(
+        snapshot.hmwQuestions.map((h: any) => {
+          const { id, createdAt, ...rest } = h;
+          return rest;
+        })
+      );
+    }
+    if (snapshot.ideas?.length > 0) {
+      await db.insert(ideas).values(
+        snapshot.ideas.map((idea: any) => {
+          const { id, createdAt, ...rest } = idea;
+          return rest;
+        })
+      );
+    }
+    if (snapshot.prototypes?.length > 0) {
+      await db.insert(prototypes).values(
+        snapshot.prototypes.map((p: any) => {
+          const { id, createdAt, ...rest } = p;
+          return rest;
+        })
+      );
+    }
+    if (snapshot.testPlans?.length > 0) {
+      await db.insert(testPlans).values(
+        snapshot.testPlans.map((t: any) => {
+          const { id, createdAt, ...rest } = t;
+          return rest;
+        })
+      );
+    }
+
+    return true;
+  }
+
+  async deleteProjectBackup(id: string): Promise<boolean> {
+    const result = await db.delete(projectBackups).where(eq(projectBackups.id, id));
     return (result.rowCount || 0) > 0;
   }
 }

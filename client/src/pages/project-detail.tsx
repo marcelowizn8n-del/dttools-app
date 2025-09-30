@@ -1,7 +1,7 @@
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain, Columns3 } from "lucide-react";
+import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain, Columns3, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import Phase4Tools from "@/components/phase4/Phase4Tools";
 import Phase5Tools from "@/components/phase5/Phase5Tools";
 import AnalysisReport from "@/components/AnalysisReport";
 import { KanbanBoard } from "@/components/KanbanBoard";
+import BackupManager from "@/components/BackupManager";
 
 const phaseData = {
   1: { 
@@ -315,7 +316,7 @@ export default function ProjectDetailPage() {
 
       {/* Main Content with Tabs */}
       <Tabs defaultValue="phases" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="phases" data-testid="tab-phases">
             Fases & Ferramentas
           </TabsTrigger>
@@ -326,6 +327,10 @@ export default function ProjectDetailPage() {
           <TabsTrigger value="analysis" data-testid="tab-analysis">
             <Brain className="w-4 h-4 mr-2" />
             Análise Inteligente IA
+          </TabsTrigger>
+          <TabsTrigger value="backups" data-testid="tab-backups">
+            <Save className="w-4 h-4 mr-2" />
+            Backups
           </TabsTrigger>
         </TabsList>
 
@@ -407,6 +412,10 @@ export default function ProjectDetailPage() {
 
         <TabsContent value="analysis" className="space-y-6">
           <AnalysisReport projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="backups" className="space-y-6">
+          <BackupManager projectId={project.id} />
         </TabsContent>
       </Tabs>
       </div>
