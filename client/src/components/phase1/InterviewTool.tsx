@@ -173,16 +173,24 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
 
   const createInterviewMutation = useMutation({
     mutationFn: async (data: InsertInterview) => {
+      console.log('Starting mutation with data:', data);
       const response = await fetch(`/api/projects/${projectId}/interviews`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
         body: JSON.stringify(data),
       });
+      console.log('Response status:', response.status);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('Error response:', errorData);
         throw new Error(errorData.details || errorData.error || "Failed to create interview");
       }
-      return response.json();
+      const result = await response.json();
+      console.log('Success result:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "interviews"] });
