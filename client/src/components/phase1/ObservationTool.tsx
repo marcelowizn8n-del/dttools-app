@@ -221,11 +221,16 @@ function CreateObservationDialog({ projectId }: { projectId: string }) {
                       <Input 
                         type="date"
                         {...field}
-                        value={field.value ? (field.value instanceof Date ? field.value.toISOString().split('T')[0] : new Date(field.value).toISOString().split('T')[0]) : ''}
+                        value={field.value instanceof Date && !isNaN(field.value.getTime()) 
+                          ? field.value.toISOString().split('T')[0] 
+                          : ''}
                         onChange={(e) => {
-                          // Criar Date object e ajustar para o timezone local
-                          const selectedDate = new Date(e.target.value + 'T12:00:00');
-                          field.onChange(selectedDate);
+                          if (e.target.value) {
+                            const selectedDate = new Date(e.target.value + 'T12:00:00');
+                            field.onChange(selectedDate);
+                          } else {
+                            field.onChange(undefined);
+                          }
                         }}
                         data-testid="input-observation-date"
                       />
