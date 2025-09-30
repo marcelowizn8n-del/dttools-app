@@ -1,23 +1,10 @@
 {
-  "version": 2,
-  "builds": [
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/public",
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/dist/index.js"
-    },
-    {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json))",
-      "dest": "/dist/public/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/public/index.html"
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     }
   ]
 }
