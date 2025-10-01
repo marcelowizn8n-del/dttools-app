@@ -139,17 +139,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshUser = async (): Promise<void> => {
     try {
+      console.log("[AuthContext] Refreshing user data...");
       const response = await fetch("/api/auth/me", {
         credentials: "include",
       });
       
       if (response.ok) {
         const { user } = await response.json();
+        console.log("[AuthContext] Received user data:", {
+          id: user.id,
+          username: user.username,
+          hasProfilePicture: !!user.profilePicture,
+          profilePictureSize: user.profilePicture?.length || 0
+        });
         localStorage.setItem("auth_user", JSON.stringify(user));
         setState(prev => ({
           ...prev,
           user,
         }));
+        console.log("[AuthContext] User state updated successfully");
+      } else {
+        console.error("[AuthContext] Failed to refresh user, status:", response.status);
       }
     } catch (error) {
       console.error("Failed to refresh user:", error);
