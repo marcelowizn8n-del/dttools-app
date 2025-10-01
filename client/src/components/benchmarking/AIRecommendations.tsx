@@ -77,17 +77,37 @@ export default function AIRecommendationsComponent({
     },
     onSuccess: (response: AIResponse) => {
       console.log('AI Recommendations Success:', response);
-      if (response && response.success && response.data) {
-        setRecommendations(response.data.recommendations);
-        setDataCollected(response.data.dataCollected);
+      
+      // Check if response indicates missing data
+      if (!response || !response.success) {
+        const errorMsg = "Dados insuficientes para análise. Adicione avaliações DVF, métricas de Lovability, Analytics ou Análise Competitiva antes de gerar recomendações.";
+        console.error('Missing benchmarking data:', response);
         toast({
-          title: "Sucesso!",
-          description: "Recomendações de IA geradas com sucesso.",
+          title: "Dados Insuficientes",
+          description: errorMsg,
+          variant: "destructive",
         });
-      } else {
-        console.error('Invalid response structure:', response);
-        throw new Error("Resposta inválida da API");
+        return;
       }
+      
+      // Check if data structure is valid
+      if (!response.data || !response.data.recommendations) {
+        console.error('Invalid response structure:', response);
+        toast({
+          title: "Erro de Resposta",
+          description: "A resposta da API está em formato inválido. Tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Success - set data and show success message
+      setRecommendations(response.data.recommendations);
+      setDataCollected(response.data.dataCollected);
+      toast({
+        title: "Sucesso!",
+        description: "Recomendações de IA geradas com sucesso.",
+      });
     },
     onError: (error: any) => {
       console.error('AI recommendations error:', error);
@@ -124,7 +144,7 @@ export default function AIRecommendationsComponent({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-xl">
+      <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-full sm:max-w-4xl lg:max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-xl">
         <div className="p-3 sm:p-6 border-b dark:border-gray-700">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
@@ -136,7 +156,16 @@ export default function AIRecommendationsComponent({
                 Análise inteligente baseada em dados de DVF, Lovability, Analytics e Competitividade
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="flex-shrink-0" data-testid="button-close">×</Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onClose} 
+              className="flex-shrink-0" 
+              data-testid="button-close"
+              aria-label="Fechar recomendações de IA"
+            >
+              ×
+            </Button>
           </div>
         </div>
 
