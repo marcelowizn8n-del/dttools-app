@@ -977,21 +977,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Not authenticated" });
       }
       
-      // TEMP FIX: Refresh user data from storage if role might have changed
-      if (req.session.user && req.session.user.username === "dttools.app@gmail.com") {
-        const freshUser = await storage.getUserByUsername(req.session.user.username);
-        if (freshUser && freshUser.role !== req.session.user.role) {
-          req.session.user = {
-            id: freshUser.id,
-            username: freshUser.username,
-            role: freshUser.role,
-            createdAt: freshUser.createdAt || new Date()
-          };
-        }
+      // Always fetch fresh user data from database to include all fields like profilePicture
+      const freshUser = await storage.getUser(req.session.userId);
+      if (!freshUser) {
+        return res.status(401).json({ error: "User not found" });
       }
       
-      // Return current user data from session
-      res.json({ user: req.session.user });
+      // Update session with latest role if it changed
+      if (freshUser.role !== req.session.user.role) {
+        req.session.user = {
+          id: freshUser.id,
+          username: freshUser.username,
+          role: freshUser.role,
+          createdAt: freshUser.createdAt || new Date()
+        };
+      }
+      
+      // Return complete user data (without password)
+      const { password: _, ...userWithoutPassword } = freshUser;
+      res.json({ user: userWithoutPassword });
     } catch (error) {
       console.error("Auth check error:", error);
       res.status(500).json({ error: "Failed to check authentication" });
