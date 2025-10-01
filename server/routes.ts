@@ -1028,11 +1028,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "User not authenticated" });
       }
 
+      console.log("[Profile Update] User ID:", req.user.id);
+      console.log("[Profile Update] Received fields:", Object.keys(req.body));
+      console.log("[Profile Update] Has profile_picture:", !!req.body.profile_picture);
+      if (req.body.profile_picture) {
+        console.log("[Profile Update] profile_picture size:", req.body.profile_picture.length, "chars");
+      }
+
       const validatedData = updateProfileSchema.parse(req.body);
+      console.log("[Profile Update] Validated fields:", Object.keys(validatedData));
+      console.log("[Profile Update] Has profile_picture after validation:", !!validatedData.profile_picture);
+      
       const user = await storage.updateUser(req.user.id, validatedData);
       
       if (!user) {
         return res.status(404).json({ error: "User not found" });
+      }
+
+      console.log("[Profile Update] User updated. Has profilePicture:", !!user.profilePicture);
+      if (user.profilePicture) {
+        console.log("[Profile Update] Saved profilePicture size:", user.profilePicture.length, "chars");
       }
 
       // Update session user data  
@@ -1047,6 +1062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password: _, ...userProfile } = user;
       res.json(userProfile);
     } catch (error) {
+      console.error("[Profile Update] Error:", error);
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
       } else {
