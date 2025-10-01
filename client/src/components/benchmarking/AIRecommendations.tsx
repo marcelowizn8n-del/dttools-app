@@ -66,11 +66,18 @@ export default function AIRecommendationsComponent({
   // Generate AI recommendations mutation
   const generateRecommendationsMutation = useMutation<AIResponse, Error, void>({
     mutationFn: async () => {
-      const response = await apiRequest("POST", `/api/benchmarking/ai-recommendations/${projectId}`, {});
-      return response as unknown as AIResponse;
+      try {
+        const response = await apiRequest("POST", `/api/benchmarking/ai-recommendations/${projectId}`, {});
+        console.log('AI Recommendations API Response:', response);
+        return response as unknown as AIResponse;
+      } catch (err) {
+        console.error('API Request failed:', err);
+        throw err;
+      }
     },
     onSuccess: (response: AIResponse) => {
-      if (response.success) {
+      console.log('AI Recommendations Success:', response);
+      if (response && response.success && response.data) {
         setRecommendations(response.data.recommendations);
         setDataCollected(response.data.dataCollected);
         toast({
@@ -78,14 +85,17 @@ export default function AIRecommendationsComponent({
           description: "Recomendações de IA geradas com sucesso.",
         });
       } else {
+        console.error('Invalid response structure:', response);
         throw new Error("Resposta inválida da API");
       }
     },
     onError: (error: any) => {
       console.error('AI recommendations error:', error);
+      console.error('Error details:', error?.message, error?.response);
+      const errorMessage = error?.message || error?.response?.data?.details || error?.response?.data?.error || "Falha ao gerar recomendações de IA. Verifique se você adicionou dados de benchmarking (DVF, Lovability, etc).";
       toast({
         title: "Erro",
-        description: error?.response?.data?.details || "Falha ao gerar recomendações de IA.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -113,30 +123,30 @@ export default function AIRecommendationsComponent({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Brain className="w-7 h-7 text-purple-600" />
-                Recomendações IA - {projectName}
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-xl">
+        <div className="p-3 sm:p-6 border-b dark:border-gray-700">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-2xl font-bold flex items-center gap-2 flex-wrap">
+                <Brain className="w-5 h-5 sm:w-7 sm:h-7 text-purple-600 flex-shrink-0" />
+                <span className="truncate">Recomendações IA - {projectName}</span>
               </h2>
-              <p className="text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Análise inteligente baseada em dados de DVF, Lovability, Analytics e Competitividade
               </p>
             </div>
-            <Button variant="ghost" onClick={onClose}>×</Button>
+            <Button variant="ghost" size="sm" onClick={onClose} className="flex-shrink-0" data-testid="button-close">×</Button>
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           {!recommendations ? (
-            <div className="text-center py-12">
-              <div className="max-w-md mx-auto">
-                <Brain className="w-16 h-16 text-purple-400 mx-auto mb-6" />
-                <h3 className="text-xl font-semibold mb-3">Análise Inteligente de Benchmarking</h3>
-                <p className="text-gray-600 mb-6">
+            <div className="text-center py-6 sm:py-12">
+              <div className="max-w-md mx-auto px-2">
+                <Brain className="w-12 h-12 sm:w-16 sm:h-16 text-purple-400 mx-auto mb-4 sm:mb-6" />
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Análise Inteligente de Benchmarking</h3>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
                   Nossa IA analisará todos os dados de benchmarking do seu projeto para gerar 
                   recomendações personalizadas e insights estratégicos.
                 </p>
@@ -186,7 +196,7 @@ export default function AIRecommendationsComponent({
                   size="lg"
                   onClick={handleGenerateRecommendations}
                   disabled={generateRecommendationsMutation.isPending}
-                  className="w-full"
+                  className="w-full text-sm sm:text-base"
                   data-testid="button-generate-ai-recommendations"
                 >
                   {generateRecommendationsMutation.isPending ? (
