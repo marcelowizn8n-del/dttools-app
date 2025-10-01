@@ -13,6 +13,7 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   isAdmin: boolean;
 }
 
@@ -136,12 +137,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     window.location.href = '/login';
   };
 
+  const refreshUser = async (): Promise<void> => {
+    try {
+      const response = await fetch("/api/auth/me", {
+        credentials: "include",
+      });
+      
+      if (response.ok) {
+        const { user } = await response.json();
+        localStorage.setItem("auth_user", JSON.stringify(user));
+        setState(prev => ({
+          ...prev,
+          user,
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to refresh user:", error);
+    }
+  };
+
   const isAdmin = state.user?.role === "admin";
 
   const contextValue: AuthContextType = {
     ...state,
     login,
     logout,
+    refreshUser,
     isAdmin,
   };
 
