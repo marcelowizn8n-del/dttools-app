@@ -193,7 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
         
         // Only create auto backup if last one was > 1 hour ago
-        if (!lastBackup || new Date(lastBackup.createdAt) < oneHourAgo) {
+        if (!lastBackup || (lastBackup.createdAt && new Date(lastBackup.createdAt) < oneHourAgo)) {
           await storage.createProjectBackup(req.params.id, 'auto', 'Backup automático após atualização');
         }
       } catch (backupError) {
@@ -1038,7 +1038,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = updateProfileSchema.parse(req.body);
       console.log("[Profile Update] Validated fields:", Object.keys(validatedData));
-      console.log("[Profile Update] Has profile_picture after validation:", !!validatedData.profile_picture);
+      console.log("[Profile Update] Has profilePicture after validation:", !!validatedData.profilePicture);
       
       const user = await storage.updateUser(req.user.id, validatedData);
       
@@ -2143,7 +2143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const benchmarkingData = {
         projectId: project.id,
         projectName: project.name,
-        projectDescription: project.description,
+        projectDescription: project.description || undefined,
         
         // DVF data with calculated scores
         dvfAssessments: dvfAssessments.map((assessment: any) => ({
