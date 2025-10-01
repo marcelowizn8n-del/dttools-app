@@ -82,6 +82,16 @@ Preferred communication style: Simple, everyday language.
 - **Tracking**: Progresso visual através das 5 fases
 - **Gamificação**: Níveis e reconhecimentos
 
+### Sistema de Wiki/Ajuda Interna
+- **Central de Ajuda**: Base de conhecimento integrada com artigos de suporte
+- **Busca Inteligente**: Busca por palavras-chave, categorias e fases
+- **Categorias Organizadas**: Artigos organizados por início rápido, fases do DT, colaboração e exportação
+- **Artigos em Markdown**: Conteúdo formatado com suporte a Markdown
+- **Interatividade**: Sistema de votação (artigos úteis) e contador de visualizações
+- **Artigos em Destaque**: Destaques dos artigos mais importantes
+- **Acesso Público**: Disponível para todos os usuários, logados ou não
+- **Navegação Integrada**: Link de "Ajuda" no header principal (desktop e mobile)
+
 ### Data Flow Architecture
 - **Client-Server Communication**: APIs REST para CRUD de cada ferramenta
 - **Export Functionality**: Geração de PDFs e CSVs dos dados

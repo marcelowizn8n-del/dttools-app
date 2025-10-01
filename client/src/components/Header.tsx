@@ -7,6 +7,7 @@ import {
   Users,
   BarChart3,
   MessageCircle,
+  HelpCircle,
   Menu,
   X
 } from "lucide-react";
@@ -105,6 +106,12 @@ export default function Header() {
                 {t("nav.pricing")}
               </Button>
             </Link>
+            <Link href="/help">
+              <Button variant="ghost" className="text-sm" data-testid="nav-help">
+                <HelpCircle className="mr-1 h-4 w-4" />
+                Ajuda
+              </Button>
+            </Link>
             {isAdmin && (
               <Link href="/admin">
                 <Button variant="ghost" className="text-sm" data-testid="nav-admin">
@@ -186,6 +193,12 @@ export default function Header() {
                   <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-pricing" onClick={() => setIsMobileMenuOpen(false)}>
                     <CreditCard className="mr-2 h-4 w-4" />
                     {t("nav.pricing")}
+                  </Button>
+                </Link>
+                <Link href="/help">
+                  <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-help" onClick={() => setIsMobileMenuOpen(false)}>
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    Ajuda
                   </Button>
                 </Link>
                 {isAdmin && (

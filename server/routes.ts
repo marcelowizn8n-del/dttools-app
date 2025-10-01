@@ -30,7 +30,8 @@ import {
   insertLovabilityMetricSchema,
   insertProjectAnalyticsSchema,
   insertCompetitiveAnalysisSchema,
-  updateProfileSchema
+  updateProfileSchema,
+  insertHelpArticleSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
@@ -2310,6 +2311,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating Markdown:", error);
       res.status(500).json({ error: "Failed to generate Markdown document" });
+    }
+  });
+
+  // ===== HELP/WIKI SYSTEM ROUTES =====
+
+  // GET /api/help - List all help articles
+  app.get("/api/help", async (req, res) => {
+    try {
+      const { category, phase, featured } = req.query;
+      let articles = await storage.getHelpArticles();
+      
+      // Filter by category if provided
+      if (category && typeof category === 'string') {
+        articles = articles.filter(a => a.category === category);
+      }
+      
+      // Filter by phase if provided
+      if (phase) {
+        const phaseNum = parseInt(phase as string);
+        articles = articles.filter(a => a.phase === phaseNum);
+      }
+      
+      // Filter by featured if provided
+      if (featured === 'true') {
+        articles = articles.filter(a => a.featured);
+      }
+      
+      // Sort by order
+      articles.sort((a, b) => (a.order || 0) - (b.order || 0));
+      
+      res.json(articles);
+    } catch (error) {
+      console.error("Error fetching help articles:", error);
+      res.status(500).json({ error: "Failed to fetch help articles" });
+    }
+  });
+
+  // GET /api/help/search - Search help articles
+  app.get("/api/help/search", async (req, res) => {
+    try {
+      const { q } = req.query;
+      
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ error: "Search query required" });
+      }
+      
+      const searchTerm = q.toLowerCase();
+      const articles = await storage.searchHelpArticles(searchTerm);
+      
+      res.json(articles);
+    } catch (error) {
+      console.error("Error searching help articles:", error);
+      res.status(500).json({ error: "Failed to search help articles" });
+    }
+  });
+
+  // GET /api/help/:slug - Get specific help article by slug
+  app.get("/api/help/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const article = await storage.getHelpArticleBySlug(slug);
+      
+      if (!article) {
+        return res.status(404).json({ error: "Help article not found" });
+      }
+      
+      // Increment view count and return updated article
+      const updatedArticle = await storage.incrementHelpArticleViews(article.id);
+      
+      res.json(updatedArticle || article);
+    } catch (error) {
+      console.error("Error fetching help article:", error);
+      res.status(500).json({ error: "Failed to fetch help article" });
+    }
+  });
+
+  // POST /api/help/:id/helpful - Mark article as helpful
+  app.post("/api/help/:id/helpful", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const article = await storage.incrementHelpArticleHelpful(id);
+      
+      if (!article) {
+        return res.status(404).json({ error: "Help article not found" });
+      }
+      
+      res.json(article);
+    } catch (error) {
+      console.error("Error marking article helpful:", error);
+      res.status(500).json({ error: "Failed to mark article as helpful" });
+    }
+  });
+
+  // GET /api/help/categories/list - Get list of all categories
+  app.get("/api/help/categories/list", async (req, res) => {
+    try {
+      const articles = await storage.getHelpArticles();
+      const categorySet = new Set<string>();
+      articles.forEach(a => categorySet.add(a.category));
+      const categories = Array.from(categorySet);
+      
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching help categories:", error);
+      res.status(500).json({ error: "Failed to fetch help categories" });
     }
   });
 

@@ -762,6 +762,25 @@ export const projectBackups = pgTable("project_backups", {
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
+// Help/Wiki System - Knowledge base articles
+export const helpArticles = pgTable("help_articles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(), // URL-friendly identifier
+  content: text("content").notNull(), // Markdown content
+  category: text("category").notNull(), // inicio-rapido, fases, exportacao, etc
+  subcategory: text("subcategory"), // Optional subcategory
+  phase: integer("phase"), // 1-5 if related to specific DT phase
+  tags: jsonb("tags").default([]), // Array of searchable tags
+  searchKeywords: jsonb("search_keywords").default([]), // Keywords for search
+  featured: boolean("featured").default(false), // Show in main help
+  viewCount: integer("view_count").default(0),
+  helpful: integer("helpful").default(0), // Helpful votes
+  order: integer("order").default(0), // Display order within category
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
 // Insert schemas for new tables
 export const insertDvfAssessmentSchema = createInsertSchema(dvfAssessments).omit({
   id: true,
@@ -815,3 +834,14 @@ export const insertProjectBackupSchema = createInsertSchema(projectBackups).omit
 
 export type ProjectBackup = typeof projectBackups.$inferSelect;
 export type InsertProjectBackup = z.infer<typeof insertProjectBackupSchema>;
+
+export const insertHelpArticleSchema = createInsertSchema(helpArticles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  viewCount: true,
+  helpful: true,
+});
+
+export type HelpArticle = typeof helpArticles.$inferSelect;
+export type InsertHelpArticle = z.infer<typeof insertHelpArticleSchema>;
