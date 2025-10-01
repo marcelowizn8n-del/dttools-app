@@ -24,12 +24,13 @@ import {
   type ProjectAnalytics, type InsertProjectAnalytics,
   type CompetitiveAnalysis, type InsertCompetitiveAnalysis,
   type ProjectBackup, type InsertProjectBackup,
+  type HelpArticle, type InsertHelpArticle,
   projects, empathyMaps, personas, interviews, observations,
   povStatements, hmwQuestions, ideas, prototypes, testPlans, testResults,
   userProgress, users, articles, subscriptionPlans, userSubscriptions,
   canvasDrawings, phaseCards, benchmarks, benchmarkAssessments,
   dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis,
-  projectBackups
+  projectBackups, helpArticles
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
@@ -199,6 +200,13 @@ export interface IStorage {
   getProjectBackup(id: string): Promise<any | undefined>;
   restoreProjectBackup(backupId: string): Promise<boolean>;
   deleteProjectBackup(id: string): Promise<boolean>;
+
+  // Help Articles
+  getHelpArticles(): Promise<any[]>;
+  getHelpArticleBySlug(slug: string): Promise<any | undefined>;
+  searchHelpArticles(searchTerm: string): Promise<any[]>;
+  incrementHelpArticleViews(id: string): Promise<any | undefined>;
+  incrementHelpArticleHelpful(id: string): Promise<any | undefined>;
 }
 
 // Database implementation using PostgreSQL via Drizzle ORM
@@ -1040,6 +1048,55 @@ export class DatabaseStorage implements IStorage {
   async deleteProjectBackup(id: string): Promise<boolean> {
     const result = await db.delete(projectBackups).where(eq(projectBackups.id, id));
     return (result.rowCount || 0) > 0;
+  }
+
+  // Help Articles
+  async getHelpArticles(): Promise<HelpArticle[]> {
+    return await db.select().from(helpArticles).orderBy(desc(helpArticles.order), desc(helpArticles.createdAt));
+  }
+
+  async getHelpArticleBySlug(slug: string): Promise<HelpArticle | undefined> {
+    const [article] = await db.select().from(helpArticles).where(eq(helpArticles.slug, slug));
+    return article;
+  }
+
+  async searchHelpArticles(searchTerm: string): Promise<HelpArticle[]> {
+    const lowerSearch = searchTerm.toLowerCase();
+    const allArticles = await db.select().from(helpArticles);
+    
+    // Filter articles by title, content, tags, or keywords
+    return allArticles.filter(article => {
+      const titleMatch = article.title.toLowerCase().includes(lowerSearch);
+      const contentMatch = article.content.toLowerCase().includes(lowerSearch);
+      const tagsMatch = article.tags && JSON.stringify(article.tags).toLowerCase().includes(lowerSearch);
+      const keywordsMatch = article.searchKeywords && JSON.stringify(article.searchKeywords).toLowerCase().includes(lowerSearch);
+      
+      return titleMatch || contentMatch || tagsMatch || keywordsMatch;
+    });
+  }
+
+  async incrementHelpArticleViews(id: string): Promise<HelpArticle | undefined> {
+    const [article] = await db.select().from(helpArticles).where(eq(helpArticles.id, id));
+    if (!article) return undefined;
+    
+    const [updated] = await db.update(helpArticles)
+      .set({ viewCount: (article.viewCount || 0) + 1 })
+      .where(eq(helpArticles.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  async incrementHelpArticleHelpful(id: string): Promise<HelpArticle | undefined> {
+    const [article] = await db.select().from(helpArticles).where(eq(helpArticles.id, id));
+    if (!article) return undefined;
+    
+    const [updated] = await db.update(helpArticles)
+      .set({ helpful: (article.helpful || 0) + 1 })
+      .where(eq(helpArticles.id, id))
+      .returning();
+    
+    return updated;
   }
 }
 

@@ -20,6 +20,7 @@ import PricingPage from "@/pages/pricing";
 import ChatPage from "@/pages/chat";
 import ProfilePage from "@/pages/profile";
 import BenchmarkingPage from "@/pages/benchmarking";
+import HelpCenter from "@/pages/HelpCenter";
 import ScreenshotCapture from "@/components/ScreenshotCapture";
 import NotFound from "@/pages/not-found";
 import { useAuth, ProtectedRoute } from "@/contexts/AuthContext";
@@ -113,6 +114,7 @@ function Router() {
           <BenchmarkingPage />
         </ProtectedRoute>
       </Route>
+      <Route path="/help" component={HelpCenter} />
       <Route path="/screenshots" component={ScreenshotCapture} />
       
       <Route component={NotFound} />
