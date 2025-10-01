@@ -2157,23 +2157,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })),
         
         // Lovability metrics
-        lovabilityMetrics: projectAnalytics.length > 0 ? {
+        lovabilityMetrics: lovabilityMetrics.length > 0 ? {
           npsScore: lovabilityMetrics[0]?.npsScore || 0,
           satisfactionScore: lovabilityMetrics[0]?.satisfactionScore || 0,
-          engagementRate: lovabilityMetrics[0]?.engagementRate || 0,
-          emotionalDistribution: lovabilityMetrics[0]?.emotionalDistribution || {},
-          overallLovabilityScore: lovabilityMetrics[0]?.overallScore || 0
+          engagementRate: lovabilityMetrics[0]?.engagementTime || 0,
+          emotionalDistribution: (lovabilityMetrics[0]?.emotionalDistribution as Record<string, number>) || {},
+          overallLovabilityScore: lovabilityMetrics[0]?.lovabilityScore || 0
         } : undefined,
         
         // Project analytics
-        projectAnalytics: projectAnalytics.length > 0 ? {
-          completionRate: projectAnalytics[0]?.completionRate || 0,
-          totalTimeSpent: projectAnalytics[0]?.totalTimeSpent || 0,
-          teamSize: projectAnalytics[0]?.teamSize || 1,
-          innovationLevel: projectAnalytics[0]?.innovationLevel || 0,
-          overallSuccess: projectAnalytics[0]?.overallSuccess || 0,
-          topPerformingTools: (projectAnalytics[0]?.topPerformingTools as string[]) || [],
-          timeBottlenecks: (projectAnalytics[0]?.timeBottlenecks as string[]) || []
+        projectAnalytics: projectAnalytics ? {
+          completionRate: projectAnalytics.completionRate || 0,
+          totalTimeSpent: projectAnalytics.totalTimeSpent || 0,
+          teamSize: projectAnalytics.teamSize || 1,
+          innovationLevel: projectAnalytics.innovationLevel || 0,
+          overallSuccess: projectAnalytics.overallSuccess || 0,
+          topPerformingTools: (projectAnalytics.topPerformingTools as string[]) || [],
+          timeBottlenecks: (projectAnalytics.timeBottlenecks as string[]) || []
         } : undefined,
         
         // Competitive analysis
@@ -2208,7 +2208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dataCollected: {
             dvfAssessments: dvfAssessments.length,
             lovabilityMetrics: lovabilityMetrics.length,
-            projectAnalytics: projectAnalytics.length,
+            projectAnalytics: projectAnalytics ? 1 : 0,
             competitiveAnalyses: competitiveAnalyses.length
           },
           recommendations

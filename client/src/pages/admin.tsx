@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus, DollarSign, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,9 +18,9 @@ import ArticleEditor from "@/components/admin/ArticleEditor";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertUserSchema } from "@shared/schema";
+import { insertUserSchema, insertSubscriptionPlanSchema } from "@shared/schema";
 import { z } from "zod";
-import type { Article, User, Project, InsertUser } from "@shared/schema";
+import type { Article, User, Project, InsertUser, SubscriptionPlan } from "@shared/schema";
 
 function ArticlesTab() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -693,6 +693,514 @@ function UserCreateDialog({
   );
 }
 
+// Plans Management Tab Component
+function PlansTab() {
+  const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
+  const { toast } = useToast();
+
+  const { data: plans = [], isLoading } = useQuery<SubscriptionPlan[]>({
+    queryKey: ["/api/subscription-plans"],
+  });
+
+  const updatePlanMutation = useMutation({
+    mutationFn: async ({ id, ...data }: Partial<SubscriptionPlan> & { id: string }) => {
+      const response = await apiRequest(`/api/subscription-plans/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to update plan");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription-plans"] });
+      setEditingPlan(null);
+      toast({
+        title: "Plano atualizado",
+        description: "O plano foi atualizado com sucesso.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro ao atualizar plano",
+        description: "Ocorreu um erro ao tentar atualizar o plano.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const sortedPlans = [...plans].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold" data-testid="plans-title">
+          Gerenciar Planos
+        </h2>
+        <p className="text-muted-foreground">
+          Edite preços, limites e recursos dos planos de assinatura
+        </p>
+      </div>
+
+      {/* Plans List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {isLoading ? (
+          [1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-8 w-24 mb-4" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          sortedPlans.map((plan) => (
+            <Card 
+              key={plan.id} 
+              className={`${plan.name === 'pro' ? 'border-blue-500' : ''}`}
+              data-testid={`card-plan-${plan.name}`}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="capitalize">{plan.displayName || plan.name}</CardTitle>
+                  <Badge variant={plan.isActive ? "default" : "secondary"}>
+                    {plan.isActive ? "Ativo" : "Inativo"}
+                  </Badge>
+                </div>
+                <CardDescription>{plan.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Mensal:</span>
+                    <span className="font-bold">
+                      {plan.priceMonthly === 0 ? "Grátis" : `R$ ${plan.priceMonthly}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Anual:</span>
+                    <span className="font-bold">
+                      {plan.priceYearly === 0 ? "Grátis" : `R$ ${plan.priceYearly}`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Projetos:</span>
+                    <span>{plan.maxProjects || "Ilimitado"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Personas/Projeto:</span>
+                    <span>{plan.maxPersonasPerProject || "Ilimitado"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Chat IA:</span>
+                    <span>{plan.aiChatLimit || "Ilimitado"}</span>
+                  </div>
+                  {(plan.name === "team" || plan.name === "enterprise") && (
+                    <div className="flex justify-between">
+                      <span>Usuários/Time:</span>
+                      <span>{plan.maxUsersPerTeam || "Ilimitado"}</span>
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setEditingPlan(plan)}
+                  data-testid={`button-edit-plan-${plan.name}`}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar Plano
+                </Button>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Edit Plan Dialog */}
+      {editingPlan && (
+        <PlanEditDialog
+          plan={editingPlan}
+          isOpen={!!editingPlan}
+          onClose={() => setEditingPlan(null)}
+          onSubmit={(data) => updatePlanMutation.mutate({ id: editingPlan.id, ...data })}
+          isSubmitting={updatePlanMutation.isPending}
+        />
+      )}
+    </div>
+  );
+}
+
+// Plan Edit Dialog Component
+function PlanEditDialog({
+  plan,
+  isOpen,
+  onClose,
+  onSubmit,
+  isSubmitting
+}: {
+  plan: SubscriptionPlan;
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: Partial<SubscriptionPlan>) => void;
+  isSubmitting: boolean;
+}) {
+  const form = useForm<Partial<SubscriptionPlan>>({
+    defaultValues: {
+      displayName: plan.displayName,
+      description: plan.description,
+      priceMonthly: plan.priceMonthly,
+      priceYearly: plan.priceYearly,
+      maxProjects: plan.maxProjects,
+      maxPersonasPerProject: plan.maxPersonasPerProject,
+      aiChatLimit: plan.aiChatLimit,
+      maxUsersPerTeam: plan.maxUsersPerTeam,
+      hasCollaboration: plan.hasCollaboration,
+      hasSso: plan.hasSso,
+      hasCustomIntegrations: plan.hasCustomIntegrations,
+      has24x7Support: plan.has24x7Support,
+      isActive: plan.isActive,
+      order: plan.order,
+    },
+  });
+
+  const handleSubmit = (data: Partial<SubscriptionPlan>) => {
+    onSubmit(data);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-edit-plan">
+        <DialogHeader>
+          <DialogTitle>Editar Plano: {plan.displayName || plan.name}</DialogTitle>
+          <DialogDescription>
+            Atualize os valores e configurações do plano de assinatura
+          </DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="displayName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome de Exibição</FormLabel>
+                    <FormControl>
+                      <Input {...field} data-testid="input-display-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="order"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ordem de Exibição</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        data-testid="input-order"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Input {...field} data-testid="input-description" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="priceMonthly"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Preço Mensal (R$)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                        data-testid="input-price-monthly"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="priceYearly"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Preço Anual (R$)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                        data-testid="input-price-yearly"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="maxProjects"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Máximo de Projetos (null = ilimitado)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value === "" ? null : parseInt(e.target.value))}
+                        data-testid="input-max-projects"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="maxPersonasPerProject"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Máximo de Personas/Projeto</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value === "" ? null : parseInt(e.target.value))}
+                        data-testid="input-max-personas"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="aiChatLimit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Limite de Chat IA</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value === "" ? null : parseInt(e.target.value))}
+                        data-testid="input-ai-chat-limit"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="maxUsersPerTeam"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Máximo de Usuários/Time</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value === "" ? null : parseInt(e.target.value))}
+                        data-testid="input-max-users-team"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="hasCollaboration"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <FormLabel className="cursor-pointer">Colaboração</FormLabel>
+                    </div>
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="h-4 w-4"
+                        data-testid="checkbox-has-collaboration"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="hasSso"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <FormLabel className="cursor-pointer">SSO</FormLabel>
+                    </div>
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="h-4 w-4"
+                        data-testid="checkbox-has-sso"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="hasCustomIntegrations"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <FormLabel className="cursor-pointer">Integrações Customizadas</FormLabel>
+                    </div>
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="h-4 w-4"
+                        data-testid="checkbox-has-custom-integrations"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="has24x7Support"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <FormLabel className="cursor-pointer">Suporte 24/7</FormLabel>
+                    </div>
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="h-4 w-4"
+                        data-testid="checkbox-has-24x7-support"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="isActive"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <FormLabel className="cursor-pointer">Plano Ativo</FormLabel>
+                    <p className="text-sm text-muted-foreground">
+                      Desative para ocultar o plano da página de preços
+                    </p>
+                  </div>
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="h-4 w-4"
+                      data-testid="checkbox-is-active"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+                data-testid="button-cancel"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                data-testid="button-save-plan"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {isSubmitting ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Projects Management Tab Component
 function ProjectsTab() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -1235,7 +1743,7 @@ export default function AdminPage() {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="dashboard" data-testid="tab-dashboard">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Dashboard
@@ -1247,6 +1755,10 @@ export default function AdminPage() {
               <TabsTrigger value="projects" data-testid="tab-projects">
                 <FolderOpen className="mr-2 h-4 w-4" />
                 Projetos
+              </TabsTrigger>
+              <TabsTrigger value="plans" data-testid="tab-plans">
+                <DollarSign className="mr-2 h-4 w-4" />
+                Planos
               </TabsTrigger>
               <TabsTrigger value="articles" data-testid="tab-articles">
                 <Eye className="mr-2 h-4 w-4" />
@@ -1264,6 +1776,10 @@ export default function AdminPage() {
 
             <TabsContent value="projects">
               <ProjectsTab />
+            </TabsContent>
+
+            <TabsContent value="plans">
+              <PlansTab />
             </TabsContent>
 
             <TabsContent value="articles">
