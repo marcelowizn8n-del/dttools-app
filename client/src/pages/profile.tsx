@@ -284,20 +284,13 @@ export default function ProfilePage() {
   };
 
   const onSubmit = (data: ProfileFormData) => {
-    // Convert camelCase to snake_case for backend compatibility
-    const backendData = {
+    // Update profilePicture with current value
+    const profileData = {
       ...data,
-      job_role: data.jobRole,
-      zip_code: data.zipCode,
-      profile_picture: profilePicture,
+      profilePicture: profilePicture, // Use camelCase as Drizzle expects
     };
     
-    // Remove the camelCase versions to avoid conflicts
-    delete (backendData as any).jobRole;
-    delete (backendData as any).zipCode;
-    delete (backendData as any).profilePicture;
-    
-    updateProfileMutation.mutate(backendData);
+    updateProfileMutation.mutate(profileData);
   };
 
   const getUserInitials = (name: string) => {
