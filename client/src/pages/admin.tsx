@@ -593,6 +593,8 @@ function UserCreateDialog({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
       username: "",
+      email: "",
+      name: "",
       password: "",
       confirmPassword: "",
       role: "user",
@@ -623,7 +625,35 @@ function UserCreateDialog({
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input {...field} data-testid="input-username" />
+                    <Input {...field} placeholder="usuario123" data-testid="input-username" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-mail</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} placeholder="usuario@exemplo.com" data-testid="input-email" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome Completo</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="João da Silva" data-testid="input-name" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -637,7 +667,7 @@ function UserCreateDialog({
                 <FormItem>
                   <FormLabel>Senha</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} data-testid="input-password" />
+                    <Input type="password" {...field} placeholder="Mínimo 6 caracteres" data-testid="input-password" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
