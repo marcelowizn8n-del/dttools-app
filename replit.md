@@ -119,6 +119,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### 02/10/2025 - Production Deployment Fix & User Creation (v7.1.0-DEPLOYMENT-FIX)
+- **CRITICAL FIX**: Resolvido tela branca em produção (dttools.app)
+- **Asset Serving Fix**: Copiados assets de dist/public para server/public para deployment correto
+- **User Creation Form**: Adicionados campos obrigatórios Email e Nome Completo no formulário de Admin
+- **Form Validation**: Melhorada validação de senha (mínimo 6 caracteres)
+- **Build Assets**: Garantido que arquivos JavaScript são servidos corretamente em produção
+- **MIME Type Fix**: Resolvido erro "Expected JavaScript module but got text/html"
+
 ### 02/10/2025 - Admin Planos Tab Complete Fix (v6.0.0-FINAL-PLANOS-FIX)
 - **CRITICAL FIX**: Resolvido problema definitivo da tab "Planos" no Admin
 - **Inline Flexbox Styles**: Aplicado `style={{ flex: 1 }}` em todas as tabs do Admin para garantir renderização
