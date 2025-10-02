@@ -6,6 +6,8 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDefaultData } from "./storage";
 import { execSync } from "child_process";
+import fs from "fs/promises";
+import path from "path";
 
 // Build version v6.0.0-FINAL-PLANOS-FIX - Force deployment rebuild
 const BUILD_VERSION = "v6.0.0-FINAL-PLANOS-FIX";
@@ -166,6 +168,42 @@ app.use((req, res, next) => {
     log('Setting up Vite development server');
     await setupVite(app, server);
   } else {
+    // Sync build assets from dist/public to server/public before serving
+    log('Syncing build assets to server/public...');
+    const distPath = path.resolve(import.meta.dirname, '..', 'dist', 'public');
+    const serverPublicPath = path.resolve(import.meta.dirname, 'public');
+    
+    try {
+      // Check if dist/public exists
+      await fs.access(distPath);
+      
+      // Ensure server/public directory exists
+      await fs.mkdir(serverPublicPath, { recursive: true });
+      
+      // Copy all files from dist/public to server/public
+      const files = await fs.readdir(distPath, { withFileTypes: true });
+      for (const file of files) {
+        const srcPath = path.join(distPath, file.name);
+        const destPath = path.join(serverPublicPath, file.name);
+        
+        if (file.isDirectory()) {
+          // Recursively copy directories
+          await fs.cp(srcPath, destPath, { recursive: true, force: true });
+        } else {
+          // Copy individual files
+          await fs.copyFile(srcPath, destPath);
+        }
+      }
+      
+      log('✅ Build assets synced successfully');
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        log('⚠️  dist/public not found - run npm run build first');
+      } else {
+        log('❌ Failed to sync build assets:', String(error));
+      }
+    }
+    
     log('Setting up static file serving for production');
     serveStatic(app);
   }
