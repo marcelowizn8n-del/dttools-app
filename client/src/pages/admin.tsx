@@ -310,7 +310,7 @@ function ArticlesTab() {
 
 // Enhanced User Form Schema
 const userFormSchema = insertUserSchema.extend({
-  confirmPassword: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
   path: ["confirmPassword"],
@@ -593,8 +593,6 @@ function UserCreateDialog({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
       username: "",
-      email: "",
-      name: "",
       password: "",
       confirmPassword: "",
       role: "user",
@@ -626,34 +624,6 @@ function UserCreateDialog({
                   <FormLabel>Username</FormLabel>
                   <FormControl>
                     <Input {...field} data-testid="input-username" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" {...field} data-testid="input-email" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome Completo</FormLabel>
-                  <FormControl>
-                    <Input {...field} data-testid="input-name" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
