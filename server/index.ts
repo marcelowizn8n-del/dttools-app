@@ -7,6 +7,9 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initializeDefaultData } from "./storage";
 import { execSync } from "child_process";
 
+// Build version v6.0.0-FINAL-PLANOS-FIX - Force deployment rebuild
+const BUILD_VERSION = "v6.0.0-FINAL-PLANOS-FIX";
+
 // Extend session data type
 declare module 'express-session' {
   interface SessionData {
