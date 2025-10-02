@@ -16,6 +16,7 @@ import { useLocation } from "wouter";
 export function UserMenu() {
   const { user, logout, isAdmin } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [, setLocation] = useLocation();
 
   if (!user) return null;
@@ -34,12 +35,17 @@ export function UserMenu() {
     }
   };
 
+  const handleNavigate = (path: string) => {
+    setIsOpen(false);
+    setTimeout(() => setLocation(path), 100);
+  };
+
   const getUserInitials = (username: string) => {
     return username.slice(0, 2).toUpperCase();
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 sm:h-8 sm:w-8 rounded-full hover:bg-gray-100" data-testid="button-user-menu">
           <Avatar className="h-9 w-9 sm:h-8 sm:w-8">
@@ -66,7 +72,7 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="cursor-pointer" 
-          onClick={() => setLocation("/profile")}
+          onClick={() => handleNavigate("/profile")}
           data-testid="button-profile"
         >
           <User className="mr-2 h-4 w-4" />
@@ -75,7 +81,7 @@ export function UserMenu() {
         {isAdmin && (
           <DropdownMenuItem 
             className="cursor-pointer" 
-            onClick={() => setLocation("/admin")}
+            onClick={() => handleNavigate("/admin")}
             data-testid="button-admin"
           >
             <Settings className="mr-2 h-4 w-4" />
