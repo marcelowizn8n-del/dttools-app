@@ -119,15 +119,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### 02/10/2025 - Production Deployment Fix & Fresh Build (v7.3.0-FRESH-BUILD)
-- **CRITICAL FIX**: Resolvido tela branca na home (dttools.app) - SOLUÇÃO FINAL
-- **Root Cause**: .gitignore bloqueava server/public/ + build desatualizado
-- **GitIgnore Fix**: Removido server/public/ do .gitignore
-- **Fresh Build**: Novo build completo com assets atualizados (index-H4gpVxU4.js)
-- **Asset Sync**: Build atual copiado de dist/public → server/public
-- **User Creation Form**: Campos Email e Nome Completo adicionados no Admin
-- **Form Validation**: Senha mínima de 6 caracteres
-- **Production Ready**: Todos assets commitados e prontos para deployment
+### 02/10/2025 - Production Asset Sync & Auto-Deploy Fix (v8.0.0-AUTO-SYNC)
+- **CRITICAL FIX**: Implementado sincronização automática de assets em produção - SOLUÇÃO DEFINITIVA
+- **Root Cause Identificado**: Deployment não incluía arquivos de build porque server/public não era commitado
+- **Auto-Sync Sistema**: Servidor agora copia dist/public → server/public automaticamente no startup de produção
+- **Production Workflow**: Build → Deploy → Startup sync → Serve (100% automático)
+- **GitIgnore Clean**: Removido server/public/ do .gitignore permanentemente
+- **Asset Management**: Arquivos de build nunca precisam ser commitados manualmente
+- **User Creation Form**: Campos Email e Nome Completo funcionando no Admin
+- **Zero Manual Steps**: Deployment agora funciona com simple "Republish" sem intervenção
 
 ### 02/10/2025 - Admin Planos Tab Complete Fix (v6.0.0-FINAL-PLANOS-FIX)
 - **CRITICAL FIX**: Resolvido problema definitivo da tab "Planos" no Admin
