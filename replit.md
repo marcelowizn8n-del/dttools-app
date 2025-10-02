@@ -119,6 +119,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### 02/10/2025 - User Creation Form Fix & Deployment Rebuild (v7.0.0-USER-CREATION-FIX)
+- **CRITICAL FIX**: Resolvido problema de criação de usuários no Admin
+- **Missing Fields Added**: Adicionados campos obrigatórios Email e Nome Completo no formulário
+- **Build Rebuild**: Forçado rebuild completo da aplicação para resolver tela branca em produção
+- **Deployment Fix**: Atualizado BUILD_VERSION marker para forçar deployment correto
+- **Form Validation**: Melhorada validação de senha (mínimo 6 caracteres)
+- **User Creation Working**: Formulário agora funciona completamente com todos os campos obrigatórios
+
 ### 02/10/2025 - Admin Planos Tab Complete Fix (v6.0.0-FINAL-PLANOS-FIX)
 - **CRITICAL FIX**: Resolvido problema definitivo da tab "Planos" no Admin
 - **Inline Flexbox Styles**: Aplicado `style={{ flex: 1 }}` em todas as tabs do Admin para garantir renderização
