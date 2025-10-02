@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 
 export function UserMenu() {
   const { user, logout, isAdmin } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [, setLocation] = useLocation();
 
   if (!user) return null;
 
@@ -63,18 +64,22 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/profile" className="cursor-pointer flex items-center" data-testid="button-profile">
-            <User className="mr-2 h-4 w-4" />
-            <span>Perfil</span>
-          </Link>
+        <DropdownMenuItem 
+          className="cursor-pointer" 
+          onClick={() => setLocation("/profile")}
+          data-testid="button-profile"
+        >
+          <User className="mr-2 h-4 w-4" />
+          <span>Perfil</span>
         </DropdownMenuItem>
         {isAdmin && (
-          <DropdownMenuItem asChild>
-            <Link href="/admin" className="cursor-pointer flex items-center" data-testid="button-admin">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Administração</span>
-            </Link>
+          <DropdownMenuItem 
+            className="cursor-pointer" 
+            onClick={() => setLocation("/admin")}
+            data-testid="button-admin"
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Administração</span>
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
