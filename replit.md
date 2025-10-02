@@ -116,3 +116,15 @@ Preferred communication style: Simple, everyday language.
 - **PDF Generation**: jsPDF para exportação de mapas e relatórios
 - **CSV Export**: Para dados tabulares de pesquisas e testes
 - **Local Storage**: Cache de progresso offline
+
+## Recent Changes
+
+### 02/10/2025 - Service Worker Cleanup & Admin Tab Fix (v3.0.0)
+- **CRITICAL FIX**: Resolvido problema de cache do Service Worker que escondia tab "Planos" no Admin
+- **Service Worker Removal**: Substituído SW por versão de auto-limpeza que deleta caches e se auto-desregistra
+- **Auto-Cleanup Script**: Adicionado script no index.html para limpeza automática de Service Workers
+- **CSS Ultra-Específico**: Implementado CSS com seletor `:has()` para garantir visibilidade da tab Planos
+- **Duplicate Prevention**: Sistema de debouncing (3 segundos) para prevenir projetos duplicados
+- **UserMenu Navigation**: Corrigido link de Administração com gerenciamento de estado do dropdown
+- **Pricing Page Layout**: Corrigido layout dos botões nas cards de preços com flexbox
+- **Documentation**: Criado `ADMIN_PLANOS_TAB_FIX.md` com instruções completas de resolução
