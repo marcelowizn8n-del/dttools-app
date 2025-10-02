@@ -22,6 +22,28 @@ import { insertUserSchema, insertSubscriptionPlanSchema } from "@shared/schema";
 import { z } from "zod";
 import type { Article, User, Project, InsertUser, SubscriptionPlan } from "@shared/schema";
 
+interface AdminStats {
+  totalUsers: number;
+  totalProjects: number;
+  totalArticles: number;
+  projectsByStatus: {
+    in_progress: number;
+    completed: number;
+  };
+  projectsByPhase: {
+    phase1: number;
+    phase2: number;
+    phase3: number;
+    phase4: number;
+    phase5: number;
+  };
+  usersByRole: {
+    admin: number;
+    user: number;
+  };
+  articlesByCategory: Record<string, number>;
+}
+
 function ArticlesTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -35,9 +57,7 @@ function ArticlesTab() {
 
   const deleteArticleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest(`/api/articles/${id}`, {
-        method: "DELETE",
-      });
+      const response = await apiRequest("DELETE", `/api/articles/${id}`);
       if (!response.ok) {
         throw new Error("Failed to delete article");
       }
@@ -97,7 +117,8 @@ function ArticlesTab() {
     return matchesSearch && matchesCategory;
   });
 
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return '-';
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -309,11 +330,7 @@ function UsersTab() {
   const createUserMutation = useMutation({
     mutationFn: async (userData: z.infer<typeof userFormSchema>) => {
       const { confirmPassword, ...userDataWithoutConfirm } = userData;
-      const response = await apiRequest("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userDataWithoutConfirm),
-      });
+      const response = await apiRequest("POST", "/api/users", userDataWithoutConfirm);
       if (!response.ok) {
         throw new Error("Failed to create user");
       }
@@ -338,11 +355,7 @@ function UsersTab() {
 
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, role }: { id: string; role: string }) => {
-      const response = await apiRequest(`/api/users/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role }),
-      });
+      const response = await apiRequest("PUT", `/api/users/${id}`, { role });
       if (!response.ok) {
         throw new Error("Failed to update user");
       }
@@ -366,9 +379,7 @@ function UsersTab() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest(`/api/users/${id}`, {
-        method: "DELETE",
-      });
+      const response = await apiRequest("DELETE", `/api/users/${id}`);
       if (!response.ok) {
         throw new Error("Failed to delete user");
       }
@@ -395,7 +406,8 @@ function UsersTab() {
     updateUserMutation.mutate({ id: userId, role: newRole });
   };
 
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return '-';
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit', 
@@ -704,11 +716,7 @@ function PlansTab() {
 
   const updatePlanMutation = useMutation({
     mutationFn: async ({ id, ...data }: Partial<SubscriptionPlan> & { id: string }) => {
-      const response = await apiRequest(`/api/subscription-plans/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const response = await apiRequest("PUT", `/api/subscription-plans/${id}`, data);
       if (!response.ok) {
         throw new Error("Failed to update plan");
       }
@@ -913,7 +921,8 @@ function PlanEditDialog({
                       <Input
                         type="number"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        value={field.value ?? ''}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || null)}
                         data-testid="input-order"
                       />
                     </FormControl>
@@ -930,7 +939,7 @@ function PlanEditDialog({
                 <FormItem>
                   <FormLabel>Descrição</FormLabel>
                   <FormControl>
-                    <Input {...field} data-testid="input-description" />
+                    <Input {...field} value={field.value ?? ''} data-testid="input-description" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -1075,7 +1084,7 @@ function PlanEditDialog({
                     <FormControl>
                       <input
                         type="checkbox"
-                        checked={field.value}
+                        checked={field.value ?? false}
                         onChange={field.onChange}
                         className="h-4 w-4"
                         data-testid="checkbox-has-collaboration"
@@ -1096,7 +1105,7 @@ function PlanEditDialog({
                     <FormControl>
                       <input
                         type="checkbox"
-                        checked={field.value}
+                        checked={field.value ?? false}
                         onChange={field.onChange}
                         className="h-4 w-4"
                         data-testid="checkbox-has-sso"
@@ -1119,7 +1128,7 @@ function PlanEditDialog({
                     <FormControl>
                       <input
                         type="checkbox"
-                        checked={field.value}
+                        checked={field.value ?? false}
                         onChange={field.onChange}
                         className="h-4 w-4"
                         data-testid="checkbox-has-custom-integrations"
@@ -1140,7 +1149,7 @@ function PlanEditDialog({
                     <FormControl>
                       <input
                         type="checkbox"
-                        checked={field.value}
+                        checked={field.value ?? false}
                         onChange={field.onChange}
                         className="h-4 w-4"
                         data-testid="checkbox-has-24x7-support"
@@ -1165,7 +1174,7 @@ function PlanEditDialog({
                   <FormControl>
                     <input
                       type="checkbox"
-                      checked={field.value}
+                      checked={field.value ?? false}
                       onChange={field.onChange}
                       className="h-4 w-4"
                       data-testid="checkbox-is-active"
@@ -1214,9 +1223,7 @@ function ProjectsTab() {
 
   const deleteProjectMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest(`/api/projects/${id}`, {
-        method: "DELETE",
-      });
+      const response = await apiRequest("DELETE", `/api/projects/${id}`);
       if (!response.ok) {
         throw new Error("Failed to delete project");
       }
@@ -1253,7 +1260,8 @@ function ProjectsTab() {
     return phases[phase - 1] || `Fase ${phase}`;
   };
 
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return '-';
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -1265,7 +1273,7 @@ function ProjectsTab() {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === "all" || project.status === statusFilter;
-    const matchesPhase = phaseFilter === "all" || project.currentPhase.toString() === phaseFilter;
+    const matchesPhase = phaseFilter === "all" || (project.currentPhase?.toString() ?? '1') === phaseFilter;
     return matchesSearch && matchesStatus && matchesPhase;
   });
 
@@ -1380,7 +1388,7 @@ function ProjectsTab() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {getPhaseLabel(project.currentPhase)}
+                          {getPhaseLabel(project.currentPhase ?? 1)}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -1388,11 +1396,11 @@ function ProjectsTab() {
                           <div className="w-12 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-blue-500 transition-all duration-300"
-                              style={{ width: `${project.completionRate}%` }}
+                              style={{ width: `${project.completionRate ?? 0}%` }}
                             />
                           </div>
                           <span className="text-sm text-muted-foreground">
-                            {Math.round(project.completionRate)}%
+                            {Math.round(project.completionRate ?? 0)}%
                           </span>
                         </div>
                       </TableCell>
@@ -1454,7 +1462,7 @@ function ProjectsTab() {
 
 // Admin Dashboard Tab Component
 function DashboardTab() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
   });
 
