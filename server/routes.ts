@@ -120,6 +120,51 @@ function ensureUploadDirectory() {
   return uploadDir;
 }
 
+// Duplicate project prevention - tracks recent project creations per user
+interface ProjectCreationRecord {
+  name: string;
+  userId: string;
+  timestamp: number;
+}
+
+const recentProjectCreations = new Map<string, ProjectCreationRecord>();
+const DUPLICATE_PREVENTION_WINDOW_MS = 3000; // 3 seconds
+
+// Clean up old entries periodically
+setInterval(() => {
+  const now = Date.now();
+  const entries = Array.from(recentProjectCreations.entries());
+  for (const [key, record] of entries) {
+    if (now - record.timestamp > DUPLICATE_PREVENTION_WINDOW_MS) {
+      recentProjectCreations.delete(key);
+    }
+  }
+}, 5000); // Clean every 5 seconds
+
+function isDuplicateProjectCreation(userId: string, projectName: string): boolean {
+  const key = `${userId}:${projectName.trim().toLowerCase()}`;
+  const existing = recentProjectCreations.get(key);
+  
+  if (!existing) {
+    return false;
+  }
+  
+  const now = Date.now();
+  const timeSinceCreation = now - existing.timestamp;
+  
+  // If the same user created a project with same name recently, it's a duplicate
+  return timeSinceCreation < DUPLICATE_PREVENTION_WINDOW_MS;
+}
+
+function recordProjectCreation(userId: string, projectName: string): void {
+  const key = `${userId}:${projectName.trim().toLowerCase()}`;
+  recentProjectCreations.set(key, {
+    name: projectName,
+    userId: userId,
+    timestamp: Date.now()
+  });
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription info endpoint
   app.get("/api/subscription-info", requireAuth, getSubscriptionInfo);
@@ -153,6 +198,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = insertProjectSchema.parse(req.body);
       console.log("Data validated successfully:", validatedData);
+      
+      // Check for duplicate creation attempts (per user)
+      const userId = req.session!.userId!;
+      if (isDuplicateProjectCreation(userId, validatedData.name)) {
+        console.log(`Duplicate project creation attempt blocked for user ${userId}:`, validatedData.name);
+        return res.status(409).json({ 
+          error: "Projeto duplicado detectado",
+          message: "Você já criou um projeto com este nome recentemente. Por favor, aguarde alguns segundos antes de tentar novamente."
+        });
+      }
+      
+      // Record this creation attempt
+      recordProjectCreation(userId, validatedData.name);
       
       const project = await storage.createProject(validatedData);
       console.log("Project created successfully:", project.id);
