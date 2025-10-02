@@ -119,15 +119,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### 02/10/2025 - Production Deployment Fix & User Creation (v7.2.0-GITIGNORE-FIX)
-- **CRITICAL FIX**: Resolvido tela branca em produção (dttools.app) - DEFINITIVO
-- **Root Cause**: .gitignore estava bloqueando server/public/ impedindo deployment dos assets
-- **GitIgnore Fix**: Removido server/public/ do .gitignore para permitir commit dos assets
-- **Asset Serving**: Copiados assets de dist/public para server/public (1.7MB de JS files)
-- **User Creation Form**: Adicionados campos obrigatórios Email e Nome Completo no formulário de Admin
-- **Form Validation**: Melhorada validação de senha (mínimo 6 caracteres)
-- **MIME Type Fix**: Resolvido erro "Expected JavaScript module but got text/html"
-- **Files Committed**: 7 arquivos JS + index.html em server/public/ agora commitados ao git
+### 02/10/2025 - Production Deployment Fix & Fresh Build (v7.3.0-FRESH-BUILD)
+- **CRITICAL FIX**: Resolvido tela branca na home (dttools.app) - SOLUÇÃO FINAL
+- **Root Cause**: .gitignore bloqueava server/public/ + build desatualizado
+- **GitIgnore Fix**: Removido server/public/ do .gitignore
+- **Fresh Build**: Novo build completo com assets atualizados (index-H4gpVxU4.js)
+- **Asset Sync**: Build atual copiado de dist/public → server/public
+- **User Creation Form**: Campos Email e Nome Completo adicionados no Admin
+- **Form Validation**: Senha mínima de 6 caracteres
+- **Production Ready**: Todos assets commitados e prontos para deployment
 
 ### 02/10/2025 - Admin Planos Tab Complete Fix (v6.0.0-FINAL-PLANOS-FIX)
 - **CRITICAL FIX**: Resolvido problema definitivo da tab "Planos" no Admin
