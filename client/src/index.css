@@ -195,3 +195,29 @@ body::before {
     gap: 1rem !important;
   }
 }
+
+/* URGENT FIX v2.2.0: Force Admin Plans tab to be visible - override any cached CSS */
+[data-testid="tab-plans"],
+button[data-testid="tab-plans"],
+[value="plans"][role="tab"] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  position: relative !important;
+}
+
+/* Ensure Admin TabsList container shows all 5 columns - target the list itself, not the tab */
+[role="tablist"]:has([data-testid="tab-plans"]) {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  display: grid !important;
+}
+
+/* Cache busting version marker */
+body::after {
+  content: "admin-tabs-fix-v2.2.0";
+  display: none;
+}
