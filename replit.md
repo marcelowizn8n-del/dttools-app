@@ -119,6 +119,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### 02/10/2025 - Admin Planos Tab Complete Fix (v6.0.0-FINAL-PLANOS-FIX)
+- **CRITICAL FIX**: Resolvido problema definitivo da tab "Planos" no Admin
+- **Inline Flexbox Styles**: Aplicado `style={{ flex: 1 }}` em todas as tabs do Admin para garantir renderização
+- **Build Version Update**: Atualizado para v6.0.0-FINAL-PLANOS-FIX
+- **Cache Invalidation**: Adicionado BUILD_VERSION constant no server para forçar rebuild do deployment
+- **Environment Restart**: Executado `kill 1` para limpar caches e processos travados
+- **Tab Planos Verified**: Tab confirmada funcionando em ambiente de desenvolvimento com data-testid="tab-plans"
+
 ### 02/10/2025 - Service Worker Cleanup & Admin Tab Fix (v3.0.0)
 - **CRITICAL FIX**: Resolvido problema de cache do Service Worker que escondia tab "Planos" no Admin
 - **Service Worker Removal**: Substituído SW por versão de auto-limpeza que deleta caches e se auto-desregistra
