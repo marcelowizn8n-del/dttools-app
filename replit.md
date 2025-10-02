@@ -119,13 +119,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### 02/10/2025 - Production Deployment Fix & User Creation (v7.1.0-DEPLOYMENT-FIX)
-- **CRITICAL FIX**: Resolvido tela branca em produção (dttools.app)
-- **Asset Serving Fix**: Copiados assets de dist/public para server/public para deployment correto
+### 02/10/2025 - Production Deployment Fix & User Creation (v7.2.0-GITIGNORE-FIX)
+- **CRITICAL FIX**: Resolvido tela branca em produção (dttools.app) - DEFINITIVO
+- **Root Cause**: .gitignore estava bloqueando server/public/ impedindo deployment dos assets
+- **GitIgnore Fix**: Removido server/public/ do .gitignore para permitir commit dos assets
+- **Asset Serving**: Copiados assets de dist/public para server/public (1.7MB de JS files)
 - **User Creation Form**: Adicionados campos obrigatórios Email e Nome Completo no formulário de Admin
 - **Form Validation**: Melhorada validação de senha (mínimo 6 caracteres)
-- **Build Assets**: Garantido que arquivos JavaScript são servidos corretamente em produção
 - **MIME Type Fix**: Resolvido erro "Expected JavaScript module but got text/html"
+- **Files Committed**: 7 arquivos JS + index.html em server/public/ agora commitados ao git
 
 ### 02/10/2025 - Admin Planos Tab Complete Fix (v6.0.0-FINAL-PLANOS-FIX)
 - **CRITICAL FIX**: Resolvido problema definitivo da tab "Planos" no Admin
