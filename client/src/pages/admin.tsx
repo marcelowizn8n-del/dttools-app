@@ -1751,7 +1751,7 @@ export default function AdminPage() {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-5 bg-muted/50">
               <TabsTrigger value="dashboard" data-testid="tab-dashboard">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Dashboard
