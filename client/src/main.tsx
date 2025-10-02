@@ -168,17 +168,7 @@ setTimeout(() => {
   }
 }, 2000);
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('DTTools SW registered: ', registration);
-      })
-      .catch((registrationError) => {
-        console.log('DTTools SW registration failed: ', registrationError);
-      });
-  });
-}
+// Service Worker disabled - cleanup handled in index.html
+// PWA features temporarily disabled until cache issues are resolved
 
 createRoot(document.getElementById("root")!).render(<App />);
