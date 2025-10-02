@@ -70,9 +70,11 @@ export function UserMenu() {
           </Link>
         </DropdownMenuItem>
         {isAdmin && (
-          <DropdownMenuItem className="cursor-pointer" data-testid="button-admin">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Administração</span>
+          <DropdownMenuItem asChild>
+            <Link href="/admin" className="cursor-pointer flex items-center" data-testid="button-admin">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Administração</span>
+            </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />

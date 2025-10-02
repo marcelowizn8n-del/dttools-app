@@ -132,9 +132,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading: false,
     });
     
-    console.log("AuthContext: Redirecting to login...");
-    // Redirect to login page
-    window.location.href = '/login';
+    console.log("AuthContext: Redirecting to home...");
+    // Redirect to home page with full page reload to clear all state
+    window.location.href = '/';
   };
 
   const refreshUser = async (): Promise<void> => {
