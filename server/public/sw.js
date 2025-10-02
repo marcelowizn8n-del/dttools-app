@@ -1,85 +1,56 @@
-// Service Worker para forçar atualizações de cache
-const CACHE_VERSION = 'dttools-v1.0.5-mobile-final-fix';
-const CACHE_NAME = 'dttools-cache-' + CACHE_VERSION;
+// Self-unregistering Service Worker - CLEANUP VERSION
+// This SW will immediately unregister itself and clear all caches
 
-// Lista de arquivos para cachear
-const urlsToCache = [
-  '/',
-  '/logo-horizontal.png',
-  '/logo-icon.png',
-  '/manifest.json'
-];
+console.log('🧹 DTTools Cleanup SW: Unregistering and clearing all caches...');
 
-// Instalar service worker
 self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        return cache.addAll(urlsToCache);
-      })
-  );
-  // Força o novo SW a se tornar ativo imediatamente
-  console.log('DTTools SW installed, version:', CACHE_VERSION, '- Mobile FINAL fix');
+  console.log('✅ Cleanup SW installed - will self-destruct');
   self.skipWaiting();
 });
 
-// Ativar service worker
 self.addEventListener('activate', function(event) {
+  console.log('🗑️ Cleanup SW activated - clearing all caches...');
+  
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          // Remove caches antigos
-          if (cacheName !== CACHE_NAME) {
+    Promise.all([
+      // Delete ALL caches
+      caches.keys().then(function(cacheNames) {
+        return Promise.all(
+          cacheNames.map(function(cacheName) {
+            console.log('Deleting cache:', cacheName);
             return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+          })
+        );
+      }),
+      // Unregister this service worker
+      self.registration.unregister().then(function() {
+        console.log('✅ Service Worker unregistered successfully');
+        // Force all clients to reload with fresh content
+        return self.clients.matchAll().then(function(clients) {
+          clients.forEach(function(client) {
+            console.log('Reloading client:', client.url);
+            client.postMessage({ action: 'reload' });
+          });
+        });
+      })
+    ])
   );
-  // Força o controle imediato de todas as páginas
-  console.log('DTTools SW activated, version:', CACHE_VERSION, '- Mobile FINAL fix');
+  
   return self.clients.claim();
 });
 
-// Interceptar requests
+// Don't intercept any fetches - let everything pass through
 self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    // Network first para HTML, cache first para assets
-    caches.match(event.request)
-      .then(function(response) {
-        // Se encontrou no cache e não é HTML, retorna do cache
-        if (response && !event.request.url.match(/\.(html|php|asp)$/i)) {
-          return response;
-        }
-        
-        // Senão, busca da rede
-        return fetch(event.request).then(function(response) {
-          // Não cacheia se não for uma resposta válida
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clona a resposta
-          var responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then(function(cache) {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        }).catch(function() {
-          // Se falhar na rede, retorna do cache se disponível
-          return response;
-        });
-      })
-  );
+  event.respondWith(fetch(event.request));
 });
 
-// Notificar sobre atualizações
+// Listen for reload message from clients
 self.addEventListener('message', function(event) {
-  if (event.data.action === 'skipWaiting') {
-    self.skipWaiting();
+  if (event.data.action === 'reload') {
+    self.clients.matchAll().then(function(clients) {
+      clients.forEach(function(client) {
+        client.navigate(client.url);
+      });
+    });
   }
 });
