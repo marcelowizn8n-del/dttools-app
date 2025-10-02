@@ -1751,7 +1751,7 @@ export default function AdminPage() {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 bg-muted/50" style={{display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)'}}>
+            <TabsList className="grid w-full grid-cols-5 bg-muted/50">
               <TabsTrigger value="dashboard" data-testid="tab-dashboard">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Dashboard
@@ -1764,7 +1764,7 @@ export default function AdminPage() {
                 <FolderOpen className="mr-2 h-4 w-4" />
                 Projetos
               </TabsTrigger>
-              <TabsTrigger value="plans" data-testid="tab-plans" className="!flex !visible" style={{display: 'flex', visibility: 'visible'}}>
+              <TabsTrigger value="plans" data-testid="tab-plans">
                 <DollarSign className="mr-2 h-4 w-4" />
                 Planos
               </TabsTrigger>
