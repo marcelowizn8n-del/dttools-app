@@ -1751,24 +1751,24 @@ export default function AdminPage() {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="flex w-full bg-muted/50">
-              <TabsTrigger value="dashboard" data-testid="tab-dashboard" className="flex-1">
+            <TabsList className="w-full bg-muted/50" style={{ display: 'flex', width: '100%' }}>
+              <TabsTrigger value="dashboard" data-testid="tab-dashboard" style={{ flex: 1 }}>
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Dashboard
               </TabsTrigger>
-              <TabsTrigger value="users" data-testid="tab-users" className="flex-1">
+              <TabsTrigger value="users" data-testid="tab-users" style={{ flex: 1 }}>
                 <Users className="mr-2 h-4 w-4" />
                 Usuários
               </TabsTrigger>
-              <TabsTrigger value="projects" data-testid="tab-projects" className="flex-1">
+              <TabsTrigger value="projects" data-testid="tab-projects" style={{ flex: 1 }}>
                 <FolderOpen className="mr-2 h-4 w-4" />
                 Projetos
               </TabsTrigger>
-              <TabsTrigger value="plans" data-testid="tab-plans" className="flex-1">
+              <TabsTrigger value="plans" data-testid="tab-plans" style={{ flex: 1 }}>
                 <DollarSign className="mr-2 h-4 w-4" />
                 Planos
               </TabsTrigger>
-              <TabsTrigger value="articles" data-testid="tab-articles" className="flex-1">
+              <TabsTrigger value="articles" data-testid="tab-articles" style={{ flex: 1 }}>
                 <Eye className="mr-2 h-4 w-4" />
                 Artigos
               </TabsTrigger>
