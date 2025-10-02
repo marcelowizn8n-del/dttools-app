@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <meta name="version" content="v3.0.0-sw-cleanup-final" />
+    <meta name="version" content="v3.2.0-loop-breaker" />
     <title>DTTools - Design Thinking Tools</title>
     <meta name="description" content="Plataforma completa de ferramentas para Design Thinking com metodologia das 5 fases: Empatizar, Definir, Idear, Prototipar e Testar." />
     <meta name="keywords" content="design thinking, inovação, prototipagem, ideação, empatia, metodologia, ferramentas, UX, UI, produto, criatividade" />
@@ -41,33 +41,32 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- CLEANUP: Register cleanup SW then unregister everything -->
+    <!-- FINAL FIX: Check if we're in a reload loop and stop it -->
     <script>
-      if ('serviceWorker' in navigator) {
-        // First, register the cleanup SW to clear caches
-        navigator.serviceWorker.register('/sw.js').then(function(reg) {
-          console.log('🧹 Cleanup SW registered, clearing caches...');
-          
-          // Wait for it to activate and do its job
-          setTimeout(function() {
-            // Then unregister ALL service workers
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-              registrations.forEach(function(registration) {
-                registration.unregister().then(function() {
-                  console.log('✅ SW unregistered:', registration.scope);
-                });
-              });
+      // Detect and break reload loops
+      var reloadCount = sessionStorage.getItem('reloadCount') || 0;
+      reloadCount = parseInt(reloadCount) + 1;
+      
+      if (reloadCount > 3) {
+        // We're in a loop - stop it!
+        console.warn('🛑 Reload loop detected and stopped! Please do a hard refresh (Ctrl+F5) to clear cache.');
+        sessionStorage.removeItem('reloadCount');
+      } else {
+        sessionStorage.setItem('reloadCount', reloadCount);
+        
+        // Clean up service workers without reloading
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            registrations.forEach(function(registration) {
+              registration.unregister();
             });
-            
-            // Force reload to get fresh content
-            setTimeout(function() {
-              console.log('🔄 Reloading to get fresh content...');
-              window.location.reload(true);
-            }, 1000);
-          }, 2000);
-        }).catch(function(err) {
-          console.log('ℹ️ No SW to cleanup:', err);
-        });
+          });
+        }
+        
+        // Reset counter after successful load
+        setTimeout(function() {
+          sessionStorage.removeItem('reloadCount');
+        }, 5000);
       }
     </script>
   </body>
