@@ -1,5 +1,5 @@
 // Service Worker para forçar atualizações de cache
-const CACHE_VERSION = 'dttools-v1.0.5-mobile-final-fix';
+const CACHE_VERSION = 'dttools-v1.0.6-manifest-fix';
 const CACHE_NAME = 'dttools-cache-' + CACHE_VERSION;
 
 // Lista de arquivos para cachear
