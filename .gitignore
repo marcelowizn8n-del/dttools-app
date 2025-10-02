@@ -183,7 +183,6 @@ temp/
 .tmp/
 
 # Deployment and build artifacts
-server/public/
 migrations/
 *.tar.gz
 
