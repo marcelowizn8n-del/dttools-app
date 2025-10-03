@@ -119,17 +119,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### 03/10/2025 - Help Center CRUD Complete (v10.0.0-HELP-CRUD) ✅ IMPLEMENTADO
-- **CRUD COMPLETO**: Sistema completo de gerenciamento de artigos do Help Center no Admin
-- **Endpoints Backend**: POST/PUT/DELETE `/api/help` e `/api/help/:id` (protegidos por admin auth)
-- **Storage Methods**: createHelpArticle, updateHelpArticle, deleteHelpArticle implementados
-- **ArticleEditor Component**: Formulário completo com todos os campos do HelpArticle schema
-- **Campos Implementados**: title, slug, author, category, subcategory, phase, content, tags, searchKeywords, featured, order
-- **Funcionalidades**: Criar, editar, deletar artigos + preview Markdown + seed inicial
-- **Admin Panel**: Tab Artigos com tabela, filtros, busca e botões de ação (visualizar/editar/deletar)
-- **Seed System**: Botão "Popular Artigos Iniciais" para ambiente de produção
-- **Validação**: Zod schemas para type-safety end-to-end
-- **UI/UX**: Formulário responsivo com tabs edit/preview, campos organizados, switch para destaque
+### 03/10/2025 - Unified Help & Library System (v11.0.0-UNIFIED-SYSTEM) ✅ IMPLEMENTADO
+- **UNIFICAÇÃO COMPLETA**: Biblioteca e Ajuda usam mesma tabela `helpArticles` com filtro por categoria
+- **Rotas em Português**: Adicionadas rotas `/ajuda` e `/biblioteca` (além de `/help` e `/library`)
+- **Sistema de Filtros**:
+  - **`/ajuda`**: Mostra apenas artigos com categorias do sistema (`inicio-rapido`, `fases`, `colaboracao`, `exportacao`)
+  - **`/biblioteca`**: Mostra artigos educacionais (exclui categorias do sistema)
+- **LibraryPage Atualizada**: Busca de `/api/help` com filtro de categorias do sistema
+- **ArticleDetailPage Atualizada**: Busca de `/api/help` e links corrigidos para `/biblioteca`
+- **Rotas de Artigos**: `/biblioteca/artigo/:id` e `/library/article/:id` funcionando
+- **Admin CRUD**: Sistema completo de criar/editar/deletar artigos com preview Markdown
+- **Separação Clara**: Ajuda = tutoriais do sistema | Biblioteca = conteúdo educacional
 
 ### 02/10/2025 - Production Asset Sync & Auto-Deploy Fix (v8.0.0-AUTO-SYNC) ✅ RESOLVIDO
 - **CRITICAL FIX**: Implementado sincronização automática de assets em produção - SOLUÇÃO DEFINITIVA
