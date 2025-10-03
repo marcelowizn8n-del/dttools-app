@@ -42,6 +42,12 @@ export default function HelpCenter() {
 
   const featuredArticles = articles.filter(a => a.featured);
 
+  // Debug category filtering
+  if (typeof window !== 'undefined' && selectedCategory !== "all") {
+    console.log('Category filter:', selectedCategory, 'Found:', filteredArticles.length, 'articles');
+    console.log('Available categories:', articles.map(a => a.category));
+  }
+
   const handleArticleClick = async (article: HelpArticle) => {
     try {
       // Fetch article by slug to increment view count
