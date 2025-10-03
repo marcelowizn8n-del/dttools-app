@@ -2477,6 +2477,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/help - Create new help article (Admin only)
+  app.post("/api/help", requireAdmin, async (req, res) => {
+    try {
+      const articleData = req.body;
+      const newArticle = await storage.createHelpArticle(articleData);
+      res.json(newArticle);
+    } catch (error) {
+      console.error("Error creating help article:", error);
+      res.status(500).json({ error: "Failed to create help article" });
+    }
+  });
+
+  // PUT /api/help/:id - Update help article (Admin only)
+  app.put("/api/help/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const articleData = req.body;
+      const updatedArticle = await storage.updateHelpArticle(id, articleData);
+      
+      if (!updatedArticle) {
+        return res.status(404).json({ error: "Help article not found" });
+      }
+      
+      res.json(updatedArticle);
+    } catch (error) {
+      console.error("Error updating help article:", error);
+      res.status(500).json({ error: "Failed to update help article" });
+    }
+  });
+
+  // DELETE /api/help/:id - Delete help article (Admin only)
+  app.delete("/api/help/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteHelpArticle(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Help article not found" });
+      }
+      
+      res.json({ success: true, message: "Article deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting help article:", error);
+      res.status(500).json({ error: "Failed to delete help article" });
+    }
+  });
+
   // POST /api/help/seed - Seed initial help articles (Admin only)
   app.post("/api/help/seed", requireAdmin, async (req, res) => {
     try {

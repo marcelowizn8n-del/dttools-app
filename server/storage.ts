@@ -208,6 +208,8 @@ export interface IStorage {
   incrementHelpArticleViews(id: string): Promise<any | undefined>;
   incrementHelpArticleHelpful(id: string): Promise<any | undefined>;
   createHelpArticle(article: any): Promise<any>;
+  updateHelpArticle(id: string, article: any): Promise<any | undefined>;
+  deleteHelpArticle(id: string): Promise<boolean>;
 }
 
 // Database implementation using PostgreSQL via Drizzle ORM
@@ -1103,6 +1105,19 @@ export class DatabaseStorage implements IStorage {
   async createHelpArticle(article: any): Promise<HelpArticle> {
     const [newArticle] = await db.insert(helpArticles).values(article).returning();
     return newArticle;
+  }
+
+  async updateHelpArticle(id: string, article: any): Promise<HelpArticle | undefined> {
+    const [updated] = await db.update(helpArticles)
+      .set({ ...article, updatedAt: new Date() })
+      .where(eq(helpArticles.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteHelpArticle(id: string): Promise<boolean> {
+    const result = await db.delete(helpArticles).where(eq(helpArticles.id, id));
+    return (result.rowCount || 0) > 0;
   }
 }
 
