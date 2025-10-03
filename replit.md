@@ -119,6 +119,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### 03/10/2025 - Help Center Seed System for Production (v9.0.0-HELP-SEED) ✅ IMPLEMENTADO
+- **SOLUÇÃO**: Sistema de seed para popular artigos do Help Center em produção
+- **Problema Identificado**: Bancos separados dev/produção - artigos só existiam em desenvolvimento
+- **Script de Seed**: Criado `scripts/seed-help-articles.ts` com 9 artigos completos
+- **Endpoint Admin**: POST `/api/help/seed` protegido por autenticação de administrador
+- **Botão no Admin**: Adicionado botão "🌱 Popular Artigos Iniciais" na tab Artigos
+- **Condicional**: Botão aparece apenas quando não há artigos no banco
+- **Artigos Criados**: 9 artigos (5 em destaque) cobrindo todas as funcionalidades
+- **Documentação**: Arquivo SYNC_PRODUCTION_DB.md com instruções completas
+- **Responsividade**: Layout mobile do Help Center melhorado para celular
+
 ### 02/10/2025 - Production Asset Sync & Auto-Deploy Fix (v8.0.0-AUTO-SYNC) ✅ RESOLVIDO
 - **CRITICAL FIX**: Implementado sincronização automática de assets em produção - SOLUÇÃO DEFINITIVA
 - **Root Cause Identificado**: Deployment não incluía arquivos de build porque server/public não era commitado
