@@ -82,26 +82,26 @@ export default function HelpCenter() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl" data-testid="help-center-container">
+    <div className="container mx-auto p-4 sm:p-6 max-w-7xl" data-testid="help-center-container">
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <BookOpen className="h-10 w-10 text-primary" />
-          <h1 className="text-4xl font-bold">Central de Ajuda</h1>
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
+          <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+          <h1 className="text-3xl sm:text-4xl font-bold">Central de Ajuda</h1>
         </div>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-base sm:text-lg px-4">
           Encontre respostas e aprenda a usar todas as funcionalidades do DTTools
         </p>
       </div>
 
       {/* Search Bar */}
-      <div className="relative mb-8">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+      <div className="relative mb-6 sm:mb-8">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 sm:h-5 sm:w-5" />
         <Input
           data-testid="input-search-help"
           type="text"
           placeholder="Buscar artigos de ajuda..."
-          className="pl-10 py-6 text-lg"
+          className="pl-9 sm:pl-10 py-4 sm:py-6 text-base sm:text-lg"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -111,7 +111,7 @@ export default function HelpCenter() {
       {searchQuery.length === 0 && featuredArticles.length > 0 && (
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Artigos em Destaque</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {featuredArticles.map((article) => (
               <Card 
                 key={article.id} 
@@ -120,9 +120,9 @@ export default function HelpCenter() {
                 data-testid={`card-featured-article-${article.id}`}
               >
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <HelpCircle className="h-5 w-5 text-primary" />
-                    {article.title}
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <HelpCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="line-clamp-2">{article.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -145,15 +145,18 @@ export default function HelpCenter() {
 
       {/* Categories and Articles */}
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="all" data-testid="tab-all-categories">Todos</TabsTrigger>
-          {Object.entries(categoryInfo).map(([key, info]) => (
-            <TabsTrigger key={key} value={key} data-testid={`tab-category-${key}`}>
-              <info.icon className="h-4 w-4 mr-2" />
-              {info.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="mb-6 overflow-x-auto">
+          <TabsList className="inline-flex w-auto">
+            <TabsTrigger value="all" data-testid="tab-all-categories" className="flex-shrink-0">Todos</TabsTrigger>
+            {Object.entries(categoryInfo).map(([key, info]) => (
+              <TabsTrigger key={key} value={key} data-testid={`tab-category-${key}`} className="flex-shrink-0">
+                <info.icon className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">{info.label}</span>
+                <span className="sm:hidden">{info.label.split(' ')[0]}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         <TabsContent value={selectedCategory}>
           {isLoading ? (
