@@ -79,6 +79,31 @@ function ArticlesTab() {
     },
   });
 
+  const seedArticlesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/help/seed");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to seed articles");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/help"] });
+      toast({
+        title: "Artigos populados com sucesso!",
+        description: `${data.count} artigos foram criados na base de dados.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao popular artigos",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const categories = [
     { id: "all", label: "Todas as categorias" },
     { id: "empathize", label: "Empatizar" },
@@ -138,13 +163,26 @@ function ArticlesTab() {
             Crie, edite e gerencie os artigos da biblioteca
           </p>
         </div>
-        <Button onClick={() => {
-          setEditingArticle(null); // Limpa qualquer artigo em edição
-          setIsCreating(true);
-        }} data-testid="button-create-article">
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Artigo
-        </Button>
+        <div className="flex gap-2">
+          {articles.length === 0 && (
+            <Button 
+              onClick={() => seedArticlesMutation.mutate()}
+              disabled={seedArticlesMutation.isPending}
+              variant="outline"
+              data-testid="button-seed-articles"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {seedArticlesMutation.isPending ? "Populando..." : "🌱 Popular Artigos Iniciais"}
+            </Button>
+          )}
+          <Button onClick={() => {
+            setEditingArticle(null); // Limpa qualquer artigo em edição
+            setIsCreating(true);
+          }} data-testid="button-create-article">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Artigo
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
