@@ -82,7 +82,9 @@ function Router() {
       <Route path="/projects" component={ProjectsRoute} />
       <Route path="/projects/:id" component={ProtectedProjectDetail} />
       <Route path="/library" component={LibraryPage} />
+      <Route path="/biblioteca" component={LibraryPage} />
       <Route path="/library/article/:id" component={ArticleDetailPage} />
+      <Route path="/biblioteca/artigo/:id" component={ArticleDetailPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/signup" component={SignupPage} />
@@ -115,6 +117,7 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/help" component={HelpCenter} />
+      <Route path="/ajuda" component={HelpCenter} />
       <Route path="/screenshots" component={ScreenshotCapture} />
       
       <Route component={NotFound} />
