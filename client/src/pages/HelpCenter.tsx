@@ -24,12 +24,9 @@ export default function HelpCenter() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Fetch all help articles
-  const { data: articles = [], isLoading, error } = useQuery<HelpArticle[]>({
+  const { data: articles = [], isLoading } = useQuery<HelpArticle[]>({
     queryKey: ['/api/help'],
   });
-
-  // Debug log
-  console.log('Help articles:', articles.length, 'loading:', isLoading, 'error:', error);
 
   // Search articles when query changes
   const { data: searchResults = [] } = useQuery<HelpArticle[]>({
@@ -44,11 +41,6 @@ export default function HelpCenter() {
     : displayArticles.filter(a => a.category === selectedCategory);
 
   const featuredArticles = articles.filter(a => a.featured);
-
-  // More debug
-  console.log('Featured articles:', featuredArticles.length);
-  console.log('Filtered articles:', filteredArticles.length);
-  console.log('Selected category:', selectedCategory);
 
   const handleArticleClick = async (article: HelpArticle) => {
     try {
@@ -91,13 +83,6 @@ export default function HelpCenter() {
 
   return (
     <div className="container mx-auto p-6 max-w-7xl" data-testid="help-center-container">
-      {/* Debug Banner */}
-      {articles.length > 0 && (
-        <div className="bg-blue-100 dark:bg-blue-900 p-4 rounded mb-4 text-center">
-          ✅ {articles.length} artigos carregados! Featured: {featuredArticles.length}, Filtered: {filteredArticles.length}
-        </div>
-      )}
-      
       {/* Header */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-4">
