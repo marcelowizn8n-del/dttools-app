@@ -207,6 +207,7 @@ export interface IStorage {
   searchHelpArticles(searchTerm: string): Promise<any[]>;
   incrementHelpArticleViews(id: string): Promise<any | undefined>;
   incrementHelpArticleHelpful(id: string): Promise<any | undefined>;
+  createHelpArticle(article: any): Promise<any>;
 }
 
 // Database implementation using PostgreSQL via Drizzle ORM
@@ -1097,6 +1098,11 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updated;
+  }
+
+  async createHelpArticle(article: any): Promise<HelpArticle> {
+    const [newArticle] = await db.insert(helpArticles).values(article).returning();
+    return newArticle;
   }
 }
 
