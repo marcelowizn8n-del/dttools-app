@@ -9,8 +9,8 @@ import { execSync } from "child_process";
 import fs from "fs/promises";
 import path from "path";
 
-// Build version v6.0.0-FINAL-PLANOS-FIX - Force deployment rebuild
-const BUILD_VERSION = "v6.0.0-FINAL-PLANOS-FIX";
+// Build version v8.0.0-AUTO-SYNC - Production asset sync implemented
+const BUILD_VERSION = "v8.0.0-AUTO-SYNC";
 
 // Extend session data type
 declare module 'express-session' {

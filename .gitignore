@@ -12,6 +12,10 @@ build/
 .vercel/
 .netlify/
 
+# Exception: always commit server/public for production deployment
+!server/public/
+!server/public/**/*
+
 # Environment files
 .env
 .env.local
