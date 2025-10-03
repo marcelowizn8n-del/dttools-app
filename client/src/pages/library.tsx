@@ -92,7 +92,7 @@ function ArticleCard({ article }: { article: Article }) {
         )}
       </CardContent>
       <CardFooter>
-        <Link href={`/library/article/${article.id}`} className="w-full">
+        <Link href={`/biblioteca/artigo/${article.id}`} className="w-full">
           <Button className="w-full" data-testid={`button-read-${article.id}`}>
             Ler artigo
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -136,9 +136,15 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const { data: articles = [], isLoading } = useQuery<Article[]>({
-    queryKey: ["/api/articles"],
+  const { data: allArticles = [], isLoading } = useQuery<Article[]>({
+    queryKey: ["/api/help"],
   });
+
+  // Filter to show only educational articles (exclude help system categories)
+  const helpSystemCategories = ["inicio-rapido", "fases", "colaboracao", "exportacao"];
+  const articles = allArticles.filter(article => 
+    !helpSystemCategories.includes(article.category || "")
+  );
 
   const filteredArticles = articles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
