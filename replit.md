@@ -119,15 +119,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### 02/10/2025 - Production Asset Sync & Auto-Deploy Fix (v8.0.0-AUTO-SYNC)
+### 02/10/2025 - Production Asset Sync & Auto-Deploy Fix (v8.0.0-AUTO-SYNC) ✅ RESOLVIDO
 - **CRITICAL FIX**: Implementado sincronização automática de assets em produção - SOLUÇÃO DEFINITIVA
 - **Root Cause Identificado**: Deployment não incluía arquivos de build porque server/public não era commitado
 - **Auto-Sync Sistema**: Servidor agora copia dist/public → server/public automaticamente no startup de produção
 - **Production Workflow**: Build → Deploy → Startup sync → Serve (100% automático)
-- **GitIgnore Clean**: Removido server/public/ do .gitignore permanentemente
-- **Asset Management**: Arquivos de build nunca precisam ser commitados manualmente
+- **GitIgnore Clean**: Removido server/public/ do .gitignore + adicionado exceção !server/public/
+- **Asset Management**: Arquivos de build sincronizados automaticamente no startup
 - **User Creation Form**: Campos Email e Nome Completo funcionando no Admin
-- **Zero Manual Steps**: Deployment agora funciona com simple "Republish" sem intervenção
+- **Home Page Fix**: Tela branca em dttools.app completamente resolvida
+- **Deployment Working**: Sistema testado e funcionando em produção
 
 ### 02/10/2025 - Admin Planos Tab Complete Fix (v6.0.0-FINAL-PLANOS-FIX)
 - **CRITICAL FIX**: Resolvido problema definitivo da tab "Planos" no Admin
