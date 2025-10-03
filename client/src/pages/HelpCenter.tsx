@@ -206,11 +206,11 @@ export default function HelpCenter() {
                         {article.helpful} úteis
                       </span>
                     </div>
-                    {article.tags && Array.isArray(article.tags) && (article.tags as any[]).length > 0 && (
+                    {article.tags && Array.isArray(article.tags) && (article.tags as string[]).length > 0 && (
                       <div className="flex gap-2 mt-3 flex-wrap">
-                        {((article.tags as any[]) || []).map((tag: any, idx: number) => (
+                        {(article.tags as string[]).map((tag: string, idx: number) => (
                           <Badge key={idx} variant="outline" className="text-xs">
-                            {String(tag)}
+                            {tag}
                           </Badge>
                         ))}
                       </div>
