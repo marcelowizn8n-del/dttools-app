@@ -119,16 +119,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### 03/10/2025 - Help Center Seed System for Production (v9.0.0-HELP-SEED) ✅ IMPLEMENTADO
-- **SOLUÇÃO**: Sistema de seed para popular artigos do Help Center em produção
-- **Problema Identificado**: Bancos separados dev/produção - artigos só existiam em desenvolvimento
-- **Script de Seed**: Criado `scripts/seed-help-articles.ts` com 9 artigos completos
-- **Endpoint Admin**: POST `/api/help/seed` protegido por autenticação de administrador
-- **Botão no Admin**: Adicionado botão "🌱 Popular Artigos Iniciais" na tab Artigos
-- **Condicional**: Botão aparece apenas quando não há artigos no banco
-- **Artigos Criados**: 9 artigos (5 em destaque) cobrindo todas as funcionalidades
-- **Documentação**: Arquivo SYNC_PRODUCTION_DB.md com instruções completas
-- **Responsividade**: Layout mobile do Help Center melhorado para celular
+### 03/10/2025 - Help Center CRUD Complete (v10.0.0-HELP-CRUD) ✅ IMPLEMENTADO
+- **CRUD COMPLETO**: Sistema completo de gerenciamento de artigos do Help Center no Admin
+- **Endpoints Backend**: POST/PUT/DELETE `/api/help` e `/api/help/:id` (protegidos por admin auth)
+- **Storage Methods**: createHelpArticle, updateHelpArticle, deleteHelpArticle implementados
+- **ArticleEditor Component**: Formulário completo com todos os campos do HelpArticle schema
+- **Campos Implementados**: title, slug, author, category, subcategory, phase, content, tags, searchKeywords, featured, order
+- **Funcionalidades**: Criar, editar, deletar artigos + preview Markdown + seed inicial
+- **Admin Panel**: Tab Artigos com tabela, filtros, busca e botões de ação (visualizar/editar/deletar)
+- **Seed System**: Botão "Popular Artigos Iniciais" para ambiente de produção
+- **Validação**: Zod schemas para type-safety end-to-end
+- **UI/UX**: Formulário responsivo com tabs edit/preview, campos organizados, switch para destaque
 
 ### 02/10/2025 - Production Asset Sync & Auto-Deploy Fix (v8.0.0-AUTO-SYNC) ✅ RESOLVIDO
 - **CRITICAL FIX**: Implementado sincronização automática de assets em produção - SOLUÇÃO DEFINITIVA
