@@ -15,16 +15,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { insertArticleSchema, type Article } from "@shared/schema";
+import { insertHelpArticleSchema, type HelpArticle } from "@shared/schema";
 
-const articleFormSchema = insertArticleSchema.extend({
+const articleFormSchema = insertHelpArticleSchema.extend({
   tags: z.string().optional(),
 });
 
 type ArticleFormData = z.infer<typeof articleFormSchema>;
 
 interface ArticleEditorProps {
-  article?: Article | null;
+  article?: HelpArticle | null;
   isOpen: boolean;
   onClose: () => void;
 }

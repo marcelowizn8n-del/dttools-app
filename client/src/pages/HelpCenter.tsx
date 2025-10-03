@@ -9,21 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, BookOpen, HelpCircle, ThumbsUp, Eye, Lightbulb, Users, FileText } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-
-interface HelpArticle {
-  id: string;
-  title: string;
-  slug: string;
-  content: string;
-  category: string;
-  subcategory?: string;
-  phase?: number;
-  tags: string[];
-  featured: boolean;
-  viewCount: number;
-  helpful: number;
-  order: number;
-}
+import type { HelpArticle } from "@shared/schema";
 
 const categoryInfo: Record<string, { icon: any; label: string; description: string }> = {
   "inicio-rapido": { icon: Lightbulb, label: "Início Rápido", description: "Comece a usar o DTTools" },
@@ -217,9 +203,9 @@ export default function HelpCenter() {
                         {article.helpful} úteis
                       </span>
                     </div>
-                    {article.tags && article.tags.length > 0 && (
+                    {article.tags && Array.isArray(article.tags) && article.tags.length > 0 && (
                       <div className="flex gap-2 mt-3 flex-wrap">
-                        {article.tags.map((tag: string, idx: number) => (
+                        {(article.tags as string[]).map((tag: string, idx: number) => (
                           <Badge key={idx} variant="outline" className="text-xs">
                             {tag}
                           </Badge>

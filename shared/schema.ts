@@ -774,6 +774,7 @@ export const helpArticles = pgTable("help_articles", {
   tags: jsonb("tags").default([]), // Array of searchable tags
   searchKeywords: jsonb("search_keywords").default([]), // Keywords for search
   featured: boolean("featured").default(false), // Show in main help
+  author: text("author").notNull().default("DTTools Team"), // Article author
   viewCount: integer("view_count").default(0),
   helpful: integer("helpful").default(0), // Helpful votes
   order: integer("order").default(0), // Display order within category

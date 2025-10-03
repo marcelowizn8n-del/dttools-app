@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema, insertSubscriptionPlanSchema } from "@shared/schema";
 import { z } from "zod";
-import type { Article, User, Project, InsertUser, SubscriptionPlan } from "@shared/schema";
+import type { HelpArticle, User, Project, InsertUser, SubscriptionPlan } from "@shared/schema";
 
 interface AdminStats {
   totalUsers: number;
@@ -47,24 +47,24 @@ interface AdminStats {
 function ArticlesTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [editingArticle, setEditingArticle] = useState<HelpArticle | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
 
-  const { data: articles = [], isLoading } = useQuery<Article[]>({
-    queryKey: ["/api/articles"],
+  const { data: articles = [], isLoading } = useQuery<HelpArticle[]>({
+    queryKey: ["/api/help"],
   });
 
   const deleteArticleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest("DELETE", `/api/articles/${id}`);
+      const response = await apiRequest("DELETE", `/api/help/${id}`);
       if (!response.ok) {
         throw new Error("Failed to delete article");
       }
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/help"] });
       toast({
         title: "Artigo deletado",
         description: "O artigo foi removido com sucesso.",
@@ -219,9 +219,9 @@ function ArticlesTab() {
                         <div className="truncate" title={article.title}>
                           {article.title}
                         </div>
-                        {article.description && (
-                          <div className="text-sm text-muted-foreground truncate" title={article.description}>
-                            {article.description}
+                        {article.subcategory && (
+                          <div className="text-sm text-muted-foreground truncate" title={article.subcategory}>
+                            {article.subcategory}
                           </div>
                         )}
                       </TableCell>
@@ -233,8 +233,8 @@ function ArticlesTab() {
                       <TableCell>{article.author}</TableCell>
                       <TableCell>{formatDate(article.createdAt)}</TableCell>
                       <TableCell>
-                        <Badge variant={article.published ? "default" : "secondary"}>
-                          {article.published ? "Publicado" : "Rascunho"}
+                        <Badge variant={article.featured ? "default" : "secondary"}>
+                          {article.featured ? "Destaque" : "Normal"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
