@@ -54,7 +54,7 @@ function ArticleCard({ article }: { article: Article }) {
           </Badge>
           <div className="flex items-center text-sm text-muted-foreground">
             <Calendar className="mr-1 h-3 w-3" />
-            {formatDate(article.createdAt)}
+            {article.createdAt ? formatDate(article.createdAt) : 'Data não disponível'}
           </div>
         </div>
         <CardTitle className="line-clamp-2" data-testid={`title-${article.id}`}>
@@ -71,9 +71,9 @@ function ArticleCard({ article }: { article: Article }) {
           <User className="mr-1 h-3 w-3" />
           <span data-testid={`author-${article.id}`}>{article.author}</span>
         </div>
-        {article.tags && article.tags.length > 0 && (
+        {article.tags && Array.isArray(article.tags) && article.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {(article.tags as string[]).slice(0, 3).map((tag, index) => (
+            {article.tags.slice(0, 3).map((tag: string, index: number) => (
               <Badge
                 key={index}
                 variant="outline"
@@ -83,9 +83,9 @@ function ArticleCard({ article }: { article: Article }) {
                 {tag}
               </Badge>
             ))}
-            {(article.tags as string[]).length > 3 && (
+            {article.tags.length > 3 && (
               <Badge variant="outline" className="text-xs">
-                +{(article.tags as string[]).length - 3}
+                +{article.tags.length - 3}
               </Badge>
             )}
           </div>

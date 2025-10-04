@@ -218,7 +218,7 @@ export default function ArticleDetailPage() {
                 
                 <div className="flex items-center gap-1" data-testid="article-date">
                   <Calendar className="h-4 w-4" />
-                  {formatDate(article.createdAt)}
+                  {article.createdAt ? formatDate(article.createdAt) : 'Data não disponível'}
                 </div>
                 
                 <div className="flex items-center gap-1" data-testid="article-reading-time">
@@ -237,10 +237,10 @@ export default function ArticleDetailPage() {
                 </Button>
               </div>
 
-              {article.tags && (article.tags as string[]).length > 0 && (
+              {article.tags && Array.isArray(article.tags) && article.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2" data-testid="article-tags">
                   <Tag className="h-4 w-4 text-muted-foreground" />
-                  {(article.tags as string[]).map((tag, index) => (
+                  {article.tags.map((tag: string, index: number) => (
                     <Badge 
                       key={index} 
                       variant="outline" 
@@ -265,7 +265,7 @@ export default function ArticleDetailPage() {
 
             {/* Footer */}
             <footer className="flex justify-between items-center pt-6">
-              <Link href="/library">
+              <Link href="/biblioteca">
                 <Button variant="outline" data-testid="button-back-footer">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Voltar à biblioteca
