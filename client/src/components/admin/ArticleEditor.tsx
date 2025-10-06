@@ -370,6 +370,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                             placeholder="Ex: Mapas de Empatia"
                             data-testid="input-subcategory"
                             {...field}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -419,7 +420,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                             type="number"
                             placeholder="0"
                             data-testid="input-order"
-                            {...field}
+                            value={field.value || 0}
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                           />
                         </FormControl>
@@ -444,7 +445,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                         </div>
                         <FormControl>
                           <Switch
-                            checked={field.value}
+                            checked={field.value || false}
                             onCheckedChange={field.onChange}
                             data-testid="switch-featured"
                           />
