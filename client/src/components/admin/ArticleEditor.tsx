@@ -383,10 +383,10 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                     name="phase"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Fase do Design Thinking</FormLabel>
+                        <FormLabel>Fase do Design Thinking (opcional)</FormLabel>
                         <Select 
                           onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} 
-                          value={field.value?.toString() || ""}
+                          value={field.value?.toString() || undefined}
                         >
                           <FormControl>
                             <SelectTrigger data-testid="select-phase">
@@ -394,7 +394,6 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Não aplicável</SelectItem>
                             <SelectItem value="1">Fase 1 - Empatizar</SelectItem>
                             <SelectItem value="2">Fase 2 - Definir</SelectItem>
                             <SelectItem value="3">Fase 3 - Idear</SelectItem>
