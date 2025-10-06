@@ -54,7 +54,7 @@ function ArticleCard({ article }: { article: Article }) {
           </Badge>
           <div className="flex items-center text-sm text-muted-foreground">
             <Calendar className="mr-1 h-3 w-3" />
-            {article.createdAt ? formatDate(article.createdAt) : 'Data não disponível'}
+            {formatDate(article.createdAt)}
           </div>
         </div>
         <CardTitle className="line-clamp-2" data-testid={`title-${article.id}`}>
@@ -71,9 +71,9 @@ function ArticleCard({ article }: { article: Article }) {
           <User className="mr-1 h-3 w-3" />
           <span data-testid={`author-${article.id}`}>{article.author}</span>
         </div>
-        {article.tags && Array.isArray(article.tags) && article.tags.length > 0 && (
+        {article.tags && article.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {article.tags.slice(0, 3).map((tag: string, index: number) => (
+            {(article.tags as string[]).slice(0, 3).map((tag, index) => (
               <Badge
                 key={index}
                 variant="outline"
@@ -83,16 +83,16 @@ function ArticleCard({ article }: { article: Article }) {
                 {tag}
               </Badge>
             ))}
-            {article.tags.length > 3 && (
+            {(article.tags as string[]).length > 3 && (
               <Badge variant="outline" className="text-xs">
-                +{article.tags.length - 3}
+                +{(article.tags as string[]).length - 3}
               </Badge>
             )}
           </div>
         )}
       </CardContent>
       <CardFooter>
-        <Link href={`/biblioteca/artigo/${article.id}`} className="w-full">
+        <Link href={`/library/article/${article.id}`} className="w-full">
           <Button className="w-full" data-testid={`button-read-${article.id}`}>
             Ler artigo
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -136,15 +136,9 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const { data: allArticles = [], isLoading } = useQuery<Article[]>({
-    queryKey: ["/api/help"],
+  const { data: articles = [], isLoading } = useQuery<Article[]>({
+    queryKey: ["/api/articles"],
   });
-
-  // Filter to show only educational articles (exclude help system categories)
-  const helpSystemCategories = ["inicio-rapido", "fases", "colaboracao", "exportacao"];
-  const articles = allArticles.filter(article => 
-    !helpSystemCategories.includes(article.category || "")
-  );
 
   const filteredArticles = articles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
