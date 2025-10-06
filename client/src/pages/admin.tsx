@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema, insertSubscriptionPlanSchema } from "@shared/schema";
 import { z } from "zod";
-import type { Article, User, Project, InsertUser, SubscriptionPlan } from "@shared/schema";
+import type { HelpArticle, User, Project, InsertUser, SubscriptionPlan } from "@shared/schema";
 
 interface AdminStats {
   totalUsers: number;
@@ -47,24 +47,24 @@ interface AdminStats {
 function ArticlesTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [editingArticle, setEditingArticle] = useState<HelpArticle | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
 
-  const { data: articles = [], isLoading } = useQuery<Article[]>({
-    queryKey: ["/api/articles"],
+  const { data: articles = [], isLoading } = useQuery<HelpArticle[]>({
+    queryKey: ["/api/help"],
   });
 
   const deleteArticleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest("DELETE", `/api/articles/${id}`);
+      const response = await apiRequest("DELETE", `/api/help/${id}`);
       if (!response.ok) {
         throw new Error("Failed to delete article");
       }
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/help"] });
       toast({
         title: "Artigo deletado",
         description: "O artigo foi removido com sucesso.",
@@ -74,6 +74,31 @@ function ArticlesTab() {
       toast({
         title: "Erro ao deletar artigo",
         description: "Ocorreu um erro ao tentar deletar o artigo.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const seedArticlesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/help/seed");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to seed articles");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/help"] });
+      toast({
+        title: "Artigos populados com sucesso!",
+        description: `${data.count} artigos foram criados na base de dados.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao popular artigos",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -138,13 +163,26 @@ function ArticlesTab() {
             Crie, edite e gerencie os artigos da biblioteca
           </p>
         </div>
-        <Button onClick={() => {
-          setEditingArticle(null); // Limpa qualquer artigo em edição
-          setIsCreating(true);
-        }} data-testid="button-create-article">
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Artigo
-        </Button>
+        <div className="flex gap-2">
+          {articles.length === 0 && (
+            <Button 
+              onClick={() => seedArticlesMutation.mutate()}
+              disabled={seedArticlesMutation.isPending}
+              variant="outline"
+              data-testid="button-seed-articles"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {seedArticlesMutation.isPending ? "Populando..." : "🌱 Popular Artigos Iniciais"}
+            </Button>
+          )}
+          <Button onClick={() => {
+            setEditingArticle(null); // Limpa qualquer artigo em edição
+            setIsCreating(true);
+          }} data-testid="button-create-article">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Artigo
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -219,9 +257,9 @@ function ArticlesTab() {
                         <div className="truncate" title={article.title}>
                           {article.title}
                         </div>
-                        {article.description && (
-                          <div className="text-sm text-muted-foreground truncate" title={article.description}>
-                            {article.description}
+                        {article.subcategory && (
+                          <div className="text-sm text-muted-foreground truncate" title={article.subcategory}>
+                            {article.subcategory}
                           </div>
                         )}
                       </TableCell>
@@ -233,8 +271,8 @@ function ArticlesTab() {
                       <TableCell>{article.author}</TableCell>
                       <TableCell>{formatDate(article.createdAt)}</TableCell>
                       <TableCell>
-                        <Badge variant={article.published ? "default" : "secondary"}>
-                          {article.published ? "Publicado" : "Rascunho"}
+                        <Badge variant={article.featured ? "default" : "secondary"}>
+                          {article.featured ? "Destaque" : "Normal"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
