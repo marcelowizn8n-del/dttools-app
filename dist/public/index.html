@@ -3,150 +3,54 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="version" content="v6.0.0-FINAL-PLANOS-FIX" />
     <title>DTTools - Design Thinking Tools</title>
-    <meta name="version" content="v3.1.0-with-backend" />
-    <style>
-      body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f0f9ff; }
-      .container { max-width: 800px; margin: 0 auto; }
-      .header { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 30px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
-      .content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-      .btn { background: #2563eb; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; margin: 8px; font-size: 16px; }
-      .btn:hover { background: #1d4ed8; transform: translateY(-2px); }
-      .status { background: #10b981; color: white; padding: 10px; border-radius: 6px; margin: 10px 0; }
-      .error { background: #ef4444; color: white; padding: 10px; border-radius: 6px; margin: 10px 0; }
-      .timestamp { color: #6b7280; font-size: 14px; }
-      .login-form { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }
-      .form-group { margin: 15px 0; }
-      .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-      .form-group input { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 4px; }
-    </style>
+    <meta name="description" content="Plataforma completa de ferramentas para Design Thinking com metodologia das 5 fases: Empatizar, Definir, Idear, Prototipar e Testar." />
+    <meta name="keywords" content="design thinking, inovação, prototipagem, ideação, empatia, metodologia, ferramentas, UX, UI, produto, criatividade" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dttools.app/" />
+    <meta property="og:title" content="DTTools - Design Thinking Tools" />
+    <meta property="og:description" content="Plataforma completa de ferramentas para Design Thinking com metodologia das 5 fases: Empatizar, Definir, Idear, Prototipar e Testar." />
+    <meta property="og:image" content="https://dttools.app/dttools-og-image.png" />
+    <meta property="og:site_name" content="DTTools" />
+    <meta property="og:locale" content="pt_BR" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://dttools.app/" />
+    <meta property="twitter:title" content="DTTools - Design Thinking Tools" />
+    <meta property="twitter:description" content="Plataforma completa de ferramentas para Design Thinking com metodologia das 5 fases: Empatizar, Definir, Idear, Prototipar e Testar." />
+    <meta property="twitter:image" content="https://dttools.app/dttools-og-image.png" />
+    <link rel="icon" type="image/png" href="/assets/favicon-DZVioXfH.png" />
+    <link rel="apple-touch-icon" href="/assets/favicon-DZVioXfH.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="DTTools" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/assets/index-DKdF5Z04.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-YZp1Gt9o.css">
   </head>
   <body>
-    <div class="container">
-      <div class="header">
-        <h1>🎯 DTTools - Design Thinking Tools</h1>
-        <p>Plataforma completa de ferramentas para Design Thinking</p>
-        <div class="timestamp">Versão: v3.1.0-with-backend - 2025-10-04</div>
-      </div>
-      
-      <div class="content">
-        <div class="status">
-          ✅ <strong>SISTEMA COM BACKEND FUNCIONANDO!</strong>
-        </div>
-        
-        <h2>🔐 Teste de Login:</h2>
-        <div class="login-form">
-          <div class="form-group">
-            <label>Email:</label>
-            <input type="email" id="email" value="dttools.app@gmail.com" />
-          </div>
-          <div class="form-group">
-            <label>Senha:</label>
-            <input type="password" id="password" value="Gulex0519!@" />
-          </div>
-          <button class="btn" onclick="testLogin()">🔐 Testar Login</button>
-          <button class="btn" onclick="testAPI()">🧪 Testar API</button>
-        </div>
-        
-        <h2>🔧 Teste de Rotas:</h2>
-        <button class="btn" onclick="testRoute(\"/login\")">🔐 Testar /login</button>
-        <button class="btn" onclick="testRoute(\"/dashboard\")">📊 Testar /dashboard</button>
-        <button class="btn" onclick="testRoute(\"/projects\")">📁 Testar /projects</button>
-        
-        <h2>📊 Status do Sistema:</h2>
-        <ul>
-          <li>✅ Servidor: Funcionando</li>
-          <li>✅ Backend API: Configurado</li>
-          <li>✅ Roteamento: Funcionando</li>
-          <li>✅ Service Worker: Desabilitado</li>
-          <li>✅ JavaScript: Carregando</li>
-        </ul>
-        
-        <div id="test-results"></div>
-      </div>
-    </div>
+    <div id="root"></div>
     
+    <!-- Clean service worker removal -->
     <script>
-      function testLogin() {
-        const email = document.getElementById(\"email\").value;
-        const password = document.getElementById(\"password\").value;
-        const results = document.getElementById(\"test-results\");
-        
-        results.innerHTML = \"<div class=\\"status\\">🔄 Testando login...</div>\";
-        
-        fetch(\"/api/auth/login\", {
-          method: \"POST\",
-          headers: {
-            \"Content-Type\": \"application/json\",
-          },
-          body: JSON.stringify({ email, password })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            results.innerHTML = `<div class=\"status\">✅ Login bem-sucedido!<br>Usuário: ${data.user.name}</div>`;
-          } else {
-            results.innerHTML = `<div class=\"error\">❌ Login falhou: ${data.message}</div>`;
-          }
-        })
-        .catch(error => {
-          results.innerHTML = `<div class=\"error\">❌ Erro na API: ${error.message}</div>`;
-        });
-      }
-      
-      function testAPI() {
-        const results = document.getElementById(\"test-results\");
-        results.innerHTML = \"<div class=\\"status\\">🔄 Testando API...</div>\";
-        
-        fetch(\"/api/health\")
-        .then(response => response.json())
-        .then(data => {
-          results.innerHTML = `<div class=\"status\">✅ API funcionando!<br>Status: ${data.status}<br>Timestamp: ${data.timestamp}</div>`;
-        })
-        .catch(error => {
-          results.innerHTML = `<div class=\"error\">❌ Erro na API: ${error.message}</div>`;
-        });
-      }
-      
-      function testRoute(route) {
-        const startTime = Date.now();
-        fetch(route)
-          .then(response => {
-            const duration = Date.now() - startTime;
-            if (response.ok) {
-              alert(`✅ ${route}\nStatus: ${response.status} (OK)\nTempo: ${duration}ms`);
-            } else {
-              alert(`❌ ${route}\nStatus: ${response.status} (ERRO)\nTempo: ${duration}ms`);
-            }
-          })
-          .catch(error => {
-            const duration = Date.now() - startTime;
-            alert(`❌ ${route}\nErro: ${error.message}\nTempo: ${duration}ms`);
-          });
-      }
-      
-      // Desabilitar Service Worker completamente
-      if (\"serviceWorker\" in navigator) {
+      if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
           registrations.forEach(function(registration) {
             registration.unregister();
-            console.log(\"DTTools SW unregistered:\", registration.scope);
           });
         });
       }
-      
-      // Teste automático ao carregar
-      window.addEventListener(\"load\", function() {
-        console.log(\"🎯 DTTools with Backend loaded successfully!\");
-        console.log(\"📍 Current URL:\", window.location.href);
-        console.log(\"🕒 Load Time:\", new Date().toISOString());
-        
-        // Teste automático da API
-        setTimeout(() => {
-          console.log(\"🧪 Testing API...\");
-          testAPI();
-        }, 1000);
-      });
     </script>
   </body>
 </html>
