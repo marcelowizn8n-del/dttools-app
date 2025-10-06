@@ -10,8 +10,9 @@
 # Redirects para SPA e API
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
+  to = "https://55685bc3-a504-4dcf-b4df-52a026ad255f-00-pmczgzyup1y0.janeway.replit.dev/api/:splat"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/*"
