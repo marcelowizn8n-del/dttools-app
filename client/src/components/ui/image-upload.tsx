@@ -49,7 +49,7 @@ export function ImageUpload({
       const options = {
         maxSizeMB: 1,
         maxWidthOrHeight: 800,
-        useWebWorker: false,
+        useWebWorker: true,
         fileType: 'image/jpeg',
         // This will fix EXIF rotation issues
         initialQuality: 0.8

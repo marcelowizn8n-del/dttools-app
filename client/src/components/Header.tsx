@@ -7,7 +7,6 @@ import {
   Users,
   BarChart3,
   MessageCircle,
-  HelpCircle,
   Menu,
   X
 } from "lucide-react";
@@ -16,12 +15,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { LanguageSelector } from "@/components/LanguageSelector";
-// Import logos as Vite assets to ensure they're included in the build
-import logoHorizontalImg from "@/assets/logo-horizontal.png";
-import logoIconImg from "@/assets/logo-icon.png";
-
-const logoHorizontal = logoHorizontalImg + "?v=1.0.9&t=" + Math.floor(Date.now() / 1000);
-const logoIcon = logoIconImg + "?v=1.0.9&t=" + Math.floor(Date.now() / 1000);
+// Use direct path to logo in public root with cache busting
+const logoHorizontal = "/logo-horizontal.png?v=1.0.9&t=" + Math.floor(Date.now() / 1000);
+const logoIcon = "/logo-icon.png?v=1.0.9&t=" + Math.floor(Date.now() / 1000);
 
 export default function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -106,12 +102,6 @@ export default function Header() {
                 {t("nav.pricing")}
               </Button>
             </Link>
-            <Link href="/help">
-              <Button variant="ghost" className="text-sm" data-testid="nav-help">
-                <HelpCircle className="mr-1 h-4 w-4" />
-                Ajuda
-              </Button>
-            </Link>
             {isAdmin && (
               <Link href="/admin">
                 <Button variant="ghost" className="text-sm" data-testid="nav-admin">
@@ -193,12 +183,6 @@ export default function Header() {
                   <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-pricing" onClick={() => setIsMobileMenuOpen(false)}>
                     <CreditCard className="mr-2 h-4 w-4" />
                     {t("nav.pricing")}
-                  </Button>
-                </Link>
-                <Link href="/help">
-                  <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-help" onClick={() => setIsMobileMenuOpen(false)}>
-                    <HelpCircle className="mr-2 h-4 w-4" />
-                    Ajuda
                   </Button>
                 </Link>
                 {isAdmin && (

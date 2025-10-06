@@ -173,24 +173,13 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
 
   const createInterviewMutation = useMutation({
     mutationFn: async (data: InsertInterview) => {
-      console.log('Starting mutation with data:', data);
       const response = await fetch(`/api/projects/${projectId}/interviews`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      console.log('Response status:', response.status);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Error response:', errorData);
-        throw new Error(errorData.details || errorData.error || "Failed to create interview");
-      }
-      const result = await response.json();
-      console.log('Success result:', result);
-      return result;
+      if (!response.ok) throw new Error("Failed to create interview");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "interviews"] });
@@ -203,10 +192,10 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
       setQuestions([""]);
       setResponses([""]);
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
         title: "Erro",
-        description: error.message || "Não foi possível criar a entrevista.",
+        description: "Não foi possível criar a entrevista.",
         variant: "destructive",
       });
     },
@@ -237,25 +226,12 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
   };
 
   const onSubmit = (formData: any) => {
-    console.log('Form submitted - raw data:', formData);
-    console.log('Questions state:', questions);
-    console.log('Responses state:', responses);
-    
-    // Filtrar apenas pares onde a pergunta não está vazia
-    const validPairs = questions
-      .map((q, i) => ({ question: q, response: responses[i] || "" }))
-      .filter(pair => pair.question.trim() !== "");
-    
-    console.log('Valid pairs:', validPairs);
-    
     const interviewData: InsertInterview = {
       ...formData,
       projectId,
-      questions: validPairs.map(p => p.question),
-      responses: validPairs.map(p => p.response),
+      questions: questions.filter(q => q.trim() !== ""),
+      responses: responses.filter(r => r.trim() !== ""),
     };
-    
-    console.log('Final interview data to send:', interviewData);
     createInterviewMutation.mutate(interviewData);
   };
 
@@ -325,25 +301,9 @@ function CreateInterviewDialog({ projectId }: { projectId: string }) {
                   <FormControl>
                     <Input 
                       type="date"
-                      value={field.value instanceof Date && !isNaN(field.value.getTime()) 
-                        ? field.value.toISOString().split('T')[0] 
-                        : ''}
-                      onChange={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const value = e.target.value;
-                        if (value) {
-                          field.onChange(new Date(value + 'T00:00:00'));
-                        } else {
-                          field.onChange(undefined);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        // Prevenir digitação manual - apenas permitir Tab e Escape
-                        if (e.key !== 'Tab' && e.key !== 'Escape') {
-                          e.preventDefault();
-                        }
-                      }}
+                      {...field}
+                      value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                      onChange={(e) => field.onChange(new Date(e.target.value))}
                       data-testid="input-interview-date"
                     />
                   </FormControl>
@@ -459,9 +419,7 @@ export default function InterviewTool({ projectId }: InterviewToolProps) {
   const { data: interviews = [], isLoading } = useQuery<Interview[]>({
     queryKey: ["/api/projects", projectId, "interviews"],
     queryFn: async () => {
-      const response = await fetch(`/api/projects/${projectId}/interviews`, {
-        credentials: "include",
-      });
+      const response = await fetch(`/api/projects/${projectId}/interviews`);
       if (!response.ok) throw new Error("Failed to fetch interviews");
       return response.json();
     },

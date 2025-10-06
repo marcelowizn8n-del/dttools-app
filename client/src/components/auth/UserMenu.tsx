@@ -11,13 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "wouter";
+import { Link } from "wouter";
 
 export function UserMenu() {
   const { user, logout, isAdmin } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [, setLocation] = useLocation();
 
   if (!user) return null;
 
@@ -35,23 +33,15 @@ export function UserMenu() {
     }
   };
 
-  const handleNavigate = (path: string) => {
-    setIsOpen(false);
-    setTimeout(() => setLocation(path), 100);
-  };
-
   const getUserInitials = (username: string) => {
     return username.slice(0, 2).toUpperCase();
   };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 sm:h-8 sm:w-8 rounded-full hover:bg-gray-100" data-testid="button-user-menu">
           <Avatar className="h-9 w-9 sm:h-8 sm:w-8">
-            {user.profilePicture && (
-              <AvatarImage src={user.profilePicture} alt={user.username} />
-            )}
             <AvatarFallback className="bg-blue-600 text-white text-sm font-medium">
               {getUserInitials(user.username)}
             </AvatarFallback>
@@ -70,20 +60,14 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
-          className="cursor-pointer" 
-          onClick={() => handleNavigate("/profile")}
-          data-testid="button-profile"
-        >
-          <User className="mr-2 h-4 w-4" />
-          <span>Perfil</span>
+        <DropdownMenuItem asChild>
+          <Link href="/profile" className="cursor-pointer flex items-center" data-testid="button-profile">
+            <User className="mr-2 h-4 w-4" />
+            <span>Perfil</span>
+          </Link>
         </DropdownMenuItem>
         {isAdmin && (
-          <DropdownMenuItem 
-            className="cursor-pointer" 
-            onClick={() => handleNavigate("/admin")}
-            data-testid="button-admin"
-          >
+          <DropdownMenuItem className="cursor-pointer" data-testid="button-admin">
             <Settings className="mr-2 h-4 w-4" />
             <span>Administração</span>
           </DropdownMenuItem>
