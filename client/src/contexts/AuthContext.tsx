@@ -84,12 +84,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setState(prev => ({ ...prev, isLoading: true }));
       
       const response = await apiRequest("POST", "/api/auth/login", { username, password });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Login failed");
-      }
-
       const { user } = await response.json();
       
       // Store user in localStorage
@@ -107,6 +101,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isAuthenticated: false,
         isLoading: false,
       }));
+      
+      // Parse error message to show user-friendly message
+      if (error instanceof Error) {
+        const errorMessage = error.message;
+        
+        // Extract JSON from error message if present (format: "401: {...}")
+        if (errorMessage.includes('401') || errorMessage.includes('Invalid credentials')) {
+          throw new Error("Nome de usuário ou senha incorretos");
+        } else if (errorMessage.includes('400')) {
+          throw new Error("Por favor, preencha todos os campos");
+        } else {
+          throw new Error("Erro ao fazer login. Tente novamente.");
+        }
+      }
+      
       throw error;
     }
   };
