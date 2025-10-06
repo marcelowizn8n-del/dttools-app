@@ -2477,6 +2477,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/help - Create new help article (Admin only)
+  app.post("/api/help", requireAdmin, async (req, res) => {
+    try {
+      const articleData = req.body;
+      const newArticle = await storage.createHelpArticle(articleData);
+      res.json(newArticle);
+    } catch (error) {
+      console.error("Error creating help article:", error);
+      res.status(500).json({ error: "Failed to create help article" });
+    }
+  });
+
+  // PUT /api/help/:id - Update help article (Admin only)
+  app.put("/api/help/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const articleData = req.body;
+      const updatedArticle = await storage.updateHelpArticle(id, articleData);
+      
+      if (!updatedArticle) {
+        return res.status(404).json({ error: "Help article not found" });
+      }
+      
+      res.json(updatedArticle);
+    } catch (error) {
+      console.error("Error updating help article:", error);
+      res.status(500).json({ error: "Failed to update help article" });
+    }
+  });
+
+  // DELETE /api/help/:id - Delete help article (Admin only)
+  app.delete("/api/help/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteHelpArticle(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Help article not found" });
+      }
+      
+      res.json({ success: true, message: "Article deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting help article:", error);
+      res.status(500).json({ error: "Failed to delete help article" });
+    }
+  });
+
+  // POST /api/help/seed - Seed initial help articles (Admin only)
+  app.post("/api/help/seed", requireAdmin, async (req, res) => {
+    try {
+      const { seedHelpArticles, helpArticlesData } = await import("../scripts/seed-help-articles");
+      
+      // Check if articles already exist
+      const existingArticles = await storage.getHelpArticles();
+      
+      if (existingArticles.length > 0) {
+        return res.status(400).json({ 
+          error: "Articles already exist",
+          count: existingArticles.length,
+          message: "Delete existing articles before seeding"
+        });
+      }
+
+      // Insert all articles
+      for (const articleData of helpArticlesData) {
+        await storage.createHelpArticle(articleData);
+      }
+      
+      const seededArticles = await storage.getHelpArticles();
+      
+      res.json({
+        success: true,
+        count: seededArticles.length,
+        message: `Successfully seeded ${seededArticles.length} help articles`
+      });
+    } catch (error) {
+      console.error("Error seeding help articles:", error);
+      res.status(500).json({ error: "Failed to seed help articles" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
