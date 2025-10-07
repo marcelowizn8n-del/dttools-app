@@ -18,7 +18,11 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { insertArticleSchema, type Article } from "@shared/schema";
 
 const articleFormSchema = insertArticleSchema.extend({
-  tags: z.string().optional(),
+  tags: z.string().optional().default(""),
+  category: z.string().min(1, "Categoria é obrigatória"),
+  title: z.string().min(1, "Título é obrigatório"),
+  author: z.string().min(1, "Autor é obrigatório"),
+  content: z.string().min(1, "Conteúdo é obrigatório"),
 });
 
 type ArticleFormData = z.infer<typeof articleFormSchema>;
@@ -66,63 +70,53 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
   const [isCustomCategorySelected, setIsCustomCategorySelected] = useState(false);
   const { toast } = useToast();
 
+  // Solid default values - never undefined
+  const defaultFormValues: ArticleFormData = {
+    title: "",
+    author: "",
+    category: "",
+    description: "",
+    content: "",
+    tags: "",
+    published: true,
+  };
+
   const form = useForm<ArticleFormData>({
     resolver: zodResolver(articleFormSchema),
-    defaultValues: {
-      title: "",
-      author: "",
-      category: "",
-      description: "",
-      content: "",
-      tags: "",
-      published: true,
-    },
+    defaultValues: defaultFormValues,
   });
 
   const contentValue = form.watch("content") || "";
 
+  // Single useEffect for form initialization - controlled sequencing
   useEffect(() => {
-    if (article) {
-      form.reset({
-        title: article.title,
-        author: article.author,
-        category: article.category,
-        description: article.description || "",
-        content: article.content,
-        tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
-        published: article.published,
-      });
-    } else if (isOpen && !article) {
-      // Force complete reset when creating new article
-      form.reset({
-        title: "",
-        author: "",
-        category: "",
-        description: "",
-        content: "",
-        tags: "",
-        published: true,
-      });
-    }
-  }, [article, isOpen, form]);
-
-  useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      if (article) {
+        // Editing existing article - populate with data
+        form.reset({
+          title: article.title || "",
+          author: article.author || "",
+          category: article.category || "",
+          description: article.description || "",
+          content: article.content || "",
+          tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
+          published: article.published ?? true,
+        });
+      } else {
+        // Creating new article - use defaults
+        form.reset(defaultFormValues);
+        setIsCustomCategorySelected(false);
+        setCustomCategory("");
+      }
+      setActiveTab("edit");
+    } else {
+      // Modal closed - reset everything
       setActiveTab("edit");
       setIsCustomCategorySelected(false);
       setCustomCategory("");
-      // Clear form when modal closes to prevent stale data
-      form.reset({
-        title: "",
-        author: "",
-        category: "",
-        description: "",
-        content: "",
-        tags: "",
-        published: true,
-      });
+      form.reset(defaultFormValues);
     }
-  }, [isOpen, form]);
+  }, [isOpen, article]); // Removed form from deps to prevent loops
 
   const createArticleMutation = useMutation({
     mutationFn: async (data: ArticleFormData) => {

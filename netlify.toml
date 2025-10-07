@@ -38,3 +38,15 @@
   for = "/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache-busting para assets JS/CSS - força reload
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Sem cache para index.html - sempre fresh
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
