@@ -4,6 +4,33 @@
 
 DTTools é uma plataforma interativa e abrangente para guiar designers, equipes de inovação e profissionais criativos pelas etapas do Design Thinking. O aplicativo oferece ferramentas específicas para cada uma das 5 fases do processo, sistema de progresso gamificado e funcionalidades de colaboração e exportação.
 
+## Recent Changes
+
+### 2025-10-07: App Store Readiness Release (v7.0.0-APPSTORE-READY)
+**Status:** ✅ PRONTO PARA SUBMISSÃO (Apple & Google)
+
+**Correções Críticas Implementadas:**
+- ✅ **SelectItem Bug Fix**: Resolvido race condition em ArticleEditor com defaults controlados e useEffect sequenciado
+- ✅ **Service Worker Cleanup**: Removido completamente para eliminar cache stale
+- ✅ **Form Validation**: Schema hardening com validação obrigatória de categoria, título, autor e conteúdo
+- ✅ **Cache-Busting**: Headers Netlify configurados para forçar reload de assets (/assets/* max-age=0, /index.html no-cache)
+
+**Novas Páginas Obrigatórias (App Store Compliance):**
+- ✅ `/privacy-policy` - Política de Privacidade completa em português (LGPD compliant)
+- ✅ `/terms` - Termos de Uso com descrição de serviço, responsabilidades e cancelamento
+- ✅ `/support` - Central de Ajuda com FAQ e canais de suporte
+
+**Qualidade e Performance:**
+- ✅ Zero erros críticos no console
+- ✅ Todas as funcionalidades core testadas e funcionando
+- ✅ Banco de dados PostgreSQL operacional
+- ✅ APIs respondendo corretamente
+- ✅ Deployment architecture: Netlify (frontend) + Replit (backend) + PostgreSQL
+
+**Documentação:**
+- ✅ APP_STORE_READINESS_CHECKLIST.md criado com requisitos completos para Apple e Google
+- ✅ Emails de suporte configurados: support@, privacy@, legal@, bugs@, feedback@, enterprise@dttools.app
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
