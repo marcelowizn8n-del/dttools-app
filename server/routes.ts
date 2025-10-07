@@ -2558,6 +2558,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve clear-cache.html page directly from backend
+  app.get("/clear-cache.html", (_req, res) => {
+    const clearCachePath = path.join(process.cwd(), 'server', 'public', 'clear-cache.html');
+    if (fs.existsSync(clearCachePath)) {
+      res.sendFile(clearCachePath);
+    } else {
+      res.status(404).send("Clear cache page not found");
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
