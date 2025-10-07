@@ -55,17 +55,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             isAuthenticated: true,
             isLoading: false,
           });
-        } else if (response.status === 401) {
-          // 401 is expected when not authenticated - handle silently
-          localStorage.removeItem("auth_user");
-          setState({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
         } else {
-          // Other errors should be logged
-          console.error("Auth check returned unexpected status:", response.status);
+          // Server session invalid, clear localStorage
           localStorage.removeItem("auth_user");
           setState({
             user: null,
@@ -74,8 +65,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
         }
       } catch (error) {
-        // Only log actual fetch errors (network issues, etc), not expected 401s
-        console.error("Auth check network error:", error);
+        console.error("Auth check failed:", error);
         // On error, clear localStorage and set unauthenticated
         localStorage.removeItem("auth_user");
         setState({
@@ -94,6 +84,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setState(prev => ({ ...prev, isLoading: true }));
       
       const response = await apiRequest("POST", "/api/auth/login", { username, password });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Login failed");
+      }
+
       const { user } = await response.json();
       
       // Store user in localStorage
@@ -111,21 +107,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isAuthenticated: false,
         isLoading: false,
       }));
-      
-      // Parse error message to show user-friendly message
-      if (error instanceof Error) {
-        const errorMessage = error.message;
-        
-        // Extract JSON from error message if present (format: "401: {...}")
-        if (errorMessage.includes('401') || errorMessage.includes('Invalid credentials')) {
-          throw new Error("Nome de usuário ou senha incorretos");
-        } else if (errorMessage.includes('400')) {
-          throw new Error("Por favor, preencha todos os campos");
-        } else {
-          throw new Error("Erro ao fazer login. Tente novamente.");
-        }
-      }
-      
       throw error;
     }
   };

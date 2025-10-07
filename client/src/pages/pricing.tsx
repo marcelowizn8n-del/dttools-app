@@ -118,7 +118,7 @@ function PricingCard({ plan, isYearly, isPopular, onSelectPlan, isLoading }: Pri
 
   return (
     <Card 
-      className={`relative h-full flex flex-col ${isPopular ? 'border-blue-500 shadow-lg' : 'border-gray-200'} transition-transform hover:scale-105`}
+      className={`relative h-full ${isPopular ? 'border-blue-500 shadow-lg' : 'border-gray-200'} transition-transform hover:scale-105`}
       data-testid={`card-plan-${plan.name}`}
     >
       {isPopular && (
@@ -169,7 +169,7 @@ function PricingCard({ plan, isYearly, isPopular, onSelectPlan, isLoading }: Pri
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="flex flex-col flex-1">
+      <CardContent className="flex flex-col h-full">
         <div className="flex-1">
           <ul className="space-y-3 mb-8">
             {getLocalizedFeatures(plan, t).map((feature, index) => (

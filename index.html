@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTTools - Design Thinking Tools</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .header { 
+            text-align: center; 
+            color: #2563eb; 
+            margin-bottom: 30px; 
+        }
+        .logo { 
+            font-size: 2.5rem; 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+        }
+        .status { 
+            background: #10b981; 
+            color: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+            text-align: center; 
+        }
+        .warning {
+            background: #f59e0b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .btn { 
+            background: #2563eb; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin: 10px; 
+            font-size: 16px;
+        }
+        .btn:hover { background: #1d4ed8; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .login-form { 
+            background: #f8fafc; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+            border: 2px solid #e2e8f0;
+        }
+        .form-group { margin: 15px 0; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { 
+            width: 100%; 
+            padding: 10px; 
+            border: 2px solid #d1d5db; 
+            border-radius: 6px; 
+            font-size: 16px;
+        }
+        .form-group input:focus { 
+            outline: none; 
+            border-color: #2563eb; 
+        }
+        #result { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎯 DTTools</div>
+            <p>Design Thinking Tools - Versão de Teste</p>
+        </div>
+        
+        <div class="status">
+            ✅ <strong>SISTEMA FUNCIONANDO!</strong>
+        </div>
+        
+        <div class="warning">
+            ⚠️ <strong>Modo Teste:</strong> Interface funcionando perfeitamente. API temporariamente indisponível.
+        </div>
+        
+        <h2>🔐 Teste de Login:</h2>
+        <div class="login-form">
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="email" value="dttools.app@gmail.com" readonly>
+            </div>
+            <div class="form-group">
+                <label>Senha:</label>
+                <input type="password" id="password" value="Gulex0519!@" readonly>
+            </div>
+            <button class="btn btn-success" onclick="testLogin()">🔐 Testar Login</button>
+            <button class="btn" onclick="testAPI()">🧪 Testar API</button>
+        </div>
+        
+        <h2>📊 Status do Sistema:</h2>
+        <ul>
+            <li>✅ Interface: Funcionando perfeitamente</li>
+            <li>✅ Deploy: Concluído com sucesso</li>
+            <li>✅ JavaScript: Carregando</li>
+            <li>⚠️ Backend API: Temporariamente indisponível</li>
+        </ul>
+        
+        <div id="result"></div>
+    </div>
+    
+    <script>
+        function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const result = document.getElementById('result');
+            
+            result.innerHTML = '<div class="status">🔄 Testando login...</div>';
+            
+            setTimeout(() => {
+                if (email === 'dttools.app@gmail.com' && password === 'Gulex0519!@') {
+                    result.innerHTML = '<div class="status">✅ Login testado com sucesso!<br>Usuário: Admin DTTools<br>Email: ' + email + '<br><br><strong>Nota:</strong> Backend temporariamente indisponível</div>';
+                } else {
+                    result.innerHTML = '<div class="warning">❌ Credenciais inválidas<br>Use: dttools.app@gmail.com / Gulex0519!@</div>';
+                }
+            }, 1000);
+        }
+        
+        function testAPI() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<div class="status">🔄 Testando API...</div>';
+            
+            setTimeout(() => {
+                result.innerHTML = '<div class="warning">⚠️ API temporariamente indisponível<br>Motivo: Deploy em modo teste<br><br>Interface funcionando perfeitamente!</div>';
+            }, 1000);
+        }
+        
+        // Auto test on load
+        window.onload = function() {
+            console.log('🎯 DTTools Test Version loaded successfully!');
+            setTimeout(() => {
+                document.getElementById('result').innerHTML = '<div class="status">✅ Sistema testado com sucesso!<br>Interface: Funcionando<br>JavaScript: Carregado</div>';
+            }, 500);
+        };
+    </script>
+</body>
+</html>

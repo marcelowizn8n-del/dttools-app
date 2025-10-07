@@ -73,9 +73,9 @@ export default function ArticleDetailPage() {
   const { toast } = useToast();
 
   const { data: article, isLoading, error } = useQuery<Article>({
-    queryKey: ["/api/help", id],
+    queryKey: ["/api/articles", id],
     queryFn: async () => {
-      const response = await fetch(`/api/help/${id}`);
+      const response = await fetch(`/api/articles/${id}`);
       if (!response.ok) {
         throw new Error("Article not found");
       }
@@ -161,7 +161,7 @@ export default function ArticleDetailPage() {
               <p className="text-muted-foreground" data-testid="error-message">
                 O artigo que você está procurando não foi encontrado ou foi removido.
               </p>
-              <Link href="/biblioteca">
+              <Link href="/library">
                 <Button data-testid="button-back-to-library">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Voltar à biblioteca
@@ -179,7 +179,7 @@ export default function ArticleDetailPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Navigation */}
         <div className="mb-6">
-          <Link href="/biblioteca">
+          <Link href="/library">
             <Button variant="ghost" className="mb-4" data-testid="button-back">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar à biblioteca
@@ -218,7 +218,7 @@ export default function ArticleDetailPage() {
                 
                 <div className="flex items-center gap-1" data-testid="article-date">
                   <Calendar className="h-4 w-4" />
-                  {article.createdAt ? formatDate(article.createdAt) : 'Data não disponível'}
+                  {formatDate(article.createdAt)}
                 </div>
                 
                 <div className="flex items-center gap-1" data-testid="article-reading-time">
@@ -237,10 +237,10 @@ export default function ArticleDetailPage() {
                 </Button>
               </div>
 
-              {article.tags && Array.isArray(article.tags) && article.tags.length > 0 && (
+              {article.tags && (article.tags as string[]).length > 0 && (
                 <div className="flex flex-wrap gap-2" data-testid="article-tags">
                   <Tag className="h-4 w-4 text-muted-foreground" />
-                  {article.tags.map((tag: string, index: number) => (
+                  {(article.tags as string[]).map((tag, index) => (
                     <Badge 
                       key={index} 
                       variant="outline" 
@@ -265,7 +265,7 @@ export default function ArticleDetailPage() {
 
             {/* Footer */}
             <footer className="flex justify-between items-center pt-6">
-              <Link href="/biblioteca">
+              <Link href="/library">
                 <Button variant="outline" data-testid="button-back-footer">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Voltar à biblioteca

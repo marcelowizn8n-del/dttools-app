@@ -58,7 +58,7 @@ const profileFormSchema = z.object({
 type ProfileFormData = z.infer<typeof profileFormSchema>;
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [_, navigate] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -129,14 +129,11 @@ export default function ProfilePage() {
       }
       return response.json();
     },
-    onSuccess: async (updatedProfile) => {
+    onSuccess: (updatedProfile) => {
       // Force update the local profile picture state
       if (updatedProfile && updatedProfile.profile_picture) {
         setProfilePicture(updatedProfile.profile_picture);
       }
-      
-      // Refresh user in AuthContext to update avatar in header
-      await refreshUser();
       
       queryClient.invalidateQueries({ queryKey: ["/api/users/profile"] });
       toast({
@@ -284,13 +281,20 @@ export default function ProfilePage() {
   };
 
   const onSubmit = (data: ProfileFormData) => {
-    // Update profilePicture with current value
-    const profileData = {
+    // Convert camelCase to snake_case for backend compatibility
+    const backendData = {
       ...data,
-      profilePicture: profilePicture, // Use camelCase as Drizzle expects
+      job_role: data.jobRole,
+      zip_code: data.zipCode,
+      profile_picture: profilePicture,
     };
     
-    updateProfileMutation.mutate(profileData);
+    // Remove the camelCase versions to avoid conflicts
+    delete (backendData as any).jobRole;
+    delete (backendData as any).zipCode;
+    delete (backendData as any).profilePicture;
+    
+    updateProfileMutation.mutate(backendData);
   };
 
   const getUserInitials = (name: string) => {

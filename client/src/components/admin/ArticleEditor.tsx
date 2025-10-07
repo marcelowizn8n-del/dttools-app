@@ -15,17 +15,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { insertHelpArticleSchema, type HelpArticle } from "@shared/schema";
+import { insertArticleSchema, type Article } from "@shared/schema";
 
-const articleFormSchema = insertHelpArticleSchema.extend({
+const articleFormSchema = insertArticleSchema.extend({
   tags: z.string().optional(),
-  searchKeywords: z.string().optional(),
 });
 
 type ArticleFormData = z.infer<typeof articleFormSchema>;
 
 interface ArticleEditorProps {
-  article?: HelpArticle | null;
+  article?: Article | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -71,16 +70,12 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
     resolver: zodResolver(articleFormSchema),
     defaultValues: {
       title: "",
-      slug: "",
-      author: "DTTools Team",
+      author: "",
       category: "",
-      subcategory: "",
-      phase: undefined,
+      description: "",
       content: "",
       tags: "",
-      searchKeywords: "",
-      featured: false,
-      order: 0,
+      published: true,
     },
   });
 
@@ -90,30 +85,23 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
     if (article) {
       form.reset({
         title: article.title,
-        slug: article.slug,
         author: article.author,
         category: article.category,
-        subcategory: article.subcategory || "",
-        phase: article.phase || undefined,
+        description: article.description || "",
         content: article.content,
-        tags: Array.isArray(article.tags) ? (article.tags as string[]).join(", ") : "",
-        searchKeywords: Array.isArray(article.searchKeywords) ? (article.searchKeywords as string[]).join(", ") : "",
-        featured: article.featured || false,
-        order: article.order || 0,
+        tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
+        published: article.published,
       });
     } else if (isOpen && !article) {
+      // Force complete reset when creating new article
       form.reset({
         title: "",
-        slug: "",
-        author: "DTTools Team",
+        author: "",
         category: "",
-        subcategory: "",
-        phase: undefined,
+        description: "",
         content: "",
         tags: "",
-        searchKeywords: "",
-        featured: false,
-        order: 0,
+        published: true,
       });
     }
   }, [article, isOpen, form]);
@@ -123,32 +111,27 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
       setActiveTab("edit");
       setIsCustomCategorySelected(false);
       setCustomCategory("");
+      // Clear form when modal closes to prevent stale data
       form.reset({
         title: "",
-        slug: "",
-        author: "DTTools Team",
+        author: "",
         category: "",
-        subcategory: "",
-        phase: undefined,
+        description: "",
         content: "",
         tags: "",
-        searchKeywords: "",
-        featured: false,
-        order: 0,
+        published: true,
       });
     }
   }, [isOpen, form]);
 
   const createArticleMutation = useMutation({
     mutationFn: async (data: ArticleFormData) => {
-      const { tags, searchKeywords, ...rest } = data;
       const payload = {
-        ...rest,
-        tags: tags ? tags.split(",").map(tag => tag.trim()).filter(Boolean) : [],
-        searchKeywords: searchKeywords ? searchKeywords.split(",").map(k => k.trim()).filter(Boolean) : [],
+        ...data,
+        tags: data.tags ? data.tags.split(",").map(tag => tag.trim()).filter(Boolean) : [],
       };
 
-      const response = await apiRequest("POST", "/api/help", payload);
+      const response = await apiRequest("POST", "/api/articles", payload);
       if (!response.ok) {
         throw new Error("Failed to create article");
       }
@@ -156,7 +139,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/help"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
       toast({
         title: "Artigo criado",
         description: "O artigo foi criado com sucesso.",
@@ -174,14 +157,12 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
 
   const updateArticleMutation = useMutation({
     mutationFn: async (data: ArticleFormData) => {
-      const { tags, searchKeywords, ...rest } = data;
       const payload = {
-        ...rest,
-        tags: tags ? tags.split(",").map(tag => tag.trim()).filter(Boolean) : [],
-        searchKeywords: searchKeywords ? searchKeywords.split(",").map(k => k.trim()).filter(Boolean) : [],
+        ...data,
+        tags: data.tags ? data.tags.split(",").map(tag => tag.trim()).filter(Boolean) : [],
       };
 
-      const response = await apiRequest("PUT", `/api/help/${article?.id}`, payload);
+      const response = await apiRequest("PUT", `/api/articles/${article?.id}`, payload);
       if (!response.ok) {
         throw new Error("Failed to update article");
       }
@@ -189,7 +170,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/help"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
       toast({
         title: "Artigo atualizado",
         description: "O artigo foi atualizado com sucesso.",
@@ -338,121 +319,44 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
 
                   <FormField
                     control={form.control}
-                    name="slug"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Slug (URL)</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="como-criar-mapa-empatia"
-                            data-testid="input-slug"
-                            {...field}
-                          />
-                        </FormControl>
-                        <div className="text-sm text-muted-foreground">
-                          URL amigável (gerado automaticamente do título)
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="subcategory"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Subcategoria (opcional)</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Ex: Mapas de Empatia"
-                            data-testid="input-subcategory"
-                            {...field}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="phase"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fase do Design Thinking (opcional)</FormLabel>
-                        <Select 
-                          onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} 
-                          value={field.value?.toString() || undefined}
-                        >
-                          <FormControl>
-                            <SelectTrigger data-testid="select-phase">
-                              <SelectValue placeholder="Não aplicável" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="1">Fase 1 - Empatizar</SelectItem>
-                            <SelectItem value="2">Fase 2 - Definir</SelectItem>
-                            <SelectItem value="3">Fase 3 - Idear</SelectItem>
-                            <SelectItem value="4">Fase 4 - Prototipar</SelectItem>
-                            <SelectItem value="5">Fase 5 - Testar</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="order"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ordem</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            data-testid="input-order"
-                            value={field.value || 0}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          />
-                        </FormControl>
-                        <div className="text-sm text-muted-foreground">
-                          Ordem de exibição (maior = aparece primeiro)
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="featured"
+                    name="published"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Destaque</FormLabel>
+                          <FormLabel className="text-base">Publicado</FormLabel>
                           <div className="text-sm text-muted-foreground">
-                            Destacar na página principal
+                            O artigo será visível na biblioteca
                           </div>
                         </div>
                         <FormControl>
                           <Switch
-                            checked={field.value || false}
+                            checked={field.value}
                             onCheckedChange={field.onChange}
-                            data-testid="switch-featured"
+                            data-testid="switch-published"
                           />
                         </FormControl>
                       </FormItem>
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descrição (opcional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Breve descrição do artigo"
+                          data-testid="textarea-description"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -462,34 +366,13 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                       <FormLabel>Tags (opcional)</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="empatia, pesquisa, usuários (separadas por vírgula)"
+                          placeholder="Digite as tags separadas por vírgula"
                           data-testid="input-tags"
                           {...field}
                         />
                       </FormControl>
                       <div className="text-sm text-muted-foreground">
-                        Tags separadas por vírgula para facilitar a busca
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="searchKeywords"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Palavras-chave (opcional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="usuário, cliente, entrevista (separadas por vírgula)"
-                          data-testid="input-keywords"
-                          {...field}
-                        />
-                      </FormControl>
-                      <div className="text-sm text-muted-foreground">
-                        Palavras-chave adicionais para melhorar a busca
+                        Exemplo: empatia, pesquisa, usuários
                       </div>
                       <FormMessage />
                     </FormItem>

@@ -10,9 +10,8 @@
 # Redirects para SPA e API
 [[redirects]]
   from = "/api/*"
-  to = "https://55685bc3-a504-4dcf-b4df-52a026ad255f-00-pmczgzyup1y0.janeway.replit.dev/api/:splat"
+  to = "/.netlify/functions/api/:splat"
   status = 200
-  force = true
 
 [[redirects]]
   from = "/*"
@@ -27,9 +26,6 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
 
 # Headers para arquivos estáticos
 [[headers]]
