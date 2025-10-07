@@ -284,7 +284,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                               field.onChange(value);
                             }
                           }} 
-                          defaultValue={field.value}
+                          value={field.value || ""}
                         >
                           <FormControl>
                             <SelectTrigger data-testid="select-category">
@@ -330,7 +330,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                         </div>
                         <FormControl>
                           <Switch
-                            checked={field.value}
+                            checked={field.value ?? true}
                             onCheckedChange={field.onChange}
                             data-testid="switch-published"
                           />
@@ -351,6 +351,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                           placeholder="Breve descrição do artigo"
                           data-testid="textarea-description"
                           {...field}
+                          value={field.value ?? ""}
                         />
                       </FormControl>
                       <FormMessage />
