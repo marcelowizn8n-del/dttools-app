@@ -55,8 +55,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
             isAuthenticated: true,
             isLoading: false,
           });
+        } else if (response.status === 401) {
+          // 401 is expected when not authenticated - handle silently
+          localStorage.removeItem("auth_user");
+          setState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
         } else {
-          // Server session invalid, clear localStorage
+          // Other errors should be logged
+          console.error("Auth check returned unexpected status:", response.status);
           localStorage.removeItem("auth_user");
           setState({
             user: null,
@@ -65,7 +74,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
         }
       } catch (error) {
-        console.error("Auth check failed:", error);
+        // Only log actual fetch errors (network issues, etc), not expected 401s
+        console.error("Auth check network error:", error);
         // On error, clear localStorage and set unauthenticated
         localStorage.removeItem("auth_user");
         setState({
