@@ -8,844 +8,6 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// shared/schema.ts
-var schema_exports = {};
-__export(schema_exports, {
-  articles: () => articles,
-  benchmarkAssessments: () => benchmarkAssessments,
-  benchmarks: () => benchmarks,
-  canvasDrawings: () => canvasDrawings,
-  competitiveAnalysis: () => competitiveAnalysis,
-  dvfAssessments: () => dvfAssessments,
-  empathyMaps: () => empathyMaps,
-  helpArticles: () => helpArticles,
-  hmwQuestions: () => hmwQuestions,
-  ideas: () => ideas,
-  insertArticleSchema: () => insertArticleSchema,
-  insertBenchmarkAssessmentSchema: () => insertBenchmarkAssessmentSchema,
-  insertBenchmarkSchema: () => insertBenchmarkSchema,
-  insertCanvasDrawingSchema: () => insertCanvasDrawingSchema,
-  insertCompetitiveAnalysisSchema: () => insertCompetitiveAnalysisSchema,
-  insertDvfAssessmentSchema: () => insertDvfAssessmentSchema,
-  insertEmpathyMapSchema: () => insertEmpathyMapSchema,
-  insertHelpArticleSchema: () => insertHelpArticleSchema,
-  insertHmwQuestionSchema: () => insertHmwQuestionSchema,
-  insertIdeaSchema: () => insertIdeaSchema,
-  insertInterviewSchema: () => insertInterviewSchema,
-  insertLovabilityMetricSchema: () => insertLovabilityMetricSchema,
-  insertObservationSchema: () => insertObservationSchema,
-  insertPersonaSchema: () => insertPersonaSchema,
-  insertPhaseCardSchema: () => insertPhaseCardSchema,
-  insertPovStatementSchema: () => insertPovStatementSchema,
-  insertProjectAnalyticsSchema: () => insertProjectAnalyticsSchema,
-  insertProjectBackupSchema: () => insertProjectBackupSchema,
-  insertProjectSchema: () => insertProjectSchema,
-  insertPrototypeSchema: () => insertPrototypeSchema,
-  insertSubscriptionPlanSchema: () => insertSubscriptionPlanSchema,
-  insertTestPlanSchema: () => insertTestPlanSchema,
-  insertTestResultSchema: () => insertTestResultSchema,
-  insertUserProgressSchema: () => insertUserProgressSchema,
-  insertUserSchema: () => insertUserSchema,
-  insertUserSubscriptionSchema: () => insertUserSubscriptionSchema,
-  interviews: () => interviews,
-  lovabilityMetrics: () => lovabilityMetrics,
-  observations: () => observations,
-  personas: () => personas,
-  phaseCards: () => phaseCards,
-  povStatements: () => povStatements,
-  projectAnalytics: () => projectAnalytics,
-  projectBackups: () => projectBackups,
-  projects: () => projects,
-  prototypes: () => prototypes,
-  subscriptionPlans: () => subscriptionPlans,
-  testPlans: () => testPlans,
-  testResults: () => testResults,
-  updateProfileSchema: () => updateProfileSchema,
-  userProgress: () => userProgress,
-  userSubscriptions: () => userSubscriptions,
-  users: () => users
-});
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, real, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
-var projects, empathyMaps, personas, interviews, observations, povStatements, hmwQuestions, ideas, prototypes, canvasDrawings, testPlans, testResults, userProgress, users, subscriptionPlans, userSubscriptions, articles, insertProjectSchema, insertEmpathyMapSchema, insertPersonaSchema, insertInterviewSchema, insertObservationSchema, insertPovStatementSchema, insertHmwQuestionSchema, insertIdeaSchema, insertPrototypeSchema, insertTestPlanSchema, insertTestResultSchema, insertUserProgressSchema, insertUserSchema, insertArticleSchema, insertSubscriptionPlanSchema, insertUserSubscriptionSchema, insertCanvasDrawingSchema, updateProfileSchema, phaseCards, benchmarks, benchmarkAssessments, insertBenchmarkSchema, insertBenchmarkAssessmentSchema, insertPhaseCardSchema, dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis, projectBackups, helpArticles, insertDvfAssessmentSchema, insertLovabilityMetricSchema, insertProjectAnalyticsSchema, insertCompetitiveAnalysisSchema, insertProjectBackupSchema, insertHelpArticleSchema;
-var init_schema = __esm({
-  "shared/schema.ts"() {
-    "use strict";
-    projects = pgTable("projects", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      name: text("name").notNull(),
-      description: text("description"),
-      status: text("status").notNull().default("in_progress"),
-      // in_progress, completed
-      currentPhase: integer("current_phase").default(1),
-      // 1-5 phases
-      completionRate: real("completion_rate").default(0),
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    empathyMaps = pgTable("empathy_maps", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      title: text("title").notNull(),
-      says: jsonb("says").default([]),
-      // Array of strings
-      thinks: jsonb("thinks").default([]),
-      does: jsonb("does").default([]),
-      feels: jsonb("feels").default([]),
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    personas = pgTable("personas", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      name: text("name").notNull(),
-      age: integer("age"),
-      occupation: text("occupation"),
-      bio: text("bio"),
-      goals: jsonb("goals").default([]),
-      frustrations: jsonb("frustrations").default([]),
-      motivations: jsonb("motivations").default([]),
-      techSavviness: text("tech_savviness"),
-      // low, medium, high
-      avatar: text("avatar"),
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    interviews = pgTable("interviews", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      participantName: text("participant_name").notNull(),
-      date: timestamp("date").notNull(),
-      duration: integer("duration"),
-      // minutes
-      questions: jsonb("questions").default([]),
-      responses: jsonb("responses").default([]),
-      insights: text("insights"),
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    observations = pgTable("observations", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      location: text("location").notNull(),
-      context: text("context").notNull(),
-      behavior: text("behavior").notNull(),
-      insights: text("insights"),
-      date: timestamp("date").notNull(),
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    povStatements = pgTable("pov_statements", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      user: text("user").notNull(),
-      // user description
-      need: text("need").notNull(),
-      // user need
-      insight: text("insight").notNull(),
-      // surprising insight
-      statement: text("statement").notNull(),
-      // complete POV statement
-      priority: text("priority").default("medium"),
-      // low, medium, high
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    hmwQuestions = pgTable("hmw_questions", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      question: text("question").notNull(),
-      context: text("context"),
-      challenge: text("challenge"),
-      scope: text("scope").default("product"),
-      // feature, product, service, experience, process
-      priority: text("priority").default("medium"),
-      // low, medium, high
-      category: text("category"),
-      // categorization
-      votes: integer("votes").default(0),
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    ideas = pgTable("ideas", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      title: text("title").notNull(),
-      description: text("description").notNull(),
-      category: text("category"),
-      // Legacy fields (kept for compatibility)
-      feasibility: integer("feasibility"),
-      // 1-5 scale - now maps to DVF Feasibility/Exequibilidade
-      impact: integer("impact"),
-      // 1-5 scale
-      votes: integer("votes").default(0),
-      // DVF (Desejabilidade, Viabilidade, Exequibilidade) System
-      desirability: integer("desirability"),
-      // 1-5 scale - user need satisfaction
-      viability: integer("viability"),
-      // 1-5 scale - business/profit potential  
-      // feasibility already exists above - technical implementability
-      confidenceLevel: integer("confidence_level"),
-      // 1-5 scale - overall confidence
-      dvfScore: real("dvf_score"),
-      // Calculated: (desirability + viability + feasibility) / 3
-      dvfAnalysis: text("dvf_analysis"),
-      // Detailed justification for scores
-      actionDecision: text("action_decision").default("evaluate"),
-      // love_it, leave_it, change_it, evaluate
-      // Priority and iteration fields
-      priorityRank: integer("priority_rank"),
-      // 1-n ranking based on DVF analysis
-      iterationNotes: text("iteration_notes"),
-      // Notes for "change_it" decisions
-      status: text("status").default("idea"),
-      // idea, selected, prototype, tested
-      canvasData: jsonb("canvas_data"),
-      // Fabric.js canvas data for drawings/sketches
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    prototypes = pgTable("prototypes", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      ideaId: varchar("idea_id").references(() => ideas.id),
-      name: text("name").notNull(),
-      type: text("type").notNull(),
-      // paper, digital, physical, storyboard, canvas
-      description: text("description").notNull(),
-      materials: jsonb("materials").default([]),
-      images: jsonb("images").default([]),
-      canvasData: jsonb("canvas_data"),
-      // Konva.js canvas data for interactive prototypes
-      version: integer("version").default(1),
-      feedback: text("feedback"),
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    canvasDrawings = pgTable("canvas_drawings", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      title: text("title").notNull(),
-      description: text("description"),
-      phase: integer("phase").notNull(),
-      // 1-5 phases where this drawing is used
-      canvasType: text("canvas_type").notNull(),
-      // fabric, konva
-      canvasData: jsonb("canvas_data").notNull(),
-      // Canvas library data (Fabric.js or Konva.js)
-      thumbnailData: text("thumbnail_data"),
-      // Base64 encoded thumbnail for preview
-      tags: jsonb("tags").default([]),
-      // Tags for categorization
-      isTemplate: boolean("is_template").default(false),
-      // Can be used as a template
-      parentId: varchar("parent_id"),
-      // For drawing iterations - will be set to reference same table later
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    testPlans = pgTable("test_plans", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      prototypeId: varchar("prototype_id").references(() => prototypes.id),
-      name: text("name").notNull(),
-      objective: text("objective").notNull(),
-      methodology: text("methodology").notNull(),
-      participants: integer("participants").notNull(),
-      duration: integer("duration"),
-      // minutes
-      tasks: jsonb("tasks").default([]),
-      metrics: jsonb("metrics").default([]),
-      status: text("status").default("planned"),
-      // planned, running, completed
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    testResults = pgTable("test_results", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      testPlanId: varchar("test_plan_id").references(() => testPlans.id).notNull(),
-      participantId: text("participant_id").notNull(),
-      taskResults: jsonb("task_results").default([]),
-      feedback: text("feedback"),
-      successRate: real("success_rate"),
-      completionTime: integer("completion_time"),
-      // minutes
-      insights: text("insights"),
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    userProgress = pgTable("user_progress", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      userId: text("user_id").notNull(),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      phase: integer("phase").notNull(),
-      // 1-5
-      completedTools: jsonb("completed_tools").default([]),
-      badges: jsonb("badges").default([]),
-      points: integer("points").default(0),
-      timeSpent: integer("time_spent").default(0),
-      // minutes
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    users = pgTable("users", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      username: text("username").notNull().unique(),
-      email: text("email").notNull().unique(),
-      name: text("name").notNull(),
-      password: text("password").notNull(),
-      // hashed password
-      role: text("role").notNull().default("user"),
-      // admin, user
-      company: text("company"),
-      jobRole: text("job_role"),
-      industry: text("industry"),
-      experience: text("experience"),
-      country: text("country"),
-      state: text("state"),
-      city: text("city"),
-      zipCode: text("zip_code"),
-      phone: text("phone"),
-      bio: text("bio"),
-      profilePicture: text("profile_picture"),
-      interests: jsonb("interests").default([]),
-      stripeCustomerId: text("stripe_customer_id"),
-      stripeSubscriptionId: text("stripe_subscription_id"),
-      subscriptionPlanId: varchar("subscription_plan_id"),
-      subscriptionStatus: text("subscription_status").default("active"),
-      // active, canceled, expired, trialing
-      subscriptionEndDate: timestamp("subscription_end_date"),
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    subscriptionPlans = pgTable("subscription_plans", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      name: text("name").notNull(),
-      displayName: text("display_name").notNull(),
-      description: text("description"),
-      priceMonthly: integer("price_monthly").notNull(),
-      // in cents
-      priceYearly: integer("price_yearly").notNull(),
-      // in cents
-      stripePriceIdMonthly: text("stripe_price_id_monthly"),
-      stripePriceIdYearly: text("stripe_price_id_yearly"),
-      maxProjects: integer("max_projects"),
-      // null for unlimited
-      maxPersonasPerProject: integer("max_personas_per_project"),
-      // null for unlimited
-      maxUsersPerTeam: integer("max_users_per_team"),
-      // null for unlimited
-      aiChatLimit: integer("ai_chat_limit"),
-      // null for unlimited
-      libraryArticlesCount: integer("library_articles_count"),
-      // null for all articles
-      features: jsonb("features").default([]),
-      // Array of feature strings
-      exportFormats: jsonb("export_formats").default([]),
-      // Array of export formats (pdf, png, csv)
-      hasCollaboration: boolean("has_collaboration").default(false),
-      hasPermissionManagement: boolean("has_permission_management").default(false),
-      hasSharedWorkspace: boolean("has_shared_workspace").default(false),
-      hasCommentsAndFeedback: boolean("has_comments_and_feedback").default(false),
-      hasSso: boolean("has_sso").default(false),
-      hasCustomApi: boolean("has_custom_api").default(false),
-      hasCustomIntegrations: boolean("has_custom_integrations").default(false),
-      has24x7Support: boolean("has_24x7_support").default(false),
-      order: integer("order").default(0),
-      // for display ordering
-      isActive: boolean("is_active").default(true),
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    userSubscriptions = pgTable("user_subscriptions", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      userId: varchar("user_id").references(() => users.id).notNull(),
-      planId: varchar("plan_id").references(() => subscriptionPlans.id).notNull(),
-      stripeSubscriptionId: text("stripe_subscription_id"),
-      status: text("status").notNull(),
-      // active, canceled, expired, trialing, incomplete
-      billingPeriod: text("billing_period").notNull(),
-      // monthly, yearly
-      currentPeriodStart: timestamp("current_period_start"),
-      currentPeriodEnd: timestamp("current_period_end"),
-      cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    articles = pgTable("articles", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      title: text("title").notNull(),
-      content: text("content").notNull(),
-      category: text("category").notNull(),
-      // empathize, define, ideate, prototype, test
-      author: text("author").notNull(),
-      description: text("description"),
-      tags: jsonb("tags").default([]),
-      // Array of tags
-      published: boolean("published").default(true),
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    insertProjectSchema = createInsertSchema(projects).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertEmpathyMapSchema = createInsertSchema(empathyMaps).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertPersonaSchema = createInsertSchema(personas).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertInterviewSchema = createInsertSchema(interviews, {
-      questions: z.array(z.string()).optional(),
-      responses: z.array(z.string()).optional()
-    }).omit({
-      id: true,
-      createdAt: true
-    });
-    insertObservationSchema = createInsertSchema(observations).omit({
-      id: true,
-      createdAt: true
-    });
-    insertPovStatementSchema = createInsertSchema(povStatements).omit({
-      id: true,
-      createdAt: true
-    });
-    insertHmwQuestionSchema = createInsertSchema(hmwQuestions).omit({
-      id: true,
-      createdAt: true
-    });
-    insertIdeaSchema = createInsertSchema(ideas).omit({
-      id: true,
-      createdAt: true
-    });
-    insertPrototypeSchema = createInsertSchema(prototypes).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertTestPlanSchema = createInsertSchema(testPlans).omit({
-      id: true,
-      createdAt: true
-    });
-    insertTestResultSchema = createInsertSchema(testResults).omit({
-      id: true,
-      createdAt: true
-    });
-    insertUserProgressSchema = createInsertSchema(userProgress).omit({
-      id: true,
-      updatedAt: true
-    });
-    insertUserSchema = createInsertSchema(users).omit({
-      id: true,
-      createdAt: true
-    });
-    insertArticleSchema = createInsertSchema(articles).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
-      id: true,
-      createdAt: true
-    });
-    insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertCanvasDrawingSchema = createInsertSchema(canvasDrawings).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    updateProfileSchema = createInsertSchema(users).omit({
-      id: true,
-      username: true,
-      password: true,
-      role: true,
-      stripeCustomerId: true,
-      stripeSubscriptionId: true,
-      subscriptionPlanId: true,
-      subscriptionStatus: true,
-      subscriptionEndDate: true,
-      createdAt: true
-    }).partial();
-    phaseCards = pgTable("phase_cards", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      title: text("title").notNull(),
-      description: text("description"),
-      phase: integer("phase").notNull().default(1),
-      // 1-5 phases (Empatizar, Definir, Idear, Prototipar, Testar)
-      status: text("status").default("todo"),
-      // todo, in_progress, done
-      priority: text("priority").default("medium"),
-      // low, medium, high
-      assignee: text("assignee"),
-      // Optional assignee
-      tags: jsonb("tags").default([]),
-      // Array of tags for categorization
-      dueDate: timestamp("due_date"),
-      position: integer("position").default(0),
-      // Order within the phase column
-      color: text("color").default("blue"),
-      // Card color for visual organization
-      attachments: jsonb("attachments").default([]),
-      // File attachments metadata
-      comments: jsonb("comments").default([]),
-      // Comments/notes
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    benchmarks = pgTable("benchmarks", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      name: text("name").notNull(),
-      description: text("description"),
-      industry: text("industry").notNull(),
-      // tech, healthcare, finance, retail, etc.
-      companySize: text("company_size").notNull(),
-      // startup, small, medium, large, enterprise
-      maturityScores: jsonb("maturity_scores").default({}),
-      // { empathize: 4, define: 3, ideate: 5, prototype: 2, test: 3 }
-      benchmarkType: text("benchmark_type").notNull().default("industry"),
-      // industry, internal, custom
-      targetScores: jsonb("target_scores").default({}),
-      // Goals for each phase
-      improvementAreas: jsonb("improvement_areas").default([]),
-      // Array of focus areas
-      recommendations: jsonb("recommendations").default([]),
-      // AI-generated suggestions
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    benchmarkAssessments = pgTable("benchmark_assessments", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      benchmarkId: varchar("benchmark_id").references(() => benchmarks.id).notNull(),
-      phase: integer("phase").notNull(),
-      // 1-5 for DT phases
-      criteria: text("criteria").notNull(),
-      // What is being assessed
-      currentScore: real("current_score").notNull(),
-      // 1-5 rating
-      targetScore: real("target_score").notNull(),
-      // Goal score
-      industryAverage: real("industry_average"),
-      // Benchmark comparison
-      evidence: text("evidence"),
-      // Supporting evidence for the score
-      improvementPlan: text("improvement_plan"),
-      // How to improve
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    insertBenchmarkSchema = createInsertSchema(benchmarks).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertBenchmarkAssessmentSchema = createInsertSchema(benchmarkAssessments).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertPhaseCardSchema = createInsertSchema(phaseCards).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    dvfAssessments = pgTable("dvf_assessments", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      itemType: text("item_type").notNull(),
-      // idea, prototype, solution, etc.
-      itemId: varchar("item_id").notNull(),
-      // Reference to the evaluated item
-      itemName: text("item_name").notNull(),
-      // Desirability - User desirability
-      desirabilityScore: real("desirability_score").notNull().default(0),
-      // 1-5 scale
-      desirabilityEvidence: text("desirability_evidence"),
-      // Supporting evidence
-      userFeedback: text("user_feedback"),
-      // Direct user feedback
-      marketDemand: real("market_demand").default(0),
-      // Market demand indicator
-      // Feasibility - Technical feasibility  
-      feasibilityScore: real("feasibility_score").notNull().default(0),
-      // 1-5 scale
-      feasibilityEvidence: text("feasibility_evidence"),
-      technicalComplexity: text("technical_complexity"),
-      // low, medium, high
-      resourceRequirements: jsonb("resource_requirements").default([]),
-      // Required resources
-      timeToImplement: integer("time_to_implement"),
-      // Estimated time in days
-      // Viability - Economic viability
-      viabilityScore: real("viability_score").notNull().default(0),
-      // 1-5 scale  
-      viabilityEvidence: text("viability_evidence"),
-      businessModel: text("business_model"),
-      // How it generates value
-      costEstimate: real("cost_estimate"),
-      // Implementation cost
-      revenueProjection: real("revenue_projection"),
-      // Expected revenue
-      // Overall DVF analysis
-      overallScore: real("overall_score").default(0),
-      // Average of the three pillars
-      recommendation: text("recommendation"),
-      // proceed, modify, stop
-      nextSteps: jsonb("next_steps").default([]),
-      // Recommended actions
-      risksIdentified: jsonb("risks_identified").default([]),
-      // Potential risks
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    lovabilityMetrics = pgTable("lovability_metrics", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      itemType: text("item_type").notNull(),
-      // idea, prototype, solution
-      itemId: varchar("item_id").notNull(),
-      // Reference to the item being evaluated
-      itemName: text("item_name").notNull(),
-      // Core Metrics
-      npsScore: real("nps_score").default(0),
-      // -100 to 100
-      satisfactionScore: real("satisfaction_score").default(0),
-      // 0-10
-      retentionRate: real("retention_rate").default(0),
-      // 0-100%
-      engagementTime: real("engagement_time").default(0),
-      // minutes
-      // Emotional Distribution
-      emotionalDistribution: jsonb("emotional_distribution").default({}),
-      // delight, satisfaction, neutral, frustration percentages
-      // Feedback Analysis
-      positiveComments: jsonb("positive_comments").default([]),
-      negativeComments: jsonb("negative_comments").default([]),
-      improvementSuggestions: jsonb("improvement_suggestions").default([]),
-      // User Behavior
-      userTestingSessions: integer("user_testing_sessions").default(0),
-      completionRate: real("completion_rate").default(0),
-      // 0-100%
-      errorRate: real("error_rate").default(0),
-      // 0-100%
-      supportTickets: integer("support_tickets").default(0),
-      // Qualitative Insights
-      emotionalStory: text("emotional_story"),
-      userPersonas: jsonb("user_personas").default([]),
-      keyMoments: jsonb("key_moments").default([]),
-      painPoints: jsonb("pain_points").default([]),
-      // Overall Assessment
-      lovabilityScore: real("lovability_score").default(0),
-      // 0-10 calculated score
-      recommendations: jsonb("recommendations").default([]),
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    projectAnalytics = pgTable("project_analytics", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      // Usage metrics
-      totalTimeSpent: integer("total_time_spent").default(0),
-      // minutes
-      timePerPhase: jsonb("time_per_phase").default({}),
-      // { phase1: 120, phase2: 90, ... }
-      toolsUsed: jsonb("tools_used").default([]),
-      // List of tools/features used
-      toolUsageCount: jsonb("tool_usage_count").default({}),
-      // Usage frequency per tool
-      // Progress metrics
-      completionRate: real("completion_rate").default(0),
-      // 0-100%
-      phasesCompleted: jsonb("phases_completed").default([]),
-      // Which phases are done
-      stageProgressions: integer("stage_progressions").default(0),
-      // Times moved between phases
-      iterationsCount: integer("iterations_count").default(0),
-      // Number of iterations
-      // Success indicators
-      prototypesCreated: integer("prototypes_created").default(0),
-      testsCompleted: integer("tests_completed").default(0),
-      userFeedbackCollected: integer("user_feedback_collected").default(0),
-      ideasGenerated: integer("ideas_generated").default(0),
-      ideasImplemented: integer("ideas_implemented").default(0),
-      // Team collaboration metrics
-      teamSize: integer("team_size").default(1),
-      collaborationEvents: integer("collaboration_events").default(0),
-      meetingsHeld: integer("meetings_held").default(0),
-      decisionsMade: integer("decisions_made").default(0),
-      // Innovation metrics
-      originalityScore: real("originality_score").default(0),
-      // 1-10
-      feasibilityScore: real("feasibility_score").default(0),
-      // 1-10
-      impactPotential: real("impact_potential").default(0),
-      // 1-10
-      marketFit: real("market_fit").default(0),
-      // 1-10
-      // Success metrics
-      overallSuccess: real("overall_success").default(0),
-      // 0-100%
-      userSatisfaction: real("user_satisfaction").default(0),
-      // 0-10
-      goalAchievement: real("goal_achievement").default(0),
-      // 0-100%
-      innovationLevel: real("innovation_level").default(0),
-      // 1-5
-      // Key insights
-      topPerformingTools: jsonb("top_performing_tools").default([]),
-      timeBottlenecks: jsonb("time_bottlenecks").default([]),
-      successFactors: jsonb("success_factors").default([]),
-      improvementAreas: jsonb("improvement_areas").default([]),
-      lastUpdated: timestamp("last_updated").default(sql`now()`),
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    competitiveAnalysis = pgTable("competitive_analysis", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      // Competitor info
-      competitorName: text("competitor_name").notNull(),
-      // Miro, Figma, Notion, etc.
-      competitorType: text("competitor_type").notNull(),
-      // direct, indirect, substitute
-      marketPosition: text("market_position"),
-      // leader, challenger, niche
-      // Feature comparison
-      features: jsonb("features").default({}),
-      // Feature matrix comparison
-      functionalGaps: jsonb("functional_gaps").default([]),
-      // What they lack
-      functionalOverages: jsonb("functional_overages").default([]),
-      // What they overdo
-      // Pricing comparison
-      pricingModel: text("pricing_model"),
-      // freemium, subscription, one-time
-      pricePoints: jsonb("price_points").default([]),
-      // Their pricing tiers
-      valueProposition: text("value_proposition"),
-      // Their main value prop
-      // Market gaps
-      underservedOutcomes: jsonb("underserved_outcomes").default([]),
-      // Market gaps
-      overservedOutcomes: jsonb("overserved_outcomes").default([]),
-      // Overcomplicated areas
-      // Our positioning
-      ourAdvantages: jsonb("our_advantages").default([]),
-      // Where we're better
-      ourDisadvantages: jsonb("our_disadvantages").default([]),
-      // Where we lack
-      recommendations: jsonb("recommendations").default([]),
-      // Strategic recommendations
-      analysisDate: timestamp("analysis_date").default(sql`now()`),
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    projectBackups = pgTable("project_backups", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
-      // Backup metadata
-      backupType: text("backup_type").notNull(),
-      // auto, manual
-      description: text("description"),
-      // Project snapshot at backup time
-      projectSnapshot: jsonb("project_snapshot").notNull(),
-      // Complete project data
-      // Statistics at backup time
-      phaseSnapshot: integer("phase_snapshot"),
-      // Current phase at backup
-      completionSnapshot: real("completion_snapshot"),
-      // Completion rate at backup
-      itemCount: integer("item_count"),
-      // Total items in backup
-      createdAt: timestamp("created_at").default(sql`now()`)
-    });
-    helpArticles = pgTable("help_articles", {
-      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      title: text("title").notNull(),
-      slug: text("slug").notNull().unique(),
-      // URL-friendly identifier
-      content: text("content").notNull(),
-      // Markdown content
-      category: text("category").notNull(),
-      // inicio-rapido, fases, exportacao, etc
-      subcategory: text("subcategory"),
-      // Optional subcategory
-      phase: integer("phase"),
-      // 1-5 if related to specific DT phase
-      tags: jsonb("tags").default([]),
-      // Array of searchable tags
-      searchKeywords: jsonb("search_keywords").default([]),
-      // Keywords for search
-      featured: boolean("featured").default(false),
-      // Show in main help
-      author: text("author").notNull().default("DTTools Team"),
-      // Article author
-      viewCount: integer("view_count").default(0),
-      helpful: integer("helpful").default(0),
-      // Helpful votes
-      order: integer("order").default(0),
-      // Display order within category
-      createdAt: timestamp("created_at").default(sql`now()`),
-      updatedAt: timestamp("updated_at").default(sql`now()`)
-    });
-    insertDvfAssessmentSchema = createInsertSchema(dvfAssessments).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertLovabilityMetricSchema = createInsertSchema(lovabilityMetrics).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true
-    });
-    insertProjectAnalyticsSchema = createInsertSchema(projectAnalytics).omit({
-      id: true,
-      createdAt: true,
-      lastUpdated: true
-    });
-    insertCompetitiveAnalysisSchema = createInsertSchema(competitiveAnalysis).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true,
-      analysisDate: true
-    });
-    insertProjectBackupSchema = createInsertSchema(projectBackups).omit({
-      id: true,
-      createdAt: true
-    });
-    insertHelpArticleSchema = createInsertSchema(helpArticles).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true,
-      viewCount: true,
-      helpful: true
-    });
-  }
-});
-
-// server/db.ts
-import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
-var pool, db;
-var init_db = __esm({
-  "server/db.ts"() {
-    "use strict";
-    init_schema();
-    if (!process.env.DATABASE_URL) {
-      throw new Error(
-        "DATABASE_URL must be set. Did you forget to provision a database?"
-      );
-    }
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
-    });
-    db = drizzle(pool, { schema: schema_exports });
-  }
-});
-
 // server/geminiService.ts
 var geminiService_exports = {};
 __export(geminiService_exports, {
@@ -1106,509 +268,6 @@ Responda em portugu\xEAs brasileiro, sendo direto e orientado a resultados.`;
   }
 });
 
-// scripts/seed-help-articles.ts
-var seed_help_articles_exports = {};
-__export(seed_help_articles_exports, {
-  helpArticlesData: () => helpArticlesData,
-  seedHelpArticles: () => seedHelpArticles
-});
-async function seedHelpArticles() {
-  console.log("\u{1F331} Seeding help articles...");
-  try {
-    const existingArticles = await db.select().from(helpArticles);
-    if (existingArticles.length > 0) {
-      console.log(`\u26A0\uFE0F  Found ${existingArticles.length} existing articles.`);
-      console.log("   To reseed, first delete existing articles.");
-      return;
-    }
-    await db.insert(helpArticles).values(helpArticlesData);
-    console.log(`\u2705 Successfully seeded ${helpArticlesData.length} help articles!`);
-    console.log("\nArticles by category:");
-    const categories = helpArticlesData.reduce((acc, article) => {
-      acc[article.category] = (acc[article.category] || 0) + 1;
-      return acc;
-    }, {});
-    Object.entries(categories).forEach(([cat, count]) => {
-      console.log(`   - ${cat}: ${count} articles`);
-    });
-    const featuredCount = helpArticlesData.filter((a) => a.featured).length;
-    console.log(`
-\u2B50 Featured articles: ${featuredCount}`);
-  } catch (error) {
-    console.error("\u274C Error seeding help articles:", error);
-    throw error;
-  }
-}
-var helpArticlesData;
-var init_seed_help_articles = __esm({
-  "scripts/seed-help-articles.ts"() {
-    "use strict";
-    init_db();
-    init_schema();
-    helpArticlesData = [
-      {
-        title: "Como Come\xE7ar no DTTools",
-        slug: "como-comecar-dttools",
-        content: `# Como Come\xE7ar no DTTools
-
-Bem-vindo ao DTTools! Este guia vai te ajudar a dar os primeiros passos na plataforma.
-
-## Criando sua Conta
-
-1. Clique em "Entrar" no canto superior direito
-2. Use suas credenciais ou crie uma nova conta
-3. Complete seu perfil com foto e informa\xE7\xF5es
-
-## Criando seu Primeiro Projeto
-
-1. V\xE1 para "Projetos" no menu principal
-2. Clique em "+ Novo Projeto"
-3. D\xEA um nome significativo ao seu projeto
-4. Escolha a fase inicial (recomendamos come\xE7ar pela Fase 1: Empatizar)
-
-## Navegando pelas 5 Fases
-
-O DTTools segue as 5 fases do Design Thinking:
-
-- **Fase 1: Empatizar** - Entenda seu usu\xE1rio
-- **Fase 2: Definir** - Defina o problema
-- **Fase 3: Idear** - Gere ideias criativas
-- **Fase 4: Prototipar** - Crie prot\xF3tipos r\xE1pidos
-- **Fase 5: Testar** - Valide suas solu\xE7\xF5es
-
-Cada fase tem ferramentas espec\xEDficas para te ajudar!`,
-        category: "inicio-rapido",
-        subcategory: "Primeiros Passos",
-        phase: null,
-        tags: ["iniciante", "tutorial", "setup"],
-        featured: true,
-        viewCount: 0,
-        helpful: 0,
-        author: "DTTools Team"
-      },
-      {
-        title: "Estrutura de um Projeto",
-        slug: "estrutura-projeto",
-        content: `# Estrutura de um Projeto no DTTools
-
-## Organiza\xE7\xE3o
-
-Cada projeto no DTTools \xE9 organizado seguindo o processo de Design Thinking:
-
-### Fase 1: Empatizar
-- Mapas de Empatia
-- Personas
-- Entrevistas com usu\xE1rios
-- Observa\xE7\xF5es de campo
-
-### Fase 2: Definir
-- POV Statements
-- Defini\xE7\xE3o de problemas
-- How Might We questions
-
-### Fase 3: Idear
-- Brainstorming
-- Categoriza\xE7\xE3o de ideias
-- Prioriza\xE7\xE3o
-
-### Fase 4: Prototipar
-- Cria\xE7\xE3o de prot\xF3tipos
-- Documenta\xE7\xE3o visual
-- Itera\xE7\xF5es
-
-### Fase 5: Testar
-- Planos de teste
-- Coleta de feedback
-- An\xE1lise de resultados
-
-## Navega\xE7\xE3o entre Fases
-
-Voc\xEA pode navegar livremente entre as fases, mas recomendamos seguir a ordem natural do processo.`,
-        category: "inicio-rapido",
-        subcategory: "Conceitos B\xE1sicos",
-        phase: null,
-        tags: ["projeto", "organiza\xE7\xE3o", "fases"],
-        featured: true,
-        viewCount: 0,
-        helpful: 0,
-        author: "DTTools Team"
-      },
-      {
-        title: "Criando um Mapa de Empatia Efetivo",
-        slug: "mapa-empatia-efetivo",
-        content: `# Criando um Mapa de Empatia Efetivo
-
-O Mapa de Empatia \xE9 uma ferramenta poderosa para entender profundamente seus usu\xE1rios.
-
-## O que o usu\xE1rio DIZ?
-
-Capture cita\xE7\xF5es reais e coment\xE1rios diretos dos usu\xE1rios. Isso ajuda a entender suas necessidades expressas verbalmente.
-
-**Dicas:**
-- Use aspas para cita\xE7\xF5es diretas
-- Anote durante entrevistas ou pesquisas
-- Preste aten\xE7\xE3o em frases repetidas
-
-## O que o usu\xE1rio PENSA?
-
-Explore os pensamentos internos, preocupa\xE7\xF5es e aspira\xE7\xF5es que podem n\xE3o ser verbalizadas.
-
-**Dicas:**
-- Fa\xE7a perguntas abertas
-- Observe linguagem corporal
-- Identifique contradi\xE7\xF5es entre fala e pensamento
-
-## O que o usu\xE1rio FAZ?
-
-Documente a\xE7\xF5es, comportamentos e pr\xE1ticas observ\xE1veis.
-
-**Dicas:**
-- Observe no contexto real
-- Documente a rotina completa
-- Note desvios do comportamento esperado
-
-## O que o usu\xE1rio SENTE?
-
-Identifique emo\xE7\xF5es, medos, frustra\xE7\xF5es e alegrias.
-
-**Dicas:**
-- Pergunte sobre sentimentos
-- Observe express\xF5es emocionais
-- Identifique dores e ganhos`,
-        category: "fases",
-        subcategory: "Fase 1: Empatizar",
-        phase: 1,
-        tags: ["empatia", "mapa", "usu\xE1rio", "fase-1"],
-        featured: true,
-        viewCount: 0,
-        helpful: 0,
-        author: "DTTools Team"
-      },
-      {
-        title: "Desenvolvendo Personas Detalhadas",
-        slug: "personas-detalhadas",
-        content: `# Desenvolvendo Personas Detalhadas
-
-Personas s\xE3o representa\xE7\xF5es fict\xEDcias dos seus usu\xE1rios baseadas em dados reais.
-
-## Elementos de uma Persona Completa
-
-### 1. Informa\xE7\xF5es Demogr\xE1ficas
-- Nome e foto representativa
-- Idade, profiss\xE3o, localiza\xE7\xE3o
-- Contexto familiar e social
-
-### 2. Comportamentos e H\xE1bitos
-- Como usa tecnologia
-- Rotina di\xE1ria
-- Canais de comunica\xE7\xE3o preferidos
-
-### 3. Objetivos e Motiva\xE7\xF5es
-- O que quer alcan\xE7ar
-- Por que usa seu produto/servi\xE7o
-- Aspira\xE7\xF5es de longo prazo
-
-### 4. Frustra\xE7\xF5es e Dores
-- Problemas atuais
-- Barreiras que enfrenta
-- Medos e preocupa\xE7\xF5es
-
-### 5. Cita\xE7\xE3o Caracter\xEDstica
-Uma frase que resume a persona
-
-## Dicas para Criar Boas Personas
-
-1. **Base em dados reais** - Use informa\xE7\xF5es de pesquisas e entrevistas
-2. **Seja espec\xEDfico** - Evite generaliza\xE7\xF5es
-3. **Mantenha atualizado** - Revise periodicamente
-4. **Use com a equipe** - Compartilhe e discuta as personas`,
-        category: "fases",
-        subcategory: "Fase 1: Empatizar",
-        phase: 1,
-        tags: ["persona", "usu\xE1rio", "perfil", "fase-1"],
-        featured: true,
-        viewCount: 0,
-        helpful: 0,
-        author: "DTTools Team"
-      },
-      {
-        title: "Definindo Problemas com POV Statements",
-        slug: "pov-statements",
-        content: `# Definindo Problemas com POV Statements
-
-POV (Point of View) Statements ajudam a sintetizar insights da fase de empatia em uma declara\xE7\xE3o clara do problema.
-
-## Estrutura do POV Statement
-
-**[Usu\xE1rio] precisa [necessidade] porque [insight]**
-
-### Exemplo:
-"Maria, professora do ensino fundamental, precisa de uma forma r\xE1pida de criar atividades interativas porque tem pouco tempo entre as aulas e quer manter os alunos engajados."
-
-## Como Criar um Bom POV
-
-### 1. Identifique o Usu\xE1rio
-Seja espec\xEDfico sobre quem \xE9 o usu\xE1rio (use sua persona!)
-
-### 2. Defina a Necessidade
-O que o usu\xE1rio realmente precisa? (n\xE3o confunda com solu\xE7\xE3o)
-
-### 3. Articule o Insight
-Por que essa necessidade existe? Qual \xE9 o contexto?
-
-## Caracter\xEDsticas de um Bom POV
-
-- \u2705 Centrado no usu\xE1rio
-- \u2705 Espec\xEDfico e concreto
-- \u2705 Baseado em insights reais
-- \u2705 Inspirador para idea\xE7\xE3o
-- \u274C N\xE3o sugere uma solu\xE7\xE3o espec\xEDfica
-- \u274C N\xE3o \xE9 vago ou gen\xE9rico`,
-        category: "fases",
-        subcategory: "Fase 2: Definir",
-        phase: 2,
-        tags: ["pov", "problema", "defini\xE7\xE3o", "fase-2"],
-        featured: false,
-        viewCount: 0,
-        helpful: 0,
-        author: "DTTools Team"
-      },
-      {
-        title: "Como Fazer Brainstorming Efetivo",
-        slug: "brainstorming-efetivo",
-        content: `# Como Fazer Brainstorming Efetivo
-
-O brainstorming \xE9 a t\xE9cnica central da fase de Idea\xE7\xE3o. Aqui est\xE3o as melhores pr\xE1ticas.
-
-## Regras de Ouro do Brainstorming
-
-### 1. Quantidade sobre Qualidade
-Gere o m\xE1ximo de ideias poss\xEDvel. N\xE3o se preocupe com viabilidade neste momento.
-
-### 2. Suspenda o Julgamento
-Nenhuma ideia \xE9 ruim. Cr\xEDticas matam a criatividade.
-
-### 3. Encoraje Ideias Malucas
-As melhores solu\xE7\xF5es muitas vezes v\xEAm de ideias aparentemente absurdas.
-
-### 4. Construa sobre as Ideias dos Outros
-Use "sim, e..." em vez de "mas..."
-
-## T\xE9cnicas de Brainstorming
-
-### Brainwriting
-Cada pessoa escreve ideias silenciosamente por 5 minutos, depois compartilha.
-
-### SCAMPER
-- **S**ubstituir
-- **C**ombinar
-- **A**daptar
-- **M**odificar
-- **P**ropor outros usos
-- **E**liminar
-- **R**everter
-
-### Worst Possible Idea
-Pense nas piores solu\xE7\xF5es poss\xEDveis, depois inverta-as.
-
-## Dicas no DTTools
-
-Use a ferramenta de Brainstorming para:
-- Adicionar ideias rapidamente
-- Categorizar depois
-- Votar nas melhores
-- Exportar para documenta\xE7\xE3o`,
-        category: "fases",
-        subcategory: "Fase 3: Idear",
-        phase: 3,
-        tags: ["brainstorming", "idea\xE7\xE3o", "criatividade", "fase-3"],
-        featured: true,
-        viewCount: 0,
-        helpful: 0,
-        author: "DTTools Team"
-      },
-      {
-        title: "Tipos de Prot\xF3tipos e Quando Usar",
-        slug: "tipos-prototipos",
-        content: `# Tipos de Prot\xF3tipos e Quando Usar
-
-Na fase de Prototipagem, voc\xEA pode criar diferentes tipos de prot\xF3tipos dependendo do objetivo.
-
-## Prot\xF3tipos de Baixa Fidelidade
-
-### Paper Prototypes (Sketches)
-- **Quando usar**: In\xEDcio da prototipagem, testes r\xE1pidos
-- **Vantagens**: R\xE1pido, barato, f\xE1cil de modificar
-- **Desvantagens**: Limitado em interatividade
-
-### Wireframes
-- **Quando usar**: Definir estrutura e fluxo
-- **Vantagens**: Foco em funcionalidade, n\xE3o em est\xE9tica
-- **Desvantagens**: Pode parecer abstrato para usu\xE1rios
-
-## Prot\xF3tipos de M\xE9dia Fidelidade
-
-### Mockups Digitais
-- **Quando usar**: Validar design visual
-- **Vantagens**: Realista, mostra branding
-- **Desvantagens**: Mais tempo para criar
-
-### Prot\xF3tipos Clic\xE1veis
-- **Quando usar**: Testar fluxos de navega\xE7\xE3o
-- **Vantagens**: Interativo, simula experi\xEAncia real
-- **Desvantagens**: Requer ferramentas espec\xEDficas
-
-## Prot\xF3tipos de Alta Fidelidade
-
-### Prot\xF3tipos Funcionais
-- **Quando usar**: Valida\xE7\xE3o final antes do desenvolvimento
-- **Vantagens**: Muito realista, testa funcionalidades
-- **Desvantagens**: Demorado, caro
-
-## Dica: Comece Simples
-
-Sempre comece com prot\xF3tipos de baixa fidelidade. Voc\xEA aprende mais r\xE1pido e gasta menos recursos!`,
-        category: "fases",
-        subcategory: "Fase 4: Prototipar",
-        phase: 4,
-        tags: ["prot\xF3tipo", "design", "wireframe", "fase-4"],
-        featured: false,
-        viewCount: 0,
-        helpful: 0,
-        author: "DTTools Team"
-      },
-      {
-        title: "Colaborando em Equipe no DTTools",
-        slug: "colaboracao-equipe",
-        content: `# Colaborando em Equipe no DTTools
-
-O Design Thinking \xE9 um processo colaborativo. Aqui est\xE1 como trabalhar efetivamente em equipe.
-
-## Compartilhando Projetos
-
-### Como Adicionar Membros
-1. Abra seu projeto
-2. Clique em "Compartilhar" ou \xEDcone de pessoas
-3. Adicione membros por email
-4. Defina permiss\xF5es (visualizar/editar/administrar)
-
-## Boas Pr\xE1ticas de Colabora\xE7\xE3o
-
-### Comunica\xE7\xE3o Clara
-- Use coment\xE1rios em cada ferramenta
-- Documente decis\xF5es importantes
-- Mantenha todos atualizados
-
-### Divis\xE3o de Trabalho
-- Atribua responsabilidades claras
-- Use tags para organizar
-- Defina prazos realistas
-
-### Sess\xF5es Colaborativas
-- Fa\xE7a workshops de Design Thinking juntos
-- Use o modo de brainstorming em grupo
-- Revise e vote em ideias coletivamente
-
-## Resolu\xE7\xE3o de Conflitos
-
-### Quando Opini\xF5es Divergem
-1. Ou\xE7a todas as perspectivas
-2. Volte aos insights dos usu\xE1rios
-3. Teste ambas as op\xE7\xF5es se poss\xEDvel
-4. Use dados para decidir
-
-## Exporta\xE7\xE3o e Apresenta\xE7\xE3o
-
-Use as ferramentas de exporta\xE7\xE3o para:
-- Criar apresenta\xE7\xF5es em PowerPoint
-- Gerar relat\xF3rios em PDF
-- Compartilhar em Markdown para documenta\xE7\xE3o`,
-        category: "colaboracao",
-        subcategory: "Trabalho em Equipe",
-        phase: null,
-        tags: ["colabora\xE7\xE3o", "equipe", "compartilhamento"],
-        featured: false,
-        viewCount: 0,
-        helpful: 0,
-        author: "DTTools Team"
-      },
-      {
-        title: "Como Exportar seus Projetos",
-        slug: "exportar-projetos",
-        content: `# Como Exportar seus Projetos
-
-O DTTools oferece m\xFAltiplos formatos de exporta\xE7\xE3o para diferentes necessidades.
-
-## Formatos Dispon\xEDveis
-
-### PowerPoint (.pptx)
-**Ideal para**: Apresenta\xE7\xF5es executivas, pitches, workshops
-
-**Inclui**:
-- Slides formatados profissionalmente
-- Gr\xE1ficos e visualiza\xE7\xF5es
-- Conte\xFAdo de todas as fases
-- Imagens de prot\xF3tipos
-
-**Como exportar**:
-1. Abra o projeto
-2. Clique em "Exportar"
-3. Selecione "PowerPoint"
-4. Aguarde o download
-
-### PDF (.pdf)
-**Ideal para**: Documenta\xE7\xE3o, relat\xF3rios, arquivamento
-
-**Inclui**:
-- Formato n\xE3o edit\xE1vel
-- Layout profissional
-- Todas as informa\xE7\xF5es do projeto
-- F\xE1cil compartilhamento
-
-### Markdown (.md)
-**Ideal para**: Documenta\xE7\xE3o t\xE9cnica, wikis, GitHub
-
-**Inclui**:
-- Texto estruturado
-- F\xE1cil versionamento
-- Compat\xEDvel com ferramentas de desenvolvimento
-
-### CSV (.csv)
-**Ideal para**: An\xE1lise de dados, importa\xE7\xE3o em outras ferramentas
-
-**Inclui**:
-- Dados tabulares
-- Ideias, testes, feedback
-- Compat\xEDvel com Excel e Google Sheets
-
-## Dicas de Exporta\xE7\xE3o
-
-- Revise seu projeto antes de exportar
-- Escolha o formato adequado ao p\xFAblico
-- Personalize ap\xF3s exportar se necess\xE1rio
-- Mantenha backups dos arquivos exportados`,
-        category: "exportacao",
-        subcategory: "Formatos e Usos",
-        phase: null,
-        tags: ["exporta\xE7\xE3o", "pdf", "pptx", "relat\xF3rios"],
-        featured: false,
-        viewCount: 0,
-        helpful: 0,
-        author: "DTTools Team"
-      }
-    ];
-    if (import.meta.url === `file://${process.argv[1]}`) {
-      seedHelpArticles().then(() => {
-        console.log("\n\u2728 Seed completed successfully!");
-        process.exit(0);
-      }).catch((error) => {
-        console.error("\n\u{1F4A5} Seed failed:", error);
-        process.exit(1);
-      });
-    }
-  }
-});
-
 // server/index.ts
 import express2 from "express";
 import session from "express-session";
@@ -1622,10 +281,835 @@ import sharp from "sharp";
 import path from "path";
 import fs from "fs";
 
+// shared/schema.ts
+var schema_exports = {};
+__export(schema_exports, {
+  articles: () => articles,
+  benchmarkAssessments: () => benchmarkAssessments,
+  benchmarks: () => benchmarks,
+  canvasDrawings: () => canvasDrawings,
+  competitiveAnalysis: () => competitiveAnalysis,
+  dvfAssessments: () => dvfAssessments,
+  empathyMaps: () => empathyMaps,
+  helpArticles: () => helpArticles,
+  hmwQuestions: () => hmwQuestions,
+  ideas: () => ideas,
+  insertArticleSchema: () => insertArticleSchema,
+  insertBenchmarkAssessmentSchema: () => insertBenchmarkAssessmentSchema,
+  insertBenchmarkSchema: () => insertBenchmarkSchema,
+  insertCanvasDrawingSchema: () => insertCanvasDrawingSchema,
+  insertCompetitiveAnalysisSchema: () => insertCompetitiveAnalysisSchema,
+  insertDvfAssessmentSchema: () => insertDvfAssessmentSchema,
+  insertEmpathyMapSchema: () => insertEmpathyMapSchema,
+  insertHelpArticleSchema: () => insertHelpArticleSchema,
+  insertHmwQuestionSchema: () => insertHmwQuestionSchema,
+  insertIdeaSchema: () => insertIdeaSchema,
+  insertInterviewSchema: () => insertInterviewSchema,
+  insertLovabilityMetricSchema: () => insertLovabilityMetricSchema,
+  insertObservationSchema: () => insertObservationSchema,
+  insertPersonaSchema: () => insertPersonaSchema,
+  insertPhaseCardSchema: () => insertPhaseCardSchema,
+  insertPovStatementSchema: () => insertPovStatementSchema,
+  insertProjectAnalyticsSchema: () => insertProjectAnalyticsSchema,
+  insertProjectBackupSchema: () => insertProjectBackupSchema,
+  insertProjectSchema: () => insertProjectSchema,
+  insertPrototypeSchema: () => insertPrototypeSchema,
+  insertSubscriptionPlanSchema: () => insertSubscriptionPlanSchema,
+  insertTestPlanSchema: () => insertTestPlanSchema,
+  insertTestResultSchema: () => insertTestResultSchema,
+  insertUserProgressSchema: () => insertUserProgressSchema,
+  insertUserSchema: () => insertUserSchema,
+  insertUserSubscriptionSchema: () => insertUserSubscriptionSchema,
+  interviews: () => interviews,
+  lovabilityMetrics: () => lovabilityMetrics,
+  observations: () => observations,
+  personas: () => personas,
+  phaseCards: () => phaseCards,
+  povStatements: () => povStatements,
+  projectAnalytics: () => projectAnalytics,
+  projectBackups: () => projectBackups,
+  projects: () => projects,
+  prototypes: () => prototypes,
+  subscriptionPlans: () => subscriptionPlans,
+  testPlans: () => testPlans,
+  testResults: () => testResults,
+  updateProfileSchema: () => updateProfileSchema,
+  userProgress: () => userProgress,
+  userSubscriptions: () => userSubscriptions,
+  users: () => users
+});
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, integer, real, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+var projects = pgTable("projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("in_progress"),
+  // in_progress, completed
+  currentPhase: integer("current_phase").default(1),
+  // 1-5 phases
+  completionRate: real("completion_rate").default(0),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var empathyMaps = pgTable("empathy_maps", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  title: text("title").notNull(),
+  says: jsonb("says").default([]),
+  // Array of strings
+  thinks: jsonb("thinks").default([]),
+  does: jsonb("does").default([]),
+  feels: jsonb("feels").default([]),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var personas = pgTable("personas", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  name: text("name").notNull(),
+  age: integer("age"),
+  occupation: text("occupation"),
+  bio: text("bio"),
+  goals: jsonb("goals").default([]),
+  frustrations: jsonb("frustrations").default([]),
+  motivations: jsonb("motivations").default([]),
+  techSavviness: text("tech_savviness"),
+  // low, medium, high
+  avatar: text("avatar"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var interviews = pgTable("interviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  participantName: text("participant_name").notNull(),
+  date: timestamp("date").notNull(),
+  duration: integer("duration"),
+  // minutes
+  questions: jsonb("questions").default([]),
+  responses: jsonb("responses").default([]),
+  insights: text("insights"),
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var observations = pgTable("observations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  location: text("location").notNull(),
+  context: text("context").notNull(),
+  behavior: text("behavior").notNull(),
+  insights: text("insights"),
+  date: timestamp("date").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var povStatements = pgTable("pov_statements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  user: text("user").notNull(),
+  // user description
+  need: text("need").notNull(),
+  // user need
+  insight: text("insight").notNull(),
+  // surprising insight
+  statement: text("statement").notNull(),
+  // complete POV statement
+  priority: text("priority").default("medium"),
+  // low, medium, high
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var hmwQuestions = pgTable("hmw_questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  question: text("question").notNull(),
+  context: text("context"),
+  challenge: text("challenge"),
+  scope: text("scope").default("product"),
+  // feature, product, service, experience, process
+  priority: text("priority").default("medium"),
+  // low, medium, high
+  category: text("category"),
+  // categorization
+  votes: integer("votes").default(0),
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var ideas = pgTable("ideas", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category"),
+  // Legacy fields (kept for compatibility)
+  feasibility: integer("feasibility"),
+  // 1-5 scale - now maps to DVF Feasibility/Exequibilidade
+  impact: integer("impact"),
+  // 1-5 scale
+  votes: integer("votes").default(0),
+  // DVF (Desejabilidade, Viabilidade, Exequibilidade) System
+  desirability: integer("desirability"),
+  // 1-5 scale - user need satisfaction
+  viability: integer("viability"),
+  // 1-5 scale - business/profit potential  
+  // feasibility already exists above - technical implementability
+  confidenceLevel: integer("confidence_level"),
+  // 1-5 scale - overall confidence
+  dvfScore: real("dvf_score"),
+  // Calculated: (desirability + viability + feasibility) / 3
+  dvfAnalysis: text("dvf_analysis"),
+  // Detailed justification for scores
+  actionDecision: text("action_decision").default("evaluate"),
+  // love_it, leave_it, change_it, evaluate
+  // Priority and iteration fields
+  priorityRank: integer("priority_rank"),
+  // 1-n ranking based on DVF analysis
+  iterationNotes: text("iteration_notes"),
+  // Notes for "change_it" decisions
+  status: text("status").default("idea"),
+  // idea, selected, prototype, tested
+  canvasData: jsonb("canvas_data"),
+  // Fabric.js canvas data for drawings/sketches
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var prototypes = pgTable("prototypes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  ideaId: varchar("idea_id").references(() => ideas.id),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  // paper, digital, physical, storyboard, canvas
+  description: text("description").notNull(),
+  materials: jsonb("materials").default([]),
+  images: jsonb("images").default([]),
+  canvasData: jsonb("canvas_data"),
+  // Konva.js canvas data for interactive prototypes
+  version: integer("version").default(1),
+  feedback: text("feedback"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var canvasDrawings = pgTable("canvas_drawings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  phase: integer("phase").notNull(),
+  // 1-5 phases where this drawing is used
+  canvasType: text("canvas_type").notNull(),
+  // fabric, konva
+  canvasData: jsonb("canvas_data").notNull(),
+  // Canvas library data (Fabric.js or Konva.js)
+  thumbnailData: text("thumbnail_data"),
+  // Base64 encoded thumbnail for preview
+  tags: jsonb("tags").default([]),
+  // Tags for categorization
+  isTemplate: boolean("is_template").default(false),
+  // Can be used as a template
+  parentId: varchar("parent_id"),
+  // For drawing iterations - will be set to reference same table later
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var testPlans = pgTable("test_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  prototypeId: varchar("prototype_id").references(() => prototypes.id),
+  name: text("name").notNull(),
+  objective: text("objective").notNull(),
+  methodology: text("methodology").notNull(),
+  participants: integer("participants").notNull(),
+  duration: integer("duration"),
+  // minutes
+  tasks: jsonb("tasks").default([]),
+  metrics: jsonb("metrics").default([]),
+  status: text("status").default("planned"),
+  // planned, running, completed
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var testResults = pgTable("test_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  testPlanId: varchar("test_plan_id").references(() => testPlans.id).notNull(),
+  participantId: text("participant_id").notNull(),
+  taskResults: jsonb("task_results").default([]),
+  feedback: text("feedback"),
+  successRate: real("success_rate"),
+  completionTime: integer("completion_time"),
+  // minutes
+  insights: text("insights"),
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var userProgress = pgTable("user_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  phase: integer("phase").notNull(),
+  // 1-5
+  completedTools: jsonb("completed_tools").default([]),
+  badges: jsonb("badges").default([]),
+  points: integer("points").default(0),
+  timeSpent: integer("time_spent").default(0),
+  // minutes
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  password: text("password").notNull(),
+  // hashed password
+  role: text("role").notNull().default("user"),
+  // admin, user
+  company: text("company"),
+  jobRole: text("job_role"),
+  industry: text("industry"),
+  experience: text("experience"),
+  country: text("country"),
+  state: text("state"),
+  city: text("city"),
+  zipCode: text("zip_code"),
+  phone: text("phone"),
+  bio: text("bio"),
+  profilePicture: text("profile_picture"),
+  interests: jsonb("interests").default([]),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionPlanId: varchar("subscription_plan_id"),
+  subscriptionStatus: text("subscription_status").default("active"),
+  // active, canceled, expired, trialing
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var subscriptionPlans = pgTable("subscription_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  priceMonthly: integer("price_monthly").notNull(),
+  // in cents
+  priceYearly: integer("price_yearly").notNull(),
+  // in cents
+  stripePriceIdMonthly: text("stripe_price_id_monthly"),
+  stripePriceIdYearly: text("stripe_price_id_yearly"),
+  maxProjects: integer("max_projects"),
+  // null for unlimited
+  maxPersonasPerProject: integer("max_personas_per_project"),
+  // null for unlimited
+  maxUsersPerTeam: integer("max_users_per_team"),
+  // null for unlimited
+  aiChatLimit: integer("ai_chat_limit"),
+  // null for unlimited
+  libraryArticlesCount: integer("library_articles_count"),
+  // null for all articles
+  features: jsonb("features").default([]),
+  // Array of feature strings
+  exportFormats: jsonb("export_formats").default([]),
+  // Array of export formats (pdf, png, csv)
+  hasCollaboration: boolean("has_collaboration").default(false),
+  hasPermissionManagement: boolean("has_permission_management").default(false),
+  hasSharedWorkspace: boolean("has_shared_workspace").default(false),
+  hasCommentsAndFeedback: boolean("has_comments_and_feedback").default(false),
+  hasSso: boolean("has_sso").default(false),
+  hasCustomApi: boolean("has_custom_api").default(false),
+  hasCustomIntegrations: boolean("has_custom_integrations").default(false),
+  has24x7Support: boolean("has_24x7_support").default(false),
+  order: integer("order").default(0),
+  // for display ordering
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var userSubscriptions = pgTable("user_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  planId: varchar("plan_id").references(() => subscriptionPlans.id).notNull(),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  status: text("status").notNull(),
+  // active, canceled, expired, trialing, incomplete
+  billingPeriod: text("billing_period").notNull(),
+  // monthly, yearly
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var articles = pgTable("articles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull(),
+  // empathize, define, ideate, prototype, test
+  author: text("author").notNull(),
+  description: text("description"),
+  tags: jsonb("tags").default([]),
+  // Array of tags
+  published: boolean("published").default(true),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertEmpathyMapSchema = createInsertSchema(empathyMaps).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertPersonaSchema = createInsertSchema(personas).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertInterviewSchema = createInsertSchema(interviews, {
+  questions: z.array(z.string()).optional(),
+  responses: z.array(z.string()).optional()
+}).omit({
+  id: true,
+  createdAt: true
+});
+var insertObservationSchema = createInsertSchema(observations).omit({
+  id: true,
+  createdAt: true
+});
+var insertPovStatementSchema = createInsertSchema(povStatements).omit({
+  id: true,
+  createdAt: true
+});
+var insertHmwQuestionSchema = createInsertSchema(hmwQuestions).omit({
+  id: true,
+  createdAt: true
+});
+var insertIdeaSchema = createInsertSchema(ideas).omit({
+  id: true,
+  createdAt: true
+});
+var insertPrototypeSchema = createInsertSchema(prototypes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertTestPlanSchema = createInsertSchema(testPlans).omit({
+  id: true,
+  createdAt: true
+});
+var insertTestResultSchema = createInsertSchema(testResults).omit({
+  id: true,
+  createdAt: true
+});
+var insertUserProgressSchema = createInsertSchema(userProgress).omit({
+  id: true,
+  updatedAt: true
+});
+var insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true
+});
+var insertArticleSchema = createInsertSchema(articles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
+  id: true,
+  createdAt: true
+});
+var insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertCanvasDrawingSchema = createInsertSchema(canvasDrawings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var updateProfileSchema = createInsertSchema(users).omit({
+  id: true,
+  username: true,
+  password: true,
+  role: true,
+  stripeCustomerId: true,
+  stripeSubscriptionId: true,
+  subscriptionPlanId: true,
+  subscriptionStatus: true,
+  subscriptionEndDate: true,
+  createdAt: true
+}).partial();
+var phaseCards = pgTable("phase_cards", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  phase: integer("phase").notNull().default(1),
+  // 1-5 phases (Empatizar, Definir, Idear, Prototipar, Testar)
+  status: text("status").default("todo"),
+  // todo, in_progress, done
+  priority: text("priority").default("medium"),
+  // low, medium, high
+  assignee: text("assignee"),
+  // Optional assignee
+  tags: jsonb("tags").default([]),
+  // Array of tags for categorization
+  dueDate: timestamp("due_date"),
+  position: integer("position").default(0),
+  // Order within the phase column
+  color: text("color").default("blue"),
+  // Card color for visual organization
+  attachments: jsonb("attachments").default([]),
+  // File attachments metadata
+  comments: jsonb("comments").default([]),
+  // Comments/notes
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var benchmarks = pgTable("benchmarks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  industry: text("industry").notNull(),
+  // tech, healthcare, finance, retail, etc.
+  companySize: text("company_size").notNull(),
+  // startup, small, medium, large, enterprise
+  maturityScores: jsonb("maturity_scores").default({}),
+  // { empathize: 4, define: 3, ideate: 5, prototype: 2, test: 3 }
+  benchmarkType: text("benchmark_type").notNull().default("industry"),
+  // industry, internal, custom
+  targetScores: jsonb("target_scores").default({}),
+  // Goals for each phase
+  improvementAreas: jsonb("improvement_areas").default([]),
+  // Array of focus areas
+  recommendations: jsonb("recommendations").default([]),
+  // AI-generated suggestions
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var benchmarkAssessments = pgTable("benchmark_assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  benchmarkId: varchar("benchmark_id").references(() => benchmarks.id).notNull(),
+  phase: integer("phase").notNull(),
+  // 1-5 for DT phases
+  criteria: text("criteria").notNull(),
+  // What is being assessed
+  currentScore: real("current_score").notNull(),
+  // 1-5 rating
+  targetScore: real("target_score").notNull(),
+  // Goal score
+  industryAverage: real("industry_average"),
+  // Benchmark comparison
+  evidence: text("evidence"),
+  // Supporting evidence for the score
+  improvementPlan: text("improvement_plan"),
+  // How to improve
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var insertBenchmarkSchema = createInsertSchema(benchmarks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertBenchmarkAssessmentSchema = createInsertSchema(benchmarkAssessments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertPhaseCardSchema = createInsertSchema(phaseCards).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var dvfAssessments = pgTable("dvf_assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  itemType: text("item_type").notNull(),
+  // idea, prototype, solution, etc.
+  itemId: varchar("item_id").notNull(),
+  // Reference to the evaluated item
+  itemName: text("item_name").notNull(),
+  // Desirability - User desirability
+  desirabilityScore: real("desirability_score").notNull().default(0),
+  // 1-5 scale
+  desirabilityEvidence: text("desirability_evidence"),
+  // Supporting evidence
+  userFeedback: text("user_feedback"),
+  // Direct user feedback
+  marketDemand: real("market_demand").default(0),
+  // Market demand indicator
+  // Feasibility - Technical feasibility  
+  feasibilityScore: real("feasibility_score").notNull().default(0),
+  // 1-5 scale
+  feasibilityEvidence: text("feasibility_evidence"),
+  technicalComplexity: text("technical_complexity"),
+  // low, medium, high
+  resourceRequirements: jsonb("resource_requirements").default([]),
+  // Required resources
+  timeToImplement: integer("time_to_implement"),
+  // Estimated time in days
+  // Viability - Economic viability
+  viabilityScore: real("viability_score").notNull().default(0),
+  // 1-5 scale  
+  viabilityEvidence: text("viability_evidence"),
+  businessModel: text("business_model"),
+  // How it generates value
+  costEstimate: real("cost_estimate"),
+  // Implementation cost
+  revenueProjection: real("revenue_projection"),
+  // Expected revenue
+  // Overall DVF analysis
+  overallScore: real("overall_score").default(0),
+  // Average of the three pillars
+  recommendation: text("recommendation"),
+  // proceed, modify, stop
+  nextSteps: jsonb("next_steps").default([]),
+  // Recommended actions
+  risksIdentified: jsonb("risks_identified").default([]),
+  // Potential risks
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var lovabilityMetrics = pgTable("lovability_metrics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  itemType: text("item_type").notNull(),
+  // idea, prototype, solution
+  itemId: varchar("item_id").notNull(),
+  // Reference to the item being evaluated
+  itemName: text("item_name").notNull(),
+  // Core Metrics
+  npsScore: real("nps_score").default(0),
+  // -100 to 100
+  satisfactionScore: real("satisfaction_score").default(0),
+  // 0-10
+  retentionRate: real("retention_rate").default(0),
+  // 0-100%
+  engagementTime: real("engagement_time").default(0),
+  // minutes
+  // Emotional Distribution
+  emotionalDistribution: jsonb("emotional_distribution").default({}),
+  // delight, satisfaction, neutral, frustration percentages
+  // Feedback Analysis
+  positiveComments: jsonb("positive_comments").default([]),
+  negativeComments: jsonb("negative_comments").default([]),
+  improvementSuggestions: jsonb("improvement_suggestions").default([]),
+  // User Behavior
+  userTestingSessions: integer("user_testing_sessions").default(0),
+  completionRate: real("completion_rate").default(0),
+  // 0-100%
+  errorRate: real("error_rate").default(0),
+  // 0-100%
+  supportTickets: integer("support_tickets").default(0),
+  // Qualitative Insights
+  emotionalStory: text("emotional_story"),
+  userPersonas: jsonb("user_personas").default([]),
+  keyMoments: jsonb("key_moments").default([]),
+  painPoints: jsonb("pain_points").default([]),
+  // Overall Assessment
+  lovabilityScore: real("lovability_score").default(0),
+  // 0-10 calculated score
+  recommendations: jsonb("recommendations").default([]),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var projectAnalytics = pgTable("project_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  // Usage metrics
+  totalTimeSpent: integer("total_time_spent").default(0),
+  // minutes
+  timePerPhase: jsonb("time_per_phase").default({}),
+  // { phase1: 120, phase2: 90, ... }
+  toolsUsed: jsonb("tools_used").default([]),
+  // List of tools/features used
+  toolUsageCount: jsonb("tool_usage_count").default({}),
+  // Usage frequency per tool
+  // Progress metrics
+  completionRate: real("completion_rate").default(0),
+  // 0-100%
+  phasesCompleted: jsonb("phases_completed").default([]),
+  // Which phases are done
+  stageProgressions: integer("stage_progressions").default(0),
+  // Times moved between phases
+  iterationsCount: integer("iterations_count").default(0),
+  // Number of iterations
+  // Success indicators
+  prototypesCreated: integer("prototypes_created").default(0),
+  testsCompleted: integer("tests_completed").default(0),
+  userFeedbackCollected: integer("user_feedback_collected").default(0),
+  ideasGenerated: integer("ideas_generated").default(0),
+  ideasImplemented: integer("ideas_implemented").default(0),
+  // Team collaboration metrics
+  teamSize: integer("team_size").default(1),
+  collaborationEvents: integer("collaboration_events").default(0),
+  meetingsHeld: integer("meetings_held").default(0),
+  decisionsMade: integer("decisions_made").default(0),
+  // Innovation metrics
+  originalityScore: real("originality_score").default(0),
+  // 1-10
+  feasibilityScore: real("feasibility_score").default(0),
+  // 1-10
+  impactPotential: real("impact_potential").default(0),
+  // 1-10
+  marketFit: real("market_fit").default(0),
+  // 1-10
+  // Success metrics
+  overallSuccess: real("overall_success").default(0),
+  // 0-100%
+  userSatisfaction: real("user_satisfaction").default(0),
+  // 0-10
+  goalAchievement: real("goal_achievement").default(0),
+  // 0-100%
+  innovationLevel: real("innovation_level").default(0),
+  // 1-5
+  // Key insights
+  topPerformingTools: jsonb("top_performing_tools").default([]),
+  timeBottlenecks: jsonb("time_bottlenecks").default([]),
+  successFactors: jsonb("success_factors").default([]),
+  improvementAreas: jsonb("improvement_areas").default([]),
+  lastUpdated: timestamp("last_updated").default(sql`now()`),
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var competitiveAnalysis = pgTable("competitive_analysis", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  // Competitor info
+  competitorName: text("competitor_name").notNull(),
+  // Miro, Figma, Notion, etc.
+  competitorType: text("competitor_type").notNull(),
+  // direct, indirect, substitute
+  marketPosition: text("market_position"),
+  // leader, challenger, niche
+  // Feature comparison
+  features: jsonb("features").default({}),
+  // Feature matrix comparison
+  functionalGaps: jsonb("functional_gaps").default([]),
+  // What they lack
+  functionalOverages: jsonb("functional_overages").default([]),
+  // What they overdo
+  // Pricing comparison
+  pricingModel: text("pricing_model"),
+  // freemium, subscription, one-time
+  pricePoints: jsonb("price_points").default([]),
+  // Their pricing tiers
+  valueProposition: text("value_proposition"),
+  // Their main value prop
+  // Market gaps
+  underservedOutcomes: jsonb("underserved_outcomes").default([]),
+  // Market gaps
+  overservedOutcomes: jsonb("overserved_outcomes").default([]),
+  // Overcomplicated areas
+  // Our positioning
+  ourAdvantages: jsonb("our_advantages").default([]),
+  // Where we're better
+  ourDisadvantages: jsonb("our_disadvantages").default([]),
+  // Where we lack
+  recommendations: jsonb("recommendations").default([]),
+  // Strategic recommendations
+  analysisDate: timestamp("analysis_date").default(sql`now()`),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var projectBackups = pgTable("project_backups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  // Backup metadata
+  backupType: text("backup_type").notNull(),
+  // auto, manual
+  description: text("description"),
+  // Project snapshot at backup time
+  projectSnapshot: jsonb("project_snapshot").notNull(),
+  // Complete project data
+  // Statistics at backup time
+  phaseSnapshot: integer("phase_snapshot"),
+  // Current phase at backup
+  completionSnapshot: real("completion_snapshot"),
+  // Completion rate at backup
+  itemCount: integer("item_count"),
+  // Total items in backup
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+var helpArticles = pgTable("help_articles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  // URL-friendly identifier
+  content: text("content").notNull(),
+  // Markdown content
+  category: text("category").notNull(),
+  // inicio-rapido, fases, exportacao, etc
+  subcategory: text("subcategory"),
+  // Optional subcategory
+  phase: integer("phase"),
+  // 1-5 if related to specific DT phase
+  tags: jsonb("tags").default([]),
+  // Array of searchable tags
+  searchKeywords: jsonb("search_keywords").default([]),
+  // Keywords for search
+  featured: boolean("featured").default(false),
+  // Show in main help
+  author: text("author").notNull().default("DTTools Team"),
+  // Article author
+  viewCount: integer("view_count").default(0),
+  helpful: integer("helpful").default(0),
+  // Helpful votes
+  order: integer("order").default(0),
+  // Display order within category
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`)
+});
+var insertDvfAssessmentSchema = createInsertSchema(dvfAssessments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertLovabilityMetricSchema = createInsertSchema(lovabilityMetrics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+var insertProjectAnalyticsSchema = createInsertSchema(projectAnalytics).omit({
+  id: true,
+  createdAt: true,
+  lastUpdated: true
+});
+var insertCompetitiveAnalysisSchema = createInsertSchema(competitiveAnalysis).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  analysisDate: true
+});
+var insertProjectBackupSchema = createInsertSchema(projectBackups).omit({
+  id: true,
+  createdAt: true
+});
+var insertHelpArticleSchema = createInsertSchema(helpArticles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  viewCount: true,
+  helpful: true
+});
+
 // server/storage.ts
-init_schema();
-init_db();
 import bcrypt from "bcrypt";
+
+// server/db.ts
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?"
+  );
+}
+var pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+});
+var db = drizzle(pool, { schema: schema_exports });
+
+// server/storage.ts
 import { eq, and, desc } from "drizzle-orm";
 var DatabaseStorage = class {
   // Projects
@@ -2354,7 +1838,6 @@ async function initializeDefaultData() {
 }
 
 // server/routes.ts
-init_schema();
 import bcrypt2 from "bcrypt";
 import Stripe from "stripe";
 
@@ -6309,7 +5792,7 @@ async function registerRoutes(app2) {
   });
   app2.post("/api/help/seed", requireAdmin, async (req, res) => {
     try {
-      const { seedHelpArticles: seedHelpArticles2, helpArticlesData: helpArticlesData2 } = await Promise.resolve().then(() => (init_seed_help_articles(), seed_help_articles_exports));
+      const { seedHelpArticles, helpArticlesData } = await import("../scripts/seed-help-articles");
       const existingArticles = await storage.getHelpArticles();
       if (existingArticles.length > 0) {
         return res.status(400).json({
@@ -6318,7 +5801,7 @@ async function registerRoutes(app2) {
           message: "Delete existing articles before seeding"
         });
       }
-      for (const articleData of helpArticlesData2) {
+      for (const articleData of helpArticlesData) {
         await storage.createHelpArticle(articleData);
       }
       const seededArticles = await storage.getHelpArticles();
@@ -6369,7 +5852,7 @@ var vite_config_default = defineConfig({
   },
   root: path2.resolve(import.meta.dirname, "client"),
   build: {
-    outDir: path2.resolve(import.meta.dirname, "dist/public"),
+    outDir: path2.resolve(import.meta.dirname, "client/dist"),
     emptyOutDir: true
   },
   server: {
