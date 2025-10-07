@@ -13,6 +13,12 @@
   to = "/.netlify/functions/api/:splat"
   status = 200
 
+# Servir clear-cache.html como arquivo estático (não redirecionar para SPA)
+[[redirects]]
+  from = "/clear-cache.html"
+  to = "/clear-cache.html"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
