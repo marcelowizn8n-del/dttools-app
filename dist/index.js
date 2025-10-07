@@ -5790,29 +5790,12 @@ async function registerRoutes(app2) {
       res.status(500).json({ error: "Failed to delete help article" });
     }
   });
-  app2.post("/api/help/seed", requireAdmin, async (req, res) => {
-    try {
-      const { seedHelpArticles, helpArticlesData } = await import("../scripts/seed-help-articles");
-      const existingArticles = await storage.getHelpArticles();
-      if (existingArticles.length > 0) {
-        return res.status(400).json({
-          error: "Articles already exist",
-          count: existingArticles.length,
-          message: "Delete existing articles before seeding"
-        });
-      }
-      for (const articleData of helpArticlesData) {
-        await storage.createHelpArticle(articleData);
-      }
-      const seededArticles = await storage.getHelpArticles();
-      res.json({
-        success: true,
-        count: seededArticles.length,
-        message: `Successfully seeded ${seededArticles.length} help articles`
-      });
-    } catch (error) {
-      console.error("Error seeding help articles:", error);
-      res.status(500).json({ error: "Failed to seed help articles" });
+  app2.get("/clear-cache.html", (_req, res) => {
+    const clearCachePath = path.join(process.cwd(), "server", "public", "clear-cache.html");
+    if (fs.existsSync(clearCachePath)) {
+      res.sendFile(clearCachePath);
+    } else {
+      res.status(404).send("Clear cache page not found");
     }
   });
   const httpServer = createServer(app2);
