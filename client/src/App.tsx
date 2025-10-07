@@ -21,6 +21,9 @@ import ChatPage from "@/pages/chat";
 import ProfilePage from "@/pages/profile";
 import BenchmarkingPage from "@/pages/benchmarking";
 import HelpCenter from "@/pages/HelpCenter";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import Terms from "@/pages/terms";
+import Support from "@/pages/support";
 import ScreenshotCapture from "@/components/ScreenshotCapture";
 import NotFound from "@/pages/not-found";
 import { useAuth, ProtectedRoute } from "@/contexts/AuthContext";
@@ -118,6 +121,9 @@ function Router() {
       </Route>
       <Route path="/help" component={HelpCenter} />
       <Route path="/ajuda" component={HelpCenter} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/support" component={Support} />
       <Route path="/screenshots" component={ScreenshotCapture} />
       
       <Route component={NotFound} />
