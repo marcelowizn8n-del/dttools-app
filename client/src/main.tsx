@@ -171,4 +171,63 @@ setTimeout(() => {
 // Service Worker disabled - cleanup handled in index.html
 // PWA features temporarily disabled until cache issues are resolved
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Clear cache functionality - triggered by ?clear-cache=true URL parameter
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('clear-cache') === 'true') {
+  console.log('🧹 Limpando cache e Service Workers...');
+  
+  // Clear all caches
+  if ('caches' in window) {
+    caches.keys().then(names => {
+      names.forEach(name => caches.delete(name));
+      console.log('✅ Cache limpo!');
+    });
+  }
+  
+  // Unregister all service workers
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      registrations.forEach(registration => registration.unregister());
+      console.log('✅ Service Workers removidos!');
+    });
+  }
+  
+  // Clear localStorage and sessionStorage
+  localStorage.clear();
+  sessionStorage.clear();
+  console.log('✅ Storage limpo!');
+  
+  // Show success message and redirect after 2 seconds
+  document.body.innerHTML = `
+    <div style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: system-ui, -apple-system, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    ">
+      <div style="background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; backdrop-filter: blur(10px);">
+        <h1 style="font-size: 3em; margin: 0 0 20px 0;">✅</h1>
+        <h2 style="margin: 0 0 10px 0;">Cache Limpo com Sucesso!</h2>
+        <p style="opacity: 0.9; margin: 0 0 20px 0;">
+          Todo o cache, Service Workers e dados locais foram removidos.
+        </p>
+        <p style="opacity: 0.7; font-size: 0.9em;">
+          Redirecionando para o DTTools em 2 segundos...
+        </p>
+      </div>
+    </div>
+  `;
+  
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 2000);
+  
+} else {
+  createRoot(document.getElementById("root")!).render(<App />);
+}
