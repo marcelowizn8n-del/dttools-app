@@ -251,7 +251,7 @@ export default function ProjectDetailPage() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900" data-testid="heading-project-name">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900" data-testid="heading-project-name">
             {project.name}
           </h1>
           {project.description && (
@@ -315,16 +315,16 @@ export default function ProjectDetailPage() {
 
       {/* Main Content with Tabs */}
       <Tabs defaultValue="phases" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="phases" data-testid="tab-phases">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-2 h-auto">
+          <TabsTrigger value="phases" data-testid="tab-phases" className="text-xs sm:text-sm whitespace-normal sm:whitespace-nowrap py-2">
             Fases & Ferramentas
           </TabsTrigger>
-          <TabsTrigger value="kanban" data-testid="tab-kanban">
-            <Columns3 className="w-4 h-4 mr-2" />
+          <TabsTrigger value="kanban" data-testid="tab-kanban" className="text-xs sm:text-sm whitespace-normal sm:whitespace-nowrap py-2">
+            <Columns3 className="w-4 h-4 mr-2 hidden sm:inline" />
             Board Kanban
           </TabsTrigger>
-          <TabsTrigger value="analysis" data-testid="tab-analysis">
-            <Brain className="w-4 h-4 mr-2" />
+          <TabsTrigger value="analysis" data-testid="tab-analysis" className="text-xs sm:text-sm whitespace-normal sm:whitespace-nowrap py-2">
+            <Brain className="w-4 h-4 mr-2 hidden sm:inline" />
             Análise Inteligente IA
           </TabsTrigger>
         </TabsList>
