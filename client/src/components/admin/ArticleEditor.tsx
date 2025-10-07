@@ -74,7 +74,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
   const defaultFormValues: ArticleFormData = {
     title: "",
     author: "",
-    category: "",
+    category: "design-thinking", // Default category - never empty!
     description: "",
     content: "",
     tags: "",
@@ -96,7 +96,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
         form.reset({
           title: article.title || "",
           author: article.author || "",
-          category: article.category || "",
+          category: article.category || "design-thinking", // Never empty!
           description: article.description || "",
           content: article.content || "",
           tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
@@ -270,14 +270,14 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                           onValueChange={(value) => {
                             if (value === "custom") {
                               setIsCustomCategorySelected(true);
-                              field.onChange("");
+                              field.onChange("custom"); // Keep "custom" as value, never empty!
                             } else {
                               setIsCustomCategorySelected(false);
                               setCustomCategory("");
                               field.onChange(value);
                             }
                           }} 
-                          value={field.value || ""}
+                          value={field.value || "design-thinking"}
                         >
                           <FormControl>
                             <SelectTrigger data-testid="select-category">
