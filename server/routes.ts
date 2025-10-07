@@ -82,14 +82,25 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
 
 // Admin authorization middleware  
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  console.log("[ADMIN CHECK] Request:", {
+    hasSession: !!req.session,
+    userId: req.session?.userId,
+    userRole: req.session?.user?.role,
+    method: req.method,
+    path: req.path
+  });
+  
   if (!req.session?.userId || !req.session?.user) {
+    console.log("[ADMIN CHECK] FAILED - No session");
     return res.status(401).json({ error: "Authentication required" });
   }
   
   if (req.session.user.role !== 'admin') {
+    console.log("[ADMIN CHECK] FAILED - Not admin, role:", req.session.user.role);
     return res.status(403).json({ error: "Admin access required" });
   }
   
+  console.log("[ADMIN CHECK] PASSED - User is admin");
   // Set user data on request
   req.user = req.session.user;
   next();
@@ -898,10 +909,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/articles", requireAdmin, async (req, res) => {
     try {
+      console.log("[CREATE ARTICLE /api/articles] Received data:", JSON.stringify(req.body, null, 2));
+      
       const validatedData = insertArticleSchema.parse(req.body);
+      console.log("[CREATE ARTICLE /api/articles] Validated successfully");
+      
       const article = await storage.createArticle(validatedData);
+      console.log("[CREATE ARTICLE /api/articles] Article created:", article.id);
+      
       res.status(201).json(article);
     } catch (error) {
+      console.error("[CREATE ARTICLE /api/articles] Error:", error);
+      
+      if (error && typeof error === 'object' && 'issues' in error) {
+        const zodError = error as any;
+        return res.status(400).json({ 
+          error: "Dados inválidos",
+          details: zodError.issues?.map((issue: any) => ({
+            field: issue.path?.join('.'),
+            message: issue.message
+          }))
+        });
+      }
+      
       res.status(400).json({ error: "Invalid article data" });
     }
   });
@@ -2485,11 +2515,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/help - Create new help article (Admin only)
   app.post("/api/help", requireAdmin, async (req, res) => {
     try {
-      const articleData = req.body;
-      const newArticle = await storage.createHelpArticle(articleData);
+      console.log("[CREATE ARTICLE] Received data:", JSON.stringify(req.body, null, 2));
+      console.log("[CREATE ARTICLE] User session:", req.session?.userId, req.session?.user?.role);
+      
+      const validatedData = insertHelpArticleSchema.parse(req.body);
+      console.log("[CREATE ARTICLE] Validated data:", JSON.stringify(validatedData, null, 2));
+      
+      const newArticle = await storage.createHelpArticle(validatedData);
+      console.log("[CREATE ARTICLE] Article created successfully:", newArticle.id);
+      
       res.json(newArticle);
     } catch (error) {
-      console.error("Error creating help article:", error);
+      console.error("[CREATE ARTICLE] Error:", error);
+      
+      if (error && typeof error === 'object' && 'issues' in error) {
+        const zodError = error as any;
+        return res.status(400).json({ 
+          error: "Dados inválidos",
+          details: zodError.issues?.map((issue: any) => ({
+            field: issue.path?.join('.'),
+            message: issue.message
+          }))
+        });
+      }
+      
       res.status(500).json({ error: "Failed to create help article" });
     }
   });
