@@ -1,6 +1,6 @@
 # Configuração para Deploy no Netlify - DTTools
 [build]
-  command = "npm install && npm run build"
+  command = "npm install && npm run build && cp -r server/public/* dist/public/"
   publish = "dist/public"
   functions = "netlify/functions"
 
