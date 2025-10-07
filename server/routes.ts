@@ -2525,38 +2525,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST /api/help/seed - Seed initial help articles (Admin only)
-  app.post("/api/help/seed", requireAdmin, async (req, res) => {
-    try {
-      const { seedHelpArticles, helpArticlesData } = await import("../scripts/seed-help-articles");
-      
-      // Check if articles already exist
-      const existingArticles = await storage.getHelpArticles();
-      
-      if (existingArticles.length > 0) {
-        return res.status(400).json({ 
-          error: "Articles already exist",
-          count: existingArticles.length,
-          message: "Delete existing articles before seeding"
-        });
-      }
-
-      // Insert all articles
-      for (const articleData of helpArticlesData) {
-        await storage.createHelpArticle(articleData);
-      }
-      
-      const seededArticles = await storage.getHelpArticles();
-      
-      res.json({
-        success: true,
-        count: seededArticles.length,
-        message: `Successfully seeded ${seededArticles.length} help articles`
-      });
-    } catch (error) {
-      console.error("Error seeding help articles:", error);
-      res.status(500).json({ error: "Failed to seed help articles" });
-    }
-  });
+  // Disabled: seed script not available
+  // app.post("/api/help/seed", requireAdmin, async (req, res) => {
+  //   res.status(501).json({ error: "Seed functionality not implemented" });
+  // });
 
   // Serve clear-cache.html page directly from backend
   app.get("/clear-cache.html", (_req, res) => {
