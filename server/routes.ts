@@ -43,7 +43,7 @@ import {
 } from "./subscriptionMiddleware";
 import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "./aiService";
 import { designThinkingGeminiAI } from "./geminiService";
-import { PPTXService } from "./pptxService";
+// import { PPTXService } from "./pptxService"; // Temporarily disabled - ESM compatibility issue
 
 // Initialize Stripe with secret key (optional for Railway deployment)
 const stripe = process.env.STRIPE_SECRET_KEY 
@@ -2298,6 +2298,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // TEMPORARILY DISABLED: Export endpoints (pptxgenjs ESM compatibility issue)
+  /*
   // GET /api/projects/:id/export-pptx - Export project as PPTX
   app.get("/api/projects/:id/export-pptx", requireAuth, async (req, res) => {
     try {
@@ -2390,6 +2392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to generate Markdown document" });
     }
   });
+  */
 
   // ===== HELP/WIKI SYSTEM ROUTES =====
 
