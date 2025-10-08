@@ -173,7 +173,7 @@ app.use((req, res, next) => {
 (async () => {
   // Auto-detect production: if dist/index.js exists, we're in production
   const __dirname = process.cwd();
-  const isProductionBuild = fsSync.existsSync(path.resolve(__dirname, 'index.js'));
+  const isProductionBuild = fsSync.existsSync(path.resolve(__dirname, 'dist', 'index.js'));
 
   const server = await registerRoutes(app);
 

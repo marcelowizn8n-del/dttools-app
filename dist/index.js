@@ -4577,7 +4577,7 @@ app.use((req, res, next) => {
 });
 (async () => {
   const __dirname = process.cwd();
-  const isProductionBuild = fsSync.existsSync(path4.resolve(__dirname, "index.js"));
+  const isProductionBuild = fsSync.existsSync(path4.resolve(__dirname, "dist", "index.js"));
   const server = await registerRoutes(app);
   if (isProductionBuild && process.env.DATABASE_URL) {
     setImmediate(async () => {
