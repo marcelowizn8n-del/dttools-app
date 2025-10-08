@@ -6000,17 +6000,22 @@ app.use((req, res, next) => {
 });
 (async () => {
   const isProductionBuild = fsSync.existsSync(path4.resolve(import.meta.dirname, "index.js"));
-  if (isProductionBuild && process.env.DATABASE_URL) {
-    try {
-      log("Running database migration...");
-      execSync("npm run db:push", { stdio: "pipe", timeout: 15e3 });
-      log("\u2705 Database migration completed");
-    } catch (error) {
-      log("\u26A0\uFE0F  Migration skipped (tables may already exist)");
-    }
-  }
   const server = await registerRoutes(app);
-  await initializeDefaultData();
+  if (isProductionBuild && process.env.DATABASE_URL) {
+    setImmediate(async () => {
+      try {
+        log("\u{1F527} Running database setup in background...");
+        execSync("npm run db:push", { stdio: "pipe", timeout: 2e4 });
+        log("\u2705 Database migration completed");
+        await initializeDefaultData();
+        log("\u2705 Default data initialized");
+      } catch (error) {
+        log("\u26A0\uFE0F  Database setup error (may already be initialized):", String(error).substring(0, 100));
+      }
+    });
+  } else {
+    await initializeDefaultData();
+  }
   app.use((err, _req, res, _next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";

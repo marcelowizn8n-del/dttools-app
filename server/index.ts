@@ -136,23 +136,29 @@ app.use((req, res, next) => {
 (async () => {
   // Auto-detect production: if dist/index.js exists, we're in production
   const isProductionBuild = fsSync.existsSync(path.resolve(import.meta.dirname, 'index.js'));
-  
-  // Run database migration in production (silently to avoid timeout)
-  if (isProductionBuild && process.env.DATABASE_URL) {
-    try {
-      log('Running database migration...');
-      execSync('npm run db:push', { stdio: 'pipe', timeout: 15000 });
-      log('✅ Database migration completed');
-    } catch (error) {
-      log('⚠️  Migration skipped (tables may already exist)');
-      // Continue anyway - tables might already exist
-    }
-  }
 
   const server = await registerRoutes(app);
 
-  // Initialize default data (admin user, subscription plans, etc.)
-  await initializeDefaultData();
+  // Initialize database and default data in background (after server starts)
+  if (isProductionBuild && process.env.DATABASE_URL) {
+    // Run in background to not block server startup
+    setImmediate(async () => {
+      try {
+        log('🔧 Running database setup in background...');
+        execSync('npm run db:push', { stdio: 'pipe', timeout: 20000 });
+        log('✅ Database migration completed');
+        
+        // Initialize default data after migration
+        await initializeDefaultData();
+        log('✅ Default data initialized');
+      } catch (error) {
+        log('⚠️  Database setup error (may already be initialized):', String(error).substring(0, 100));
+      }
+    });
+  } else {
+    // In development, run normally
+    await initializeDefaultData();
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
