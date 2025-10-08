@@ -3,7 +3,7 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import ConnectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupVite, log } from "./vite";
 import { initializeDefaultData } from "./storage";
 import { execSync } from "child_process";
 import fs from "fs/promises";
@@ -168,7 +168,8 @@ app.use((req, res, next) => {
 
 (async () => {
   // Auto-detect production: if dist/index.js exists, we're in production
-  const isProductionBuild = fsSync.existsSync(path.resolve(import.meta.dirname, 'index.js'));
+  const __dirname = process.cwd();
+  const isProductionBuild = fsSync.existsSync(path.resolve(__dirname, 'index.js'));
 
   const server = await registerRoutes(app);
 
@@ -213,8 +214,17 @@ app.use((req, res, next) => {
   } else {
     // In production, assets are already in dist/public (no need to copy)
     log('Setting up static file serving for production');
-    log(`Serving static files from: ${path.resolve(import.meta.dirname, 'public')}`);
-    serveStatic(app);
+    const distPath = path.resolve(__dirname, 'public');
+    log(`Serving static files from: ${distPath}`);
+    
+    if (!fsSync.existsSync(distPath)) {
+      throw new Error(`Could not find the build directory: ${distPath}`);
+    }
+    
+    app.use(express.static(distPath));
+    app.use("*", (_req, res) => {
+      res.sendFile(path.resolve(distPath, "index.html"));
+    });
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
