@@ -35,17 +35,50 @@ const app = express();
 // Trust proxy for secure cookies behind load balancer
 app.set('trust proxy', 1);
 
+// Parse and validate FRONTEND_URL from environment
+const parseFrontendUrls = (envVar: string | undefined): string[] => {
+  if (!envVar) return [];
+  
+  return envVar.split(',').map(url => url.trim()).filter(url => {
+    // Validate: must be HTTPS (or HTTP for localhost), no wildcards
+    const isHttps = url.startsWith('https://');
+    const isLocalhost = url.startsWith('http://localhost');
+    const hasWildcard = url.includes('*');
+    
+    if (hasWildcard) {
+      console.error(`[CORS] Invalid FRONTEND_URL - wildcards not allowed: ${url}`);
+      return false;
+    }
+    
+    if (!isHttps && !isLocalhost) {
+      console.error(`[CORS] Invalid FRONTEND_URL - must use HTTPS: ${url}`);
+      return false;
+    }
+    
+    // Normalize: remove trailing slash
+    return true;
+  }).map(url => url.replace(/\/$/, '')); // Remove trailing slashes
+};
+
+const configuredFrontendUrls = parseFrontendUrls(process.env.FRONTEND_URL);
+if (configuredFrontendUrls.length > 0) {
+  console.log(`[CORS] Configured frontend URLs: ${configuredFrontendUrls.join(', ')}`);
+}
+
 // Add CORS headers for external browser access
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  // Allow specific origins when using credentials
+  const origin = req.headers.origin?.replace(/\/$/, ''); // Normalize incoming origin
+  
+  // Base allowed origins
   const allowedOrigins = [
     'https://dttools.app',
-    'https://66duqmzd.up.railway.app',
+    'https://www.dttools.app',
     'http://localhost:5000',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    ...configuredFrontendUrls
   ];
   
+  // Allow origin if it's in the allowlist
   if (origin && allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');

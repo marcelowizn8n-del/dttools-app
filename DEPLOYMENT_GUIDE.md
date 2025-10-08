@@ -35,20 +35,25 @@ No painel do Railway, vá em **Variables** e adicione:
 NODE_ENV=production
 SESSION_SECRET=<gere-uma-chave-aleatoria-aqui>
 DATABASE_URL=${{Postgres.DATABASE_URL}}
+FRONTEND_URL=https://SEU-APP.vercel.app
 PORT=5000
 ```
+
+**IMPORTANTE:** Você vai adicionar a `FRONTEND_URL` depois do deploy no Vercel (Passo 2.4)
 
 **Gerar SESSION_SECRET:**
 ```bash
 openssl rand -base64 32
 ```
 
-### Passo 4: Configurar Domínio (Opcional)
+### Passo 4: Configurar Domínio
 
 1. No Railway, vá em **Settings**
 2. Em **Networking**, clique em **Generate Domain**
 3. Copie a URL gerada (ex: `dttools-backend.up.railway.app`)
 4. **IMPORTANTE:** Salve essa URL para usar no Vercel
+
+**NOTA:** Você voltará aqui depois para adicionar a `FRONTEND_URL` (URL do Vercel)
 
 ### Passo 5: Forçar Redeploy (se necessário)
 
@@ -90,9 +95,34 @@ VITE_API_URL=https://SEU-BACKEND.up.railway.app
 
 1. Clique em **"Deploy"**
 2. Aguarde o build completar (1-2 minutos)
-3. Acesse a URL gerada pelo Vercel
+3. Acesse a URL gerada pelo Vercel (ex: `seu-app.vercel.app`)
+4. **IMPORTANTE:** Copie essa URL!
 
-### Passo 5: Configurar Domínio dttools.app
+### Passo 5: Atualizar FRONTEND_URL no Railway
+
+**Agora que você tem a URL do Vercel, precisa configurar o CORS no backend:**
+
+1. Volte ao Railway
+2. Vá em **Variables**
+3. Adicione (ou atualize):
+   ```
+   FRONTEND_URL=https://seu-app.vercel.app
+   ```
+   
+   **Para múltiplos domínios** (produção + preview builds):
+   ```
+   FRONTEND_URL=https://dttools.vercel.app,https://preview-abc.vercel.app
+   ```
+   
+   ⚠️ **IMPORTANTE - Regras de Segurança:**
+   - Somente HTTPS (exceto localhost para dev)
+   - SEM wildcards (*) - cada URL deve ser explícita
+   - Separe múltiplas URLs com vírgula
+
+4. Clique em **"Redeploy"** para aplicar as mudanças
+5. Verifique os logs do Railway - deve aparecer: `[CORS] Configured frontend URLs: ...`
+
+### Passo 6: Configurar Domínio dttools.app
 
 1. No Vercel, vá em **Settings → Domains**
 2. Adicione `dttools.app` e `www.dttools.app`
