@@ -3,12 +3,16 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import ConnectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
-import { setupVite, log } from "./vite";
 import { initializeDefaultData } from "./storage";
 import { execSync } from "child_process";
 import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
+
+// Simple log function
+const log = (...args: any[]) => {
+  console.log(`[${new Date().toISOString()}]`, ...args);
+};
 
 // Build version v8.0.0-AUTO-SYNC - Production asset sync implemented
 const BUILD_VERSION = "v8.0.0-AUTO-SYNC";
@@ -210,6 +214,7 @@ app.use((req, res, next) => {
   
   if (isDevelopment) {
     log('Setting up Vite development server');
+    const { setupVite } = await import('./vite.js');
     await setupVite(app, server);
   } else {
     // In production, assets are already in dist/public (no need to copy)
