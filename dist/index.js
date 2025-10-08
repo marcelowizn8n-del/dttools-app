@@ -5999,7 +5999,8 @@ app.use((req, res, next) => {
   next();
 });
 (async () => {
-  if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
+  const isProductionBuild = fsSync.existsSync(path4.resolve(import.meta.dirname, "index.js"));
+  if (isProductionBuild && process.env.DATABASE_URL) {
     try {
       log("Running database migration...");
       execSync("npm run db:push", { stdio: "inherit" });
@@ -6016,7 +6017,6 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
     throw err;
   });
-  const isProductionBuild = fsSync.existsSync(path4.resolve(import.meta.dirname, "index.js"));
   const isDevelopment = process.env.NODE_ENV !== "production" && !isProductionBuild;
   log(`Environment check: NODE_ENV=${process.env.NODE_ENV}, isDevelopment=${isDevelopment}, isProductionBuild=${isProductionBuild}`);
   if (isDevelopment) {

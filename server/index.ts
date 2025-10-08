@@ -134,8 +134,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Auto-detect production: if dist/index.js exists, we're in production
+  const isProductionBuild = fsSync.existsSync(path.resolve(import.meta.dirname, 'index.js'));
+  
   // Run database migration in production
-  if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+  if (isProductionBuild && process.env.DATABASE_URL) {
     try {
       log('Running database migration...');
       execSync('npm run db:push', { stdio: 'inherit' });
@@ -162,8 +165,6 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  // Auto-detect production: if dist/index.js exists, we're in production
-  const isProductionBuild = fsSync.existsSync(path.resolve(import.meta.dirname, 'index.js'));
   const isDevelopment = process.env.NODE_ENV !== 'production' && !isProductionBuild;
   log(`Environment check: NODE_ENV=${process.env.NODE_ENV}, isDevelopment=${isDevelopment}, isProductionBuild=${isProductionBuild}`);
   
