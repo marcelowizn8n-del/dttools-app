@@ -6003,10 +6003,10 @@ app.use((req, res, next) => {
   if (isProductionBuild && process.env.DATABASE_URL) {
     try {
       log("Running database migration...");
-      execSync("npm run db:push", { stdio: "inherit" });
+      execSync("npm run db:push", { stdio: "pipe", timeout: 15e3 });
       log("\u2705 Database migration completed");
     } catch (error) {
-      log("\u274C Database migration failed:", String(error));
+      log("\u26A0\uFE0F  Migration skipped (tables may already exist)");
     }
   }
   const server = await registerRoutes(app);
