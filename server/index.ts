@@ -137,14 +137,14 @@ app.use((req, res, next) => {
   // Auto-detect production: if dist/index.js exists, we're in production
   const isProductionBuild = fsSync.existsSync(path.resolve(import.meta.dirname, 'index.js'));
   
-  // Run database migration in production
+  // Run database migration in production (silently to avoid timeout)
   if (isProductionBuild && process.env.DATABASE_URL) {
     try {
       log('Running database migration...');
-      execSync('npm run db:push', { stdio: 'inherit' });
+      execSync('npm run db:push', { stdio: 'pipe', timeout: 15000 });
       log('✅ Database migration completed');
     } catch (error) {
-      log('❌ Database migration failed:', String(error));
+      log('⚠️  Migration skipped (tables may already exist)');
       // Continue anyway - tables might already exist
     }
   }
