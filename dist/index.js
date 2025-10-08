@@ -3828,12 +3828,12 @@ var PPTXService = class {
 };
 
 // server/routes.ts
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY environment variable is required");
-}
-var stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+var stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-08-27.basil"
-});
+}) : null;
+if (!stripe) {
+  console.warn("\u26A0\uFE0F  STRIPE_SECRET_KEY not set - payment features will be disabled");
+}
 function requireAuth(req, res, next) {
   if (!req.session?.userId) {
     return res.status(401).json({ error: "Authentication required" });
@@ -4851,6 +4851,9 @@ async function registerRoutes(app2) {
           billingPeriod: "monthly"
         });
         return res.json({ subscription });
+      }
+      if (!stripe) {
+        return res.status(503).json({ error: "Payment system not configured. Please contact support." });
       }
       const user = await storage.getUser(req.user.id);
       if (!user) {
@@ -5922,13 +5925,35 @@ var MemStore = MemoryStore(session);
 var PgStore = ConnectPgSimple(session);
 var app = express2();
 app.set("trust proxy", 1);
+var parseFrontendUrls = (envVar) => {
+  if (!envVar) return [];
+  return envVar.split(",").map((url) => url.trim()).filter((url) => {
+    const isHttps = url.startsWith("https://");
+    const isLocalhost = url.startsWith("http://localhost");
+    const hasWildcard = url.includes("*");
+    if (hasWildcard) {
+      console.error(`[CORS] Invalid FRONTEND_URL - wildcards not allowed: ${url}`);
+      return false;
+    }
+    if (!isHttps && !isLocalhost) {
+      console.error(`[CORS] Invalid FRONTEND_URL - must use HTTPS: ${url}`);
+      return false;
+    }
+    return true;
+  }).map((url) => url.replace(/\/$/, ""));
+};
+var configuredFrontendUrls = parseFrontendUrls(process.env.FRONTEND_URL);
+if (configuredFrontendUrls.length > 0) {
+  console.log(`[CORS] Configured frontend URLs: ${configuredFrontendUrls.join(", ")}`);
+}
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
+  const origin = req.headers.origin?.replace(/\/$/, "");
   const allowedOrigins = [
     "https://dttools.app",
-    "https://66duqmzd.up.railway.app",
+    "https://www.dttools.app",
     "http://localhost:5000",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    ...configuredFrontendUrls
   ];
   if (origin && allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);

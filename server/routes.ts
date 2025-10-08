@@ -45,14 +45,16 @@ import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "
 import { designThinkingGeminiAI } from "./geminiService";
 import { PPTXService } from "./pptxService";
 
-// Initialize Stripe with secret key - validate environment variable
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY environment variable is required');
-}
+// Initialize Stripe with secret key (optional for Railway deployment)
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-08-27.basil",
+    })
+  : null;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-08-27.basil",
-});
+if (!stripe) {
+  console.warn('⚠️  STRIPE_SECRET_KEY not set - payment features will be disabled');
+}
 
 // Extend Request interface to include session user
 declare module 'express-serve-static-core' {
@@ -1315,6 +1317,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           billingPeriod: "monthly"
         });
         return res.json({ subscription });
+      }
+
+      // Paid plans require Stripe
+      if (!stripe) {
+        return res.status(503).json({ error: "Payment system not configured. Please contact support." });
       }
 
       const user = await storage.getUser(req.user.id);
