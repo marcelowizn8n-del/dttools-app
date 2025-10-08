@@ -5916,7 +5916,6 @@ function serveStatic(app2) {
 
 // server/index.ts
 import { execSync } from "child_process";
-import fs3 from "fs/promises";
 import fsSync from "fs";
 import path4 from "path";
 var MemStore = MemoryStore(session);
@@ -6024,31 +6023,8 @@ app.use((req, res, next) => {
     log("Setting up Vite development server");
     await setupVite(app, server);
   } else {
-    log("Syncing build assets to server/public...");
-    const distPath = path4.resolve(import.meta.dirname, "..", "dist", "public");
-    const serverPublicPath = path4.resolve(import.meta.dirname, "public");
-    try {
-      await fs3.access(distPath);
-      await fs3.mkdir(serverPublicPath, { recursive: true });
-      const files = await fs3.readdir(distPath, { withFileTypes: true });
-      for (const file of files) {
-        const srcPath = path4.join(distPath, file.name);
-        const destPath = path4.join(serverPublicPath, file.name);
-        if (file.isDirectory()) {
-          await fs3.cp(srcPath, destPath, { recursive: true, force: true });
-        } else {
-          await fs3.copyFile(srcPath, destPath);
-        }
-      }
-      log("\u2705 Build assets synced successfully");
-    } catch (error) {
-      if (error.code === "ENOENT") {
-        log("\u26A0\uFE0F  dist/public not found - run npm run build first");
-      } else {
-        log("\u274C Failed to sync build assets:", String(error));
-      }
-    }
     log("Setting up static file serving for production");
+    log(`Serving static files from: ${path4.resolve(import.meta.dirname, "public")}`);
     serveStatic(app);
   }
   const port = parseInt(process.env.PORT || "5000", 10);
