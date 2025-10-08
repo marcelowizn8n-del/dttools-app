@@ -4436,18 +4436,6 @@ async function setupVite(app2, server) {
     }
   });
 }
-function serveStatic(app2) {
-  const distPath = path3.resolve(import.meta.dirname, "public");
-  if (!fs2.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
-    );
-  }
-  app2.use(express.static(distPath));
-  app2.use("*", (_req, res) => {
-    res.sendFile(path3.resolve(distPath, "index.html"));
-  });
-}
 
 // server/index.ts
 import { execSync } from "child_process";
@@ -4556,7 +4544,8 @@ app.use((req, res, next) => {
   next();
 });
 (async () => {
-  const isProductionBuild = fsSync.existsSync(path4.resolve(import.meta.dirname, "index.js"));
+  const __dirname = process.cwd();
+  const isProductionBuild = fsSync.existsSync(path4.resolve(__dirname, "index.js"));
   const server = await registerRoutes(app);
   if (isProductionBuild && process.env.DATABASE_URL) {
     setImmediate(async () => {
@@ -4586,8 +4575,15 @@ app.use((req, res, next) => {
     await setupVite(app, server);
   } else {
     log("Setting up static file serving for production");
-    log(`Serving static files from: ${path4.resolve(import.meta.dirname, "public")}`);
-    serveStatic(app);
+    const distPath = path4.resolve(__dirname, "public");
+    log(`Serving static files from: ${distPath}`);
+    if (!fsSync.existsSync(distPath)) {
+      throw new Error(`Could not find the build directory: ${distPath}`);
+    }
+    app.use(express2.static(distPath));
+    app.use("*", (_req, res) => {
+      res.sendFile(path4.resolve(distPath, "index.html"));
+    });
   }
   const port = parseInt(process.env.PORT || "5000", 10);
   server.listen({
