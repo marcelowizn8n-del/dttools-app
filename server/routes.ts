@@ -172,7 +172,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Projects routes
   app.get("/api/projects", requireAuth, async (req, res) => {
     try {
-      const projects = await storage.getProjects();
+      const userId = req.session!.userId!;
+      const projects = await storage.getProjects(userId);
       res.json(projects);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch projects" });
@@ -181,7 +182,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/projects/:id", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getProject(req.params.id);
+      const userId = req.session!.userId!;
+      const project = await storage.getProject(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -212,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Record this creation attempt
       recordProjectCreation(userId, validatedData.name);
       
-      const project = await storage.createProject(validatedData);
+      const project = await storage.createProject({ ...validatedData, userId });
       console.log("Project created successfully:", project.id);
       
       res.status(201).json(project);
@@ -238,8 +240,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/projects/:id", requireAuth, async (req, res) => {
     try {
+      const userId = req.session!.userId!;
       const validatedData = insertProjectSchema.partial().parse(req.body);
-      const project = await storage.updateProject(req.params.id, validatedData);
+      const project = await storage.updateProject(req.params.id, userId, validatedData);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -252,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Only create auto backup if last one was > 1 hour ago
         if (!lastBackup || (lastBackup.createdAt && new Date(lastBackup.createdAt) < oneHourAgo)) {
-          await storage.createProjectBackup(req.params.id, 'auto', 'Backup automático após atualização');
+          await storage.createProjectBackup(req.params.id, userId, 'auto', 'Backup automático após atualização');
         }
       } catch (backupError) {
         console.error('Error creating automatic backup:', backupError);
@@ -266,7 +269,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/projects/:id", requireAuth, async (req, res) => {
     try {
-      const success = await storage.deleteProject(req.params.id);
+      const userId = req.session!.userId!;
+      const success = await storage.deleteProject(req.params.id, userId);
       if (!success) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -828,7 +832,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics routes
   app.get("/api/projects/:projectId/stats", requireAuth, async (req, res) => {
     try {
-      const stats = await storage.getProjectStats(req.params.projectId);
+      const userId = req.session!.userId!;
+      const stats = await storage.getProjectStats(req.params.projectId, userId);
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch project stats" });
@@ -838,7 +843,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard summary route
   app.get("/api/dashboard", requireAuth, async (req, res) => {
     try {
-      const projects = await storage.getProjects();
+      const userId = req.session!.userId!;
+      const projects = await storage.getProjects(userId);
       const totalProjects = projects.length;
       const activeProjects = projects.filter(p => p.status === "in_progress").length;
       const completedProjects = projects.filter(p => p.status === "completed").length;
@@ -1185,7 +1191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/stats", requireAdmin, async (_req, res) => {
     try {
       const users = await storage.getUsers();
-      const projects = await storage.getProjects();
+      const projects = await storage.getAllProjects();
       const articles = await storage.getArticles();
       
       const stats = {
@@ -1525,9 +1531,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { projectId } = req.params;
       const { currentPhase } = req.body;
+      const userId = req.session!.userId!;
       
       // Get project data
-      const project = await storage.getProject(projectId);
+      const project = await storage.getProject(projectId, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -1568,9 +1575,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects/:projectId/ai-analysis", requireAuth, async (req, res) => {
     try {
       const { projectId } = req.params;
+      const userId = req.session!.userId!;
       
       // Get project data
-      const project = await storage.getProject(projectId);
+      const project = await storage.getProject(projectId, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -2182,9 +2190,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/benchmarking/ai-recommendations/:projectId", requireAuth, async (req, res) => {
     try {
       const { projectId } = req.params;
+      const userId = req.session!.userId!;
       
       // Verify project ownership
-      const project = await storage.getProject(projectId);
+      const project = await storage.getProject(projectId, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -2286,9 +2295,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects/:id/export-pptx", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
+      const userId = req.session!.userId!;
       
       // Verify project ownership
-      const project = await storage.getProject(id);
+      const project = await storage.getProject(id, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -2316,9 +2326,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects/:id/export-pdf", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
+      const userId = req.session!.userId!;
       
       // Verify project ownership
-      const project = await storage.getProject(id);
+      const project = await storage.getProject(id, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -2346,9 +2357,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects/:id/export-markdown", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
+      const userId = req.session!.userId!;
       
       // Verify project ownership
-      const project = await storage.getProject(id);
+      const project = await storage.getProject(id, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }

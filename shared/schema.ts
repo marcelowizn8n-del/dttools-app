@@ -6,6 +6,7 @@ import { z } from "zod";
 // Core project entity
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   name: text("name").notNull(),
   description: text("description"),
   status: text("status").notNull().default("in_progress"), // in_progress, completed
@@ -289,6 +290,7 @@ export const articles = pgTable("articles", {
 // Insert schemas
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
+  userId: true,
   createdAt: true,
   updatedAt: true,
 });

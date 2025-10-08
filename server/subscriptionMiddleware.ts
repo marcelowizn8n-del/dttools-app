@@ -103,12 +103,7 @@ export async function checkProjectLimit(req: Request, res: Response, next: NextF
   }
 
   try {
-    const projects = await storage.getProjects();
-    const userProjects = projects.filter(p => {
-      // Note: In a real app, you'd track project ownership
-      // For now, we'll just count all projects for simplicity
-      return true;
-    });
+    const userProjects = await storage.getProjects(req.user.id);
 
     if (userProjects.length >= maxProjects) {
       return res.status(403).json({
@@ -270,8 +265,7 @@ export async function getSubscriptionInfo(req: Request, res: Response) {
     }
 
     // Calculate current usage
-    const projects = await storage.getProjects();
-    const userProjects = projects.filter(p => true); // Simplified for demo
+    const userProjects = await storage.getProjects(req.user.id);
 
     res.json({
       plan,
