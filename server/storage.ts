@@ -39,11 +39,12 @@ import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Projects
-  getProjects(): Promise<Project[]>;
-  getProject(id: string): Promise<Project | undefined>;
-  createProject(project: InsertProject): Promise<Project>;
-  updateProject(id: string, project: Partial<InsertProject>): Promise<Project | undefined>;
-  deleteProject(id: string): Promise<boolean>;
+  getProjects(userId: string): Promise<Project[]>;
+  getAllProjects(): Promise<Project[]>;
+  getProject(id: string, userId: string): Promise<Project | undefined>;
+  createProject(project: InsertProject & { userId: string }): Promise<Project>;
+  updateProject(id: string, userId: string, project: Partial<InsertProject>): Promise<Project | undefined>;
+  deleteProject(id: string, userId: string): Promise<boolean>;
 
   // Phase 1: Empathize
   getEmpathyMaps(projectId: string): Promise<EmpathyMap[]>;
@@ -104,7 +105,7 @@ export interface IStorage {
   updateUserProgress(progress: InsertUserProgress): Promise<UserProgress>;
 
   // Analytics
-  getProjectStats(projectId: string): Promise<{
+  getProjectStats(projectId: string, userId: string): Promise<{
     totalTools: number;
     completedTools: number;
     currentPhase: number;
@@ -215,30 +216,34 @@ export interface IStorage {
 // Database implementation using PostgreSQL via Drizzle ORM
 export class DatabaseStorage implements IStorage {
   // Projects
-  async getProjects(): Promise<Project[]> {
+  async getProjects(userId: string): Promise<Project[]> {
+    return await db.select().from(projects).where(eq(projects.userId, userId)).orderBy(desc(projects.createdAt));
+  }
+
+  async getAllProjects(): Promise<Project[]> {
     return await db.select().from(projects).orderBy(desc(projects.createdAt));
   }
 
-  async getProject(id: string): Promise<Project | undefined> {
-    const [project] = await db.select().from(projects).where(eq(projects.id, id));
+  async getProject(id: string, userId: string): Promise<Project | undefined> {
+    const [project] = await db.select().from(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
     return project;
   }
 
-  async createProject(project: InsertProject): Promise<Project> {
+  async createProject(project: InsertProject & { userId: string }): Promise<Project> {
     const [newProject] = await db.insert(projects).values(project).returning();
     return newProject;
   }
 
-  async updateProject(id: string, project: Partial<InsertProject>): Promise<Project | undefined> {
+  async updateProject(id: string, userId: string, project: Partial<InsertProject>): Promise<Project | undefined> {
     const [updatedProject] = await db.update(projects)
       .set({ ...project, updatedAt: new Date() })
-      .where(eq(projects.id, id))
+      .where(and(eq(projects.id, id), eq(projects.userId, userId)))
       .returning();
     return updatedProject;
   }
 
-  async deleteProject(id: string): Promise<boolean> {
-    const result = await db.delete(projects).where(eq(projects.id, id));
+  async deleteProject(id: string, userId: string): Promise<boolean> {
+    const result = await db.delete(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
     return (result.rowCount || 0) > 0;
   }
 
@@ -568,14 +573,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Analytics
-  async getProjectStats(projectId: string): Promise<{
+  async getProjectStats(projectId: string, userId: string): Promise<{
     totalTools: number;
     completedTools: number;
     currentPhase: number;
     completionRate: number;
   }> {
     // Basic implementation - can be enhanced with more sophisticated logic
-    const project = await this.getProject(projectId);
+    const project = await this.getProject(projectId, userId);
     return {
       totalTools: 15, // Total tools across all 5 phases
       completedTools: 0, // Would count actual completed tools
@@ -878,8 +883,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Project Backups
-  async createProjectBackup(projectId: string, backupType: 'auto' | 'manual', description?: string): Promise<ProjectBackup> {
-    const project = await this.getProject(projectId);
+  async createProjectBackup(projectId: string, userId: string, backupType: 'auto' | 'manual', description?: string): Promise<ProjectBackup> {
+    const project = await this.getProject(projectId, userId);
     if (!project) {
       throw new Error('Project not found');
     }
@@ -962,8 +967,9 @@ export class DatabaseStorage implements IStorage {
       db.delete(testPlans).where(eq(testPlans.projectId, projectId)),
     ]);
 
-    // Restore project data
-    await this.updateProject(projectId, {
+    // Restore project data (use userId from backup's project)
+    const userId = snapshot.project.userId;
+    await this.updateProject(projectId, userId, {
       name: snapshot.project.name,
       description: snapshot.project.description,
       status: snapshot.project.status,
@@ -1188,20 +1194,7 @@ export async function initializeDefaultData() {
       console.log('✅ Subscription plans created');
     }
 
-    // Create sample project for admin user if no projects exist
-    const adminUserFinal = await storage.getUserByUsername('dttools.app@gmail.com');
-    if (adminUserFinal) {
-      const existingProjects = await storage.getProjects();
-      if (existingProjects.length === 0) {
-        await storage.createProject({
-          name: 'App de Delivery Sustentável',
-          description: 'Projeto para criar um aplicativo de delivery focado em sustentabilidade e impacto social',
-          currentPhase: 1,
-          status: 'in_progress'
-        });
-        console.log('✅ Sample project created');
-      }
-    }
+    // Sample project creation removed - real projects already exist in production
 
   } catch (error) {
     console.error('❌ Error initializing default data:', error);
