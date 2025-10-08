@@ -268,6 +268,134 @@ Responda em portugu\xEAs brasileiro, sendo direto e orientado a resultados.`;
   }
 });
 
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path2 from "path";
+import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+var vite_config_default;
+var init_vite_config = __esm({
+  async "vite.config.ts"() {
+    "use strict";
+    vite_config_default = defineConfig({
+      plugins: [
+        react(),
+        runtimeErrorOverlay(),
+        ...process.env.NODE_ENV !== "production" && process.env.REPL_ID !== void 0 ? [
+          await import("@replit/vite-plugin-cartographer").then(
+            (m) => m.cartographer()
+          ),
+          await import("@replit/vite-plugin-dev-banner").then(
+            (m) => m.devBanner()
+          )
+        ] : []
+      ],
+      resolve: {
+        alias: {
+          "@": path2.resolve(import.meta.dirname, "client", "src"),
+          "@shared": path2.resolve(import.meta.dirname, "shared"),
+          "@assets": path2.resolve(import.meta.dirname, "attached_assets")
+        }
+      },
+      root: path2.resolve(import.meta.dirname, "client"),
+      build: {
+        outDir: path2.resolve(import.meta.dirname, "client/dist"),
+        emptyOutDir: true
+      },
+      server: {
+        fs: {
+          strict: true,
+          deny: ["**/.*"]
+        }
+      }
+    });
+  }
+});
+
+// server/vite.ts
+var vite_exports = {};
+__export(vite_exports, {
+  log: () => log,
+  serveStatic: () => serveStatic,
+  setupVite: () => setupVite
+});
+import express from "express";
+import fs2 from "fs";
+import path3 from "path";
+import { createServer as createViteServer, createLogger } from "vite";
+import { nanoid } from "nanoid";
+function log(message, source = "express") {
+  const formattedTime = (/* @__PURE__ */ new Date()).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
+async function setupVite(app2, server) {
+  const serverOptions = {
+    middlewareMode: true,
+    hmr: { server },
+    allowedHosts: true
+  };
+  const vite = await createViteServer({
+    ...vite_config_default,
+    configFile: false,
+    customLogger: {
+      ...viteLogger,
+      error: (msg, options) => {
+        viteLogger.error(msg, options);
+        process.exit(1);
+      }
+    },
+    server: serverOptions,
+    appType: "custom"
+  });
+  app2.use(vite.middlewares);
+  app2.use("*", async (req, res, next) => {
+    const url = req.originalUrl;
+    try {
+      const clientTemplate = path3.resolve(
+        import.meta.dirname,
+        "..",
+        "client",
+        "index.html"
+      );
+      let template = await fs2.promises.readFile(clientTemplate, "utf-8");
+      template = template.replace(
+        `src="/src/main.tsx"`,
+        `src="/src/main.tsx?v=${nanoid()}"`
+      );
+      const page = await vite.transformIndexHtml(url, template);
+      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+    } catch (e) {
+      vite.ssrFixStacktrace(e);
+      next(e);
+    }
+  });
+}
+function serveStatic(app2) {
+  const distPath = path3.resolve(import.meta.dirname, "public");
+  if (!fs2.existsSync(distPath)) {
+    throw new Error(
+      `Could not find the build directory: ${distPath}, make sure to build the client first`
+    );
+  }
+  app2.use(express.static(distPath));
+  app2.use("*", (_req, res) => {
+    res.sendFile(path3.resolve(distPath, "index.html"));
+  });
+}
+var viteLogger;
+var init_vite = __esm({
+  async "server/vite.ts"() {
+    "use strict";
+    await init_vite_config();
+    viteLogger = createLogger();
+  }
+});
+
 // server/index.ts
 import express2 from "express";
 import session from "express-session";
@@ -4338,109 +4466,13 @@ async function registerRoutes(app2) {
   return httpServer;
 }
 
-// server/vite.ts
-import express from "express";
-import fs2 from "fs";
-import path3 from "path";
-import { createServer as createViteServer, createLogger } from "vite";
-
-// vite.config.ts
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path2 from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
-var vite_config_default = defineConfig({
-  plugins: [
-    react(),
-    runtimeErrorOverlay(),
-    ...process.env.NODE_ENV !== "production" && process.env.REPL_ID !== void 0 ? [
-      await import("@replit/vite-plugin-cartographer").then(
-        (m) => m.cartographer()
-      ),
-      await import("@replit/vite-plugin-dev-banner").then(
-        (m) => m.devBanner()
-      )
-    ] : []
-  ],
-  resolve: {
-    alias: {
-      "@": path2.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path2.resolve(import.meta.dirname, "shared"),
-      "@assets": path2.resolve(import.meta.dirname, "attached_assets")
-    }
-  },
-  root: path2.resolve(import.meta.dirname, "client"),
-  build: {
-    outDir: path2.resolve(import.meta.dirname, "client/dist"),
-    emptyOutDir: true
-  },
-  server: {
-    fs: {
-      strict: true,
-      deny: ["**/.*"]
-    }
-  }
-});
-
-// server/vite.ts
-import { nanoid } from "nanoid";
-var viteLogger = createLogger();
-function log(message, source = "express") {
-  const formattedTime = (/* @__PURE__ */ new Date()).toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true
-  });
-  console.log(`${formattedTime} [${source}] ${message}`);
-}
-async function setupVite(app2, server) {
-  const serverOptions = {
-    middlewareMode: true,
-    hmr: { server },
-    allowedHosts: true
-  };
-  const vite = await createViteServer({
-    ...vite_config_default,
-    configFile: false,
-    customLogger: {
-      ...viteLogger,
-      error: (msg, options) => {
-        viteLogger.error(msg, options);
-        process.exit(1);
-      }
-    },
-    server: serverOptions,
-    appType: "custom"
-  });
-  app2.use(vite.middlewares);
-  app2.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
-    try {
-      const clientTemplate = path3.resolve(
-        import.meta.dirname,
-        "..",
-        "client",
-        "index.html"
-      );
-      let template = await fs2.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`
-      );
-      const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
-    } catch (e) {
-      vite.ssrFixStacktrace(e);
-      next(e);
-    }
-  });
-}
-
 // server/index.ts
 import { execSync } from "child_process";
 import fsSync from "fs";
 import path4 from "path";
+var log2 = (...args) => {
+  console.log(`[${(/* @__PURE__ */ new Date()).toISOString()}]`, ...args);
+};
 var MemStore = MemoryStore(session);
 var PgStore = ConnectPgSimple(session);
 var app = express2();
@@ -4538,7 +4570,7 @@ app.use((req, res, next) => {
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "\u2026";
       }
-      log(logLine);
+      log2(logLine);
     }
   });
   next();
@@ -4550,13 +4582,13 @@ app.use((req, res, next) => {
   if (isProductionBuild && process.env.DATABASE_URL) {
     setImmediate(async () => {
       try {
-        log("\u{1F527} Running database setup in background...");
+        log2("\u{1F527} Running database setup in background...");
         execSync("npm run db:push", { stdio: "pipe", timeout: 2e4 });
-        log("\u2705 Database migration completed");
+        log2("\u2705 Database migration completed");
         await initializeDefaultData();
-        log("\u2705 Default data initialized");
+        log2("\u2705 Default data initialized");
       } catch (error) {
-        log("\u26A0\uFE0F  Database setup error (may already be initialized):", String(error).substring(0, 100));
+        log2("\u26A0\uFE0F  Database setup error (may already be initialized):", String(error).substring(0, 100));
       }
     });
   } else {
@@ -4569,14 +4601,15 @@ app.use((req, res, next) => {
     throw err;
   });
   const isDevelopment = process.env.NODE_ENV !== "production" && !isProductionBuild;
-  log(`Environment check: NODE_ENV=${process.env.NODE_ENV}, isDevelopment=${isDevelopment}, isProductionBuild=${isProductionBuild}`);
+  log2(`Environment check: NODE_ENV=${process.env.NODE_ENV}, isDevelopment=${isDevelopment}, isProductionBuild=${isProductionBuild}`);
   if (isDevelopment) {
-    log("Setting up Vite development server");
-    await setupVite(app, server);
+    log2("Setting up Vite development server");
+    const { setupVite: setupVite2 } = await init_vite().then(() => vite_exports);
+    await setupVite2(app, server);
   } else {
-    log("Setting up static file serving for production");
+    log2("Setting up static file serving for production");
     const distPath = path4.resolve(__dirname, "public");
-    log(`Serving static files from: ${distPath}`);
+    log2(`Serving static files from: ${distPath}`);
     if (!fsSync.existsSync(distPath)) {
       throw new Error(`Could not find the build directory: ${distPath}`);
     }
@@ -4591,6 +4624,6 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true
   }, () => {
-    log(`serving on port ${port}`);
+    log2(`serving on port ${port}`);
   });
 })();
