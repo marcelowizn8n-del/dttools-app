@@ -7,6 +7,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initializeDefaultData } from "./storage";
 import { execSync } from "child_process";
 import fs from "fs/promises";
+import fsSync from "fs";
 import path from "path";
 
 // Build version v8.0.0-AUTO-SYNC - Production asset sync implemented
@@ -161,8 +162,10 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  const isDevelopment = process.env.NODE_ENV !== 'production';
-  log(`Environment check: NODE_ENV=${process.env.NODE_ENV}, isDevelopment=${isDevelopment}`);
+  // Auto-detect production: if dist/index.js exists, we're in production
+  const isProductionBuild = fsSync.existsSync(path.resolve(import.meta.dirname, 'index.js'));
+  const isDevelopment = process.env.NODE_ENV !== 'production' && !isProductionBuild;
+  log(`Environment check: NODE_ENV=${process.env.NODE_ENV}, isDevelopment=${isDevelopment}, isProductionBuild=${isProductionBuild}`);
   
   if (isDevelopment) {
     log('Setting up Vite development server');

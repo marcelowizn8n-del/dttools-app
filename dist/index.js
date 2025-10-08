@@ -344,6 +344,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 var projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   name: text("name").notNull(),
   description: text("description"),
   status: text("status").notNull().default("in_progress"),
@@ -649,6 +650,7 @@ var articles = pgTable("articles", {
 });
 var insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
+  userId: true,
   createdAt: true,
   updatedAt: true
 });
@@ -1113,23 +1115,26 @@ var db = drizzle(pool, { schema: schema_exports });
 import { eq, and, desc } from "drizzle-orm";
 var DatabaseStorage = class {
   // Projects
-  async getProjects() {
+  async getProjects(userId) {
+    return await db.select().from(projects).where(eq(projects.userId, userId)).orderBy(desc(projects.createdAt));
+  }
+  async getAllProjects() {
     return await db.select().from(projects).orderBy(desc(projects.createdAt));
   }
-  async getProject(id) {
-    const [project] = await db.select().from(projects).where(eq(projects.id, id));
+  async getProject(id, userId) {
+    const [project] = await db.select().from(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
     return project;
   }
   async createProject(project) {
     const [newProject] = await db.insert(projects).values(project).returning();
     return newProject;
   }
-  async updateProject(id, project) {
-    const [updatedProject] = await db.update(projects).set({ ...project, updatedAt: /* @__PURE__ */ new Date() }).where(eq(projects.id, id)).returning();
+  async updateProject(id, userId, project) {
+    const [updatedProject] = await db.update(projects).set({ ...project, updatedAt: /* @__PURE__ */ new Date() }).where(and(eq(projects.id, id), eq(projects.userId, userId))).returning();
     return updatedProject;
   }
-  async deleteProject(id) {
-    const result = await db.delete(projects).where(eq(projects.id, id));
+  async deleteProject(id, userId) {
+    const result = await db.delete(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
     return (result.rowCount || 0) > 0;
   }
   // Users
@@ -1346,8 +1351,8 @@ var DatabaseStorage = class {
     }
   }
   // Analytics
-  async getProjectStats(projectId) {
-    const project = await this.getProject(projectId);
+  async getProjectStats(projectId, userId) {
+    const project = await this.getProject(projectId, userId);
     return {
       totalTools: 15,
       // Total tools across all 5 phases
@@ -1553,8 +1558,8 @@ var DatabaseStorage = class {
     return (result.rowCount || 0) > 0;
   }
   // Project Backups
-  async createProjectBackup(projectId, backupType, description) {
-    const project = await this.getProject(projectId);
+  async createProjectBackup(projectId, userId, backupType, description) {
+    const project = await this.getProject(projectId, userId);
     if (!project) {
       throw new Error("Project not found");
     }
@@ -1628,7 +1633,8 @@ var DatabaseStorage = class {
       db.delete(prototypes).where(eq(prototypes.projectId, projectId)),
       db.delete(testPlans).where(eq(testPlans.projectId, projectId))
     ]);
-    await this.updateProject(projectId, {
+    const userId = snapshot.project.userId;
+    await this.updateProject(projectId, userId, {
       name: snapshot.project.name,
       description: snapshot.project.description,
       status: snapshot.project.status,
@@ -1819,19 +1825,6 @@ async function initializeDefaultData() {
       });
       console.log("\u2705 Subscription plans created");
     }
-    const adminUserFinal = await storage.getUserByUsername("dttools.app@gmail.com");
-    if (adminUserFinal) {
-      const existingProjects = await storage.getProjects();
-      if (existingProjects.length === 0) {
-        await storage.createProject({
-          name: "App de Delivery Sustent\xE1vel",
-          description: "Projeto para criar um aplicativo de delivery focado em sustentabilidade e impacto social",
-          currentPhase: 1,
-          status: "in_progress"
-        });
-        console.log("\u2705 Sample project created");
-      }
-    }
   } catch (error) {
     console.error("\u274C Error initializing default data:", error);
   }
@@ -1851,10 +1844,7 @@ async function checkProjectLimit(req, res, next) {
     return next();
   }
   try {
-    const projects2 = await storage.getProjects();
-    const userProjects = projects2.filter((p) => {
-      return true;
-    });
+    const userProjects = await storage.getProjects(req.user.id);
     if (userProjects.length >= maxProjects) {
       return res.status(403).json({
         error: "Project limit reached",
@@ -1928,8 +1918,7 @@ async function getSubscriptionInfo(req, res) {
     } else {
       plan = await storage.getSubscriptionPlanByName("free");
     }
-    const projects2 = await storage.getProjects();
-    const userProjects = projects2.filter((p) => true);
+    const userProjects = await storage.getProjects(req.user.id);
     res.json({
       plan,
       subscription: userSubscription,
@@ -3919,7 +3908,8 @@ async function registerRoutes(app2) {
   app2.get("/api/subscription-info", requireAuth, getSubscriptionInfo);
   app2.get("/api/projects", requireAuth, async (req, res) => {
     try {
-      const projects2 = await storage.getProjects();
+      const userId = req.session.userId;
+      const projects2 = await storage.getProjects(userId);
       res.json(projects2);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch projects" });
@@ -3927,7 +3917,8 @@ async function registerRoutes(app2) {
   });
   app2.get("/api/projects/:id", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getProject(req.params.id);
+      const userId = req.session.userId;
+      const project = await storage.getProject(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -3951,7 +3942,7 @@ async function registerRoutes(app2) {
         });
       }
       recordProjectCreation(userId, validatedData.name);
-      const project = await storage.createProject(validatedData);
+      const project = await storage.createProject({ ...validatedData, userId });
       console.log("Project created successfully:", project.id);
       res.status(201).json(project);
     } catch (error) {
@@ -3971,8 +3962,9 @@ async function registerRoutes(app2) {
   });
   app2.put("/api/projects/:id", requireAuth, async (req, res) => {
     try {
+      const userId = req.session.userId;
       const validatedData = insertProjectSchema.partial().parse(req.body);
-      const project = await storage.updateProject(req.params.id, validatedData);
+      const project = await storage.updateProject(req.params.id, userId, validatedData);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -3981,7 +3973,7 @@ async function registerRoutes(app2) {
         const lastBackup = existingBackups[0];
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1e3);
         if (!lastBackup || lastBackup.createdAt && new Date(lastBackup.createdAt) < oneHourAgo) {
-          await storage.createProjectBackup(req.params.id, "auto", "Backup autom\xE1tico ap\xF3s atualiza\xE7\xE3o");
+          await storage.createProjectBackup(req.params.id, userId, "auto", "Backup autom\xE1tico ap\xF3s atualiza\xE7\xE3o");
         }
       } catch (backupError) {
         console.error("Error creating automatic backup:", backupError);
@@ -3993,7 +3985,8 @@ async function registerRoutes(app2) {
   });
   app2.delete("/api/projects/:id", requireAuth, async (req, res) => {
     try {
-      const success = await storage.deleteProject(req.params.id);
+      const userId = req.session.userId;
+      const success = await storage.deleteProject(req.params.id, userId);
       if (!success) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -4463,7 +4456,8 @@ async function registerRoutes(app2) {
   });
   app2.get("/api/projects/:projectId/stats", requireAuth, async (req, res) => {
     try {
-      const stats = await storage.getProjectStats(req.params.projectId);
+      const userId = req.session.userId;
+      const stats = await storage.getProjectStats(req.params.projectId, userId);
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch project stats" });
@@ -4471,7 +4465,8 @@ async function registerRoutes(app2) {
   });
   app2.get("/api/dashboard", requireAuth, async (req, res) => {
     try {
-      const projects2 = await storage.getProjects();
+      const userId = req.session.userId;
+      const projects2 = await storage.getProjects(userId);
       const totalProjects = projects2.length;
       const activeProjects = projects2.filter((p) => p.status === "in_progress").length;
       const completedProjects = projects2.filter((p) => p.status === "completed").length;
@@ -4750,7 +4745,7 @@ async function registerRoutes(app2) {
   app2.get("/api/admin/stats", requireAdmin, async (_req, res) => {
     try {
       const users2 = await storage.getUsers();
-      const projects2 = await storage.getProjects();
+      const projects2 = await storage.getAllProjects();
       const articles2 = await storage.getArticles();
       const stats = {
         totalUsers: users2.length,
@@ -5026,7 +5021,8 @@ async function registerRoutes(app2) {
     try {
       const { projectId } = req.params;
       const { currentPhase } = req.body;
-      const project = await storage.getProject(projectId);
+      const userId = req.session.userId;
+      const project = await storage.getProject(projectId, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -5061,7 +5057,8 @@ async function registerRoutes(app2) {
   app2.post("/api/projects/:projectId/ai-analysis", requireAuth, async (req, res) => {
     try {
       const { projectId } = req.params;
-      const project = await storage.getProject(projectId);
+      const userId = req.session.userId;
+      const project = await storage.getProject(projectId, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -5542,7 +5539,8 @@ async function registerRoutes(app2) {
   app2.post("/api/benchmarking/ai-recommendations/:projectId", requireAuth, async (req, res) => {
     try {
       const { projectId } = req.params;
-      const project = await storage.getProject(projectId);
+      const userId = req.session.userId;
+      const project = await storage.getProject(projectId, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -5625,7 +5623,8 @@ async function registerRoutes(app2) {
   app2.get("/api/projects/:id/export-pptx", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      const project = await storage.getProject(id);
+      const userId = req.session.userId;
+      const project = await storage.getProject(id, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -5644,7 +5643,8 @@ async function registerRoutes(app2) {
   app2.get("/api/projects/:id/export-pdf", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      const project = await storage.getProject(id);
+      const userId = req.session.userId;
+      const project = await storage.getProject(id, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -5663,7 +5663,8 @@ async function registerRoutes(app2) {
   app2.get("/api/projects/:id/export-markdown", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      const project = await storage.getProject(id);
+      const userId = req.session.userId;
+      const project = await storage.getProject(id, userId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -5916,6 +5917,7 @@ function serveStatic(app2) {
 // server/index.ts
 import { execSync } from "child_process";
 import fs3 from "fs/promises";
+import fsSync from "fs";
 import path4 from "path";
 var MemStore = MemoryStore(session);
 var PgStore = ConnectPgSimple(session);
@@ -6015,8 +6017,9 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
     throw err;
   });
-  const isDevelopment = process.env.NODE_ENV !== "production";
-  log(`Environment check: NODE_ENV=${process.env.NODE_ENV}, isDevelopment=${isDevelopment}`);
+  const isProductionBuild = fsSync.existsSync(path4.resolve(import.meta.dirname, "index.js"));
+  const isDevelopment = process.env.NODE_ENV !== "production" && !isProductionBuild;
+  log(`Environment check: NODE_ENV=${process.env.NODE_ENV}, isDevelopment=${isDevelopment}, isProductionBuild=${isProductionBuild}`);
   if (isDevelopment) {
     log("Setting up Vite development server");
     await setupVite(app, server);
