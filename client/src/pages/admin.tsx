@@ -716,7 +716,7 @@ function ProjectsTab() {
   const { toast } = useToast();
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
+    queryKey: ["/api/admin/projects"],
   });
 
   const deleteProjectMutation = useMutation({
