@@ -1196,7 +1196,8 @@ export async function initializeDefaultData() {
 
     // Initialize default articles for Library
     const existingArticles = await storage.getArticles();
-    if (existingArticles.length === 0) {
+    const dtToolsArticles = existingArticles.filter(a => a.author === 'DTTools');
+    if (dtToolsArticles.length === 0) {
       const defaultArticles = [
         {
           title: 'Introdução ao Design Thinking',
