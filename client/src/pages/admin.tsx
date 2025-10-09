@@ -909,10 +909,19 @@ function ProjectsTab() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => window.open(`/project/${project.id}`, '_blank')}
+                            onClick={() => window.open(`/projects/${project.id}`, '_blank')}
                             data-testid={`button-view-${project.id}`}
                           >
                             <Eye className="h-3 w-3" />
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.location.href = `/projects/${project.id}`}
+                            data-testid={`button-edit-${project.id}`}
+                          >
+                            <Edit className="h-3 w-3" />
                           </Button>
                           
                           <AlertDialog>
