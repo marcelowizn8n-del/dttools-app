@@ -6,6 +6,26 @@ DTTools é uma plataforma interativa e abrangente para guiar designers, equipes 
 
 ## Recent Changes
 
+### 2025-10-09: Railway Production Fixes (v8.2.0-PRODUCTION-STABLE)
+**Status:** ✅ PRONTO PARA PRODUÇÃO
+
+**Correções Críticas para Railway:**
+- ✅ **Image Upload Persistence**: Mudado de arquivos (efêmeros) para base64 no banco de dados - imagens nunca mais somem após restart
+- ✅ **Canvas Responsivo**: Largura aumentada de 800px fixo para 800-1400px responsivo - usa tela inteira
+- ✅ **Biblioteca Populada**: Adicionados 6 artigos padrão sobre Design Thinking para popular a Biblioteca
+- ✅ **CORS Configurado**: Frontend URL configurada para aceitar requisições do Netlify
+
+**Arquitetura de Deploy:**
+- ✅ **Railway**: Backend + Frontend + PostgreSQL (URL única: dttools-app-production.up.railway.app)
+- ✅ **Netlify**: DESCONTINUADO (ultrapassou limites gratuitos)
+- ✅ **Database**: PostgreSQL persistente no Railway
+- ✅ **Sessions**: PostgreSQL-backed sessions (persistem entre restarts)
+
+**Documentação Técnica:**
+- ✅ Upload de imagens usa Sharp para resize + base64 encoding
+- ✅ Canvas calcula dimensões baseado em window.innerWidth
+- ✅ Default data initialization executada no primeiro deploy
+
 ### 2025-10-07: App Store Readiness Release (v7.0.0-APPSTORE-READY)
 **Status:** ✅ PRONTO PARA SUBMISSÃO (Apple & Google)
 
