@@ -730,7 +730,7 @@ function ProjectsTab() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
       toast({
         title: "Projeto excluído",
         description: "O projeto foi removido com sucesso.",
@@ -1329,6 +1329,24 @@ function SubscriptionPlansTab() {
                       <Badge variant="secondary" className="text-xs">SSO</Badge>
                     )}
                   </div>
+                </div>
+
+                <div className="pt-4 border-t flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      toast({
+                        title: "Editar Plano",
+                        description: `Funcionalidade de edição do plano ${plan.displayName} em desenvolvimento`,
+                      });
+                    }}
+                    data-testid={`button-edit-plan-${plan.id}`}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar
+                  </Button>
                 </div>
               </CardContent>
             </Card>
