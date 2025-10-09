@@ -18,9 +18,8 @@ import ArticleEditor from "@/components/admin/ArticleEditor";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
-import type { Article, User, Project, InsertUser, SubscriptionPlan } from "@shared/schema";
+import type { Article, User, Project, SubscriptionPlan } from "@shared/schema";
 
 function ArticlesTab() {
   const [searchTerm, setSearchTerm] = useState("");
