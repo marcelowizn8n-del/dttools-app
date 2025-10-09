@@ -1151,13 +1151,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/users", requireAdmin, async (req, res) => {
     try {
+      console.log("[Create User] Request body:", req.body);
       const validatedData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(validatedData);
+      console.log("[Create User] Validated data:", validatedData);
+      
+      // Hash password before storing
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      const userDataWithHashedPassword = {
+        ...validatedData,
+        password: hashedPassword
+      };
+      
+      const user = await storage.createUser(userDataWithHashedPassword);
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
     } catch (error) {
-      res.status(400).json({ error: "Invalid user data" });
+      console.error("[Create User] Error:", error);
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(400).json({ error: "Invalid user data" });
+      }
     }
   });
 
