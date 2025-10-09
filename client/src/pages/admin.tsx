@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
-import type { Article, User, Project, InsertUser } from "@shared/schema";
+import type { Article, User, Project, InsertUser, SubscriptionPlan } from "@shared/schema";
 
 function ArticlesTab() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -1218,6 +1218,112 @@ function DashboardTab() {
   );
 }
 
+function SubscriptionPlansTab() {
+  const { toast } = useToast();
+  const { data: plans = [], isLoading } = useQuery<SubscriptionPlan[]>({
+    queryKey: ["/api/subscription-plans"],
+  });
+
+  const formatPrice = (cents: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(cents / 100);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold" data-testid="plans-title">
+            Planos de Assinatura
+          </h2>
+          <p className="text-muted-foreground">
+            Gerencie os planos de assinatura do DTTools
+          </p>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-4 w-60" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {plans.map(plan => (
+            <Card key={plan.id} className="relative">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  {plan.displayName}
+                  <Badge variant="outline" className="ml-2">
+                    {plan.name}
+                  </Badge>
+                </CardTitle>
+                <CardDescription>{plan.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Preço Mensal:</span>
+                    <span className="text-sm">{formatPrice(plan.priceMonthly)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Preço Anual:</span>
+                    <span className="text-sm">{formatPrice(plan.priceYearly)}</span>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t space-y-2">
+                  <div className="text-sm">
+                    <span className="font-medium">Limites:</span>
+                    <ul className="mt-2 space-y-1 text-muted-foreground">
+                      <li>• Projetos: {plan.maxProjects || 'Ilimitado'}</li>
+                      <li>• Personas/Projeto: {plan.maxPersonasPerProject || 'Ilimitado'}</li>
+                      <li>• Usuários/Equipe: {plan.maxUsersPerTeam || 'Ilimitado'}</li>
+                      <li>• Chat IA: {plan.aiChatLimit || 'Ilimitado'}</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <span className="text-sm font-medium">Recursos:</span>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {plan.hasCollaboration && (
+                      <Badge variant="secondary" className="text-xs">Colaboração</Badge>
+                    )}
+                    {plan.hasPermissionManagement && (
+                      <Badge variant="secondary" className="text-xs">Permissões</Badge>
+                    )}
+                    {plan.hasSharedWorkspace && (
+                      <Badge variant="secondary" className="text-xs">Workspace</Badge>
+                    )}
+                    {plan.hasCommentsAndFeedback && (
+                      <Badge variant="secondary" className="text-xs">Comentários</Badge>
+                    )}
+                    {plan.hasSso && (
+                      <Badge variant="secondary" className="text-xs">SSO</Badge>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { isAdmin } = useAuth();
 
@@ -1235,7 +1341,7 @@ export default function AdminPage() {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="dashboard" data-testid="tab-dashboard">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Dashboard
@@ -1251,6 +1357,10 @@ export default function AdminPage() {
               <TabsTrigger value="articles" data-testid="tab-articles">
                 <Eye className="mr-2 h-4 w-4" />
                 Artigos
+              </TabsTrigger>
+              <TabsTrigger value="plans" data-testid="tab-plans">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Planos
               </TabsTrigger>
             </TabsList>
 
@@ -1268,6 +1378,10 @@ export default function AdminPage() {
 
             <TabsContent value="articles">
               <ArticlesTab />
+            </TabsContent>
+
+            <TabsContent value="plans">
+              <SubscriptionPlansTab />
             </TabsContent>
           </Tabs>
         </div>
