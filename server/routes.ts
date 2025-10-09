@@ -1244,6 +1244,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route to get ALL projects (not filtered by user)
+  app.get("/api/admin/projects", requireAdmin, async (_req, res) => {
+    try {
+      const projects = await storage.getAllProjects();
+      res.json(projects);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch projects" });
+    }
+  });
+
   // Subscription Plans routes
   app.get("/api/subscription-plans", async (_req, res) => {
     try {
