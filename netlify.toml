@@ -7,11 +7,12 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Redirects para SPA e API
+# Redirects para SPA e API - Proxy para Railway backend
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
+  to = "https://dttools-app-production.up.railway.app/api/:splat"
   status = 200
+  force = true
 
 # Servir clear-cache.html como arquivo estático (não redirecionar para SPA)
 [[redirects]]
