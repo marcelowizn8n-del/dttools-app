@@ -100,6 +100,9 @@ export default function ProfilePage() {
   // Reset form when profile data loads
   useEffect(() => {
     if (profile) {
+      // Backend returns snake_case (profile_picture) but form uses camelCase
+      const profilePic = (profile as any).profile_picture || profile.profilePicture || "";
+      
       form.reset({
         name: profile.name || "",
         email: profile.email || "",
@@ -114,9 +117,9 @@ export default function ProfilePage() {
         zipCode: profile.zipCode || "",
         phone: profile.phone || "",
         interests: (profile.interests as string[]) || [],
-        profilePicture: profile.profilePicture || "",
+        profilePicture: profilePic,
       });
-      setProfilePicture(profile.profilePicture || "");
+      setProfilePicture(profilePic);
     }
   }, [profile, form]);
 
