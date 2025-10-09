@@ -1,0 +1,6 @@
+# Prevent Docker from caching these folders
+dist/
+node_modules/
+.git/
+*.log
+client/dist/
