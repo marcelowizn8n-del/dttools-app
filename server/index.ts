@@ -217,9 +217,9 @@ app.use((req, res, next) => {
     const { setupVite } = await import('./vite.js');
     await setupVite(app, server);
   } else {
-    // In production, assets are already in dist/public (no need to copy)
+    // In production, serve from Vite's actual build output
     log('Setting up static file serving for production');
-    const distPath = path.resolve(__dirname, 'dist', 'public');
+    const distPath = path.resolve(__dirname, 'client', 'dist');
     log(`Serving static files from: ${distPath}`);
     
     if (!fsSync.existsSync(distPath)) {
