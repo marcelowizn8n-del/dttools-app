@@ -185,12 +185,16 @@ app.use((req, res, next) => {
         log('🔧 Running database setup in background...');
         execSync('npm run db:push', { stdio: 'pipe', timeout: 20000 });
         log('✅ Database migration completed');
-        
-        // Initialize default data after migration
+      } catch (error) {
+        log('⚠️  Database migration error (may already be applied):', String(error).substring(0, 100));
+      }
+      
+      // Always try to initialize default data, even if migration failed/timed out
+      try {
         await initializeDefaultData();
         log('✅ Default data initialized');
       } catch (error) {
-        log('⚠️  Database setup error (may already be initialized):', String(error).substring(0, 100));
+        log('⚠️  Default data initialization error:', String(error).substring(0, 100));
       }
     });
   } else {
