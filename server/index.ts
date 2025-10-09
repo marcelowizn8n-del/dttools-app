@@ -171,9 +171,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Auto-detect production: if dist/index.js exists, we're in production
+  // Auto-detect production: use NODE_ENV
   const __dirname = process.cwd();
-  const isProductionBuild = fsSync.existsSync(path.resolve(__dirname, 'dist', 'index.js'));
+  const isProductionBuild = process.env.NODE_ENV === 'production';
 
   const server = await registerRoutes(app);
 
@@ -219,7 +219,7 @@ app.use((req, res, next) => {
   } else {
     // In production, assets are already in dist/public (no need to copy)
     log('Setting up static file serving for production');
-    const distPath = path.resolve(__dirname, 'public');
+    const distPath = path.resolve(__dirname, 'dist', 'public');
     log(`Serving static files from: ${distPath}`);
     
     if (!fsSync.existsSync(distPath)) {
