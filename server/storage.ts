@@ -1279,6 +1279,68 @@ export async function initializeDefaultData() {
       console.log('✅ Default articles created');
     }
 
+    // Initialize default help articles for Help Center
+    const existingHelpArticles = await storage.getHelpArticles();
+    if (existingHelpArticles.length === 0) {
+      const defaultHelpArticles = [
+        {
+          title: 'Como começar a usar o DTTools',
+          slug: 'como-comecar',
+          category: 'getting-started',
+          content: '# Como começar\n\nBem-vindo ao DTTools! Este guia vai te ajudar a dar os primeiros passos...',
+          tags: ['iniciante', 'tutorial', 'primeiros-passos'],
+          keywords: ['começar', 'iniciar', 'primeiro projeto'],
+          order: 1,
+          published: true
+        },
+        {
+          title: 'Criando seu primeiro projeto',
+          slug: 'primeiro-projeto',
+          category: 'getting-started',
+          content: '# Seu Primeiro Projeto\n\nCriar um projeto no DTTools é simples e rápido...',
+          tags: ['projeto', 'tutorial', 'iniciante'],
+          keywords: ['criar projeto', 'novo projeto'],
+          order: 2,
+          published: true
+        },
+        {
+          title: 'Entendendo as 5 fases do Design Thinking',
+          slug: 'cinco-fases',
+          category: 'getting-started',
+          content: '# As 5 Fases\n\nDesign Thinking é dividido em 5 fases: Empatizar, Definir, Idear, Prototipar e Testar...',
+          tags: ['fases', 'metodologia', 'design thinking'],
+          keywords: ['fases', 'empatizar', 'definir', 'idear', 'prototipar', 'testar'],
+          order: 3,
+          published: true
+        },
+        {
+          title: 'Trabalhando em equipe',
+          slug: 'trabalho-equipe',
+          category: 'collaboration',
+          content: '# Colaboração\n\nO DTTools facilita o trabalho em equipe com ferramentas de colaboração...',
+          tags: ['equipe', 'colaboração', 'compartilhamento'],
+          keywords: ['equipe', 'time', 'colaborar', 'compartilhar'],
+          order: 4,
+          published: true
+        },
+        {
+          title: 'Exportando seus dados',
+          slug: 'exportar-dados',
+          category: 'features',
+          content: '# Exportação\n\nVocê pode exportar seus projetos em PDF, CSV e outros formatos...',
+          tags: ['exportar', 'pdf', 'download'],
+          keywords: ['exportar', 'download', 'pdf', 'csv'],
+          order: 5,
+          published: true
+        }
+      ];
+
+      for (const helpArticle of defaultHelpArticles) {
+        await storage.createHelpArticle(helpArticle);
+      }
+      console.log('✅ Default help articles created');
+    }
+
     // Sample project creation removed - real projects already exist in production
 
   } catch (error) {
