@@ -330,19 +330,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint para upload de imagens
+  // Endpoint para upload de imagens - Salva como base64 no banco (Railway-safe)
   app.post("/api/upload/avatar", requireAuth, upload.single('avatar'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "Nenhum arquivo enviado" });
       }
 
-      const uploadDir = ensureUploadDirectory();
-      const fileName = `avatar-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
-      const filePath = path.join(uploadDir, fileName);
-
       // Redimensionar e otimizar a imagem usando Sharp
-      await sharp(req.file.buffer)
+      const optimizedBuffer = await sharp(req.file.buffer)
         .resize(200, 200, { 
           fit: 'cover',
           position: 'center'
@@ -351,11 +347,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           quality: 85,
           progressive: true
         })
-        .toFile(filePath);
+        .toBuffer();
 
-      // Retornar a URL relativa do arquivo
-      const avatarUrl = `/uploads/avatars/${fileName}`;
-      res.json({ url: avatarUrl });
+      // Converter para base64 e criar data URL
+      const base64Image = optimizedBuffer.toString('base64');
+      const dataUrl = `data:image/jpeg;base64,${base64Image}`;
+      
+      // Retornar data URL (salvo diretamente no banco, não em arquivo)
+      res.json({ url: dataUrl });
 
     } catch (error: any) {
       console.error("Erro no upload:", error);

@@ -190,16 +190,18 @@ export default function IdeaDrawingTool({ projectId }: IdeaDrawingToolProps) {
 
   // Função para calcular dimensões responsivas
   const getCanvasDimensions = () => {
-    if (typeof window === 'undefined') return { width: 800, height: 600 };
+    if (typeof window === 'undefined') return { width: 1200, height: 600 };
     
-    const containerWidth = window.innerWidth - 64; // padding
+    const containerWidth = window.innerWidth - 320; // Deixa espaço para sidebar (280px) + padding (40px)
+    const maxWidth = Math.max(800, Math.min(containerWidth, 1400)); // Mínimo 800px, máximo 1400px
+    
     if (window.innerWidth < 768) {
       return {
-        width: Math.max(300, Math.min(containerWidth, 600)),
+        width: Math.max(300, Math.min(window.innerWidth - 32, 600)),
         height: 400
       };
     }
-    return { width: 800, height: 600 };
+    return { width: maxWidth, height: 600 };
   };
 
   const [canvasSize, setCanvasSize] = useState(getCanvasDimensions);
