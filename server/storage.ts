@@ -1194,6 +1194,90 @@ export async function initializeDefaultData() {
       console.log('✅ Subscription plans created');
     }
 
+    // Initialize default articles for Library
+    const existingArticles = await storage.getArticles();
+    if (existingArticles.length === 0) {
+      const defaultArticles = [
+        {
+          title: 'Introdução ao Design Thinking',
+          slug: 'introducao-design-thinking',
+          category: 'foundations',
+          author: 'DTTools',
+          description: 'Aprenda os fundamentos do Design Thinking e como aplicar em seus projetos',
+          content: '# Introdução ao Design Thinking\n\nDesign Thinking é uma abordagem centrada no ser humano para inovação...',
+          tags: ['fundamentos', 'iniciante', 'conceitos'],
+          readTime: 5,
+          featured: true,
+          published: true
+        },
+        {
+          title: 'Como criar Mapas de Empatia eficazes',
+          slug: 'mapas-empatia-eficazes',
+          category: 'empathize',
+          author: 'DTTools',
+          description: 'Guia completo para criar Mapas de Empatia que revelam insights profundos sobre seus usuários',
+          content: '# Mapas de Empatia\n\nMapas de Empatia são ferramentas poderosas para entender seus usuários...',
+          tags: ['empatizar', 'ferramentas', 'usuários'],
+          readTime: 7,
+          featured: true,
+          published: true
+        },
+        {
+          title: 'Definindo Problemas com POV Statements',
+          slug: 'pov-statements-guia',
+          category: 'define',
+          author: 'DTTools',
+          description: 'Aprenda a estruturar Point of View statements para definir problemas de forma clara',
+          content: '# POV Statements\n\nPoint of View statements ajudam a definir o problema certo...',
+          tags: ['definir', 'problema', 'framework'],
+          readTime: 6,
+          featured: false,
+          published: true
+        },
+        {
+          title: 'Técnicas de Brainstorming para Ideação',
+          slug: 'brainstorming-tecnicas',
+          category: 'ideate',
+          author: 'DTTools',
+          description: 'Descubra técnicas criativas de brainstorming para gerar ideias inovadoras',
+          content: '# Brainstorming Eficaz\n\nBrainstorming é mais do que simplesmente listar ideias...',
+          tags: ['idear', 'criatividade', 'técnicas'],
+          readTime: 8,
+          featured: true,
+          published: true
+        },
+        {
+          title: 'Prototipagem Rápida: Do Papel ao Digital',
+          slug: 'prototipagem-rapida',
+          category: 'prototype',
+          author: 'DTTools',
+          description: 'Aprenda a criar protótipos rápidos para validar suas ideias',
+          content: '# Prototipagem Rápida\n\nProtótipos permitem testar ideias rapidamente...',
+          tags: ['prototipar', 'validação', 'prática'],
+          readTime: 10,
+          featured: false,
+          published: true
+        },
+        {
+          title: 'Testes com Usuários: Melhores Práticas',
+          slug: 'testes-usuarios-praticas',
+          category: 'test',
+          author: 'DTTools',
+          description: 'Guia completo para conduzir testes de usabilidade e coletar feedback valioso',
+          content: '# Testes com Usuários\n\nTestar com usuários reais é essencial para validar soluções...',
+          tags: ['testar', 'feedback', 'validação'],
+          readTime: 9,
+          featured: true,
+          published: true
+        }
+      ];
+
+      for (const article of defaultArticles) {
+        await storage.createArticle(article as any);
+      }
+      console.log('✅ Default articles created');
+    }
+
     // Sample project creation removed - real projects already exist in production
 
   } catch (error) {
