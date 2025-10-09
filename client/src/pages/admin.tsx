@@ -287,12 +287,13 @@ function ArticlesTab() {
   );
 }
 
-// Enhanced User Form Schema
-const userFormSchema = insertUserSchema.extend({
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "As senhas não coincidem",
-  path: ["confirmPassword"],
+// Simplified User Form Schema - email and name required
+const userFormSchema = z.object({
+  username: z.string().min(3, "Username deve ter pelo menos 3 caracteres"),
+  email: z.string().email("Email inválido"),
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  role: z.enum(["user", "admin"]).default("user"),
 });
 
 function UsersTab() {
@@ -308,14 +309,14 @@ function UsersTab() {
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: z.infer<typeof userFormSchema>) => {
-      const { confirmPassword, ...userDataWithoutConfirm } = userData;
       const response = await apiRequest("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userDataWithoutConfirm),
+        body: JSON.stringify(userData),
       });
       if (!response.ok) {
-        throw new Error("Failed to create user");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create user");
       }
       return response.json();
     },
@@ -581,8 +582,9 @@ function UserCreateDialog({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
       username: "",
+      email: "",
+      name: "",
       password: "",
-      confirmPassword: "",
       role: "user",
     },
   });
@@ -606,12 +608,40 @@ function UserCreateDialog({
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome Completo</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="João Silva" data-testid="input-name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="email" placeholder="joao@exemplo.com" data-testid="input-email" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Username (login)</FormLabel>
                   <FormControl>
-                    <Input {...field} data-testid="input-username" />
+                    <Input {...field} placeholder="joao.silva" data-testid="input-username" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -625,21 +655,7 @@ function UserCreateDialog({
                 <FormItem>
                   <FormLabel>Senha</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} data-testid="input-password" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirmar Senha</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} data-testid="input-confirm-password" />
+                    <Input type="password" {...field} placeholder="Mínimo 6 caracteres" data-testid="input-password" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
