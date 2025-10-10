@@ -1409,6 +1409,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Stripe webhook to handle subscription events
   app.post("/api/stripe-webhook", async (req, res) => {
+    if (!stripe) {
+      return res.status(503).json({ error: "Stripe not configured" });
+    }
+    
     const sig = req.headers["stripe-signature"];
     let event;
 
@@ -1486,6 +1490,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cancel subscription
   app.post("/api/cancel-subscription", requireAuth, async (req, res) => {
     try {
+      if (!stripe) {
+        return res.status(503).json({ error: "Stripe not configured" });
+      }
+      
       if (!req.user?.id) {
         return res.status(401).json({ error: "User not authenticated" });
       }
