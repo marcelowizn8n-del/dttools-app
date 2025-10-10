@@ -34,12 +34,7 @@ function ArticlesTab() {
 
   const deleteArticleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest(`/api/articles/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete article");
-      }
+      const response = await apiRequest("DELETE", `/api/articles/${id}`);
       return response.json();
     },
     onSuccess: () => {
@@ -308,15 +303,7 @@ function UsersTab() {
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: z.infer<typeof userFormSchema>) => {
-      const response = await apiRequest("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create user");
-      }
+      const response = await apiRequest("POST", "/api/users", userData);
       return response.json();
     },
     onSuccess: () => {
@@ -338,14 +325,7 @@ function UsersTab() {
 
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, role }: { id: string; role: string }) => {
-      const response = await apiRequest(`/api/users/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to update user");
-      }
+      const response = await apiRequest("PUT", `/api/users/${id}`, { role });
       return response.json();
     },
     onSuccess: () => {
@@ -366,12 +346,7 @@ function UsersTab() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest(`/api/users/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete user");
-      }
+      const response = await apiRequest("DELETE", `/api/users/${id}`);
       return response.json();
     },
     onSuccess: () => {
@@ -721,12 +696,7 @@ function ProjectsTab() {
 
   const deleteProjectMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest(`/api/projects/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete project");
-      }
+      const response = await apiRequest("DELETE", `/api/projects/${id}`);
       return response.json();
     },
     onSuccess: () => {
