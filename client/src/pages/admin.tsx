@@ -91,7 +91,8 @@ function ArticlesTab() {
     return matchesSearch && matchesCategory;
   });
 
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return "N/A";
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -370,7 +371,8 @@ function UsersTab() {
     updateUserMutation.mutate({ id: userId, role: newRole });
   };
 
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return "N/A";
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit', 
@@ -725,12 +727,14 @@ function ProjectsTab() {
       : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
   };
 
-  const getPhaseLabel = (phase: number) => {
+  const getPhaseLabel = (phase: number | null) => {
+    if (!phase) return "N/A";
     const phases = ["Empatizar", "Definir", "Idear", "Prototipar", "Testar"];
     return phases[phase - 1] || `Fase ${phase}`;
   };
 
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return "N/A";
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -742,7 +746,7 @@ function ProjectsTab() {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === "all" || project.status === statusFilter;
-    const matchesPhase = phaseFilter === "all" || project.currentPhase.toString() === phaseFilter;
+    const matchesPhase = phaseFilter === "all" || (project.currentPhase?.toString() === phaseFilter);
     return matchesSearch && matchesStatus && matchesPhase;
   });
 
@@ -940,7 +944,15 @@ function ProjectsTab() {
 
 // Admin Dashboard Tab Component
 function DashboardTab() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<{
+    totalUsers: number;
+    totalProjects: number;
+    totalArticles: number;
+    projectsByStatus: { in_progress: number; completed: number };
+    projectsByPhase: { phase1: number; phase2: number; phase3: number; phase4: number; phase5: number };
+    usersByRole: { admin: number; user: number };
+    articlesByCategory: Record<string, number>;
+  }>({
     queryKey: ["/api/admin/stats"],
   });
 
