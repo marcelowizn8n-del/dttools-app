@@ -2594,6 +2594,207 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // TEMPORARY: Create prenatal project for demo (Admin only)
+  app.post("/api/admin/create-prenatal-project", requireAdmin, async (req, res) => {
+    try {
+      // Create project
+      const project = await storage.createProject({
+        userId: req.session!.userId!,
+        name: 'Acesso ao Pré-Natal na UBS - Zona Leste SP',
+        description: 'Projeto de Design Thinking focado em melhorar a experiência de gestantes ao agendar e realizar consultas de pré-natal na UBS da Zona Leste de São Paulo. Baseado na jornada real de Manuela Oliveira, 26 anos, mãe de uma menina de 5 anos.',
+        status: 'completed',
+        currentPhase: 5,
+        completionRate: 100
+      });
+
+      // Empathy Map
+      await storage.createEmpathyMap({
+        projectId: project.id,
+        title: 'Mapa de Empatia - Manuela Oliveira (Gestante)',
+        says: [
+          '"Preciso confirmar minha gravidez na UBS"',
+          '"Não consigo ligar, a linha sempre dá ocupado"',
+          '"Preciso começar o pré-natal logo"',
+          '"A Ângela me ajudou muito com o agendamento"',
+          '"Espero que tudo corra bem com o bebê"'
+        ],
+        thinks: [
+          'Estou preocupada com a saúde do bebê',
+          'Preciso me organizar melhor com o trabalho e a Gabriela',
+          'Não sei se minhas vacinas estão em dia',
+          'Como vou conseguir tempo para todas as consultas?',
+          'Preciso preparar o quarto do bebê'
+        ],
+        does: [
+          'Trabalha em loja de departamentos no shopping',
+          'Cuida da filha Gabriela (5 anos)',
+          'Tenta ligar para UBS várias vezes',
+          'Recebe visita da ACS em casa',
+          'Vai até a UBS para consulta'
+        ],
+        feels: [
+          'Ansiosa pela confirmação da gravidez',
+          'Aliviada quando a ACS a ajuda',
+          'Acolhida pela recepcionista Daniela',
+          'Confiante com orientações da enfermeira Adriana',
+          'Esperançosa com a chegada do bebê'
+        ]
+      });
+
+      // Persona
+      await storage.createPersona({
+        projectId: project.id,
+        name: 'Manuela Oliveira',
+        age: 26,
+        occupation: 'Vendedora em Loja de Departamentos',
+        bio: 'Manuela tem 26 anos e mora na Zona Leste de São Paulo. Trabalha em uma loja de departamentos em shopping center e é mãe de Gabriela, de 5 anos. Descobriu recentemente que está grávida novamente e precisa acessar o pré-natal na UBS de seu bairro.',
+        goals: [
+          'Confirmar gravidez e iniciar pré-natal',
+          'Garantir saúde do bebê',
+          'Atualizar vacinas',
+          'Conciliar trabalho e consultas',
+          'Preparar chegada do bebê'
+        ],
+        frustrations: [
+          'Telefone UBS sempre ocupado',
+          'Falta de tempo',
+          'Não saber se está tudo bem',
+          'Informações confusas',
+          'Medo de perder vaga'
+        ],
+        motivations: [
+          'Saúde do bebê',
+          'Ser boa mãe',
+          'Apoio da ACS Ângela',
+          'Atendimento humanizado',
+          'Família saudável'
+        ],
+        techSavviness: 'medium'
+      });
+
+      // Observation
+      await storage.createObservation({
+        projectId: project.id,
+        location: 'UBS Zona Leste - São Paulo',
+        context: 'Dia de consulta de pré-natal',
+        behavior: 'Manuela chega pontualmente, demonstra ansiedade na triagem, faz muitas perguntas para enfermeira, sai tranquila',
+        insights: 'Acolhimento humanizado é fundamental. ACS crucial como ponte entre comunidade e UBS',
+        date: new Date('2025-10-08')
+      });
+
+      // POV Statement
+      await storage.createPovStatement({
+        projectId: project.id,
+        user: 'Gestante trabalhadora da Zona Leste',
+        need: 'Agendar pré-natal rápido sem burocracia',
+        insight: 'Telefone UBS não atende mas ACS resolve humanizadamente',
+        statement: 'Gestantes trabalhadoras precisam de sistema acessível e apoio da ACS',
+        priority: 'high'
+      });
+
+      // HMW Questions
+      await storage.createHmwQuestion({
+        projectId: project.id,
+        question: 'Como facilitar agendamento sem depender do telefone?',
+        context: 'Telefone UBS sempre ocupado',
+        challenge: 'Sistema de agendamento inadequado',
+        scope: 'service',
+        priority: 'high',
+        category: 'Acesso',
+        votes: 8
+      });
+
+      await storage.createHmwQuestion({
+        projectId: project.id,
+        question: 'Como ampliar papel das ACS no suporte às gestantes?',
+        context: 'ACS foi fundamental',
+        challenge: 'Potencializar agentes comunitárias',
+        scope: 'service',
+        priority: 'high',
+        category: 'Suporte',
+        votes: 6
+      });
+
+      // Ideas
+      const idea1 = await storage.createIdea({
+        projectId: project.id,
+        title: 'App/WhatsApp de Agendamento UBS',
+        description: 'Chatbot WhatsApp para agendamento de pré-natal. Gestante escolhe data/hora, recebe confirmação automática.',
+        category: 'Digital',
+        desirability: 5,
+        viability: 4,
+        feasibility: 3,
+        confidenceLevel: 4,
+        dvfScore: 4.0,
+        dvfAnalysis: 'Alta desejabilidade, viável via WhatsApp Business, desafio é integração com UBS',
+        actionDecision: 'love_it',
+        priorityRank: 1,
+        votes: 12
+      });
+
+      const idea2 = await storage.createIdea({
+        projectId: project.id,
+        title: 'Capacitação e Equipamento para ACS',
+        description: 'Treinar ACS com tablets para agendamento durante visitas domiciliares.',
+        category: 'Capacitação',
+        desirability: 4,
+        viability: 4,
+        feasibility: 4,
+        confidenceLevel: 4,
+        dvfScore: 4.0,
+        dvfAnalysis: 'Desejável pois ACS tem confiança, viável com investimento',
+        actionDecision: 'love_it',
+        priorityRank: 2,
+        votes: 10
+      });
+
+      // Prototypes
+      const proto1 = await storage.createPrototype({
+        projectId: project.id,
+        ideaId: idea1.id,
+        name: 'Protótipo WhatsApp Bot - Agendamento Pré-Natal',
+        type: 'digital',
+        description: 'Fluxo de conversação no WhatsApp. Bot solicita dados, mostra horários, confirma agendamento.',
+        materials: ['WhatsApp Business API', 'Chatbot platform', 'Integração UBS'],
+        images: [],
+        version: 1,
+        feedback: 'Gestantes acharam mais fácil. Solicitaram opção de reagendar.'
+      });
+
+      // Test Plan
+      await storage.createTestPlan({
+        projectId: project.id,
+        prototypeId: proto1.id,
+        name: 'Teste WhatsApp Bot',
+        objective: 'Validar agendamento autônomo',
+        methodology: 'Teste com 10 gestantes Zona Leste',
+        participants: 10,
+        duration: 15,
+        tasks: [
+          'Iniciar conversa com bot',
+          'Informar dados',
+          'Escolher horário',
+          'Confirmar agendamento'
+        ],
+        metrics: [
+          'Taxa conclusão >90%',
+          'Tempo <3min',
+          'NPS >8'
+        ],
+        status: 'completed'
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Projeto pré-natal criado com sucesso!',
+        projectId: project.id
+      });
+    } catch (error) {
+      console.error("Error creating prenatal project:", error);
+      res.status(500).json({ error: "Failed to create prenatal project" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
