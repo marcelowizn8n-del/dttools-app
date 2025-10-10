@@ -68,6 +68,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               type="text"
               placeholder="Digite o nome de usuário do cadastro"
               data-testid="input-username"
+              autoComplete="off"
               {...form.register("username")}
             />
             {form.formState.errors.username && (
@@ -85,6 +86,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 type={showPassword ? "text" : "password"}
                 placeholder="Digite sua senha"
                 data-testid="input-password"
+                autoComplete="off"
                 {...form.register("password")}
               />
               <Button
