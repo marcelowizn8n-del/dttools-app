@@ -869,11 +869,11 @@ function ProjectsTab() {
                           <div className="w-12 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-blue-500 transition-all duration-300"
-                              style={{ width: `${project.completionRate}%` }}
+                              style={{ width: `${project.completionRate || 0}%` }}
                             />
                           </div>
                           <span className="text-sm text-muted-foreground">
-                            {Math.round(project.completionRate)}%
+                            {Math.round(project.completionRate || 0)}%
                           </span>
                         </div>
                       </TableCell>
