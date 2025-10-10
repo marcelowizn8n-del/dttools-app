@@ -1,12 +1,20 @@
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain, Columns3 } from "lucide-react";
+import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain, Columns3, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
 import type { Project } from "@shared/schema";
 import Phase1Tools from "@/components/phase1/Phase1Tools";
 import Phase2Tools from "@/components/phase2/Phase2Tools";
@@ -15,6 +23,14 @@ import Phase4Tools from "@/components/phase4/Phase4Tools";
 import Phase5Tools from "@/components/phase5/Phase5Tools";
 import AnalysisReport from "@/components/AnalysisReport";
 import { KanbanBoard } from "@/components/KanbanBoard";
+import { useState } from "react";
+
+const editProjectSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório").transform(val => val.trim()).refine(val => val.length > 0, "Nome não pode ser apenas espaços"),
+  description: z.string().optional().transform(val => val?.trim()),
+});
+
+type EditProjectData = z.infer<typeof editProjectSchema>;
 
 const phaseData = {
   1: { 
@@ -53,6 +69,117 @@ const phaseData = {
     tools: ["Planos de Teste", "Coleta de Feedback", "Análise de Resultados"]
   },
 };
+
+function EditProjectDialog({ project, projectId }: { project: Project; projectId: string }) {
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+
+  const form = useForm<EditProjectData>({
+    resolver: zodResolver(editProjectSchema),
+    defaultValues: {
+      name: project.name,
+      description: project.description || "",
+    },
+  });
+
+  const updateProjectMutation = useMutation({
+    mutationFn: async (data: EditProjectData) => {
+      return await apiRequest('PUT', `/api/projects/${project.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "stats"] });
+      toast({
+        title: "Projeto atualizado",
+        description: "As informações do projeto foram atualizadas com sucesso.",
+      });
+      setOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o projeto.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data: EditProjectData) => {
+    updateProjectMutation.mutate(data);
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      form.reset({
+        name: project.name,
+        description: project.description || "",
+      });
+    } else {
+      form.reset({
+        name: project.name,
+        description: project.description || "",
+      });
+    }
+    setOpen(newOpen);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" data-testid="button-edit-project">
+          <Edit2 className="w-4 h-4 mr-2" />
+          Editar Projeto
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar Projeto</DialogTitle>
+          <DialogDescription>
+            Atualize o nome e descrição do projeto
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome do Projeto</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nome do projeto" data-testid="input-project-name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} placeholder="Descrição do projeto" rows={4} data-testid="input-project-description" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} data-testid="button-cancel">
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={updateProjectMutation.isPending} data-testid="button-save">
+                {updateProjectMutation.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function PhaseCard({ phaseNumber, isActive, isCompleted, onClick, isUpdating }: { 
   phaseNumber: number; 
@@ -260,13 +387,16 @@ export default function ProjectDetailPage() {
             </p>
           )}
         </div>
-        <Badge 
-          variant={project.status === "completed" ? "default" : "secondary"}
-          className={project.status === "completed" ? "bg-green-100 text-green-800" : ""}
-          data-testid="badge-project-status"
-        >
-          {project.status === "completed" ? "Concluído" : "Em andamento"}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <EditProjectDialog project={project} projectId={projectId!} />
+          <Badge 
+            variant={project.status === "completed" ? "default" : "secondary"}
+            className={project.status === "completed" ? "bg-green-100 text-green-800" : ""}
+            data-testid="badge-project-status"
+          >
+            {project.status === "completed" ? "Concluído" : "Em andamento"}
+          </Badge>
+        </div>
       </div>
 
       {/* Project Stats */}
