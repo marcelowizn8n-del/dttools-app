@@ -37,11 +37,16 @@ export function UserMenu() {
     return username.slice(0, 2).toUpperCase();
   };
 
+  const profilePicture = (user as any).profilePicture || (user as any).profile_picture || "";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 sm:h-8 sm:w-8 rounded-full hover:bg-gray-100" data-testid="button-user-menu">
           <Avatar className="h-9 w-9 sm:h-8 sm:w-8">
+            {profilePicture ? (
+              <AvatarImage src={profilePicture} alt={user.username} />
+            ) : null}
             <AvatarFallback className="bg-blue-600 text-white text-sm font-medium">
               {getUserInitials(user.username)}
             </AvatarFallback>
