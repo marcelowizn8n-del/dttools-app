@@ -2594,6 +2594,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint to add subscription plan columns for additional users
+  app.post("/api/admin/migrate-subscription-columns", requireAdmin, async (_req, res) => {
+    try {
+      const db = storage.db;
+      
+      // Add columns if they don't exist
+      await db.execute(sql`
+        ALTER TABLE subscription_plans 
+        ADD COLUMN IF NOT EXISTS included_users INTEGER,
+        ADD COLUMN IF NOT EXISTS price_per_additional_user INTEGER
+      `);
+
+      res.json({ 
+        success: true, 
+        message: 'Colunas de usuários adicionais criadas com sucesso!'
+      });
+    } catch (error) {
+      console.error("Error migrating subscription columns:", error);
+      res.status(500).json({ error: "Failed to migrate subscription columns" });
+    }
+  });
+
   // TEMPORARY: Create prenatal project for demo (Admin only)
   // Admin endpoint to update subscription plan prices
   app.post("/api/admin/update-subscription-prices", requireAdmin, async (_req, res) => {
