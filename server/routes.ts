@@ -2595,6 +2595,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // TEMPORARY: Create prenatal project for demo (Admin only)
+  // Admin endpoint to update subscription plan prices
+  app.post("/api/admin/update-subscription-prices", requireAdmin, async (_req, res) => {
+    try {
+      // Update Pro/Individual plan pricing
+      const proPlan = await storage.getSubscriptionPlanByName('Pro');
+      if (proPlan) {
+        await storage.updateSubscriptionPlan(proPlan.id, {
+          displayName: 'Plano Individual',
+          priceMonthly: 4000, // R$ 40,00
+          priceYearly: 43200, // R$ 432,00 (10% discount)
+        });
+      }
+
+      // Update Enterprise plan pricing
+      const enterprisePlan = await storage.getSubscriptionPlanByName('Enterprise');
+      if (enterprisePlan) {
+        await storage.updateSubscriptionPlan(enterprisePlan.id, {
+          priceMonthly: 29900, // R$ 299,00
+          priceYearly: 322920, // R$ 3.229,20 (10% discount)
+          description: 'Plan empresarial com recursos completos (10 usuários inclusos)',
+          features: ['Tudo do Pro', '10 usuários inclusos', 'Usuários adicionais: R$ 29,90/usuário', 'Time ilimitado', 'Suporte dedicado', 'Treinamentos'],
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: 'Preços atualizados com sucesso!',
+        updated: {
+          pro: !!proPlan,
+          enterprise: !!enterprisePlan
+        }
+      });
+    } catch (error) {
+      console.error("Error updating subscription prices:", error);
+      res.status(500).json({ error: "Failed to update subscription prices" });
+    }
+  });
+
   app.post("/api/admin/create-prenatal-project", requireAdmin, async (req, res) => {
     try {
       // Create project
