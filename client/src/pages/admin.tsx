@@ -1224,8 +1224,370 @@ function DashboardTab() {
   );
 }
 
+const planFormSchema = z.object({
+  displayName: z.string().min(1, "Nome é obrigatório"),
+  description: z.string().optional(),
+  priceMonthly: z.number().min(0, "Preço mensal deve ser maior ou igual a 0"),
+  priceYearly: z.number().min(0, "Preço anual deve ser maior ou igual a 0"),
+  maxProjects: z.number().nullable(),
+  maxPersonasPerProject: z.number().nullable(),
+  maxUsersPerTeam: z.number().nullable(),
+  includedUsers: z.number().nullable(),
+  pricePerAdditionalUser: z.number().nullable(),
+  aiChatLimit: z.number().nullable(),
+  hasCollaboration: z.boolean(),
+  hasSso: z.boolean(),
+  hasCustomIntegrations: z.boolean(),
+});
+
+function PlanEditDialog({ 
+  plan, 
+  isOpen, 
+  onClose 
+}: { 
+  plan: SubscriptionPlan; 
+  isOpen: boolean; 
+  onClose: () => void;
+}) {
+  const { toast } = useToast();
+  
+  const form = useForm<z.infer<typeof planFormSchema>>({
+    resolver: zodResolver(planFormSchema),
+    defaultValues: {
+      displayName: plan.displayName,
+      description: plan.description || "",
+      priceMonthly: plan.priceMonthly / 100,
+      priceYearly: plan.priceYearly / 100,
+      maxProjects: plan.maxProjects,
+      maxPersonasPerProject: plan.maxPersonasPerProject,
+      maxUsersPerTeam: plan.maxUsersPerTeam,
+      includedUsers: plan.includedUsers,
+      pricePerAdditionalUser: plan.pricePerAdditionalUser ? plan.pricePerAdditionalUser / 100 : null,
+      aiChatLimit: plan.aiChatLimit,
+      hasCollaboration: plan.hasCollaboration,
+      hasSso: plan.hasSso,
+      hasCustomIntegrations: plan.hasCustomIntegrations,
+    },
+  });
+
+  const updatePlanMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof planFormSchema>) => {
+      const payload = {
+        ...data,
+        priceMonthly: Math.round(data.priceMonthly * 100),
+        priceYearly: Math.round(data.priceYearly * 100),
+        pricePerAdditionalUser: data.pricePerAdditionalUser ? Math.round(data.pricePerAdditionalUser * 100) : null,
+      };
+      const response = await apiRequest("PUT", `/api/subscription-plans/${plan.id}`, payload);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription-plans"] });
+      toast({
+        title: "Plano atualizado",
+        description: "As alterações foram salvas com sucesso.",
+      });
+      onClose();
+    },
+    onError: () => {
+      toast({
+        title: "Erro ao atualizar plano",
+        description: "Ocorreu um erro ao salvar as alterações.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (data: z.infer<typeof planFormSchema>) => {
+    updatePlanMutation.mutate(data);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Editar Plano: {plan.displayName}</DialogTitle>
+          <DialogDescription>
+            Atualize as configurações e limites do plano de assinatura
+          </DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="displayName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome do Plano</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Individual" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Para profissionais individuais" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="priceMonthly"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Preço Mensal (R$)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          {...field} 
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          placeholder="40.00" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="priceYearly"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Preço Anual (R$)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          {...field} 
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          placeholder="400.00" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold mb-4">Limites do Plano</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="maxProjects"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Máx. Projetos (vazio = ilimitado)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number"
+                            {...field} 
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                            placeholder="Ilimitado" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="aiChatLimit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Limite Chat IA (vazio = ilimitado)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number"
+                            {...field} 
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                            placeholder="Ilimitado" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold mb-4">Usuários da Equipe</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="maxUsersPerTeam"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Máx. Usuários (vazio = ilimitado)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number"
+                            {...field} 
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                            placeholder="Ilimitado" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="includedUsers"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Usuários Incluídos no Preço</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number"
+                            {...field} 
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                            placeholder="Ex: 10" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="pricePerAdditionalUser"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Preço/Usuário Adicional (R$)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number"
+                            step="0.01"
+                            {...field} 
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                            placeholder="Ex: 29.00" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold mb-4">Recursos Incluídos</h3>
+                <div className="space-y-3">
+                  <FormField
+                    control={form.control}
+                    name="hasCollaboration"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="h-4 w-4"
+                          />
+                        </FormControl>
+                        <FormLabel className="!mt-0">
+                          Colaboração em Equipe (múltiplos usuários editando)
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="hasSso"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="h-4 w-4"
+                          />
+                        </FormControl>
+                        <FormLabel className="!mt-0">
+                          SSO - Single Sign-On (Login com Google, Microsoft, etc)
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="hasCustomIntegrations"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="h-4 w-4"
+                          />
+                        </FormControl>
+                        <FormLabel className="!mt-0">
+                          Integrações Customizadas (APIs, CRM, Slack, etc)
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={updatePlanMutation.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={updatePlanMutation.isPending}
+              >
+                {updatePlanMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function SubscriptionPlansTab() {
   const { toast } = useToast();
+  const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
   const { data: plans = [], isLoading } = useQuery<SubscriptionPlan[]>({
     queryKey: ["/api/subscription-plans"],
   });
@@ -1299,6 +1661,19 @@ function SubscriptionPlansTab() {
                       <li>• Chat IA: {plan.aiChatLimit || 'Ilimitado'}</li>
                     </ul>
                   </div>
+                  {plan.includedUsers && (
+                    <div className="text-sm pt-2 border-t">
+                      <span className="font-medium text-primary">Modelo de Cobrança:</span>
+                      <p className="mt-1 text-muted-foreground">
+                        • {plan.includedUsers} usuário{plan.includedUsers > 1 ? 's' : ''} incluído{plan.includedUsers > 1 ? 's' : ''}
+                      </p>
+                      {plan.pricePerAdditionalUser && (
+                        <p className="text-muted-foreground">
+                          • {formatPrice(plan.pricePerAdditionalUser)} por usuário adicional
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-4 border-t">
@@ -1327,12 +1702,7 @@ function SubscriptionPlansTab() {
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => {
-                      toast({
-                        title: "Editar Plano",
-                        description: `Funcionalidade de edição do plano ${plan.displayName} em desenvolvimento`,
-                      });
-                    }}
+                    onClick={() => setEditingPlan(plan)}
                     data-testid={`button-edit-plan-${plan.id}`}
                   >
                     <Edit className="h-4 w-4 mr-2" />
@@ -1343,6 +1713,14 @@ function SubscriptionPlansTab() {
             </Card>
           ))}
         </div>
+      )}
+
+      {editingPlan && (
+        <PlanEditDialog
+          plan={editingPlan}
+          isOpen={!!editingPlan}
+          onClose={() => setEditingPlan(null)}
+        />
       )}
     </div>
   );
