@@ -2597,10 +2597,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin endpoint to add subscription plan columns for additional users
   app.post("/api/admin/migrate-subscription-columns", requireAdmin, async (_req, res) => {
     try {
-      const db = storage.db;
-      
-      // Add columns if they don't exist
-      await db.execute(sql`
+      // Add columns using raw SQL - will work in Render production
+      await (storage as any).db.execute(`
         ALTER TABLE subscription_plans 
         ADD COLUMN IF NOT EXISTS included_users INTEGER,
         ADD COLUMN IF NOT EXISTS price_per_additional_user INTEGER
