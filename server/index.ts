@@ -183,7 +183,7 @@ app.use((req, res, next) => {
     setImmediate(async () => {
       try {
         log('🔧 Running database setup in background...');
-        execSync('npm run db:push', { stdio: 'pipe', timeout: 20000 });
+        execSync('npm run db:push', { stdio: 'pipe', timeout: 60000 });
         log('✅ Database migration completed');
       } catch (error) {
         log('⚠️  Database migration error (may already be applied):', String(error).substring(0, 100));
