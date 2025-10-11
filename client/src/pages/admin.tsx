@@ -1590,6 +1590,8 @@ function SubscriptionPlansTab() {
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
   const { data: plans = [], isLoading } = useQuery<SubscriptionPlan[]>({
     queryKey: ["/api/subscription-plans"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const formatPrice = (cents: number) => {
