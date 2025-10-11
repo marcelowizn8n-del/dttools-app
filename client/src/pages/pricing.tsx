@@ -99,9 +99,12 @@ function getLocalizedFeatures(plan: SubscriptionPlan, t: (key: string, params?: 
 function PricingCard({ plan, isYearly, isPopular, onSelectPlan, isLoading }: PricingCardProps) {
   const { t, convertPrice } = useLanguage();
   
-  const price = isYearly ? plan.priceYearly : plan.priceMonthly;
+  // Get price with fallback - yearly defaults to monthly * 12 if not set
+  const price = isYearly ? 
+    (plan.priceYearly ?? plan.priceMonthly * 12) : 
+    plan.priceMonthly;
   const convertedPrice = convertPrice(price);
-  const yearlyDiscount = isYearly && plan.priceMonthly > 0 ? 
+  const yearlyDiscount = isYearly && plan.priceMonthly > 0 && plan.priceYearly ? 
     Math.round((1 - (plan.priceYearly / 12) / plan.priceMonthly) * 100) : 0;
 
   const getButtonText = () => {
