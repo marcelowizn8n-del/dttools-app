@@ -1264,9 +1264,9 @@ function PlanEditDialog({
       includedUsers: plan.includedUsers,
       pricePerAdditionalUser: plan.pricePerAdditionalUser ? plan.pricePerAdditionalUser / 100 : null,
       aiChatLimit: plan.aiChatLimit,
-      hasCollaboration: plan.hasCollaboration,
-      hasSso: plan.hasSso,
-      hasCustomIntegrations: plan.hasCustomIntegrations,
+      hasCollaboration: plan.hasCollaboration || false,
+      hasSso: plan.hasSso || false,
+      hasCustomIntegrations: plan.hasCustomIntegrations || false,
     },
   });
 
