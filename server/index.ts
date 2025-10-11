@@ -74,6 +74,8 @@ app.use((req, res, next) => {
   
   // Base allowed origins
   const allowedOrigins = [
+    'https://designthinkingtools.com',
+    'https://www.designthinkingtools.com',
     'https://dttools.app',
     'https://www.dttools.app',
     'http://localhost:5000',
