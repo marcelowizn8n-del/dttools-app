@@ -4,7 +4,6 @@ import MemoryStore from "memorystore";
 import ConnectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { initializeDefaultData } from "./storage";
-import { execSync } from "child_process";
 import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
