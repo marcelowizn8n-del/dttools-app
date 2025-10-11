@@ -6,8 +6,33 @@ DTTools é uma plataforma interativa e abrangente para guiar designers, equipes 
 
 ## Recent Changes
 
+### 2025-10-11: Render.com Migration + New Domain (v9.0.0-RENDER-PRODUCTION)
+**Status:** ✅ EM PRODUÇÃO
+
+**Nova Infraestrutura:**
+- ✅ **Plataforma**: Migrado de Railway para Render.com
+- ✅ **Domínio Principal**: https://www.designthinkingtools.com (novo domínio profissional)
+- ✅ **Database**: PostgreSQL no Render (migração completa)
+- ✅ **CORS**: Configurado para novos domínios (designthinkingtools.com + www)
+
+**Correções de Cache e Performance:**
+- ✅ **React Query Cache Fix**: Mudado de `staleTime: Infinity` para `30000ms` (30 segundos)
+- ✅ **Refetch on Mount**: Ativado para garantir dados atualizados
+- ✅ **Build Path Fix**: Corrigido caminho de arquivos estáticos para `__dirname/public`
+
+**Planos de Assinatura Corrigidos:**
+- ✅ **Enterprise**: R$ 299/mês, 10 usuários incluídos, R$ 29/usuário adicional
+- ✅ **Pro**: R$ 99/mês
+- ✅ **Free**: R$ 0/mês
+- ✅ Banco de dados atualizado manualmente via TablePlus
+
+**Arquitetura de Deploy:**
+- ✅ **Render**: Backend + Frontend + PostgreSQL (https://www.designthinkingtools.com)
+- ✅ **Database**: PostgreSQL persistente no Render
+- ✅ **Sessions**: PostgreSQL-backed sessions (persistem entre restarts)
+
 ### 2025-10-09: Railway Production Fixes (v8.2.0-PRODUCTION-STABLE)
-**Status:** ✅ PRONTO PARA PRODUÇÃO
+**Status:** ⚠️ DESCONTINUADO (migrado para Render)
 
 **Correções Críticas para Railway:**
 - ✅ **Image Upload Persistence**: Mudado de arquivos (efêmeros) para base64 no banco de dados - imagens nunca mais somem após restart
@@ -16,10 +41,8 @@ DTTools é uma plataforma interativa e abrangente para guiar designers, equipes 
 - ✅ **CORS Configurado**: Frontend URL configurada para aceitar requisições do Netlify
 
 **Arquitetura de Deploy:**
-- ✅ **Railway**: Backend + Frontend + PostgreSQL (URL única: dttools-app-production.up.railway.app)
-- ✅ **Netlify**: DESCONTINUADO (ultrapassou limites gratuitos)
-- ✅ **Database**: PostgreSQL persistente no Railway
-- ✅ **Sessions**: PostgreSQL-backed sessions (persistem entre restarts)
+- ⚠️ **Railway**: DESCONTINUADO (substituído por Render)
+- ⚠️ **Netlify**: DESCONTINUADO (ultrapassou limites gratuitos)
 
 **Documentação Técnica:**
 - ✅ Upload de imagens usa Sharp para resize + base64 encoding
