@@ -241,6 +241,8 @@ export const subscriptionPlans = pgTable("subscription_plans", {
   maxProjects: integer("max_projects"), // null for unlimited
   maxPersonasPerProject: integer("max_personas_per_project"), // null for unlimited
   maxUsersPerTeam: integer("max_users_per_team"), // null for unlimited
+  includedUsers: integer("included_users"), // number of users included in base price (null if not applicable)
+  pricePerAdditionalUser: integer("price_per_additional_user"), // price in cents for each additional user beyond includedUsers
   aiChatLimit: integer("ai_chat_limit"), // null for unlimited
   libraryArticlesCount: integer("library_articles_count"), // null for all articles
   features: jsonb("features").default([]), // Array of feature strings
