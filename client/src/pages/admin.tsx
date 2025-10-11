@@ -1642,15 +1642,31 @@ function SubscriptionPlansTab() {
                 <CardDescription>{plan.description}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium">Preço Mensal:</span>
-                    <span className="text-sm">{formatPrice(plan.priceMonthly)}</span>
+                    <span className="text-sm font-medium">Mensal:</span>
+                    <span className="text-sm font-bold">{formatPrice(plan.priceMonthly)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium">Preço Anual:</span>
-                    <span className="text-sm">{formatPrice(plan.priceYearly)}</span>
+                    <span className="text-sm font-medium">Anual:</span>
+                    <span className="text-sm font-bold">{formatPrice(plan.priceYearly)}</span>
                   </div>
+                  {plan.priceYearly > 0 && plan.priceMonthly > 0 && (
+                    <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-medium text-green-700 dark:text-green-300">No plano anual sai por:</span>
+                        <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                          {formatPrice(Math.floor(plan.priceYearly / 12))}/mês
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-green-600 dark:text-green-400">Economia:</span>
+                        <span className="text-xs font-semibold text-green-600 dark:text-green-400">
+                          {formatPrice((plan.priceMonthly * 12) - plan.priceYearly)}/ano
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-4 border-t space-y-2">
