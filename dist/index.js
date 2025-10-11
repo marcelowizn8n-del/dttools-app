@@ -1,5 +1,11 @@
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+}) : x)(function(x) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
+});
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
 };
@@ -726,6 +732,10 @@ var subscriptionPlans = pgTable("subscription_plans", {
   // null for unlimited
   maxUsersPerTeam: integer("max_users_per_team"),
   // null for unlimited
+  includedUsers: integer("included_users"),
+  // number of users included in base price (null if not applicable)
+  pricePerAdditionalUser: integer("price_per_additional_user"),
+  // price in cents for each additional user beyond includedUsers
   aiChatLimit: integer("ai_chat_limit"),
   // null for unlimited
   libraryArticlesCount: integer("library_articles_count"),
@@ -1927,12 +1937,12 @@ async function initializeDefaultData() {
       });
       await storage.createSubscriptionPlan({
         name: "Pro",
-        displayName: "Plano Pro",
+        displayName: "Plano Individual",
         description: "Plan profissional com recursos avan\xE7ados",
-        priceMonthly: 2990,
-        // in cents
-        priceYearly: 29900,
-        // in cents
+        priceMonthly: 4e3,
+        // R$ 40,00 in cents
+        priceYearly: 43200,
+        // R$ 432,00 in cents (10% discount)
         features: ["Projetos ilimitados", "Todas as ferramentas", "An\xE1lise AI", "Suporte priorit\xE1rio"],
         maxProjects: -1,
         // unlimited
@@ -1941,17 +1951,158 @@ async function initializeDefaultData() {
       await storage.createSubscriptionPlan({
         name: "Enterprise",
         displayName: "Plano Enterprise",
-        description: "Plan empresarial com recursos completos",
-        priceMonthly: 9990,
-        // in cents
-        priceYearly: 99900,
-        // in cents
-        features: ["Tudo do Pro", "Time ilimitado", "Suporte dedicado", "Treinamentos"],
+        description: "Plan empresarial com recursos completos (10 usu\xE1rios inclusos)",
+        priceMonthly: 29900,
+        // R$ 299,00 in cents
+        priceYearly: 322920,
+        // R$ 3.229,20 in cents (10% discount: 29900 * 12 * 0.9)
+        features: ["Tudo do Pro", "10 usu\xE1rios inclusos", "Usu\xE1rios adicionais: R$ 29,90/usu\xE1rio", "Time ilimitado", "Suporte dedicado", "Treinamentos"],
         maxProjects: -1,
         // unlimited
         isActive: true
       });
       console.log("\u2705 Subscription plans created");
+    }
+    const existingArticles = await storage.getArticles();
+    const dtToolsArticles = existingArticles.filter((a) => a.author === "DTTools");
+    if (dtToolsArticles.length === 0) {
+      const defaultArticles = [
+        {
+          title: "Introdu\xE7\xE3o ao Design Thinking",
+          slug: "introducao-design-thinking",
+          category: "foundations",
+          author: "DTTools",
+          description: "Aprenda os fundamentos do Design Thinking e como aplicar em seus projetos",
+          content: "# Introdu\xE7\xE3o ao Design Thinking\n\nDesign Thinking \xE9 uma abordagem centrada no ser humano para inova\xE7\xE3o...",
+          tags: ["fundamentos", "iniciante", "conceitos"],
+          readTime: 5,
+          featured: true,
+          published: true
+        },
+        {
+          title: "Como criar Mapas de Empatia eficazes",
+          slug: "mapas-empatia-eficazes",
+          category: "empathize",
+          author: "DTTools",
+          description: "Guia completo para criar Mapas de Empatia que revelam insights profundos sobre seus usu\xE1rios",
+          content: "# Mapas de Empatia\n\nMapas de Empatia s\xE3o ferramentas poderosas para entender seus usu\xE1rios...",
+          tags: ["empatizar", "ferramentas", "usu\xE1rios"],
+          readTime: 7,
+          featured: true,
+          published: true
+        },
+        {
+          title: "Definindo Problemas com POV Statements",
+          slug: "pov-statements-guia",
+          category: "define",
+          author: "DTTools",
+          description: "Aprenda a estruturar Point of View statements para definir problemas de forma clara",
+          content: "# POV Statements\n\nPoint of View statements ajudam a definir o problema certo...",
+          tags: ["definir", "problema", "framework"],
+          readTime: 6,
+          featured: false,
+          published: true
+        },
+        {
+          title: "T\xE9cnicas de Brainstorming para Idea\xE7\xE3o",
+          slug: "brainstorming-tecnicas",
+          category: "ideate",
+          author: "DTTools",
+          description: "Descubra t\xE9cnicas criativas de brainstorming para gerar ideias inovadoras",
+          content: "# Brainstorming Eficaz\n\nBrainstorming \xE9 mais do que simplesmente listar ideias...",
+          tags: ["idear", "criatividade", "t\xE9cnicas"],
+          readTime: 8,
+          featured: true,
+          published: true
+        },
+        {
+          title: "Prototipagem R\xE1pida: Do Papel ao Digital",
+          slug: "prototipagem-rapida",
+          category: "prototype",
+          author: "DTTools",
+          description: "Aprenda a criar prot\xF3tipos r\xE1pidos para validar suas ideias",
+          content: "# Prototipagem R\xE1pida\n\nProt\xF3tipos permitem testar ideias rapidamente...",
+          tags: ["prototipar", "valida\xE7\xE3o", "pr\xE1tica"],
+          readTime: 10,
+          featured: false,
+          published: true
+        },
+        {
+          title: "Testes com Usu\xE1rios: Melhores Pr\xE1ticas",
+          slug: "testes-usuarios-praticas",
+          category: "test",
+          author: "DTTools",
+          description: "Guia completo para conduzir testes de usabilidade e coletar feedback valioso",
+          content: "# Testes com Usu\xE1rios\n\nTestar com usu\xE1rios reais \xE9 essencial para validar solu\xE7\xF5es...",
+          tags: ["testar", "feedback", "valida\xE7\xE3o"],
+          readTime: 9,
+          featured: true,
+          published: true
+        }
+      ];
+      for (const article of defaultArticles) {
+        await storage.createArticle(article);
+      }
+      console.log("\u2705 Default articles created");
+    }
+    const existingHelpArticles = await storage.getHelpArticles();
+    if (existingHelpArticles.length === 0) {
+      const defaultHelpArticles = [
+        {
+          title: "Como come\xE7ar a usar o DTTools",
+          slug: "como-comecar",
+          category: "getting-started",
+          content: "# Como come\xE7ar\n\nBem-vindo ao DTTools! Este guia vai te ajudar a dar os primeiros passos...",
+          tags: ["iniciante", "tutorial", "primeiros-passos"],
+          keywords: ["come\xE7ar", "iniciar", "primeiro projeto"],
+          order: 1,
+          published: true
+        },
+        {
+          title: "Criando seu primeiro projeto",
+          slug: "primeiro-projeto",
+          category: "getting-started",
+          content: "# Seu Primeiro Projeto\n\nCriar um projeto no DTTools \xE9 simples e r\xE1pido...",
+          tags: ["projeto", "tutorial", "iniciante"],
+          keywords: ["criar projeto", "novo projeto"],
+          order: 2,
+          published: true
+        },
+        {
+          title: "Entendendo as 5 fases do Design Thinking",
+          slug: "cinco-fases",
+          category: "getting-started",
+          content: "# As 5 Fases\n\nDesign Thinking \xE9 dividido em 5 fases: Empatizar, Definir, Idear, Prototipar e Testar...",
+          tags: ["fases", "metodologia", "design thinking"],
+          keywords: ["fases", "empatizar", "definir", "idear", "prototipar", "testar"],
+          order: 3,
+          published: true
+        },
+        {
+          title: "Trabalhando em equipe",
+          slug: "trabalho-equipe",
+          category: "collaboration",
+          content: "# Colabora\xE7\xE3o\n\nO DTTools facilita o trabalho em equipe com ferramentas de colabora\xE7\xE3o...",
+          tags: ["equipe", "colabora\xE7\xE3o", "compartilhamento"],
+          keywords: ["equipe", "time", "colaborar", "compartilhar"],
+          order: 4,
+          published: true
+        },
+        {
+          title: "Exportando seus dados",
+          slug: "exportar-dados",
+          category: "features",
+          content: "# Exporta\xE7\xE3o\n\nVoc\xEA pode exportar seus projetos em PDF, CSV e outros formatos...",
+          tags: ["exportar", "pdf", "download"],
+          keywords: ["exportar", "download", "pdf", "csv"],
+          order: 5,
+          published: true
+        }
+      ];
+      for (const helpArticle of defaultHelpArticles) {
+        await storage.createHelpArticle(helpArticle);
+      }
+      console.log("\u2705 Default help articles created");
     }
   } catch (error) {
     console.error("\u274C Error initializing default data:", error);
@@ -2588,13 +2739,6 @@ var upload = multer({
     }
   }
 });
-function ensureUploadDirectory() {
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "avatars");
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-  return uploadDir;
-}
 var recentProjectCreations = /* @__PURE__ */ new Map();
 var DUPLICATE_PREVENTION_WINDOW_MS = 3e3;
 setInterval(() => {
@@ -2763,18 +2907,16 @@ async function registerRoutes(app2) {
       if (!req.file) {
         return res.status(400).json({ error: "Nenhum arquivo enviado" });
       }
-      const uploadDir = ensureUploadDirectory();
-      const fileName = `avatar-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
-      const filePath = path.join(uploadDir, fileName);
-      await sharp(req.file.buffer).resize(200, 200, {
+      const optimizedBuffer = await sharp(req.file.buffer).resize(200, 200, {
         fit: "cover",
         position: "center"
       }).jpeg({
         quality: 85,
         progressive: true
-      }).toFile(filePath);
-      const avatarUrl = `/uploads/avatars/${fileName}`;
-      res.json({ url: avatarUrl });
+      }).toBuffer();
+      const base64Image = optimizedBuffer.toString("base64");
+      const dataUrl = `data:image/jpeg;base64,${base64Image}`;
+      res.json({ url: dataUrl });
     } catch (error) {
       console.error("Erro no upload:", error);
       res.status(500).json({ error: "Erro ao processar upload" });
@@ -3430,12 +3572,24 @@ async function registerRoutes(app2) {
   });
   app2.post("/api/users", requireAdmin, async (req, res) => {
     try {
+      console.log("[Create User] Request body:", req.body);
       const validatedData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(validatedData);
+      console.log("[Create User] Validated data:", validatedData);
+      const hashedPassword = await bcrypt2.hash(validatedData.password, 10);
+      const userDataWithHashedPassword = {
+        ...validatedData,
+        password: hashedPassword
+      };
+      const user = await storage.createUser(userDataWithHashedPassword);
       const { password: _, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
     } catch (error) {
-      res.status(400).json({ error: "Invalid user data" });
+      console.error("[Create User] Error:", error);
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(400).json({ error: "Invalid user data" });
+      }
     }
   });
   app2.put("/api/users/:id", requireAdmin, async (req, res) => {
@@ -3497,6 +3651,14 @@ async function registerRoutes(app2) {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+  app2.get("/api/admin/projects", requireAdmin, async (_req, res) => {
+    try {
+      const projects2 = await storage.getAllProjects();
+      res.json(projects2);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch projects" });
     }
   });
   app2.get("/api/subscription-plans", async (_req, res) => {
@@ -3626,6 +3788,9 @@ async function registerRoutes(app2) {
     }
   });
   app2.post("/api/stripe-webhook", async (req, res) => {
+    if (!stripe) {
+      return res.status(503).json({ error: "Stripe not configured" });
+    }
     const sig = req.headers["stripe-signature"];
     let event;
     try {
@@ -3687,6 +3852,9 @@ async function registerRoutes(app2) {
   });
   app2.post("/api/cancel-subscription", requireAuth, async (req, res) => {
     try {
+      if (!stripe) {
+        return res.status(503).json({ error: "Stripe not configured" });
+      }
       if (!req.user?.id) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -4462,12 +4630,274 @@ async function registerRoutes(app2) {
       res.status(404).send("Clear cache page not found");
     }
   });
+  app2.post("/api/admin/migrate-subscription-columns", requireAdmin, async (_req, res) => {
+    try {
+      const db2 = storage.db;
+      try {
+        await db2.execute(`
+          ALTER TABLE subscription_plans 
+          ADD COLUMN IF NOT EXISTS included_users INTEGER,
+          ADD COLUMN IF NOT EXISTS price_per_additional_user INTEGER
+        `);
+      } catch (alterError) {
+        if (!alterError.message?.includes("already exists")) {
+          throw alterError;
+        }
+      }
+      res.json({
+        success: true,
+        message: "Colunas de usu\xE1rios adicionais criadas com sucesso!"
+      });
+    } catch (error) {
+      console.error("Error migrating subscription columns:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to migrate subscription columns",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  app2.get("/api/admin/check-subscription-columns", requireAdmin, async (_req, res) => {
+    try {
+      const db2 = storage.db;
+      const result = await db2.execute(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'subscription_plans' 
+        AND column_name IN ('included_users', 'price_per_additional_user')
+      `);
+      const existingColumns = result.rows.map((row) => row.column_name);
+      const needsMigration = !existingColumns.includes("included_users") || !existingColumns.includes("price_per_additional_user");
+      res.json({
+        needsMigration,
+        existingColumns,
+        message: needsMigration ? "Migra\xE7\xE3o necess\xE1ria - execute /api/admin/migrate-subscription-columns" : "Colunas j\xE1 existem!"
+      });
+    } catch (error) {
+      console.error("Error checking subscription columns:", error);
+      res.status(500).json({ error: "Failed to check subscription columns" });
+    }
+  });
+  app2.post("/api/admin/update-subscription-prices", requireAdmin, async (_req, res) => {
+    try {
+      const proPlan = await storage.getSubscriptionPlanByName("Pro");
+      if (proPlan) {
+        await storage.updateSubscriptionPlan(proPlan.id, {
+          displayName: "Plano Individual",
+          priceMonthly: 4e3,
+          // R$ 40,00
+          priceYearly: 43200
+          // R$ 432,00 (10% discount)
+        });
+      }
+      const enterprisePlan = await storage.getSubscriptionPlanByName("Enterprise");
+      if (enterprisePlan) {
+        await storage.updateSubscriptionPlan(enterprisePlan.id, {
+          priceMonthly: 29900,
+          // R$ 299,00
+          priceYearly: 322920,
+          // R$ 3.229,20 (10% discount)
+          description: "Plan empresarial com recursos completos (10 usu\xE1rios inclusos)",
+          features: ["Tudo do Pro", "10 usu\xE1rios inclusos", "Usu\xE1rios adicionais: R$ 29,90/usu\xE1rio", "Time ilimitado", "Suporte dedicado", "Treinamentos"]
+        });
+      }
+      res.json({
+        success: true,
+        message: "Pre\xE7os atualizados com sucesso!",
+        updated: {
+          pro: !!proPlan,
+          enterprise: !!enterprisePlan
+        }
+      });
+    } catch (error) {
+      console.error("Error updating subscription prices:", error);
+      res.status(500).json({ error: "Failed to update subscription prices" });
+    }
+  });
+  app2.post("/api/admin/create-prenatal-project", requireAdmin, async (req, res) => {
+    try {
+      const project = await storage.createProject({
+        userId: req.session.userId,
+        name: "Acesso ao Pr\xE9-Natal na UBS - Zona Leste SP",
+        description: "Projeto de Design Thinking focado em melhorar a experi\xEAncia de gestantes ao agendar e realizar consultas de pr\xE9-natal na UBS da Zona Leste de S\xE3o Paulo. Baseado na jornada real de Manuela Oliveira, 26 anos, m\xE3e de uma menina de 5 anos.",
+        status: "completed",
+        currentPhase: 5,
+        completionRate: 100
+      });
+      await storage.createEmpathyMap({
+        projectId: project.id,
+        title: "Mapa de Empatia - Manuela Oliveira (Gestante)",
+        says: [
+          '"Preciso confirmar minha gravidez na UBS"',
+          '"N\xE3o consigo ligar, a linha sempre d\xE1 ocupado"',
+          '"Preciso come\xE7ar o pr\xE9-natal logo"',
+          '"A \xC2ngela me ajudou muito com o agendamento"',
+          '"Espero que tudo corra bem com o beb\xEA"'
+        ],
+        thinks: [
+          "Estou preocupada com a sa\xFAde do beb\xEA",
+          "Preciso me organizar melhor com o trabalho e a Gabriela",
+          "N\xE3o sei se minhas vacinas est\xE3o em dia",
+          "Como vou conseguir tempo para todas as consultas?",
+          "Preciso preparar o quarto do beb\xEA"
+        ],
+        does: [
+          "Trabalha em loja de departamentos no shopping",
+          "Cuida da filha Gabriela (5 anos)",
+          "Tenta ligar para UBS v\xE1rias vezes",
+          "Recebe visita da ACS em casa",
+          "Vai at\xE9 a UBS para consulta"
+        ],
+        feels: [
+          "Ansiosa pela confirma\xE7\xE3o da gravidez",
+          "Aliviada quando a ACS a ajuda",
+          "Acolhida pela recepcionista Daniela",
+          "Confiante com orienta\xE7\xF5es da enfermeira Adriana",
+          "Esperan\xE7osa com a chegada do beb\xEA"
+        ]
+      });
+      await storage.createPersona({
+        projectId: project.id,
+        name: "Manuela Oliveira",
+        age: 26,
+        occupation: "Vendedora em Loja de Departamentos",
+        bio: "Manuela tem 26 anos e mora na Zona Leste de S\xE3o Paulo. Trabalha em uma loja de departamentos em shopping center e \xE9 m\xE3e de Gabriela, de 5 anos. Descobriu recentemente que est\xE1 gr\xE1vida novamente e precisa acessar o pr\xE9-natal na UBS de seu bairro.",
+        goals: [
+          "Confirmar gravidez e iniciar pr\xE9-natal",
+          "Garantir sa\xFAde do beb\xEA",
+          "Atualizar vacinas",
+          "Conciliar trabalho e consultas",
+          "Preparar chegada do beb\xEA"
+        ],
+        frustrations: [
+          "Telefone UBS sempre ocupado",
+          "Falta de tempo",
+          "N\xE3o saber se est\xE1 tudo bem",
+          "Informa\xE7\xF5es confusas",
+          "Medo de perder vaga"
+        ],
+        motivations: [
+          "Sa\xFAde do beb\xEA",
+          "Ser boa m\xE3e",
+          "Apoio da ACS \xC2ngela",
+          "Atendimento humanizado",
+          "Fam\xEDlia saud\xE1vel"
+        ],
+        techSavviness: "medium"
+      });
+      await storage.createObservation({
+        projectId: project.id,
+        location: "UBS Zona Leste - S\xE3o Paulo",
+        context: "Dia de consulta de pr\xE9-natal",
+        behavior: "Manuela chega pontualmente, demonstra ansiedade na triagem, faz muitas perguntas para enfermeira, sai tranquila",
+        insights: "Acolhimento humanizado \xE9 fundamental. ACS crucial como ponte entre comunidade e UBS",
+        date: /* @__PURE__ */ new Date("2025-10-08")
+      });
+      await storage.createPovStatement({
+        projectId: project.id,
+        user: "Gestante trabalhadora da Zona Leste",
+        need: "Agendar pr\xE9-natal r\xE1pido sem burocracia",
+        insight: "Telefone UBS n\xE3o atende mas ACS resolve humanizadamente",
+        statement: "Gestantes trabalhadoras precisam de sistema acess\xEDvel e apoio da ACS",
+        priority: "high"
+      });
+      await storage.createHmwQuestion({
+        projectId: project.id,
+        question: "Como facilitar agendamento sem depender do telefone?",
+        context: "Telefone UBS sempre ocupado",
+        challenge: "Sistema de agendamento inadequado",
+        scope: "service",
+        priority: "high",
+        category: "Acesso",
+        votes: 8
+      });
+      await storage.createHmwQuestion({
+        projectId: project.id,
+        question: "Como ampliar papel das ACS no suporte \xE0s gestantes?",
+        context: "ACS foi fundamental",
+        challenge: "Potencializar agentes comunit\xE1rias",
+        scope: "service",
+        priority: "high",
+        category: "Suporte",
+        votes: 6
+      });
+      const idea1 = await storage.createIdea({
+        projectId: project.id,
+        title: "App/WhatsApp de Agendamento UBS",
+        description: "Chatbot WhatsApp para agendamento de pr\xE9-natal. Gestante escolhe data/hora, recebe confirma\xE7\xE3o autom\xE1tica.",
+        category: "Digital",
+        desirability: 5,
+        viability: 4,
+        feasibility: 3,
+        confidenceLevel: 4,
+        dvfScore: 4,
+        dvfAnalysis: "Alta desejabilidade, vi\xE1vel via WhatsApp Business, desafio \xE9 integra\xE7\xE3o com UBS",
+        actionDecision: "love_it",
+        priorityRank: 1,
+        votes: 12
+      });
+      const idea2 = await storage.createIdea({
+        projectId: project.id,
+        title: "Capacita\xE7\xE3o e Equipamento para ACS",
+        description: "Treinar ACS com tablets para agendamento durante visitas domiciliares.",
+        category: "Capacita\xE7\xE3o",
+        desirability: 4,
+        viability: 4,
+        feasibility: 4,
+        confidenceLevel: 4,
+        dvfScore: 4,
+        dvfAnalysis: "Desej\xE1vel pois ACS tem confian\xE7a, vi\xE1vel com investimento",
+        actionDecision: "love_it",
+        priorityRank: 2,
+        votes: 10
+      });
+      const proto1 = await storage.createPrototype({
+        projectId: project.id,
+        ideaId: idea1.id,
+        name: "Prot\xF3tipo WhatsApp Bot - Agendamento Pr\xE9-Natal",
+        type: "digital",
+        description: "Fluxo de conversa\xE7\xE3o no WhatsApp. Bot solicita dados, mostra hor\xE1rios, confirma agendamento.",
+        materials: ["WhatsApp Business API", "Chatbot platform", "Integra\xE7\xE3o UBS"],
+        images: [],
+        version: 1,
+        feedback: "Gestantes acharam mais f\xE1cil. Solicitaram op\xE7\xE3o de reagendar."
+      });
+      await storage.createTestPlan({
+        projectId: project.id,
+        prototypeId: proto1.id,
+        name: "Teste WhatsApp Bot",
+        objective: "Validar agendamento aut\xF4nomo",
+        methodology: "Teste com 10 gestantes Zona Leste",
+        participants: 10,
+        duration: 15,
+        tasks: [
+          "Iniciar conversa com bot",
+          "Informar dados",
+          "Escolher hor\xE1rio",
+          "Confirmar agendamento"
+        ],
+        metrics: [
+          "Taxa conclus\xE3o >90%",
+          "Tempo <3min",
+          "NPS >8"
+        ],
+        status: "completed"
+      });
+      res.json({
+        success: true,
+        message: "Projeto pr\xE9-natal criado com sucesso!",
+        projectId: project.id
+      });
+    } catch (error) {
+      console.error("Error creating prenatal project:", error);
+      res.status(500).json({ error: "Failed to create prenatal project" });
+    }
+  });
   const httpServer = createServer(app2);
   return httpServer;
 }
 
 // server/index.ts
-import { execSync } from "child_process";
 import fsSync from "fs";
 import path4 from "path";
 var log2 = (...args) => {
@@ -4577,20 +5007,49 @@ app.use((req, res, next) => {
 });
 (async () => {
   const __dirname = process.cwd();
-  const isProductionBuild = fsSync.existsSync(path4.resolve(__dirname, "dist", "index.js"));
+  const isProductionBuild = process.env.NODE_ENV === "production";
   const server = await registerRoutes(app);
   if (isProductionBuild && process.env.DATABASE_URL) {
-    setImmediate(async () => {
+    (async () => {
+      let migrationCompleted = false;
       try {
         log2("\u{1F527} Running database setup in background...");
-        execSync("npm run db:push", { stdio: "pipe", timeout: 2e4 });
-        log2("\u2705 Database migration completed");
+        const migrationPromise = new Promise((resolve, reject) => {
+          const { spawn } = __require("child_process");
+          const migration = spawn("npm", ["run", "db:push"], {
+            stdio: "inherit"
+            // Inherit to avoid buffer issues
+          });
+          const timeoutId = setTimeout(() => {
+            migration.kill("SIGTERM");
+            reject(new Error("Migration timeout after 90s"));
+          }, 9e4);
+          migration.on("close", (code) => {
+            clearTimeout(timeoutId);
+            if (code === 0) {
+              log2("\u2705 Database migration completed");
+              resolve();
+            } else {
+              reject(new Error(`Migration exited with code ${code}`));
+            }
+          });
+          migration.on("error", (error) => {
+            clearTimeout(timeoutId);
+            reject(error);
+          });
+        });
+        await migrationPromise;
+        migrationCompleted = true;
+      } catch (error) {
+        log2("\u26A0\uFE0F  Database migration error (may already be applied):", String(error).substring(0, 100));
+      }
+      try {
         await initializeDefaultData();
         log2("\u2705 Default data initialized");
       } catch (error) {
-        log2("\u26A0\uFE0F  Database setup error (may already be initialized):", String(error).substring(0, 100));
+        log2("\u26A0\uFE0F  Default data initialization error:", String(error).substring(0, 100));
       }
-    });
+    })();
   } else {
     await initializeDefaultData();
   }
