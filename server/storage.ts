@@ -1172,10 +1172,10 @@ export async function initializeDefaultData() {
 
       await storage.createSubscriptionPlan({
         name: 'Pro',
-        displayName: 'Plano Pro',
+        displayName: 'Plano Individual',
         description: 'Plan profissional com recursos avançados',
-        priceMonthly: 2990, // in cents
-        priceYearly: 29900, // in cents
+        priceMonthly: 4000, // R$ 40,00 in cents
+        priceYearly: 43200, // R$ 432,00 in cents (10% discount)
         features: ['Projetos ilimitados', 'Todas as ferramentas', 'Análise AI', 'Suporte prioritário'],
         maxProjects: -1, // unlimited
         isActive: true
@@ -1184,10 +1184,10 @@ export async function initializeDefaultData() {
       await storage.createSubscriptionPlan({
         name: 'Enterprise',
         displayName: 'Plano Enterprise',
-        description: 'Plan empresarial com recursos completos',
-        priceMonthly: 9990, // in cents
-        priceYearly: 99900, // in cents
-        features: ['Tudo do Pro', 'Time ilimitado', 'Suporte dedicado', 'Treinamentos'],
+        description: 'Plan empresarial com recursos completos (10 usuários inclusos)',
+        priceMonthly: 29900, // R$ 299,00 in cents
+        priceYearly: 322920, // R$ 3.229,20 in cents (10% discount: 29900 * 12 * 0.9)
+        features: ['Tudo do Pro', '10 usuários inclusos', 'Usuários adicionais: R$ 29,90/usuário', 'Time ilimitado', 'Suporte dedicado', 'Treinamentos'],
         maxProjects: -1, // unlimited
         isActive: true
       });
