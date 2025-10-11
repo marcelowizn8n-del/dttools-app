@@ -4931,6 +4931,8 @@ if (configuredFrontendUrls.length > 0) {
 app.use((req, res, next) => {
   const origin = req.headers.origin?.replace(/\/$/, "");
   const allowedOrigins = [
+    "https://designthinkingtools.com",
+    "https://www.designthinkingtools.com",
     "https://dttools.app",
     "https://www.dttools.app",
     "http://localhost:5000",
@@ -4980,7 +4982,6 @@ app.use(session({
   }
 }));
 app.use("/uploads", express2.static("public/uploads"));
-app.use(express2.static("server/public"));
 app.use((req, res, next) => {
   const start = Date.now();
   const path5 = req.path;
