@@ -179,24 +179,56 @@ app.use((req, res, next) => {
 
   // Initialize database and default data in background (after server starts)
   if (isProductionBuild && process.env.DATABASE_URL) {
-    // Run in background to not block server startup
-    setImmediate(async () => {
+    // Run database setup asynchronously without blocking server startup
+    (async () => {
+      let migrationCompleted = false;
+      
       try {
         log('🔧 Running database setup in background...');
-        execSync('npm run db:push', { stdio: 'pipe', timeout: 60000 });
-        log('✅ Database migration completed');
+        
+        // Run migration with proper timeout handling
+        const migrationPromise = new Promise<void>((resolve, reject) => {
+          const { spawn } = require('child_process');
+          const migration = spawn('npm', ['run', 'db:push'], {
+            stdio: 'inherit' // Inherit to avoid buffer issues
+          });
+          
+          // Set up timeout killer
+          const timeoutId = setTimeout(() => {
+            migration.kill('SIGTERM');
+            reject(new Error('Migration timeout after 90s'));
+          }, 90000);
+          
+          migration.on('close', (code: number) => {
+            clearTimeout(timeoutId);
+            if (code === 0) {
+              log('✅ Database migration completed');
+              resolve();
+            } else {
+              reject(new Error(`Migration exited with code ${code}`));
+            }
+          });
+          
+          migration.on('error', (error: Error) => {
+            clearTimeout(timeoutId);
+            reject(error);
+          });
+        });
+        
+        await migrationPromise;
+        migrationCompleted = true;
       } catch (error) {
         log('⚠️  Database migration error (may already be applied):', String(error).substring(0, 100));
       }
       
-      // Always try to initialize default data, even if migration failed/timed out
+      // ALWAYS initialize default data, regardless of migration result
       try {
         await initializeDefaultData();
         log('✅ Default data initialized');
       } catch (error) {
         log('⚠️  Default data initialization error:', String(error).substring(0, 100));
       }
-    });
+    })();
   } else {
     // In development, run normally
     await initializeDefaultData();
