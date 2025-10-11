@@ -254,7 +254,7 @@ app.use((req, res, next) => {
   } else {
     // In production, serve from Vite's actual build output
     log('Setting up static file serving for production');
-    const distPath = path.resolve(__dirname, 'client', 'dist');
+    const distPath = path.resolve(__dirname, 'public');
     log(`Serving static files from: ${distPath}`);
     
     if (!fsSync.existsSync(distPath)) {
