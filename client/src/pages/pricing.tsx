@@ -356,7 +356,7 @@ export default function PricingPage() {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{t("feature.projects")}</td>
                   {sortedPlans.map((plan: SubscriptionPlan) => (
                     <td key={plan.id} className="px-6 py-4 text-center text-sm text-gray-700">
-                      {plan.maxProjects ? plan.maxProjects : t("feature.unlimited")}
+                      {plan.maxProjects && plan.maxProjects !== -1 ? plan.maxProjects : t("feature.unlimited")}
                     </td>
                   ))}
                 </tr>
@@ -364,7 +364,7 @@ export default function PricingPage() {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{t("feature.personas")}</td>
                   {sortedPlans.map((plan: SubscriptionPlan) => (
                     <td key={plan.id} className="px-6 py-4 text-center text-sm text-gray-700">
-                      {plan.maxPersonasPerProject ? plan.maxPersonasPerProject : t("feature.unlimited")}
+                      {plan.maxPersonasPerProject && plan.maxPersonasPerProject !== -1 ? plan.maxPersonasPerProject : t("feature.unlimited")}
                     </td>
                   ))}
                 </tr>
@@ -372,7 +372,7 @@ export default function PricingPage() {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{t("feature.ai.chat")}</td>
                   {sortedPlans.map((plan: SubscriptionPlan) => (
                     <td key={plan.id} className="px-6 py-4 text-center text-sm text-gray-700">
-                      {plan.aiChatLimit ? plan.aiChatLimit : t("feature.unlimited")}
+                      {plan.aiChatLimit && plan.aiChatLimit !== -1 ? plan.aiChatLimit : t("feature.unlimited")}
                     </td>
                   ))}
                 </tr>
@@ -380,8 +380,7 @@ export default function PricingPage() {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{t("feature.team.users")}</td>
                   {sortedPlans.map((plan: SubscriptionPlan) => (
                     <td key={plan.id} className="px-6 py-4 text-center text-sm text-gray-700">
-                      {plan.maxUsersPerTeam ? plan.maxUsersPerTeam : 
-                       plan.name === "free" || plan.name === "pro" ? "1" : t("feature.unlimited")}
+                      {plan.maxUsersPerTeam && plan.maxUsersPerTeam !== -1 ? plan.maxUsersPerTeam : t("feature.unlimited")}
                     </td>
                   ))}
                 </tr>
