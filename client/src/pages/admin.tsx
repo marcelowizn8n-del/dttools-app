@@ -1673,10 +1673,10 @@ function SubscriptionPlansTab() {
                   <div className="text-sm">
                     <span className="font-medium">Limites:</span>
                     <ul className="mt-2 space-y-1 text-muted-foreground">
-                      <li>• Projetos: {plan.maxProjects || 'Ilimitado'}</li>
-                      <li>• Personas/Projeto: {plan.maxPersonasPerProject || 'Ilimitado'}</li>
-                      <li>• Usuários/Equipe: {plan.maxUsersPerTeam || 'Ilimitado'}</li>
-                      <li>• Chat IA: {plan.aiChatLimit || 'Ilimitado'}</li>
+                      <li>• Projetos: {plan.maxProjects != null ? plan.maxProjects : 'Ilimitado'}</li>
+                      <li>• Personas/Projeto: {plan.maxPersonasPerProject != null ? plan.maxPersonasPerProject : 'Ilimitado'}</li>
+                      <li>• Usuários/Equipe: {plan.maxUsersPerTeam != null ? plan.maxUsersPerTeam : 'Ilimitado'}</li>
+                      <li>• Chat IA: {plan.aiChatLimit != null ? plan.aiChatLimit : 'Ilimitado'}</li>
                     </ul>
                   </div>
                   {plan.includedUsers && (
