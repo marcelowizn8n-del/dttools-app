@@ -5075,9 +5075,23 @@ app.use((req, res, next) => {
     if (!fsSync.existsSync(distPath)) {
       throw new Error(`Could not find the build directory: ${distPath}`);
     }
-    app.use(express2.static(distPath));
-    app.use("*", (_req, res) => {
-      res.sendFile(path4.resolve(distPath, "index.html"));
+    app.use(express2.static(distPath, {
+      etag: true,
+      lastModified: true,
+      setHeaders: (res, filepath) => {
+        if (filepath.endsWith(".js")) {
+          res.setHeader("Content-Type", "application/javascript; charset=UTF-8");
+        } else if (filepath.endsWith(".css")) {
+          res.setHeader("Content-Type", "text/css; charset=UTF-8");
+        }
+      }
+    }));
+    app.use("*", (req, res) => {
+      if (req.originalUrl.includes(".")) {
+        res.status(404).send("File not found");
+      } else {
+        res.sendFile(path4.resolve(distPath, "index.html"));
+      }
     });
   }
   const port = parseInt(process.env.PORT || "5000", 10);

@@ -262,9 +262,29 @@ app.use((req, res, next) => {
       throw new Error(`Could not find the build directory: ${distPath}`);
     }
     
-    app.use(express.static(distPath));
-    app.use("*", (_req, res) => {
-      res.sendFile(path.resolve(distPath, "index.html"));
+    // Serve static files with explicit configuration
+    app.use(express.static(distPath, {
+      etag: true,
+      lastModified: true,
+      setHeaders: (res, filepath) => {
+        // Set correct MIME types for JavaScript modules
+        if (filepath.endsWith('.js')) {
+          res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+        } else if (filepath.endsWith('.css')) {
+          res.setHeader('Content-Type', 'text/css; charset=UTF-8');
+        }
+      }
+    }));
+    
+    // SPA fallback - only for non-file requests
+    app.use("*", (req, res) => {
+      // Only serve index.html if the request doesn't have a file extension
+      // This prevents intercepting asset requests
+      if (req.originalUrl.includes('.')) {
+        res.status(404).send('File not found');
+      } else {
+        res.sendFile(path.resolve(distPath, "index.html"));
+      }
     });
   }
 
