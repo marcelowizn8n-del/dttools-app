@@ -4900,6 +4900,7 @@ async function registerRoutes(app2) {
 // server/index.ts
 import fsSync from "fs";
 import path4 from "path";
+import { fileURLToPath } from "url";
 var log2 = (...args) => {
   console.log(`[${(/* @__PURE__ */ new Date()).toISOString()}]`, ...args);
 };
@@ -5007,7 +5008,8 @@ app.use((req, res, next) => {
   next();
 });
 (async () => {
-  const __dirname = process.cwd();
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path4.dirname(__filename);
   const isProductionBuild = process.env.NODE_ENV === "production";
   const server = await registerRoutes(app);
   if (isProductionBuild && process.env.DATABASE_URL) {

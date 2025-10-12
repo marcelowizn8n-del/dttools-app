@@ -7,6 +7,7 @@ import { initializeDefaultData } from "./storage";
 import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
 // Simple log function
 const log = (...args: any[]) => {
@@ -170,7 +171,8 @@ app.use((req, res, next) => {
 
 (async () => {
   // Auto-detect production: use NODE_ENV
-  const __dirname = process.cwd();
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
   const isProductionBuild = process.env.NODE_ENV === 'production';
 
   const server = await registerRoutes(app);
