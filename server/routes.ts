@@ -1037,14 +1037,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
-      console.log("==================== LOGIN ATTEMPT ====================");
-      console.log("Email:", email);
-      console.log("Password length:", password?.length);
-      console.log("Request headers:", req.headers);
-      console.log("Request origin:", req.headers.origin);
       
       if (!email || !password) {
-        console.log("ERROR: Missing email or password");
         return res.status(400).json({ error: "Email e senha são obrigatórios" });
       }
 
@@ -1054,23 +1048,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         // Try username for backwards compatibility with old accounts
         user = await storage.getUserByUsername(email);
-        console.log("User found by username (legacy):", user ? "Yes" : "No");
-      } else {
-        console.log("User found by email:", user ? "Yes" : "No");
       }
       
       if (!user) {
-        console.log("ERROR: User not found");
         return res.status(401).json({ error: "Email ou senha inválidos" });
       }
 
-      console.log("Comparing passwords...");
-      console.log("Hash from DB:", user.password);
       const isValidPassword = await bcrypt.compare(password, user.password);
-      console.log("Password valid:", isValidPassword);
       
       if (!isValidPassword) {
-        console.log("ERROR: Invalid password");
         return res.status(401).json({ error: "Email ou senha inválidos" });
       }
 
