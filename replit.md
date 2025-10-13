@@ -6,6 +6,28 @@ DTTools é uma plataforma interativa e abrangente para guiar designers, equipes 
 
 ## Recent Changes
 
+### 2025-10-13: Auth UX Improvement (v10.0.0-AUTH-UX)
+**Status:** ✅ EM PRODUÇÃO
+
+**Melhorias de Registro e Login:**
+- ✅ **Campo Email**: Login agora usa email em vez de username (mais intuitivo)
+- ✅ **Nome de Exibição**: Campo separado para nome que aparecerá no sistema
+- ✅ **Confirmação de Email**: Dupla verificação para evitar erros de digitação
+- ✅ **Confirmação de Senha**: Garantia que a senha foi digitada corretamente
+- ✅ **Indicador de Força**: Medidor visual da força da senha (Fraca/Média/Forte)
+- ✅ **Compatibilidade Total**: Usuários antigos continuam funcionando (aceita email OU username)
+
+**Arquitetura Técnica:**
+- ✅ Backend: Adicionado `getUserByEmail()` no storage
+- ✅ Backend: Login aceita tanto email quanto username (backwards compatibility)
+- ✅ Frontend: SignupForm com validação Zod para email + senha
+- ✅ Frontend: LoginForm simplificado (email + senha)
+- ✅ Schema: Username auto-gerado a partir do email (compatibilidade)
+
+**UX Final:**
+- Registro: Nome de Exibição + Email + Confirmar Email + Senha + Confirmar Senha
+- Login: Email + Senha (ou username antigo para compatibilidade)
+
 ### 2025-10-11: Render.com Migration + New Domain (v9.0.0-RENDER-PRODUCTION)
 **Status:** ✅ EM PRODUÇÃO
 
