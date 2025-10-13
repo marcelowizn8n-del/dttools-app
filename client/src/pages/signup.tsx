@@ -23,7 +23,8 @@ export default function SignupPage() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          username: userData.username,
+          name: userData.name,
+          email: userData.email,
           password: userData.password
         })
       });

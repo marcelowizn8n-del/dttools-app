@@ -11,18 +11,23 @@ import { UserPlus, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { Link } from "wouter";
 
 const signupSchema = z.object({
-  username: z.string().min(3, "Nome de usuário deve ter pelo menos 3 caracteres"),
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("Email inválido"),
+  confirmEmail: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
+}).refine((data) => data.email === data.confirmEmail, {
+  message: "Emails não coincidem",
+  path: ["confirmEmail"],
 });
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
 interface SignupFormProps {
-  onSuccess?: (userData: Omit<SignupFormData, 'confirmPassword'>) => void;
+  onSuccess?: (userData: Omit<SignupFormData, 'confirmPassword' | 'confirmEmail'>) => void;
 }
 
 export function SignupForm({ onSuccess }: SignupFormProps) {
@@ -34,7 +39,9 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      username: "",
+      name: "",
+      email: "",
+      confirmEmail: "",
       password: "",
       confirmPassword: "",
     },
@@ -60,8 +67,8 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       setError("");
       setIsLoading(true);
       
-      // Remove confirmPassword before passing to parent
-      const { confirmPassword, ...userData } = data;
+      // Remove confirmPassword and confirmEmail before passing to parent
+      const { confirmPassword, confirmEmail, ...userData } = data;
       onSuccess?.(userData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar conta");
@@ -85,20 +92,56 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Nome de Usuário */}
+          {/* Nome de Exibição */}
           <div className="space-y-2">
-            <Label htmlFor="username">Nome de Usuário</Label>
+            <Label htmlFor="name">Nome de Exibição</Label>
             <Input
-              id="username"
+              id="name"
               type="text"
-              placeholder="Digite um nome de usuário"
-              data-testid="input-username"
-              {...form.register("username")}
+              placeholder="Como você quer ser chamado? (ex: João Silva)"
+              data-testid="input-name"
+              {...form.register("name")}
             />
-            {form.formState.errors.username && (
+            {form.formState.errors.name && (
               <p className="text-sm text-red-600 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
-                {form.formState.errors.username.message}
+                {form.formState.errors.name.message}
+              </p>
+            )}
+          </div>
+
+          {/* Email */}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email (usado para login)</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              data-testid="input-email"
+              {...form.register("email")}
+            />
+            {form.formState.errors.email && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {form.formState.errors.email.message}
+              </p>
+            )}
+          </div>
+
+          {/* Confirmar Email */}
+          <div className="space-y-2">
+            <Label htmlFor="confirmEmail">Confirmar Email</Label>
+            <Input
+              id="confirmEmail"
+              type="email"
+              placeholder="Digite o email novamente"
+              data-testid="input-confirm-email"
+              {...form.register("confirmEmail")}
+            />
+            {form.formState.errors.confirmEmail && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {form.formState.errors.confirmEmail.message}
               </p>
             )}
           </div>
