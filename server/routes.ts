@@ -936,31 +936,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { username, password } = req.body;
-      console.log("Login attempt:", { username, passwordLength: password?.length });
+      const { email, password } = req.body;
+      console.log("Login attempt:", { email, passwordLength: password?.length });
       
-      if (!username || !password) {
-        return res.status(400).json({ error: "Username and password are required" });
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email e senha são obrigatórios" });
       }
 
-      // Debug: List all users before search
-      const allUsers = await storage.getUsers();
-      console.log("Total users in system:", allUsers.length);
-      console.log("All usernames:", allUsers.map(u => u.username));
-      console.log("Searching for username:", username);
-
-      const user = await storage.getUserByUsername(username);
-      console.log("User found:", user ? "Yes" : "No");
+      // Try to find user by email
+      const user = await storage.getUserByEmail(email);
+      console.log("User found by email:", user ? "Yes" : "No");
       
       if (!user) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        return res.status(401).json({ error: "Email ou senha inválidos" });
       }
 
       const isValidPassword = await bcrypt.compare(password, user.password);
       console.log("Password valid:", isValidPassword);
       
       if (!isValidPassword) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        return res.status(401).json({ error: "Email ou senha inválidos" });
       }
 
       // Create session
@@ -983,34 +978,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Signup route
   app.post("/api/auth/signup", async (req, res) => {
     try {
-      const { username, password } = req.body;
+      const { name, email, password } = req.body;
       
-      if (!username || !password) {
-        return res.status(400).json({ error: "Nome de usuário e senha são obrigatórios" });
+      if (!name || !email || !password) {
+        return res.status(400).json({ error: "Nome, email e senha são obrigatórios" });
       }
 
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(username);
-      if (existingUser) {
-        return res.status(400).json({ error: "Este nome de usuário já está em uso" });
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Email inválido" });
       }
 
-      // Create new user with minimal data
+      // Check if email already exists
+      const existingEmailUser = await storage.getUserByEmail(email);
+      if (existingEmailUser) {
+        return res.status(400).json({ error: "Este email já está em uso" });
+      }
+
+      // Create username from email (for backwards compatibility)
+      const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(7);
+
+      // Create new user
       const userData = {
-        username,
-        email: `${username}@temp.local`, // Temporary email
-        name: username, // Use username as display name initially
+        username, // Auto-generated from email
+        email,
+        name, // Display name provided by user
         password,
         role: "user"
       };
 
       const user = await storage.createUser(userData);
-      console.log("User created successfully:", user.username);
-      
-      // Debug: List all users
-      const allUsers = await storage.getUsers();
-      console.log("Total users in system:", allUsers.length);
-      console.log("All usernames:", allUsers.map(u => u.username));
+      console.log("User created successfully:", user.email);
       
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
