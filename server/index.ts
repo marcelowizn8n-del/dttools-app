@@ -2,6 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import ConnectPgSimple from "connect-pg-simple";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { initializeDefaultData } from "./storage";
 import fs from "fs/promises";
@@ -99,6 +101,35 @@ app.use((req, res, next) => {
   } else {
     next();
   }
+});
+
+// Response compression for better performance
+app.use(compression({
+  filter: (req: Request, res: Response) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6 // Compression level (1-9, 6 is good balance)
+}));
+
+// Rate limiting for API protection
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per IP per window
+  message: 'Muitas requisições. Tente novamente em 15 minutos.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Stricter rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Only 5 login attempts per window
+  message: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Increase limits for image uploads (base64 encoded images can be large)

@@ -168,6 +168,32 @@ function recordProjectCreation(userId: string, projectName: string): void {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint for monitoring
+  app.get("/api/health", async (_req, res) => {
+    try {
+      // Check database connection
+      const dbCheck = await storage.getUsers();
+      
+      res.json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        database: "connected",
+        uptime: process.uptime(),
+        memory: {
+          used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+          total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+          unit: "MB"
+        }
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: "unhealthy",
+        timestamp: new Date().toISOString(),
+        error: "Database connection failed"
+      });
+    }
+  });
+
   // Subscription info endpoint
   app.get("/api/subscription-info", requireAuth, getSubscriptionInfo);
 
@@ -192,6 +218,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(project);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch project" });
+    }
+  });
+
+  // Optimized endpoint: Fetch project with ALL related data in single request
+  app.get("/api/projects/:id/full", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session!.userId!;
+      const projectId = req.params.id;
+      
+      // Fetch all data in parallel for maximum performance
+      const [
+        project,
+        empathyMaps,
+        personas,
+        interviews,
+        observations,
+        povStatements,
+        hmwQuestions,
+        ideas,
+        prototypes,
+        testPlans,
+        canvasDrawings,
+        phaseCards,
+        benchmarks,
+        dvfAssessments,
+        lovabilityMetrics,
+        projectAnalytics
+      ] = await Promise.all([
+        storage.getProject(projectId, userId),
+        storage.getEmpathyMaps(projectId),
+        storage.getPersonas(projectId),
+        storage.getInterviews(projectId),
+        storage.getObservations(projectId),
+        storage.getPovStatements(projectId),
+        storage.getHmwQuestions(projectId),
+        storage.getIdeas(projectId),
+        storage.getPrototypes(projectId),
+        storage.getTestPlans(projectId),
+        storage.getCanvasDrawings(projectId),
+        storage.getPhaseCards(projectId),
+        storage.getBenchmarks(projectId),
+        storage.getDvfAssessments(projectId),
+        storage.getLovabilityMetrics(projectId),
+        storage.getProjectAnalytics(projectId)
+      ]);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Return everything in one response
+      res.json({
+        project,
+        empathyMaps,
+        personas,
+        interviews,
+        observations,
+        povStatements,
+        hmwQuestions,
+        ideas,
+        prototypes,
+        testPlans,
+        canvasDrawings,
+        phaseCards,
+        benchmarks,
+        dvfAssessments,
+        lovabilityMetrics,
+        projectAnalytics
+      });
+    } catch (error) {
+      console.error("Failed to fetch full project data:", error);
+      res.status(500).json({ error: "Failed to fetch project data" });
     }
   });
 
