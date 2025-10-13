@@ -770,7 +770,9 @@ export default function BenchmarkingPage() {
       {showLovabilityMetrics && selectedProjectForAnalysis && (
         <LovabilityMetricsComponent
           projectId={selectedProjectForAnalysis.id}
-          projectName={selectedProjectForAnalysis.name}
+          itemId="project-lovability"
+          itemName={selectedProjectForAnalysis.name}
+          itemType="solution"
           onClose={() => {
             setShowLovabilityMetrics(false);
             setSelectedProjectForAnalysis(null);
