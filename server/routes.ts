@@ -943,9 +943,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Email e senha são obrigatórios" });
       }
 
-      // Try to find user by email
-      const user = await storage.getUserByEmail(email);
-      console.log("User found by email:", user ? "Yes" : "No");
+      // Try to find user by email first, then by username (backwards compatibility)
+      let user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        // Try username for backwards compatibility with old accounts
+        user = await storage.getUserByUsername(email);
+        console.log("User found by username (legacy):", user ? "Yes" : "No");
+      } else {
+        console.log("User found by email:", user ? "Yes" : "No");
+      }
       
       if (!user) {
         return res.status(401).json({ error: "Email ou senha inválidos" });
