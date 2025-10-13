@@ -1106,12 +1106,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create username from email (for backwards compatibility)
       const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(7);
 
+      // CRITICAL: Hash password before storing
+      const hashedPassword = await bcrypt.hash(password, 10);
+
       // Create new user
       const userData = {
         username, // Auto-generated from email
         email,
         name, // Display name provided by user
-        password,
+        password: hashedPassword, // Store hashed password
         role: "user"
       };
 
