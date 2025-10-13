@@ -11,7 +11,7 @@ import { LogIn, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Nome de usuário é obrigatório"),
+  email: z.string().email("Email inválido"),
   password: z.string().min(1, "Senha é obrigatória"),
 });
 
@@ -30,7 +30,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -39,7 +39,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     try {
       setError("");
       setIsLoading(true);
-      await login(data.username, data.password);
+      await login(data.email, data.password);
       onSuccess?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao fazer login");
@@ -62,18 +62,18 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Nome de usuário</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
-              id="username"
-              type="text"
-              placeholder="Digite o nome de usuário do cadastro"
-              data-testid="input-username"
-              autoComplete="off"
-              {...form.register("username")}
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              data-testid="input-email"
+              autoComplete="email"
+              {...form.register("email")}
             />
-            {form.formState.errors.username && (
+            {form.formState.errors.email && (
               <p className="text-sm text-red-600">
-                {form.formState.errors.username.message}
+                {form.formState.errors.email.message}
               </p>
             )}
           </div>
