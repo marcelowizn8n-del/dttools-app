@@ -35,6 +35,7 @@ import {
 } from "@shared/schema";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
+import { sql } from "drizzle-orm";
 import { 
   loadUserSubscription, 
   checkProjectLimit, 
@@ -171,8 +172,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint for monitoring
   app.get("/api/health", async (_req, res) => {
     try {
-      // Check database connection
-      const dbCheck = await storage.getUsers();
+      // Lightweight database connection check (no expensive queries)
+      const db = (await import('./db')).db;
+      await db.execute(sql`SELECT 1`);
       
       res.json({
         status: "healthy",
