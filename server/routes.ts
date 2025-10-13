@@ -1098,8 +1098,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Este email já está em uso" });
       }
 
-      // Create username from email (for backwards compatibility)
-      const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(7);
+      // Use email as username (simpler and already unique)
+      const username = email;
 
       // CRITICAL: Hash password before storing
       const hashedPassword = await bcrypt.hash(password, 10);
