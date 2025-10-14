@@ -27,3 +27,6 @@ author = 46626626
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[agent]
+integrations = ["notion:1.0.0"]

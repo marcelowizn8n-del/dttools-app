@@ -1,7 +1,7 @@
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain, Columns3, Edit2 } from "lucide-react";
+import { ArrowLeft, Users, Target, Lightbulb, Wrench, TestTube, Calendar, BarChart3, Brain, Columns3, Edit2, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,148 @@ const editProjectSchema = z.object({
 });
 
 type EditProjectData = z.infer<typeof editProjectSchema>;
+
+function ExportNotionButton({ projectId }: { projectId: string }) {
+  const { toast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
+  const [parentPageId, setParentPageId] = useState("");
+  const [showDialog, setShowDialog] = useState(false);
+
+  const exportToNotion = async () => {
+    if (!parentPageId.trim()) {
+      toast({
+        title: "Parent Page ID obrigatório",
+        description: "Insira o ID da página do Notion onde o projeto será exportado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      const response = await fetch(`/api/projects/${projectId}/export/notion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentPageId: parentPageId.trim() })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.code === 'NOTION_NOT_CONNECTED') {
+          toast({
+            title: "Notion não conectado",
+            description: "Configure a integração com Notion primeiro nas configurações.",
+            variant: "destructive",
+          });
+        } else {
+          throw new Error(data.error || 'Erro ao exportar');
+        }
+        return;
+      }
+
+      toast({
+        title: "Exportado com sucesso!",
+        description: (
+          <div className="space-y-2">
+            <p>Projeto exportado para o Notion.</p>
+            <a 
+              href={data.notionUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline text-sm"
+            >
+              Abrir no Notion →
+            </a>
+          </div>
+        ),
+      });
+      setShowDialog(false);
+      setParentPageId("");
+    } catch (error: any) {
+      toast({
+        title: "Erro ao exportar",
+        description: error.message || "Não foi possível exportar para o Notion.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          data-testid="button-export-notion"
+          className="gap-2"
+        >
+          <FileText className="w-4 h-4" />
+          Exportar para Notion
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Exportar para Notion</DialogTitle>
+          <DialogDescription>
+            Insira o ID da página do Notion onde você deseja criar este projeto.
+            <br />
+            <a 
+              href="https://developers.notion.com/docs/working-with-page-content#creating-a-page-with-content"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline text-sm"
+            >
+              Como obter o Page ID →
+            </a>
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label htmlFor="parentPageId" className="text-sm font-medium">
+              Parent Page ID
+            </label>
+            <Input
+              id="parentPageId"
+              placeholder="abc123def456..."
+              value={parentPageId}
+              onChange={(e) => setParentPageId(e.target.value)}
+              data-testid="input-parent-page-id"
+            />
+            <p className="text-xs text-muted-foreground">
+              Exemplo: Se a URL é notion.so/My-Page-abc123..., use abc123...
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowDialog(false)}
+            disabled={isExporting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={exportToNotion}
+            disabled={isExporting || !parentPageId.trim()}
+            data-testid="button-confirm-export"
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Exportando...
+              </>
+            ) : (
+              'Exportar'
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const phaseData = {
   1: { 
@@ -388,6 +530,7 @@ export default function ProjectDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <ExportNotionButton projectId={projectId!} />
           <EditProjectDialog project={project} projectId={projectId!} />
           <Badge 
             variant={project.status === "completed" ? "default" : "secondary"}
