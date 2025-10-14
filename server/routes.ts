@@ -2999,6 +2999,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export project to Notion
+  app.post("/api/projects/:id/export/notion", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Não autenticado" });
+      }
+
+      const { id } = req.params;
+      const { parentPageId } = req.body;
+
+      const project = await storage.getProject(id);
+      if (!project) {
+        return res.status(404).json({ error: "Projeto não encontrado" });
+      }
+
+      if (project.userId !== req.session.userId) {
+        return res.status(403).json({ error: "Sem permissão para acessar este projeto" });
+      }
+
+      const [empathyMaps, personas, interviews, povStatements, ideas, prototypes, tests] = await Promise.all([
+        storage.getEmpathyMapsByProject(id),
+        storage.getPersonasByProject(id),
+        storage.getInterviewsByProject(id),
+        storage.getPOVStatementsByProject(id),
+        storage.getIdeasByProject(id),
+        storage.getPrototypesByProject(id),
+        storage.getTestsByProject(id)
+      ]);
+
+      const projectData = {
+        name: project.name,
+        description: project.description,
+        empathyMaps,
+        personas,
+        interviews,
+        povStatements,
+        ideas,
+        prototypes,
+        tests
+      };
+
+      const { exportProjectToNotion } = await import('./notion.js');
+      
+      const notionPageId = await exportProjectToNotion(projectData, {
+        parentPageId,
+        createNewPage: true
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Projeto exportado para o Notion com sucesso!',
+        notionPageId,
+        notionUrl: `https://notion.so/${notionPageId.replace(/-/g, '')}`
+      });
+    } catch (error: any) {
+      console.error("Error exporting to Notion:", error);
+      
+      if (error.message?.includes('not connected')) {
+        return res.status(401).json({ 
+          error: "Notion não conectado. Configure a integração primeiro.",
+          code: 'NOTION_NOT_CONNECTED'
+        });
+      }
+      
+      res.status(500).json({ 
+        error: "Erro ao exportar para Notion. Tente novamente.",
+        details: error.message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
