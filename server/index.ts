@@ -298,8 +298,14 @@ app.use((req, res, next) => {
       etag: true,
       lastModified: true,
       setHeaders: (res, filepath) => {
+        // CRITICAL: Prevent index.html from being cached (fixes stale deployment issue)
+        if (filepath.endsWith('index.html')) {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        }
         // Set correct MIME types for JavaScript modules
-        if (filepath.endsWith('.js')) {
+        else if (filepath.endsWith('.js')) {
           res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
         } else if (filepath.endsWith('.css')) {
           res.setHeader('Content-Type', 'text/css; charset=UTF-8');
@@ -314,6 +320,10 @@ app.use((req, res, next) => {
       if (req.originalUrl.includes('.')) {
         res.status(404).send('File not found');
       } else {
+        // CRITICAL: Prevent index.html from being cached (fixes stale deployment issue)
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         res.sendFile(path.resolve(distPath, "index.html"));
       }
     });
