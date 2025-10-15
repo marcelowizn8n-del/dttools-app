@@ -39,11 +39,37 @@ function ExportNotionButton({ projectId }: { projectId: string }) {
   const [parentPageId, setParentPageId] = useState("");
   const [showDialog, setShowDialog] = useState(false);
 
+  // Extract Page ID from Notion URL or return the ID directly
+  const extractNotionPageId = (input: string): string => {
+    const trimmed = input.trim();
+    
+    // If it's a URL, extract the ID
+    if (trimmed.startsWith('http')) {
+      // Format: https://www.notion.so/Page-Name-abc123def456?...
+      const match = trimmed.match(/([a-f0-9]{32})/i);
+      return match ? match[1] : trimmed;
+    }
+    
+    // If it already looks like an ID (32 hex chars), return it
+    return trimmed.replace(/[^a-f0-9]/gi, '');
+  };
+
   const exportToNotion = async () => {
     if (!parentPageId.trim()) {
       toast({
         title: "Parent Page ID obrigatório",
-        description: "Insira o ID da página do Notion onde o projeto será exportado.",
+        description: "Cole a URL ou o ID da página do Notion.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const pageId = extractNotionPageId(parentPageId);
+    
+    if (!pageId || pageId.length !== 32) {
+      toast({
+        title: "ID inválido",
+        description: "Cole uma URL válida do Notion ou um Page ID de 32 caracteres.",
         variant: "destructive",
       });
       return;
@@ -54,7 +80,7 @@ function ExportNotionButton({ projectId }: { projectId: string }) {
       const response = await fetch(`/api/projects/${projectId}/export/notion`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parentPageId: parentPageId.trim() })
+        body: JSON.stringify({ parentPageId: pageId })
       });
 
       const data = await response.json();
@@ -118,16 +144,11 @@ function ExportNotionButton({ projectId }: { projectId: string }) {
         <DialogHeader>
           <DialogTitle>Exportar para Notion</DialogTitle>
           <DialogDescription>
-            Insira o ID da página do Notion onde você deseja criar este projeto.
+            Cole a URL ou o ID da página do Notion onde você deseja criar este projeto.
             <br />
-            <a 
-              href="https://developers.notion.com/docs/working-with-page-content#creating-a-page-with-content"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline text-sm"
-            >
-              Como obter o Page ID →
-            </a>
+            <span className="text-xs text-gray-500 mt-1 block">
+              Exemplo: https://notion.so/Page-abc123... ou apenas abc123def456...
+            </span>
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -137,13 +158,13 @@ function ExportNotionButton({ projectId }: { projectId: string }) {
             </label>
             <Input
               id="parentPageId"
-              placeholder="abc123def456..."
+              placeholder="Cole a URL ou ID do Notion aqui..."
               value={parentPageId}
               onChange={(e) => setParentPageId(e.target.value)}
               data-testid="input-parent-page-id"
             />
             <p className="text-xs text-muted-foreground">
-              Exemplo: Se a URL é notion.so/My-Page-abc123..., use abc123...
+              Você pode colar a URL completa ou apenas o ID da página
             </p>
           </div>
         </div>
