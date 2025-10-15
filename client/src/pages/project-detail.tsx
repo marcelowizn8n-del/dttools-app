@@ -32,11 +32,13 @@ const editProjectSchema = z.object({
 
 type EditProjectData = z.infer<typeof editProjectSchema>;
 
+// Export to Notion - Build v1760549203
 function ExportNotionButton({ projectId }: { projectId: string }) {
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
   const [parentPageId, setParentPageId] = useState("");
   const [showDialog, setShowDialog] = useState(false);
+  const BUILD_V = "1760549203";
 
   const exportToNotion = async () => {
     if (!parentPageId.trim()) {
@@ -107,6 +109,7 @@ function ExportNotionButton({ projectId }: { projectId: string }) {
           variant="outline"
           size="sm"
           data-testid="button-export-notion"
+          data-build={BUILD_V}
           className="gap-2"
         >
           <FileText className="w-4 h-4" />
