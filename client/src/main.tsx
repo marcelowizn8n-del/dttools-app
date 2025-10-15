@@ -1,3 +1,4 @@
+// Build: 2025-10-15T01:50:00Z - Force cache invalidation
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
