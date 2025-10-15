@@ -3009,8 +3009,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const { parentPageId } = req.body;
 
+      console.log('[Notion Export] Project ID:', id);
+      console.log('[Notion Export] User ID:', req.session.userId);
+      console.log('[Notion Export] Parent Page ID:', parentPageId);
+
       const project = await storage.getProject(id);
+      console.log('[Notion Export] Project found:', project ? 'YES' : 'NO');
+      
       if (!project) {
+        console.log('[Notion Export] ERROR: Project not found in database');
         return res.status(404).json({ error: "Projeto não encontrado" });
       }
 
