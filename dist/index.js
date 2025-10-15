@@ -14,6 +14,866 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// shared/schema.ts
+var schema_exports = {};
+__export(schema_exports, {
+  articles: () => articles,
+  benchmarkAssessments: () => benchmarkAssessments,
+  benchmarks: () => benchmarks,
+  canvasDrawings: () => canvasDrawings,
+  competitiveAnalysis: () => competitiveAnalysis,
+  dvfAssessments: () => dvfAssessments,
+  empathyMaps: () => empathyMaps,
+  helpArticles: () => helpArticles,
+  hmwQuestions: () => hmwQuestions,
+  ideas: () => ideas,
+  insertArticleSchema: () => insertArticleSchema,
+  insertBenchmarkAssessmentSchema: () => insertBenchmarkAssessmentSchema,
+  insertBenchmarkSchema: () => insertBenchmarkSchema,
+  insertCanvasDrawingSchema: () => insertCanvasDrawingSchema,
+  insertCompetitiveAnalysisSchema: () => insertCompetitiveAnalysisSchema,
+  insertDvfAssessmentSchema: () => insertDvfAssessmentSchema,
+  insertEmpathyMapSchema: () => insertEmpathyMapSchema,
+  insertHelpArticleSchema: () => insertHelpArticleSchema,
+  insertHmwQuestionSchema: () => insertHmwQuestionSchema,
+  insertIdeaSchema: () => insertIdeaSchema,
+  insertInterviewSchema: () => insertInterviewSchema,
+  insertLovabilityMetricSchema: () => insertLovabilityMetricSchema,
+  insertObservationSchema: () => insertObservationSchema,
+  insertPersonaSchema: () => insertPersonaSchema,
+  insertPhaseCardSchema: () => insertPhaseCardSchema,
+  insertPovStatementSchema: () => insertPovStatementSchema,
+  insertProjectAnalyticsSchema: () => insertProjectAnalyticsSchema,
+  insertProjectBackupSchema: () => insertProjectBackupSchema,
+  insertProjectSchema: () => insertProjectSchema,
+  insertPrototypeSchema: () => insertPrototypeSchema,
+  insertSubscriptionPlanSchema: () => insertSubscriptionPlanSchema,
+  insertTestPlanSchema: () => insertTestPlanSchema,
+  insertTestResultSchema: () => insertTestResultSchema,
+  insertUserProgressSchema: () => insertUserProgressSchema,
+  insertUserSchema: () => insertUserSchema,
+  insertUserSubscriptionSchema: () => insertUserSubscriptionSchema,
+  interviews: () => interviews,
+  lovabilityMetrics: () => lovabilityMetrics,
+  observations: () => observations,
+  personas: () => personas,
+  phaseCards: () => phaseCards,
+  povStatements: () => povStatements,
+  projectAnalytics: () => projectAnalytics,
+  projectBackups: () => projectBackups,
+  projects: () => projects,
+  prototypes: () => prototypes,
+  subscriptionPlans: () => subscriptionPlans,
+  testPlans: () => testPlans,
+  testResults: () => testResults,
+  updateProfileSchema: () => updateProfileSchema,
+  userProgress: () => userProgress,
+  userSubscriptions: () => userSubscriptions,
+  users: () => users
+});
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, integer, real, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+var projects, empathyMaps, personas, interviews, observations, povStatements, hmwQuestions, ideas, prototypes, canvasDrawings, testPlans, testResults, userProgress, users, subscriptionPlans, userSubscriptions, articles, insertProjectSchema, insertEmpathyMapSchema, insertPersonaSchema, insertInterviewSchema, insertObservationSchema, insertPovStatementSchema, insertHmwQuestionSchema, insertIdeaSchema, insertPrototypeSchema, insertTestPlanSchema, insertTestResultSchema, insertUserProgressSchema, insertUserSchema, insertArticleSchema, insertSubscriptionPlanSchema, insertUserSubscriptionSchema, insertCanvasDrawingSchema, updateProfileSchema, phaseCards, benchmarks, benchmarkAssessments, insertBenchmarkSchema, insertBenchmarkAssessmentSchema, insertPhaseCardSchema, dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis, projectBackups, helpArticles, insertDvfAssessmentSchema, insertLovabilityMetricSchema, insertProjectAnalyticsSchema, insertCompetitiveAnalysisSchema, insertProjectBackupSchema, insertHelpArticleSchema;
+var init_schema = __esm({
+  "shared/schema.ts"() {
+    "use strict";
+    projects = pgTable("projects", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").references(() => users.id).notNull(),
+      name: text("name").notNull(),
+      description: text("description"),
+      status: text("status").notNull().default("in_progress"),
+      // in_progress, completed
+      currentPhase: integer("current_phase").default(1),
+      // 1-5 phases
+      completionRate: real("completion_rate").default(0),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    empathyMaps = pgTable("empathy_maps", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      title: text("title").notNull(),
+      says: jsonb("says").default([]),
+      // Array of strings
+      thinks: jsonb("thinks").default([]),
+      does: jsonb("does").default([]),
+      feels: jsonb("feels").default([]),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    personas = pgTable("personas", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      name: text("name").notNull(),
+      age: integer("age"),
+      occupation: text("occupation"),
+      bio: text("bio"),
+      goals: jsonb("goals").default([]),
+      frustrations: jsonb("frustrations").default([]),
+      motivations: jsonb("motivations").default([]),
+      techSavviness: text("tech_savviness"),
+      // low, medium, high
+      avatar: text("avatar"),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    interviews = pgTable("interviews", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      participantName: text("participant_name").notNull(),
+      date: timestamp("date").notNull(),
+      duration: integer("duration"),
+      // minutes
+      questions: jsonb("questions").default([]),
+      responses: jsonb("responses").default([]),
+      insights: text("insights"),
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    observations = pgTable("observations", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      location: text("location").notNull(),
+      context: text("context").notNull(),
+      behavior: text("behavior").notNull(),
+      insights: text("insights"),
+      date: timestamp("date").notNull(),
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    povStatements = pgTable("pov_statements", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      user: text("user").notNull(),
+      // user description
+      need: text("need").notNull(),
+      // user need
+      insight: text("insight").notNull(),
+      // surprising insight
+      statement: text("statement").notNull(),
+      // complete POV statement
+      priority: text("priority").default("medium"),
+      // low, medium, high
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    hmwQuestions = pgTable("hmw_questions", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      question: text("question").notNull(),
+      context: text("context"),
+      challenge: text("challenge"),
+      scope: text("scope").default("product"),
+      // feature, product, service, experience, process
+      priority: text("priority").default("medium"),
+      // low, medium, high
+      category: text("category"),
+      // categorization
+      votes: integer("votes").default(0),
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    ideas = pgTable("ideas", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      title: text("title").notNull(),
+      description: text("description").notNull(),
+      category: text("category"),
+      // Legacy fields (kept for compatibility)
+      feasibility: integer("feasibility"),
+      // 1-5 scale - now maps to DVF Feasibility/Exequibilidade
+      impact: integer("impact"),
+      // 1-5 scale
+      votes: integer("votes").default(0),
+      // DVF (Desejabilidade, Viabilidade, Exequibilidade) System
+      desirability: integer("desirability"),
+      // 1-5 scale - user need satisfaction
+      viability: integer("viability"),
+      // 1-5 scale - business/profit potential  
+      // feasibility already exists above - technical implementability
+      confidenceLevel: integer("confidence_level"),
+      // 1-5 scale - overall confidence
+      dvfScore: real("dvf_score"),
+      // Calculated: (desirability + viability + feasibility) / 3
+      dvfAnalysis: text("dvf_analysis"),
+      // Detailed justification for scores
+      actionDecision: text("action_decision").default("evaluate"),
+      // love_it, leave_it, change_it, evaluate
+      // Priority and iteration fields
+      priorityRank: integer("priority_rank"),
+      // 1-n ranking based on DVF analysis
+      iterationNotes: text("iteration_notes"),
+      // Notes for "change_it" decisions
+      status: text("status").default("idea"),
+      // idea, selected, prototype, tested
+      canvasData: jsonb("canvas_data"),
+      // Fabric.js canvas data for drawings/sketches
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    prototypes = pgTable("prototypes", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      ideaId: varchar("idea_id").references(() => ideas.id),
+      name: text("name").notNull(),
+      type: text("type").notNull(),
+      // paper, digital, physical, storyboard, canvas
+      description: text("description").notNull(),
+      materials: jsonb("materials").default([]),
+      images: jsonb("images").default([]),
+      canvasData: jsonb("canvas_data"),
+      // Konva.js canvas data for interactive prototypes
+      version: integer("version").default(1),
+      feedback: text("feedback"),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    canvasDrawings = pgTable("canvas_drawings", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      title: text("title").notNull(),
+      description: text("description"),
+      phase: integer("phase").notNull(),
+      // 1-5 phases where this drawing is used
+      canvasType: text("canvas_type").notNull(),
+      // fabric, konva
+      canvasData: jsonb("canvas_data").notNull(),
+      // Canvas library data (Fabric.js or Konva.js)
+      thumbnailData: text("thumbnail_data"),
+      // Base64 encoded thumbnail for preview
+      tags: jsonb("tags").default([]),
+      // Tags for categorization
+      isTemplate: boolean("is_template").default(false),
+      // Can be used as a template
+      parentId: varchar("parent_id"),
+      // For drawing iterations - will be set to reference same table later
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    testPlans = pgTable("test_plans", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      prototypeId: varchar("prototype_id").references(() => prototypes.id),
+      name: text("name").notNull(),
+      objective: text("objective").notNull(),
+      methodology: text("methodology").notNull(),
+      participants: integer("participants").notNull(),
+      duration: integer("duration"),
+      // minutes
+      tasks: jsonb("tasks").default([]),
+      metrics: jsonb("metrics").default([]),
+      status: text("status").default("planned"),
+      // planned, running, completed
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    testResults = pgTable("test_results", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      testPlanId: varchar("test_plan_id").references(() => testPlans.id).notNull(),
+      participantId: text("participant_id").notNull(),
+      taskResults: jsonb("task_results").default([]),
+      feedback: text("feedback"),
+      successRate: real("success_rate"),
+      completionTime: integer("completion_time"),
+      // minutes
+      insights: text("insights"),
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    userProgress = pgTable("user_progress", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: text("user_id").notNull(),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      phase: integer("phase").notNull(),
+      // 1-5
+      completedTools: jsonb("completed_tools").default([]),
+      badges: jsonb("badges").default([]),
+      points: integer("points").default(0),
+      timeSpent: integer("time_spent").default(0),
+      // minutes
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    users = pgTable("users", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      username: text("username").notNull().unique(),
+      email: text("email").notNull().unique(),
+      name: text("name").notNull(),
+      password: text("password").notNull(),
+      // hashed password
+      role: text("role").notNull().default("user"),
+      // admin, user
+      company: text("company"),
+      jobRole: text("job_role"),
+      industry: text("industry"),
+      experience: text("experience"),
+      country: text("country"),
+      state: text("state"),
+      city: text("city"),
+      zipCode: text("zip_code"),
+      phone: text("phone"),
+      bio: text("bio"),
+      profilePicture: text("profile_picture"),
+      interests: jsonb("interests").default([]),
+      stripeCustomerId: text("stripe_customer_id"),
+      stripeSubscriptionId: text("stripe_subscription_id"),
+      subscriptionPlanId: varchar("subscription_plan_id"),
+      subscriptionStatus: text("subscription_status").default("active"),
+      // active, canceled, expired, trialing
+      subscriptionEndDate: timestamp("subscription_end_date"),
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    subscriptionPlans = pgTable("subscription_plans", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      name: text("name").notNull(),
+      displayName: text("display_name").notNull(),
+      description: text("description"),
+      priceMonthly: integer("price_monthly").notNull(),
+      // in cents
+      priceYearly: integer("price_yearly").notNull(),
+      // in cents
+      stripePriceIdMonthly: text("stripe_price_id_monthly"),
+      stripePriceIdYearly: text("stripe_price_id_yearly"),
+      maxProjects: integer("max_projects"),
+      // null for unlimited
+      maxPersonasPerProject: integer("max_personas_per_project"),
+      // null for unlimited
+      maxUsersPerTeam: integer("max_users_per_team"),
+      // null for unlimited
+      includedUsers: integer("included_users"),
+      // number of users included in base price (null if not applicable)
+      pricePerAdditionalUser: integer("price_per_additional_user"),
+      // price in cents for each additional user beyond includedUsers
+      aiChatLimit: integer("ai_chat_limit"),
+      // null for unlimited
+      libraryArticlesCount: integer("library_articles_count"),
+      // null for all articles
+      features: jsonb("features").default([]),
+      // Array of feature strings
+      exportFormats: jsonb("export_formats").default([]),
+      // Array of export formats (pdf, png, csv)
+      hasCollaboration: boolean("has_collaboration").default(false),
+      hasPermissionManagement: boolean("has_permission_management").default(false),
+      hasSharedWorkspace: boolean("has_shared_workspace").default(false),
+      hasCommentsAndFeedback: boolean("has_comments_and_feedback").default(false),
+      hasSso: boolean("has_sso").default(false),
+      hasCustomApi: boolean("has_custom_api").default(false),
+      hasCustomIntegrations: boolean("has_custom_integrations").default(false),
+      has24x7Support: boolean("has_24x7_support").default(false),
+      order: integer("order").default(0),
+      // for display ordering
+      isActive: boolean("is_active").default(true),
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    userSubscriptions = pgTable("user_subscriptions", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").references(() => users.id).notNull(),
+      planId: varchar("plan_id").references(() => subscriptionPlans.id).notNull(),
+      stripeSubscriptionId: text("stripe_subscription_id"),
+      status: text("status").notNull(),
+      // active, canceled, expired, trialing, incomplete
+      billingPeriod: text("billing_period").notNull(),
+      // monthly, yearly
+      currentPeriodStart: timestamp("current_period_start"),
+      currentPeriodEnd: timestamp("current_period_end"),
+      cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    articles = pgTable("articles", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      title: text("title").notNull(),
+      content: text("content").notNull(),
+      category: text("category").notNull(),
+      // empathize, define, ideate, prototype, test
+      author: text("author").notNull(),
+      description: text("description"),
+      tags: jsonb("tags").default([]),
+      // Array of tags
+      published: boolean("published").default(true),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    insertProjectSchema = createInsertSchema(projects).omit({
+      id: true,
+      userId: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertEmpathyMapSchema = createInsertSchema(empathyMaps).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertPersonaSchema = createInsertSchema(personas).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertInterviewSchema = createInsertSchema(interviews, {
+      questions: z.array(z.string()).optional(),
+      responses: z.array(z.string()).optional()
+    }).omit({
+      id: true,
+      createdAt: true
+    });
+    insertObservationSchema = createInsertSchema(observations).omit({
+      id: true,
+      createdAt: true
+    });
+    insertPovStatementSchema = createInsertSchema(povStatements).omit({
+      id: true,
+      createdAt: true
+    });
+    insertHmwQuestionSchema = createInsertSchema(hmwQuestions).omit({
+      id: true,
+      createdAt: true
+    });
+    insertIdeaSchema = createInsertSchema(ideas).omit({
+      id: true,
+      createdAt: true
+    });
+    insertPrototypeSchema = createInsertSchema(prototypes).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertTestPlanSchema = createInsertSchema(testPlans).omit({
+      id: true,
+      createdAt: true
+    });
+    insertTestResultSchema = createInsertSchema(testResults).omit({
+      id: true,
+      createdAt: true
+    });
+    insertUserProgressSchema = createInsertSchema(userProgress).omit({
+      id: true,
+      updatedAt: true
+    });
+    insertUserSchema = createInsertSchema(users).omit({
+      id: true,
+      createdAt: true
+    });
+    insertArticleSchema = createInsertSchema(articles).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
+      id: true,
+      createdAt: true
+    });
+    insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertCanvasDrawingSchema = createInsertSchema(canvasDrawings).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    updateProfileSchema = createInsertSchema(users).omit({
+      id: true,
+      username: true,
+      password: true,
+      role: true,
+      stripeCustomerId: true,
+      stripeSubscriptionId: true,
+      subscriptionPlanId: true,
+      subscriptionStatus: true,
+      subscriptionEndDate: true,
+      createdAt: true
+    }).partial();
+    phaseCards = pgTable("phase_cards", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      title: text("title").notNull(),
+      description: text("description"),
+      phase: integer("phase").notNull().default(1),
+      // 1-5 phases (Empatizar, Definir, Idear, Prototipar, Testar)
+      status: text("status").default("todo"),
+      // todo, in_progress, done
+      priority: text("priority").default("medium"),
+      // low, medium, high
+      assignee: text("assignee"),
+      // Optional assignee
+      tags: jsonb("tags").default([]),
+      // Array of tags for categorization
+      dueDate: timestamp("due_date"),
+      position: integer("position").default(0),
+      // Order within the phase column
+      color: text("color").default("blue"),
+      // Card color for visual organization
+      attachments: jsonb("attachments").default([]),
+      // File attachments metadata
+      comments: jsonb("comments").default([]),
+      // Comments/notes
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    benchmarks = pgTable("benchmarks", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      name: text("name").notNull(),
+      description: text("description"),
+      industry: text("industry").notNull(),
+      // tech, healthcare, finance, retail, etc.
+      companySize: text("company_size").notNull(),
+      // startup, small, medium, large, enterprise
+      maturityScores: jsonb("maturity_scores").default({}),
+      // { empathize: 4, define: 3, ideate: 5, prototype: 2, test: 3 }
+      benchmarkType: text("benchmark_type").notNull().default("industry"),
+      // industry, internal, custom
+      targetScores: jsonb("target_scores").default({}),
+      // Goals for each phase
+      improvementAreas: jsonb("improvement_areas").default([]),
+      // Array of focus areas
+      recommendations: jsonb("recommendations").default([]),
+      // AI-generated suggestions
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    benchmarkAssessments = pgTable("benchmark_assessments", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      benchmarkId: varchar("benchmark_id").references(() => benchmarks.id).notNull(),
+      phase: integer("phase").notNull(),
+      // 1-5 for DT phases
+      criteria: text("criteria").notNull(),
+      // What is being assessed
+      currentScore: real("current_score").notNull(),
+      // 1-5 rating
+      targetScore: real("target_score").notNull(),
+      // Goal score
+      industryAverage: real("industry_average"),
+      // Benchmark comparison
+      evidence: text("evidence"),
+      // Supporting evidence for the score
+      improvementPlan: text("improvement_plan"),
+      // How to improve
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    insertBenchmarkSchema = createInsertSchema(benchmarks).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertBenchmarkAssessmentSchema = createInsertSchema(benchmarkAssessments).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertPhaseCardSchema = createInsertSchema(phaseCards).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    dvfAssessments = pgTable("dvf_assessments", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      itemType: text("item_type").notNull(),
+      // idea, prototype, solution, etc.
+      itemId: varchar("item_id").notNull(),
+      // Reference to the evaluated item
+      itemName: text("item_name").notNull(),
+      // Desirability - User desirability
+      desirabilityScore: real("desirability_score").notNull().default(0),
+      // 1-5 scale
+      desirabilityEvidence: text("desirability_evidence"),
+      // Supporting evidence
+      userFeedback: text("user_feedback"),
+      // Direct user feedback
+      marketDemand: real("market_demand").default(0),
+      // Market demand indicator
+      // Feasibility - Technical feasibility  
+      feasibilityScore: real("feasibility_score").notNull().default(0),
+      // 1-5 scale
+      feasibilityEvidence: text("feasibility_evidence"),
+      technicalComplexity: text("technical_complexity"),
+      // low, medium, high
+      resourceRequirements: jsonb("resource_requirements").default([]),
+      // Required resources
+      timeToImplement: integer("time_to_implement"),
+      // Estimated time in days
+      // Viability - Economic viability
+      viabilityScore: real("viability_score").notNull().default(0),
+      // 1-5 scale  
+      viabilityEvidence: text("viability_evidence"),
+      businessModel: text("business_model"),
+      // How it generates value
+      costEstimate: real("cost_estimate"),
+      // Implementation cost
+      revenueProjection: real("revenue_projection"),
+      // Expected revenue
+      // Overall DVF analysis
+      overallScore: real("overall_score").default(0),
+      // Average of the three pillars
+      recommendation: text("recommendation"),
+      // proceed, modify, stop
+      nextSteps: jsonb("next_steps").default([]),
+      // Recommended actions
+      risksIdentified: jsonb("risks_identified").default([]),
+      // Potential risks
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    lovabilityMetrics = pgTable("lovability_metrics", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      itemType: text("item_type").notNull(),
+      // idea, prototype, solution
+      itemId: varchar("item_id").notNull(),
+      // Reference to the item being evaluated
+      itemName: text("item_name").notNull(),
+      // Core Metrics
+      npsScore: real("nps_score").default(0),
+      // -100 to 100
+      satisfactionScore: real("satisfaction_score").default(0),
+      // 0-10
+      retentionRate: real("retention_rate").default(0),
+      // 0-100%
+      engagementTime: real("engagement_time").default(0),
+      // minutes
+      // Emotional Distribution
+      emotionalDistribution: jsonb("emotional_distribution").default({}),
+      // delight, satisfaction, neutral, frustration percentages
+      // Feedback Analysis
+      positiveComments: jsonb("positive_comments").default([]),
+      negativeComments: jsonb("negative_comments").default([]),
+      improvementSuggestions: jsonb("improvement_suggestions").default([]),
+      // User Behavior
+      userTestingSessions: integer("user_testing_sessions").default(0),
+      completionRate: real("completion_rate").default(0),
+      // 0-100%
+      errorRate: real("error_rate").default(0),
+      // 0-100%
+      supportTickets: integer("support_tickets").default(0),
+      // Qualitative Insights
+      emotionalStory: text("emotional_story"),
+      userPersonas: jsonb("user_personas").default([]),
+      keyMoments: jsonb("key_moments").default([]),
+      painPoints: jsonb("pain_points").default([]),
+      // Overall Assessment
+      lovabilityScore: real("lovability_score").default(0),
+      // 0-10 calculated score
+      recommendations: jsonb("recommendations").default([]),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    projectAnalytics = pgTable("project_analytics", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      // Usage metrics
+      totalTimeSpent: integer("total_time_spent").default(0),
+      // minutes
+      timePerPhase: jsonb("time_per_phase").default({}),
+      // { phase1: 120, phase2: 90, ... }
+      toolsUsed: jsonb("tools_used").default([]),
+      // List of tools/features used
+      toolUsageCount: jsonb("tool_usage_count").default({}),
+      // Usage frequency per tool
+      // Progress metrics
+      completionRate: real("completion_rate").default(0),
+      // 0-100%
+      phasesCompleted: jsonb("phases_completed").default([]),
+      // Which phases are done
+      stageProgressions: integer("stage_progressions").default(0),
+      // Times moved between phases
+      iterationsCount: integer("iterations_count").default(0),
+      // Number of iterations
+      // Success indicators
+      prototypesCreated: integer("prototypes_created").default(0),
+      testsCompleted: integer("tests_completed").default(0),
+      userFeedbackCollected: integer("user_feedback_collected").default(0),
+      ideasGenerated: integer("ideas_generated").default(0),
+      ideasImplemented: integer("ideas_implemented").default(0),
+      // Team collaboration metrics
+      teamSize: integer("team_size").default(1),
+      collaborationEvents: integer("collaboration_events").default(0),
+      meetingsHeld: integer("meetings_held").default(0),
+      decisionsMade: integer("decisions_made").default(0),
+      // Innovation metrics
+      originalityScore: real("originality_score").default(0),
+      // 1-10
+      feasibilityScore: real("feasibility_score").default(0),
+      // 1-10
+      impactPotential: real("impact_potential").default(0),
+      // 1-10
+      marketFit: real("market_fit").default(0),
+      // 1-10
+      // Success metrics
+      overallSuccess: real("overall_success").default(0),
+      // 0-100%
+      userSatisfaction: real("user_satisfaction").default(0),
+      // 0-10
+      goalAchievement: real("goal_achievement").default(0),
+      // 0-100%
+      innovationLevel: real("innovation_level").default(0),
+      // 1-5
+      // Key insights
+      topPerformingTools: jsonb("top_performing_tools").default([]),
+      timeBottlenecks: jsonb("time_bottlenecks").default([]),
+      successFactors: jsonb("success_factors").default([]),
+      improvementAreas: jsonb("improvement_areas").default([]),
+      lastUpdated: timestamp("last_updated").default(sql`now()`),
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    competitiveAnalysis = pgTable("competitive_analysis", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      // Competitor info
+      competitorName: text("competitor_name").notNull(),
+      // Miro, Figma, Notion, etc.
+      competitorType: text("competitor_type").notNull(),
+      // direct, indirect, substitute
+      marketPosition: text("market_position"),
+      // leader, challenger, niche
+      // Feature comparison
+      features: jsonb("features").default({}),
+      // Feature matrix comparison
+      functionalGaps: jsonb("functional_gaps").default([]),
+      // What they lack
+      functionalOverages: jsonb("functional_overages").default([]),
+      // What they overdo
+      // Pricing comparison
+      pricingModel: text("pricing_model"),
+      // freemium, subscription, one-time
+      pricePoints: jsonb("price_points").default([]),
+      // Their pricing tiers
+      valueProposition: text("value_proposition"),
+      // Their main value prop
+      // Market gaps
+      underservedOutcomes: jsonb("underserved_outcomes").default([]),
+      // Market gaps
+      overservedOutcomes: jsonb("overserved_outcomes").default([]),
+      // Overcomplicated areas
+      // Our positioning
+      ourAdvantages: jsonb("our_advantages").default([]),
+      // Where we're better
+      ourDisadvantages: jsonb("our_disadvantages").default([]),
+      // Where we lack
+      recommendations: jsonb("recommendations").default([]),
+      // Strategic recommendations
+      analysisDate: timestamp("analysis_date").default(sql`now()`),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    projectBackups = pgTable("project_backups", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      // Backup metadata
+      backupType: text("backup_type").notNull(),
+      // auto, manual
+      description: text("description"),
+      // Project snapshot at backup time
+      projectSnapshot: jsonb("project_snapshot").notNull(),
+      // Complete project data
+      // Statistics at backup time
+      phaseSnapshot: integer("phase_snapshot"),
+      // Current phase at backup
+      completionSnapshot: real("completion_snapshot"),
+      // Completion rate at backup
+      itemCount: integer("item_count"),
+      // Total items in backup
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    helpArticles = pgTable("help_articles", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      title: text("title").notNull(),
+      slug: text("slug").notNull().unique(),
+      // URL-friendly identifier
+      content: text("content").notNull(),
+      // Markdown content
+      category: text("category").notNull(),
+      // inicio-rapido, fases, exportacao, etc
+      subcategory: text("subcategory"),
+      // Optional subcategory
+      phase: integer("phase"),
+      // 1-5 if related to specific DT phase
+      tags: jsonb("tags").default([]),
+      // Array of searchable tags
+      searchKeywords: jsonb("search_keywords").default([]),
+      // Keywords for search
+      featured: boolean("featured").default(false),
+      // Show in main help
+      author: text("author").notNull().default("DTTools Team"),
+      // Article author
+      viewCount: integer("view_count").default(0),
+      helpful: integer("helpful").default(0),
+      // Helpful votes
+      order: integer("order").default(0),
+      // Display order within category
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    insertDvfAssessmentSchema = createInsertSchema(dvfAssessments).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertLovabilityMetricSchema = createInsertSchema(lovabilityMetrics).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertProjectAnalyticsSchema = createInsertSchema(projectAnalytics).omit({
+      id: true,
+      createdAt: true,
+      lastUpdated: true
+    });
+    insertCompetitiveAnalysisSchema = createInsertSchema(competitiveAnalysis).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      analysisDate: true
+    });
+    insertProjectBackupSchema = createInsertSchema(projectBackups).omit({
+      id: true,
+      createdAt: true
+    });
+    insertHelpArticleSchema = createInsertSchema(helpArticles).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      viewCount: true,
+      helpful: true
+    });
+  }
+});
+
+// server/db.ts
+var db_exports = {};
+__export(db_exports, {
+  db: () => db,
+  pool: () => pool
+});
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
+var pool, db;
+var init_db = __esm({
+  "server/db.ts"() {
+    "use strict";
+    init_schema();
+    if (!process.env.DATABASE_URL) {
+      throw new Error(
+        "DATABASE_URL must be set. Did you forget to provision a database?"
+      );
+    }
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+      // Performance optimizations for production
+      max: 50,
+      // Maximum 50 connections in pool (up from default 10)
+      min: 5,
+      // Minimum 5 idle connections (faster response time)
+      idleTimeoutMillis: 3e4,
+      // Close idle connections after 30s
+      connectionTimeoutMillis: 5e3,
+      // Connection timeout: 5s
+      maxUses: 7500
+      // Recycle connection after 7500 uses
+    });
+    db = drizzle(pool, { schema: schema_exports });
+  }
+});
+
 // server/geminiService.ts
 var geminiService_exports = {};
 __export(geminiService_exports, {
@@ -274,6 +1134,383 @@ Responda em portugu\xEAs brasileiro, sendo direto e orientado a resultados.`;
   }
 });
 
+// server/notion.ts
+var notion_exports = {};
+__export(notion_exports, {
+  exportProjectToNotion: () => exportProjectToNotion,
+  getUncachableNotionClient: () => getUncachableNotionClient
+});
+import { Client } from "@notionhq/client";
+async function getAccessToken() {
+  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
+    return connectionSettings.settings.access_token;
+  }
+  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+  const xReplitToken = process.env.REPL_IDENTITY ? "repl " + process.env.REPL_IDENTITY : process.env.WEB_REPL_RENEWAL ? "depl " + process.env.WEB_REPL_RENEWAL : null;
+  if (!xReplitToken) {
+    throw new Error("X_REPLIT_TOKEN not found for repl/depl");
+  }
+  connectionSettings = await fetch(
+    "https://" + hostname + "/api/v2/connection?include_secrets=true&connector_names=notion",
+    {
+      headers: {
+        "Accept": "application/json",
+        "X_REPLIT_TOKEN": xReplitToken
+      }
+    }
+  ).then((res) => res.json()).then((data) => data.items?.[0]);
+  const accessToken = connectionSettings?.settings?.access_token || connectionSettings.settings?.oauth?.credentials?.access_token;
+  if (!connectionSettings || !accessToken) {
+    throw new Error("Notion not connected");
+  }
+  return accessToken;
+}
+async function getUncachableNotionClient() {
+  const accessToken = await getAccessToken();
+  return new Client({ auth: accessToken });
+}
+async function exportProjectToNotion(projectData, options = {}) {
+  const notion = await getUncachableNotionClient();
+  const { parentPageId, createNewPage = true } = options;
+  const pageTitle = projectData.name || "Projeto Design Thinking";
+  const children = [
+    {
+      object: "block",
+      type: "heading_1",
+      heading_1: {
+        rich_text: [{ type: "text", text: { content: pageTitle } }]
+      }
+    },
+    {
+      object: "block",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [{
+          type: "text",
+          text: { content: projectData.description || "Sem descri\xE7\xE3o" }
+        }]
+      }
+    },
+    {
+      object: "block",
+      type: "divider",
+      divider: {}
+    }
+  ];
+  if (projectData.empathyMaps && projectData.empathyMaps.length > 0) {
+    children.push({
+      object: "block",
+      type: "heading_2",
+      heading_2: {
+        rich_text: [{ type: "text", text: { content: "\u{1F3AF} Fase 1: Empatizar" } }]
+      }
+    });
+    children.push({
+      object: "block",
+      type: "heading_3",
+      heading_3: {
+        rich_text: [{ type: "text", text: { content: "Mapas de Empatia" } }]
+      }
+    });
+    projectData.empathyMaps.forEach((map) => {
+      children.push({
+        object: "block",
+        type: "callout",
+        callout: {
+          icon: { emoji: "\u{1F5FA}\uFE0F" },
+          rich_text: [{ type: "text", text: { content: map.title || "Mapa de Empatia" } }]
+        }
+      });
+      if (map.says) {
+        children.push({
+          object: "block",
+          type: "bulleted_list_item",
+          bulleted_list_item: {
+            rich_text: [{
+              type: "text",
+              text: { content: `Diz: ${map.says}` }
+            }]
+          }
+        });
+      }
+      if (map.thinks) {
+        children.push({
+          object: "block",
+          type: "bulleted_list_item",
+          bulleted_list_item: {
+            rich_text: [{
+              type: "text",
+              text: { content: `Pensa: ${map.thinks}` }
+            }]
+          }
+        });
+      }
+      if (map.does) {
+        children.push({
+          object: "block",
+          type: "bulleted_list_item",
+          bulleted_list_item: {
+            rich_text: [{
+              type: "text",
+              text: { content: `Faz: ${map.does}` }
+            }]
+          }
+        });
+      }
+      if (map.feels) {
+        children.push({
+          object: "block",
+          type: "bulleted_list_item",
+          bulleted_list_item: {
+            rich_text: [{
+              type: "text",
+              text: { content: `Sente: ${map.feels}` }
+            }]
+          }
+        });
+      }
+    });
+  }
+  if (projectData.personas && projectData.personas.length > 0) {
+    children.push({
+      object: "block",
+      type: "heading_3",
+      heading_3: {
+        rich_text: [{ type: "text", text: { content: "Personas" } }]
+      }
+    });
+    projectData.personas.forEach((persona) => {
+      children.push({
+        object: "block",
+        type: "callout",
+        callout: {
+          icon: { emoji: "\u{1F464}" },
+          rich_text: [{
+            type: "text",
+            text: { content: `${persona.name} - ${persona.age} anos` }
+          }]
+        }
+      });
+      children.push({
+        object: "block",
+        type: "paragraph",
+        paragraph: {
+          rich_text: [{
+            type: "text",
+            text: { content: persona.bio || "" }
+          }]
+        }
+      });
+      if (persona.goals) {
+        children.push({
+          object: "block",
+          type: "bulleted_list_item",
+          bulleted_list_item: {
+            rich_text: [{
+              type: "text",
+              text: { content: `Objetivos: ${persona.goals}` }
+            }]
+          }
+        });
+      }
+      if (persona.frustrations) {
+        children.push({
+          object: "block",
+          type: "bulleted_list_item",
+          bulleted_list_item: {
+            rich_text: [{
+              type: "text",
+              text: { content: `Frustra\xE7\xF5es: ${persona.frustrations}` }
+            }]
+          }
+        });
+      }
+    });
+  }
+  if (projectData.povStatements && projectData.povStatements.length > 0) {
+    children.push({
+      object: "block",
+      type: "divider",
+      divider: {}
+    });
+    children.push({
+      object: "block",
+      type: "heading_2",
+      heading_2: {
+        rich_text: [{ type: "text", text: { content: "\u{1F3AF} Fase 2: Definir" } }]
+      }
+    });
+    projectData.povStatements.forEach((pov) => {
+      children.push({
+        object: "block",
+        type: "quote",
+        quote: {
+          rich_text: [{
+            type: "text",
+            text: { content: pov.statement || pov.user || "" }
+          }]
+        }
+      });
+    });
+  }
+  if (projectData.ideas && projectData.ideas.length > 0) {
+    children.push({
+      object: "block",
+      type: "divider",
+      divider: {}
+    });
+    children.push({
+      object: "block",
+      type: "heading_2",
+      heading_2: {
+        rich_text: [{ type: "text", text: { content: "\u{1F4A1} Fase 3: Idear" } }]
+      }
+    });
+    projectData.ideas.forEach((idea) => {
+      children.push({
+        object: "block",
+        type: "bulleted_list_item",
+        bulleted_list_item: {
+          rich_text: [{
+            type: "text",
+            text: { content: idea.title || idea.description || "" }
+          }]
+        }
+      });
+      if (idea.description && idea.title) {
+        children.push({
+          object: "block",
+          type: "paragraph",
+          paragraph: {
+            rich_text: [{
+              type: "text",
+              text: { content: idea.description }
+            }]
+          }
+        });
+      }
+    });
+  }
+  if (projectData.prototypes && projectData.prototypes.length > 0) {
+    children.push({
+      object: "block",
+      type: "divider",
+      divider: {}
+    });
+    children.push({
+      object: "block",
+      type: "heading_2",
+      heading_2: {
+        rich_text: [{ type: "text", text: { content: "\u{1F528} Fase 4: Prototipar" } }]
+      }
+    });
+    projectData.prototypes.forEach((prototype) => {
+      children.push({
+        object: "block",
+        type: "callout",
+        callout: {
+          icon: { emoji: "\u{1F528}" },
+          rich_text: [{
+            type: "text",
+            text: { content: prototype.name || "Prot\xF3tipo" }
+          }]
+        }
+      });
+      if (prototype.description) {
+        children.push({
+          object: "block",
+          type: "paragraph",
+          paragraph: {
+            rich_text: [{
+              type: "text",
+              text: { content: prototype.description }
+            }]
+          }
+        });
+      }
+    });
+  }
+  if (projectData.tests && projectData.tests.length > 0) {
+    children.push({
+      object: "block",
+      type: "divider",
+      divider: {}
+    });
+    children.push({
+      object: "block",
+      type: "heading_2",
+      heading_2: {
+        rich_text: [{ type: "text", text: { content: "\u2705 Fase 5: Testar" } }]
+      }
+    });
+    projectData.tests.forEach((test) => {
+      children.push({
+        object: "block",
+        type: "callout",
+        callout: {
+          icon: { emoji: "\u{1F9EA}" },
+          rich_text: [{
+            type: "text",
+            text: { content: test.title || test.methodology || "Teste" }
+          }]
+        }
+      });
+      if (test.findings) {
+        children.push({
+          object: "block",
+          type: "paragraph",
+          paragraph: {
+            rich_text: [{
+              type: "text",
+              text: { content: `Resultados: ${test.findings}` }
+            }]
+          }
+        });
+      }
+    });
+  }
+  if (createNewPage) {
+    if (!parentPageId) {
+      throw new Error("Notion requer um Parent Page ID. Crie uma p\xE1gina raiz no Notion e compartilhe com a integra\xE7\xE3o.");
+    }
+    const pagePayload = {
+      parent: { page_id: parentPageId },
+      properties: {
+        title: {
+          title: [
+            {
+              text: {
+                content: pageTitle
+              }
+            }
+          ]
+        }
+      },
+      children: children.slice(0, 100)
+    };
+    const response = await notion.pages.create(pagePayload);
+    if (children.length > 100) {
+      const remainingBlocks = children.slice(100);
+      for (let i = 0; i < remainingBlocks.length; i += 100) {
+        const chunk = remainingBlocks.slice(i, i + 100);
+        await notion.blocks.children.append({
+          block_id: response.id,
+          children: chunk
+        });
+      }
+    }
+    return response.id;
+  } else {
+    throw new Error("Exporta\xE7\xE3o sem criar p\xE1gina nova ainda n\xE3o implementada");
+  }
+}
+var connectionSettings;
+var init_notion = __esm({
+  "server/notion.ts"() {
+    "use strict";
+  }
+});
+
 // vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -407,6 +1644,8 @@ import express2 from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import ConnectPgSimple from "connect-pg-simple";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
 
 // server/routes.ts
 import { createServer } from "http";
@@ -415,841 +1654,10 @@ import sharp from "sharp";
 import path from "path";
 import fs from "fs";
 
-// shared/schema.ts
-var schema_exports = {};
-__export(schema_exports, {
-  articles: () => articles,
-  benchmarkAssessments: () => benchmarkAssessments,
-  benchmarks: () => benchmarks,
-  canvasDrawings: () => canvasDrawings,
-  competitiveAnalysis: () => competitiveAnalysis,
-  dvfAssessments: () => dvfAssessments,
-  empathyMaps: () => empathyMaps,
-  helpArticles: () => helpArticles,
-  hmwQuestions: () => hmwQuestions,
-  ideas: () => ideas,
-  insertArticleSchema: () => insertArticleSchema,
-  insertBenchmarkAssessmentSchema: () => insertBenchmarkAssessmentSchema,
-  insertBenchmarkSchema: () => insertBenchmarkSchema,
-  insertCanvasDrawingSchema: () => insertCanvasDrawingSchema,
-  insertCompetitiveAnalysisSchema: () => insertCompetitiveAnalysisSchema,
-  insertDvfAssessmentSchema: () => insertDvfAssessmentSchema,
-  insertEmpathyMapSchema: () => insertEmpathyMapSchema,
-  insertHelpArticleSchema: () => insertHelpArticleSchema,
-  insertHmwQuestionSchema: () => insertHmwQuestionSchema,
-  insertIdeaSchema: () => insertIdeaSchema,
-  insertInterviewSchema: () => insertInterviewSchema,
-  insertLovabilityMetricSchema: () => insertLovabilityMetricSchema,
-  insertObservationSchema: () => insertObservationSchema,
-  insertPersonaSchema: () => insertPersonaSchema,
-  insertPhaseCardSchema: () => insertPhaseCardSchema,
-  insertPovStatementSchema: () => insertPovStatementSchema,
-  insertProjectAnalyticsSchema: () => insertProjectAnalyticsSchema,
-  insertProjectBackupSchema: () => insertProjectBackupSchema,
-  insertProjectSchema: () => insertProjectSchema,
-  insertPrototypeSchema: () => insertPrototypeSchema,
-  insertSubscriptionPlanSchema: () => insertSubscriptionPlanSchema,
-  insertTestPlanSchema: () => insertTestPlanSchema,
-  insertTestResultSchema: () => insertTestResultSchema,
-  insertUserProgressSchema: () => insertUserProgressSchema,
-  insertUserSchema: () => insertUserSchema,
-  insertUserSubscriptionSchema: () => insertUserSubscriptionSchema,
-  interviews: () => interviews,
-  lovabilityMetrics: () => lovabilityMetrics,
-  observations: () => observations,
-  personas: () => personas,
-  phaseCards: () => phaseCards,
-  povStatements: () => povStatements,
-  projectAnalytics: () => projectAnalytics,
-  projectBackups: () => projectBackups,
-  projects: () => projects,
-  prototypes: () => prototypes,
-  subscriptionPlans: () => subscriptionPlans,
-  testPlans: () => testPlans,
-  testResults: () => testResults,
-  updateProfileSchema: () => updateProfileSchema,
-  userProgress: () => userProgress,
-  userSubscriptions: () => userSubscriptions,
-  users: () => users
-});
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, real, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
-var projects = pgTable("projects", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  name: text("name").notNull(),
-  description: text("description"),
-  status: text("status").notNull().default("in_progress"),
-  // in_progress, completed
-  currentPhase: integer("current_phase").default(1),
-  // 1-5 phases
-  completionRate: real("completion_rate").default(0),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var empathyMaps = pgTable("empathy_maps", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  title: text("title").notNull(),
-  says: jsonb("says").default([]),
-  // Array of strings
-  thinks: jsonb("thinks").default([]),
-  does: jsonb("does").default([]),
-  feels: jsonb("feels").default([]),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var personas = pgTable("personas", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  name: text("name").notNull(),
-  age: integer("age"),
-  occupation: text("occupation"),
-  bio: text("bio"),
-  goals: jsonb("goals").default([]),
-  frustrations: jsonb("frustrations").default([]),
-  motivations: jsonb("motivations").default([]),
-  techSavviness: text("tech_savviness"),
-  // low, medium, high
-  avatar: text("avatar"),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var interviews = pgTable("interviews", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  participantName: text("participant_name").notNull(),
-  date: timestamp("date").notNull(),
-  duration: integer("duration"),
-  // minutes
-  questions: jsonb("questions").default([]),
-  responses: jsonb("responses").default([]),
-  insights: text("insights"),
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var observations = pgTable("observations", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  location: text("location").notNull(),
-  context: text("context").notNull(),
-  behavior: text("behavior").notNull(),
-  insights: text("insights"),
-  date: timestamp("date").notNull(),
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var povStatements = pgTable("pov_statements", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  user: text("user").notNull(),
-  // user description
-  need: text("need").notNull(),
-  // user need
-  insight: text("insight").notNull(),
-  // surprising insight
-  statement: text("statement").notNull(),
-  // complete POV statement
-  priority: text("priority").default("medium"),
-  // low, medium, high
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var hmwQuestions = pgTable("hmw_questions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  question: text("question").notNull(),
-  context: text("context"),
-  challenge: text("challenge"),
-  scope: text("scope").default("product"),
-  // feature, product, service, experience, process
-  priority: text("priority").default("medium"),
-  // low, medium, high
-  category: text("category"),
-  // categorization
-  votes: integer("votes").default(0),
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var ideas = pgTable("ideas", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  category: text("category"),
-  // Legacy fields (kept for compatibility)
-  feasibility: integer("feasibility"),
-  // 1-5 scale - now maps to DVF Feasibility/Exequibilidade
-  impact: integer("impact"),
-  // 1-5 scale
-  votes: integer("votes").default(0),
-  // DVF (Desejabilidade, Viabilidade, Exequibilidade) System
-  desirability: integer("desirability"),
-  // 1-5 scale - user need satisfaction
-  viability: integer("viability"),
-  // 1-5 scale - business/profit potential  
-  // feasibility already exists above - technical implementability
-  confidenceLevel: integer("confidence_level"),
-  // 1-5 scale - overall confidence
-  dvfScore: real("dvf_score"),
-  // Calculated: (desirability + viability + feasibility) / 3
-  dvfAnalysis: text("dvf_analysis"),
-  // Detailed justification for scores
-  actionDecision: text("action_decision").default("evaluate"),
-  // love_it, leave_it, change_it, evaluate
-  // Priority and iteration fields
-  priorityRank: integer("priority_rank"),
-  // 1-n ranking based on DVF analysis
-  iterationNotes: text("iteration_notes"),
-  // Notes for "change_it" decisions
-  status: text("status").default("idea"),
-  // idea, selected, prototype, tested
-  canvasData: jsonb("canvas_data"),
-  // Fabric.js canvas data for drawings/sketches
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var prototypes = pgTable("prototypes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  ideaId: varchar("idea_id").references(() => ideas.id),
-  name: text("name").notNull(),
-  type: text("type").notNull(),
-  // paper, digital, physical, storyboard, canvas
-  description: text("description").notNull(),
-  materials: jsonb("materials").default([]),
-  images: jsonb("images").default([]),
-  canvasData: jsonb("canvas_data"),
-  // Konva.js canvas data for interactive prototypes
-  version: integer("version").default(1),
-  feedback: text("feedback"),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var canvasDrawings = pgTable("canvas_drawings", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  phase: integer("phase").notNull(),
-  // 1-5 phases where this drawing is used
-  canvasType: text("canvas_type").notNull(),
-  // fabric, konva
-  canvasData: jsonb("canvas_data").notNull(),
-  // Canvas library data (Fabric.js or Konva.js)
-  thumbnailData: text("thumbnail_data"),
-  // Base64 encoded thumbnail for preview
-  tags: jsonb("tags").default([]),
-  // Tags for categorization
-  isTemplate: boolean("is_template").default(false),
-  // Can be used as a template
-  parentId: varchar("parent_id"),
-  // For drawing iterations - will be set to reference same table later
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var testPlans = pgTable("test_plans", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  prototypeId: varchar("prototype_id").references(() => prototypes.id),
-  name: text("name").notNull(),
-  objective: text("objective").notNull(),
-  methodology: text("methodology").notNull(),
-  participants: integer("participants").notNull(),
-  duration: integer("duration"),
-  // minutes
-  tasks: jsonb("tasks").default([]),
-  metrics: jsonb("metrics").default([]),
-  status: text("status").default("planned"),
-  // planned, running, completed
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var testResults = pgTable("test_results", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  testPlanId: varchar("test_plan_id").references(() => testPlans.id).notNull(),
-  participantId: text("participant_id").notNull(),
-  taskResults: jsonb("task_results").default([]),
-  feedback: text("feedback"),
-  successRate: real("success_rate"),
-  completionTime: integer("completion_time"),
-  // minutes
-  insights: text("insights"),
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var userProgress = pgTable("user_progress", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: text("user_id").notNull(),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  phase: integer("phase").notNull(),
-  // 1-5
-  completedTools: jsonb("completed_tools").default([]),
-  badges: jsonb("badges").default([]),
-  points: integer("points").default(0),
-  timeSpent: integer("time_spent").default(0),
-  // minutes
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  email: text("email").notNull().unique(),
-  name: text("name").notNull(),
-  password: text("password").notNull(),
-  // hashed password
-  role: text("role").notNull().default("user"),
-  // admin, user
-  company: text("company"),
-  jobRole: text("job_role"),
-  industry: text("industry"),
-  experience: text("experience"),
-  country: text("country"),
-  state: text("state"),
-  city: text("city"),
-  zipCode: text("zip_code"),
-  phone: text("phone"),
-  bio: text("bio"),
-  profilePicture: text("profile_picture"),
-  interests: jsonb("interests").default([]),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  subscriptionPlanId: varchar("subscription_plan_id"),
-  subscriptionStatus: text("subscription_status").default("active"),
-  // active, canceled, expired, trialing
-  subscriptionEndDate: timestamp("subscription_end_date"),
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var subscriptionPlans = pgTable("subscription_plans", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  displayName: text("display_name").notNull(),
-  description: text("description"),
-  priceMonthly: integer("price_monthly").notNull(),
-  // in cents
-  priceYearly: integer("price_yearly").notNull(),
-  // in cents
-  stripePriceIdMonthly: text("stripe_price_id_monthly"),
-  stripePriceIdYearly: text("stripe_price_id_yearly"),
-  maxProjects: integer("max_projects"),
-  // null for unlimited
-  maxPersonasPerProject: integer("max_personas_per_project"),
-  // null for unlimited
-  maxUsersPerTeam: integer("max_users_per_team"),
-  // null for unlimited
-  includedUsers: integer("included_users"),
-  // number of users included in base price (null if not applicable)
-  pricePerAdditionalUser: integer("price_per_additional_user"),
-  // price in cents for each additional user beyond includedUsers
-  aiChatLimit: integer("ai_chat_limit"),
-  // null for unlimited
-  libraryArticlesCount: integer("library_articles_count"),
-  // null for all articles
-  features: jsonb("features").default([]),
-  // Array of feature strings
-  exportFormats: jsonb("export_formats").default([]),
-  // Array of export formats (pdf, png, csv)
-  hasCollaboration: boolean("has_collaboration").default(false),
-  hasPermissionManagement: boolean("has_permission_management").default(false),
-  hasSharedWorkspace: boolean("has_shared_workspace").default(false),
-  hasCommentsAndFeedback: boolean("has_comments_and_feedback").default(false),
-  hasSso: boolean("has_sso").default(false),
-  hasCustomApi: boolean("has_custom_api").default(false),
-  hasCustomIntegrations: boolean("has_custom_integrations").default(false),
-  has24x7Support: boolean("has_24x7_support").default(false),
-  order: integer("order").default(0),
-  // for display ordering
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var userSubscriptions = pgTable("user_subscriptions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  planId: varchar("plan_id").references(() => subscriptionPlans.id).notNull(),
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  status: text("status").notNull(),
-  // active, canceled, expired, trialing, incomplete
-  billingPeriod: text("billing_period").notNull(),
-  // monthly, yearly
-  currentPeriodStart: timestamp("current_period_start"),
-  currentPeriodEnd: timestamp("current_period_end"),
-  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var articles = pgTable("articles", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  category: text("category").notNull(),
-  // empathize, define, ideate, prototype, test
-  author: text("author").notNull(),
-  description: text("description"),
-  tags: jsonb("tags").default([]),
-  // Array of tags
-  published: boolean("published").default(true),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var insertProjectSchema = createInsertSchema(projects).omit({
-  id: true,
-  userId: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertEmpathyMapSchema = createInsertSchema(empathyMaps).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertPersonaSchema = createInsertSchema(personas).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertInterviewSchema = createInsertSchema(interviews, {
-  questions: z.array(z.string()).optional(),
-  responses: z.array(z.string()).optional()
-}).omit({
-  id: true,
-  createdAt: true
-});
-var insertObservationSchema = createInsertSchema(observations).omit({
-  id: true,
-  createdAt: true
-});
-var insertPovStatementSchema = createInsertSchema(povStatements).omit({
-  id: true,
-  createdAt: true
-});
-var insertHmwQuestionSchema = createInsertSchema(hmwQuestions).omit({
-  id: true,
-  createdAt: true
-});
-var insertIdeaSchema = createInsertSchema(ideas).omit({
-  id: true,
-  createdAt: true
-});
-var insertPrototypeSchema = createInsertSchema(prototypes).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertTestPlanSchema = createInsertSchema(testPlans).omit({
-  id: true,
-  createdAt: true
-});
-var insertTestResultSchema = createInsertSchema(testResults).omit({
-  id: true,
-  createdAt: true
-});
-var insertUserProgressSchema = createInsertSchema(userProgress).omit({
-  id: true,
-  updatedAt: true
-});
-var insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true
-});
-var insertArticleSchema = createInsertSchema(articles).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
-  id: true,
-  createdAt: true
-});
-var insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertCanvasDrawingSchema = createInsertSchema(canvasDrawings).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var updateProfileSchema = createInsertSchema(users).omit({
-  id: true,
-  username: true,
-  password: true,
-  role: true,
-  stripeCustomerId: true,
-  stripeSubscriptionId: true,
-  subscriptionPlanId: true,
-  subscriptionStatus: true,
-  subscriptionEndDate: true,
-  createdAt: true
-}).partial();
-var phaseCards = pgTable("phase_cards", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  phase: integer("phase").notNull().default(1),
-  // 1-5 phases (Empatizar, Definir, Idear, Prototipar, Testar)
-  status: text("status").default("todo"),
-  // todo, in_progress, done
-  priority: text("priority").default("medium"),
-  // low, medium, high
-  assignee: text("assignee"),
-  // Optional assignee
-  tags: jsonb("tags").default([]),
-  // Array of tags for categorization
-  dueDate: timestamp("due_date"),
-  position: integer("position").default(0),
-  // Order within the phase column
-  color: text("color").default("blue"),
-  // Card color for visual organization
-  attachments: jsonb("attachments").default([]),
-  // File attachments metadata
-  comments: jsonb("comments").default([]),
-  // Comments/notes
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var benchmarks = pgTable("benchmarks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  name: text("name").notNull(),
-  description: text("description"),
-  industry: text("industry").notNull(),
-  // tech, healthcare, finance, retail, etc.
-  companySize: text("company_size").notNull(),
-  // startup, small, medium, large, enterprise
-  maturityScores: jsonb("maturity_scores").default({}),
-  // { empathize: 4, define: 3, ideate: 5, prototype: 2, test: 3 }
-  benchmarkType: text("benchmark_type").notNull().default("industry"),
-  // industry, internal, custom
-  targetScores: jsonb("target_scores").default({}),
-  // Goals for each phase
-  improvementAreas: jsonb("improvement_areas").default([]),
-  // Array of focus areas
-  recommendations: jsonb("recommendations").default([]),
-  // AI-generated suggestions
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var benchmarkAssessments = pgTable("benchmark_assessments", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  benchmarkId: varchar("benchmark_id").references(() => benchmarks.id).notNull(),
-  phase: integer("phase").notNull(),
-  // 1-5 for DT phases
-  criteria: text("criteria").notNull(),
-  // What is being assessed
-  currentScore: real("current_score").notNull(),
-  // 1-5 rating
-  targetScore: real("target_score").notNull(),
-  // Goal score
-  industryAverage: real("industry_average"),
-  // Benchmark comparison
-  evidence: text("evidence"),
-  // Supporting evidence for the score
-  improvementPlan: text("improvement_plan"),
-  // How to improve
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var insertBenchmarkSchema = createInsertSchema(benchmarks).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertBenchmarkAssessmentSchema = createInsertSchema(benchmarkAssessments).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertPhaseCardSchema = createInsertSchema(phaseCards).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var dvfAssessments = pgTable("dvf_assessments", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  itemType: text("item_type").notNull(),
-  // idea, prototype, solution, etc.
-  itemId: varchar("item_id").notNull(),
-  // Reference to the evaluated item
-  itemName: text("item_name").notNull(),
-  // Desirability - User desirability
-  desirabilityScore: real("desirability_score").notNull().default(0),
-  // 1-5 scale
-  desirabilityEvidence: text("desirability_evidence"),
-  // Supporting evidence
-  userFeedback: text("user_feedback"),
-  // Direct user feedback
-  marketDemand: real("market_demand").default(0),
-  // Market demand indicator
-  // Feasibility - Technical feasibility  
-  feasibilityScore: real("feasibility_score").notNull().default(0),
-  // 1-5 scale
-  feasibilityEvidence: text("feasibility_evidence"),
-  technicalComplexity: text("technical_complexity"),
-  // low, medium, high
-  resourceRequirements: jsonb("resource_requirements").default([]),
-  // Required resources
-  timeToImplement: integer("time_to_implement"),
-  // Estimated time in days
-  // Viability - Economic viability
-  viabilityScore: real("viability_score").notNull().default(0),
-  // 1-5 scale  
-  viabilityEvidence: text("viability_evidence"),
-  businessModel: text("business_model"),
-  // How it generates value
-  costEstimate: real("cost_estimate"),
-  // Implementation cost
-  revenueProjection: real("revenue_projection"),
-  // Expected revenue
-  // Overall DVF analysis
-  overallScore: real("overall_score").default(0),
-  // Average of the three pillars
-  recommendation: text("recommendation"),
-  // proceed, modify, stop
-  nextSteps: jsonb("next_steps").default([]),
-  // Recommended actions
-  risksIdentified: jsonb("risks_identified").default([]),
-  // Potential risks
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var lovabilityMetrics = pgTable("lovability_metrics", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  itemType: text("item_type").notNull(),
-  // idea, prototype, solution
-  itemId: varchar("item_id").notNull(),
-  // Reference to the item being evaluated
-  itemName: text("item_name").notNull(),
-  // Core Metrics
-  npsScore: real("nps_score").default(0),
-  // -100 to 100
-  satisfactionScore: real("satisfaction_score").default(0),
-  // 0-10
-  retentionRate: real("retention_rate").default(0),
-  // 0-100%
-  engagementTime: real("engagement_time").default(0),
-  // minutes
-  // Emotional Distribution
-  emotionalDistribution: jsonb("emotional_distribution").default({}),
-  // delight, satisfaction, neutral, frustration percentages
-  // Feedback Analysis
-  positiveComments: jsonb("positive_comments").default([]),
-  negativeComments: jsonb("negative_comments").default([]),
-  improvementSuggestions: jsonb("improvement_suggestions").default([]),
-  // User Behavior
-  userTestingSessions: integer("user_testing_sessions").default(0),
-  completionRate: real("completion_rate").default(0),
-  // 0-100%
-  errorRate: real("error_rate").default(0),
-  // 0-100%
-  supportTickets: integer("support_tickets").default(0),
-  // Qualitative Insights
-  emotionalStory: text("emotional_story"),
-  userPersonas: jsonb("user_personas").default([]),
-  keyMoments: jsonb("key_moments").default([]),
-  painPoints: jsonb("pain_points").default([]),
-  // Overall Assessment
-  lovabilityScore: real("lovability_score").default(0),
-  // 0-10 calculated score
-  recommendations: jsonb("recommendations").default([]),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var projectAnalytics = pgTable("project_analytics", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  // Usage metrics
-  totalTimeSpent: integer("total_time_spent").default(0),
-  // minutes
-  timePerPhase: jsonb("time_per_phase").default({}),
-  // { phase1: 120, phase2: 90, ... }
-  toolsUsed: jsonb("tools_used").default([]),
-  // List of tools/features used
-  toolUsageCount: jsonb("tool_usage_count").default({}),
-  // Usage frequency per tool
-  // Progress metrics
-  completionRate: real("completion_rate").default(0),
-  // 0-100%
-  phasesCompleted: jsonb("phases_completed").default([]),
-  // Which phases are done
-  stageProgressions: integer("stage_progressions").default(0),
-  // Times moved between phases
-  iterationsCount: integer("iterations_count").default(0),
-  // Number of iterations
-  // Success indicators
-  prototypesCreated: integer("prototypes_created").default(0),
-  testsCompleted: integer("tests_completed").default(0),
-  userFeedbackCollected: integer("user_feedback_collected").default(0),
-  ideasGenerated: integer("ideas_generated").default(0),
-  ideasImplemented: integer("ideas_implemented").default(0),
-  // Team collaboration metrics
-  teamSize: integer("team_size").default(1),
-  collaborationEvents: integer("collaboration_events").default(0),
-  meetingsHeld: integer("meetings_held").default(0),
-  decisionsMade: integer("decisions_made").default(0),
-  // Innovation metrics
-  originalityScore: real("originality_score").default(0),
-  // 1-10
-  feasibilityScore: real("feasibility_score").default(0),
-  // 1-10
-  impactPotential: real("impact_potential").default(0),
-  // 1-10
-  marketFit: real("market_fit").default(0),
-  // 1-10
-  // Success metrics
-  overallSuccess: real("overall_success").default(0),
-  // 0-100%
-  userSatisfaction: real("user_satisfaction").default(0),
-  // 0-10
-  goalAchievement: real("goal_achievement").default(0),
-  // 0-100%
-  innovationLevel: real("innovation_level").default(0),
-  // 1-5
-  // Key insights
-  topPerformingTools: jsonb("top_performing_tools").default([]),
-  timeBottlenecks: jsonb("time_bottlenecks").default([]),
-  successFactors: jsonb("success_factors").default([]),
-  improvementAreas: jsonb("improvement_areas").default([]),
-  lastUpdated: timestamp("last_updated").default(sql`now()`),
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var competitiveAnalysis = pgTable("competitive_analysis", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  // Competitor info
-  competitorName: text("competitor_name").notNull(),
-  // Miro, Figma, Notion, etc.
-  competitorType: text("competitor_type").notNull(),
-  // direct, indirect, substitute
-  marketPosition: text("market_position"),
-  // leader, challenger, niche
-  // Feature comparison
-  features: jsonb("features").default({}),
-  // Feature matrix comparison
-  functionalGaps: jsonb("functional_gaps").default([]),
-  // What they lack
-  functionalOverages: jsonb("functional_overages").default([]),
-  // What they overdo
-  // Pricing comparison
-  pricingModel: text("pricing_model"),
-  // freemium, subscription, one-time
-  pricePoints: jsonb("price_points").default([]),
-  // Their pricing tiers
-  valueProposition: text("value_proposition"),
-  // Their main value prop
-  // Market gaps
-  underservedOutcomes: jsonb("underserved_outcomes").default([]),
-  // Market gaps
-  overservedOutcomes: jsonb("overserved_outcomes").default([]),
-  // Overcomplicated areas
-  // Our positioning
-  ourAdvantages: jsonb("our_advantages").default([]),
-  // Where we're better
-  ourDisadvantages: jsonb("our_disadvantages").default([]),
-  // Where we lack
-  recommendations: jsonb("recommendations").default([]),
-  // Strategic recommendations
-  analysisDate: timestamp("analysis_date").default(sql`now()`),
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var projectBackups = pgTable("project_backups", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
-  // Backup metadata
-  backupType: text("backup_type").notNull(),
-  // auto, manual
-  description: text("description"),
-  // Project snapshot at backup time
-  projectSnapshot: jsonb("project_snapshot").notNull(),
-  // Complete project data
-  // Statistics at backup time
-  phaseSnapshot: integer("phase_snapshot"),
-  // Current phase at backup
-  completionSnapshot: real("completion_snapshot"),
-  // Completion rate at backup
-  itemCount: integer("item_count"),
-  // Total items in backup
-  createdAt: timestamp("created_at").default(sql`now()`)
-});
-var helpArticles = pgTable("help_articles", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: text("title").notNull(),
-  slug: text("slug").notNull().unique(),
-  // URL-friendly identifier
-  content: text("content").notNull(),
-  // Markdown content
-  category: text("category").notNull(),
-  // inicio-rapido, fases, exportacao, etc
-  subcategory: text("subcategory"),
-  // Optional subcategory
-  phase: integer("phase"),
-  // 1-5 if related to specific DT phase
-  tags: jsonb("tags").default([]),
-  // Array of searchable tags
-  searchKeywords: jsonb("search_keywords").default([]),
-  // Keywords for search
-  featured: boolean("featured").default(false),
-  // Show in main help
-  author: text("author").notNull().default("DTTools Team"),
-  // Article author
-  viewCount: integer("view_count").default(0),
-  helpful: integer("helpful").default(0),
-  // Helpful votes
-  order: integer("order").default(0),
-  // Display order within category
-  createdAt: timestamp("created_at").default(sql`now()`),
-  updatedAt: timestamp("updated_at").default(sql`now()`)
-});
-var insertDvfAssessmentSchema = createInsertSchema(dvfAssessments).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertLovabilityMetricSchema = createInsertSchema(lovabilityMetrics).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var insertProjectAnalyticsSchema = createInsertSchema(projectAnalytics).omit({
-  id: true,
-  createdAt: true,
-  lastUpdated: true
-});
-var insertCompetitiveAnalysisSchema = createInsertSchema(competitiveAnalysis).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  analysisDate: true
-});
-var insertProjectBackupSchema = createInsertSchema(projectBackups).omit({
-  id: true,
-  createdAt: true
-});
-var insertHelpArticleSchema = createInsertSchema(helpArticles).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  viewCount: true,
-  helpful: true
-});
-
 // server/storage.ts
+init_schema();
+init_db();
 import bcrypt from "bcrypt";
-
-// server/db.ts
-import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?"
-  );
-}
-var pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
-});
-var db = drizzle(pool, { schema: schema_exports });
-
-// server/storage.ts
 import { eq, and, desc } from "drizzle-orm";
 var DatabaseStorage = class {
   // Projects
@@ -1285,6 +1693,10 @@ var DatabaseStorage = class {
   }
   async getUserByUsername(username) {
     const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+  async getUserByEmail(email) {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
   }
   async createUser(user) {
@@ -2110,8 +2522,10 @@ async function initializeDefaultData() {
 }
 
 // server/routes.ts
+init_schema();
 import bcrypt2 from "bcrypt";
 import Stripe from "stripe";
+import { sql as sql2 } from "drizzle-orm";
 
 // server/subscriptionMiddleware.ts
 async function checkProjectLimit(req, res, next) {
@@ -2769,6 +3183,29 @@ function recordProjectCreation(userId, projectName) {
   });
 }
 async function registerRoutes(app2) {
+  app2.get("/api/health", async (_req, res) => {
+    try {
+      const db2 = (await Promise.resolve().then(() => (init_db(), db_exports))).db;
+      await db2.execute(sql2`SELECT 1`);
+      res.json({
+        status: "healthy",
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        database: "connected",
+        uptime: process.uptime(),
+        memory: {
+          used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+          total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+          unit: "MB"
+        }
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: "unhealthy",
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        error: "Database connection failed"
+      });
+    }
+  });
   app2.get("/api/subscription-info", requireAuth, getSubscriptionInfo);
   app2.get("/api/projects", requireAuth, async (req, res) => {
     try {
@@ -2789,6 +3226,71 @@ async function registerRoutes(app2) {
       res.json(project);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch project" });
+    }
+  });
+  app2.get("/api/projects/:id/full", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const projectId = req.params.id;
+      const [
+        project,
+        empathyMaps2,
+        personas2,
+        interviews2,
+        observations2,
+        povStatements2,
+        hmwQuestions2,
+        ideas2,
+        prototypes2,
+        testPlans2,
+        canvasDrawings2,
+        phaseCards2,
+        benchmarks2,
+        dvfAssessments2,
+        lovabilityMetrics2,
+        projectAnalytics2
+      ] = await Promise.all([
+        storage.getProject(projectId, userId),
+        storage.getEmpathyMaps(projectId),
+        storage.getPersonas(projectId),
+        storage.getInterviews(projectId),
+        storage.getObservations(projectId),
+        storage.getPovStatements(projectId),
+        storage.getHmwQuestions(projectId),
+        storage.getIdeas(projectId),
+        storage.getPrototypes(projectId),
+        storage.getTestPlans(projectId),
+        storage.getCanvasDrawings(projectId),
+        storage.getPhaseCards(projectId),
+        storage.getBenchmarks(projectId),
+        storage.getDvfAssessments(projectId),
+        storage.getLovabilityMetrics(projectId),
+        storage.getProjectAnalytics(projectId)
+      ]);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.json({
+        project,
+        empathyMaps: empathyMaps2,
+        personas: personas2,
+        interviews: interviews2,
+        observations: observations2,
+        povStatements: povStatements2,
+        hmwQuestions: hmwQuestions2,
+        ideas: ideas2,
+        prototypes: prototypes2,
+        testPlans: testPlans2,
+        canvasDrawings: canvasDrawings2,
+        phaseCards: phaseCards2,
+        benchmarks: benchmarks2,
+        dvfAssessments: dvfAssessments2,
+        lovabilityMetrics: lovabilityMetrics2,
+        projectAnalytics: projectAnalytics2
+      });
+    } catch (error) {
+      console.error("Failed to fetch full project data:", error);
+      res.status(500).json({ error: "Failed to fetch project data" });
     }
   });
   app2.post("/api/projects", requireAuth, checkProjectLimit, async (req, res) => {
@@ -3405,24 +3907,20 @@ async function registerRoutes(app2) {
   });
   app2.post("/api/auth/login", async (req, res) => {
     try {
-      const { username, password } = req.body;
-      console.log("Login attempt:", { username, passwordLength: password?.length });
-      if (!username || !password) {
-        return res.status(400).json({ error: "Username and password are required" });
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email e senha s\xE3o obrigat\xF3rios" });
       }
-      const allUsers = await storage.getUsers();
-      console.log("Total users in system:", allUsers.length);
-      console.log("All usernames:", allUsers.map((u) => u.username));
-      console.log("Searching for username:", username);
-      const user = await storage.getUserByUsername(username);
-      console.log("User found:", user ? "Yes" : "No");
+      let user = await storage.getUserByEmail(email);
       if (!user) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        user = await storage.getUserByUsername(email);
+      }
+      if (!user) {
+        return res.status(401).json({ error: "Email ou senha inv\xE1lidos" });
       }
       const isValidPassword = await bcrypt2.compare(password, user.password);
-      console.log("Password valid:", isValidPassword);
       if (!isValidPassword) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        return res.status(401).json({ error: "Email ou senha inv\xE1lidos" });
       }
       const { password: _, ...userWithoutPassword } = user;
       req.session.userId = user.id;
@@ -3440,28 +3938,32 @@ async function registerRoutes(app2) {
   });
   app2.post("/api/auth/signup", async (req, res) => {
     try {
-      const { username, password } = req.body;
-      if (!username || !password) {
-        return res.status(400).json({ error: "Nome de usu\xE1rio e senha s\xE3o obrigat\xF3rios" });
+      const { name, email, password } = req.body;
+      if (!name || !email || !password) {
+        return res.status(400).json({ error: "Nome, email e senha s\xE3o obrigat\xF3rios" });
       }
-      const existingUser = await storage.getUserByUsername(username);
-      if (existingUser) {
-        return res.status(400).json({ error: "Este nome de usu\xE1rio j\xE1 est\xE1 em uso" });
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Email inv\xE1lido" });
       }
+      const existingEmailUser = await storage.getUserByEmail(email);
+      if (existingEmailUser) {
+        return res.status(400).json({ error: "Este email j\xE1 est\xE1 em uso" });
+      }
+      const username = email;
+      const hashedPassword = await bcrypt2.hash(password, 10);
       const userData = {
         username,
-        email: `${username}@temp.local`,
-        // Temporary email
-        name: username,
-        // Use username as display name initially
-        password,
+        // Auto-generated from email
+        email,
+        name,
+        // Display name provided by user
+        password: hashedPassword,
+        // Store hashed password
         role: "user"
       };
       const user = await storage.createUser(userData);
-      console.log("User created successfully:", user.username);
-      const allUsers = await storage.getUsers();
-      console.log("Total users in system:", allUsers.length);
-      console.log("All usernames:", allUsers.map((u) => u.username));
+      console.log("User created successfully:", user.email);
       const { password: _, ...userWithoutPassword } = user;
       res.status(201).json({ user: userWithoutPassword, message: "Conta criada com sucesso!" });
     } catch (error) {
@@ -4893,6 +5395,65 @@ async function registerRoutes(app2) {
       res.status(500).json({ error: "Failed to create prenatal project" });
     }
   });
+  app2.post("/api/projects/:id/export/notion", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "N\xE3o autenticado" });
+      }
+      const { id } = req.params;
+      const { parentPageId } = req.body;
+      const project = await storage.getProject(id);
+      if (!project) {
+        return res.status(404).json({ error: "Projeto n\xE3o encontrado" });
+      }
+      if (project.userId !== req.session.userId) {
+        return res.status(403).json({ error: "Sem permiss\xE3o para acessar este projeto" });
+      }
+      const [empathyMaps2, personas2, interviews2, povStatements2, ideas2, prototypes2, tests] = await Promise.all([
+        storage.getEmpathyMapsByProject(id),
+        storage.getPersonasByProject(id),
+        storage.getInterviewsByProject(id),
+        storage.getPOVStatementsByProject(id),
+        storage.getIdeasByProject(id),
+        storage.getPrototypesByProject(id),
+        storage.getTestsByProject(id)
+      ]);
+      const projectData = {
+        name: project.name,
+        description: project.description,
+        empathyMaps: empathyMaps2,
+        personas: personas2,
+        interviews: interviews2,
+        povStatements: povStatements2,
+        ideas: ideas2,
+        prototypes: prototypes2,
+        tests
+      };
+      const { exportProjectToNotion: exportProjectToNotion2 } = await Promise.resolve().then(() => (init_notion(), notion_exports));
+      const notionPageId = await exportProjectToNotion2(projectData, {
+        parentPageId,
+        createNewPage: true
+      });
+      res.json({
+        success: true,
+        message: "Projeto exportado para o Notion com sucesso!",
+        notionPageId,
+        notionUrl: `https://notion.so/${notionPageId.replace(/-/g, "")}`
+      });
+    } catch (error) {
+      console.error("Error exporting to Notion:", error);
+      if (error.message?.includes("not connected")) {
+        return res.status(401).json({
+          error: "Notion n\xE3o conectado. Configure a integra\xE7\xE3o primeiro.",
+          code: "NOTION_NOT_CONNECTED"
+        });
+      }
+      res.status(500).json({
+        error: "Erro ao exportar para Notion. Tente novamente.",
+        details: error.message
+      });
+    }
+  });
   const httpServer = createServer(app2);
   return httpServer;
 }
@@ -4951,6 +5512,34 @@ app.use((req, res, next) => {
   } else {
     next();
   }
+});
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers["x-no-compression"]) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6
+  // Compression level (1-9, 6 is good balance)
+}));
+var apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1e3,
+  // 15 minutes
+  max: 100,
+  // 100 requests per IP per window
+  message: "Muitas requisi\xE7\xF5es. Tente novamente em 15 minutos.",
+  standardHeaders: true,
+  legacyHeaders: false
+});
+var authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1e3,
+  // 15 minutes
+  max: 5,
+  // Only 5 login attempts per window
+  message: "Muitas tentativas de login. Tente novamente em 15 minutos.",
+  standardHeaders: true,
+  legacyHeaders: false
 });
 app.use(express2.json({ limit: "50mb" }));
 app.use(express2.urlencoded({ extended: false, limit: "50mb" }));
@@ -5079,7 +5668,11 @@ app.use((req, res, next) => {
       etag: true,
       lastModified: true,
       setHeaders: (res, filepath) => {
-        if (filepath.endsWith(".js")) {
+        if (filepath.endsWith("index.html")) {
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+          res.setHeader("Pragma", "no-cache");
+          res.setHeader("Expires", "0");
+        } else if (filepath.endsWith(".js")) {
           res.setHeader("Content-Type", "application/javascript; charset=UTF-8");
         } else if (filepath.endsWith(".css")) {
           res.setHeader("Content-Type", "text/css; charset=UTF-8");
@@ -5090,6 +5683,9 @@ app.use((req, res, next) => {
       if (req.originalUrl.includes(".")) {
         res.status(404).send("File not found");
       } else {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader("Pragma", "no-cache");
+        res.setHeader("Expires", "0");
         res.sendFile(path4.resolve(distPath, "index.html"));
       }
     });
