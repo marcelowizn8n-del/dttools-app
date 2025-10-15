@@ -32,7 +32,9 @@ const editProjectSchema = z.object({
 
 type EditProjectData = z.infer<typeof editProjectSchema>;
 
+// Export to Notion - Build v1760553145 - Simplified version
 function ExportNotionButton({ projectId }: { projectId: string }) {
+  console.log('🔵 ExportNotionButton renderizando para projectId:', projectId);
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
   const [parentPageId, setParentPageId] = useState("");
@@ -110,7 +112,7 @@ function ExportNotionButton({ projectId }: { projectId: string }) {
           className="gap-2"
         >
           <FileText className="w-4 h-4" />
-          Exportar para Notion
+          Notion
         </Button>
       </DialogTrigger>
       <DialogContent>
