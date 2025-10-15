@@ -532,6 +532,15 @@ export default function ProjectDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => alert('Botão Notion funcionando!')}
+            data-testid="button-notion-test"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            TESTE NOTION
+          </Button>
           <ExportNotionButton projectId={projectId!} />
           <EditProjectDialog project={project} projectId={projectId!} />
           <Badge 
