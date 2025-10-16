@@ -3013,7 +3013,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('[Notion Export] User ID:', req.session.userId);
       console.log('[Notion Export] Parent Page ID:', parentPageId);
 
-      const project = await storage.getProject(id);
+      const project = await storage.getProject(id, req.session.userId);
       console.log('[Notion Export] Project found:', project ? 'YES' : 'NO');
       
       if (!project) {
