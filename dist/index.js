@@ -5415,13 +5415,13 @@ async function registerRoutes(app2) {
         return res.status(403).json({ error: "Sem permiss\xE3o para acessar este projeto" });
       }
       const [empathyMaps2, personas2, interviews2, povStatements2, ideas2, prototypes2, tests] = await Promise.all([
-        storage.getEmpathyMapsByProject(id),
-        storage.getPersonasByProject(id),
-        storage.getInterviewsByProject(id),
-        storage.getPOVStatementsByProject(id),
-        storage.getIdeasByProject(id),
-        storage.getPrototypesByProject(id),
-        storage.getTestsByProject(id)
+        storage.getEmpathyMaps(id),
+        storage.getPersonas(id),
+        storage.getInterviews(id),
+        storage.getPovStatements(id),
+        storage.getIdeas(id),
+        storage.getPrototypes(id),
+        storage.getTestPlans(id)
       ]);
       const projectData = {
         name: project.name,

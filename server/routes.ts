@@ -3026,13 +3026,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const [empathyMaps, personas, interviews, povStatements, ideas, prototypes, tests] = await Promise.all([
-        storage.getEmpathyMapsByProject(id),
-        storage.getPersonasByProject(id),
-        storage.getInterviewsByProject(id),
-        storage.getPOVStatementsByProject(id),
-        storage.getIdeasByProject(id),
-        storage.getPrototypesByProject(id),
-        storage.getTestsByProject(id)
+        storage.getEmpathyMaps(id),
+        storage.getPersonas(id),
+        storage.getInterviews(id),
+        storage.getPovStatements(id),
+        storage.getIdeas(id),
+        storage.getPrototypes(id),
+        storage.getTestPlans(id)
       ]);
 
       const projectData = {
