@@ -13,7 +13,7 @@ import type {
   Prototype, 
   TestPlan, 
   TestResult 
-} from "@shared/schema";
+} from "../shared/schema";
 
 export interface PPTXExportData {
   project: Project;
@@ -38,37 +38,43 @@ export class PPTXService {
   }
 
   private setupMasterSlide() {
-    // Define master slide for consistent branding
+    // Define master slide following new DTTools brand template
     this.pres.defineSlideMaster({
       title: "DTTools_MASTER",
-      background: { color: "FFFFFF" },
+      background: { color: "FFFFFF" }, // White background
       objects: [
-        // Header with DTTools branding
-        {
-          rect: {
-            x: 0, y: 0, w: "100%", h: 0.75,
-            fill: { color: "1E40AF" }, // DTTools blue
-          }
-        },
+        // Header logo "Design Thinking Tools" no canto superior esquerdo
         {
           text: {
-            text: "DTTools - Design Thinking",
+            text: "Design Thinking ",
             options: {
-              x: 0.5, y: 0.1, w: 8, h: 0.5,
-              color: "FFFFFF",
-              fontSize: 18,
+              x: 0.3, y: 0.2, w: 4, h: 0.4,
+              color: "1E3A8A", // Azul escuro #1E3A8A
+              fontSize: 16,
               fontFace: "Arial",
               bold: true
             }
           }
         },
-        // Footer
         {
           text: {
-            text: "Gerado pelo DTTools • dttools.app",
+            text: "Tools",
             options: {
-              x: 0.5, y: 6.8, w: 9, h: 0.3,
-              color: "666666",
+              x: 2.2, y: 0.2, w: 1, h: 0.4,
+              color: "10B981", // Verde #10B981
+              fontSize: 16,
+              fontFace: "Arial",
+              bold: true
+            }
+          }
+        },
+        // Footer com link para o site (centralizado)
+        {
+          text: {
+            text: "https://www.designthinkingtools.com",
+            options: {
+              x: 3, y: 7, w: 4, h: 0.3,
+              color: "2563EB", // Azul link #2563EB
               fontSize: 10,
               fontFace: "Arial",
               align: "center"
@@ -607,10 +613,10 @@ export class PPTXService {
     });
   }
 
-  async generateProjectPPTX(projectId: string): Promise<Buffer> {
+  async generateProjectPPTX(projectId: string, userId: string): Promise<Buffer> {
     try {
       // Fetch all project data
-      const project = await storage.getProject(projectId);
+      const project = await storage.getProject(projectId, userId);
       if (!project) {
         throw new Error("Project not found");
       }
@@ -850,10 +856,10 @@ export class PPTXService {
     }
   }
 
-  async generateProjectPDF(projectId: string): Promise<Buffer> {
+  async generateProjectPDF(projectId: string, userId: string): Promise<Buffer> {
     try {
       // Fetch all project data
-      const project = await storage.getProject(projectId);
+      const project = await storage.getProject(projectId, userId);
       if (!project) {
         throw new Error("Project not found");
       }
@@ -1113,10 +1119,10 @@ export class PPTXService {
     }
   }
 
-  async generateProjectMarkdown(projectId: string): Promise<string> {
+  async generateProjectMarkdown(projectId: string, userId: string): Promise<string> {
     try {
       // Fetch all project data
-      const project = await storage.getProject(projectId);
+      const project = await storage.getProject(projectId, userId);
       if (!project) {
         throw new Error("Project not found");
       }

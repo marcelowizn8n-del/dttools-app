@@ -32,7 +32,7 @@ import {
   insertCompetitiveAnalysisSchema,
   updateProfileSchema,
   insertHelpArticleSchema
-} from "@shared/schema";
+} from "../shared/schema";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
 import { sql } from "drizzle-orm";
@@ -44,7 +44,7 @@ import {
 } from "./subscriptionMiddleware";
 import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "./aiService";
 import { designThinkingGeminiAI } from "./geminiService";
-// import { PPTXService } from "./pptxService"; // Temporarily disabled - ESM compatibility issue
+import { PPTXService } from "./pptxService";
 
 // Initialize Stripe with secret key (optional for Railway deployment)
 const stripe = process.env.STRIPE_SECRET_KEY 
@@ -2434,8 +2434,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // TEMPORARILY DISABLED: Export endpoints (pptxgenjs ESM compatibility issue)
-  /*
+  // ===== EXPORT ENDPOINTS (PPTX, PDF, MARKDOWN) =====
+  
   // GET /api/projects/:id/export-pptx - Export project as PPTX
   app.get("/api/projects/:id/export-pptx", requireAuth, async (req, res) => {
     try {
@@ -2448,9 +2448,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Project not found" });
       }
 
-      // Generate PPTX
+      // Generate PPTX with new brand template
       const pptxService = new PPTXService();
-      const pptxBuffer = await pptxService.generateProjectPPTX(id);
+      const pptxBuffer = await pptxService.generateProjectPPTX(id, userId);
       
       // Set response headers for file download
       const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pptx`;
@@ -2479,9 +2479,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Project not found" });
       }
 
-      // Generate PDF using PPTX service and convert
+      // Generate PDF using PPTX service
       const pptxService = new PPTXService();
-      const pdfBuffer = await pptxService.generateProjectPDF(id);
+      const pdfBuffer = await pptxService.generateProjectPDF(id, userId);
       
       // Set response headers for file download
       const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pdf`;
@@ -2512,7 +2512,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate Markdown
       const pptxService = new PPTXService();
-      const markdown = await pptxService.generateProjectMarkdown(id);
+      const markdown = await pptxService.generateProjectMarkdown(id, userId);
       
       // Set response headers for file download
       const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.md`;
@@ -2528,7 +2528,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to generate Markdown document" });
     }
   });
-  */
 
   // ===== HELP/WIKI SYSTEM ROUTES =====
 
