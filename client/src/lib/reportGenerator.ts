@@ -371,48 +371,39 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
     yPos += Math.max(10, stepHeight + 3);
   });
 
-  // Add logo to all pages and footer
+  // Add logo and footer to all pages (following DTTools brand template)
   const totalPages = doc.getNumberOfPages();
-  
-  // Load DTTools logo as base64
-  const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAY8SURBVHgB7Z1NbBRVGMefdwuttFBaKFBKC1YqH1IQFYMHjdGDJh48eNCEgyQePHjw4MGDJw8ePHjw4MGDJw8ePHjw4MGDJw8ePHjw4MGDJw8ePHjw4MGDJw8ePHjw4MGDJ0/e/M/MzszszLuzs7PvzLz/5E22O7vtzrz/933f930fQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRBEBdQiCaurq21NTU0NdXV1jfX19Q11dXWNdXV1TXV1dU11dXVNdXV1LXV1dW11dXXtdXV1HXV1dZ11dXVddXV13XV1dT11dXU9dXV1vXV1db11dXV9dXV1A3V1dYN1dXVDdXV1w3V1dSN1dXWjdXV1Y3V1deN1dXUTdXV1k3V1dVN1dXXTdXV1M3V1dbN1dXVzdXV183V1dQt1dXULdXV1i3V1dUt1dXXLdXV1K3V1dav/AQcGBgZu3LjxwMDA7du3Hxw8ePCBrq6uBzo7Ox/o6Oh4oL29/YH29vYH2traHmhra3utra3ttba2ttfa2tpea2tre621tfW1lpaW15qbm19rbm5+rbm5+bXm5ubXmpubX2tubvlfU1PTay0tLa+1tLS81tLS8lpra+trbW1tr7W1tb3W3t7+Wnt7+2sdHR0PdHZ2PnDw4MEHBgYGHrh58+YDN2/evP/gwYP7Dx48uP/gwYP7Dx48uP/gwYP7Dx48uP/gwYP7Dx48uP/gwYP7Dx48uP/gwYP7Dx48uP/gwYP7Dx48uP/gwYP7Dx48uP/gwYP7Dx48uP/gwYP7Dx48uP/gwYP7d+7cuf/OnTv379y5c//OnTv3L1++fP/y5cv3L1++fP/y5cv3L1++fP/KlSv3r1y5cv/KlSv3r1y5cv/atWv3r127dv/atWv3r127dv/GjRv3b9y4cf/GjRv3b968ef/mzZv3b968ef/WrVv3b926df/WrVv3b926df/27dv3b9++ff/OnTv379y5c//u3bt3792799C9e/cevnfv3sP37t17+N69ew/fvXv34bt37z589+7dh+/evfvw3bt3H75z587Dd+7cefjOnTsP3759++Hbt28/fPv27Ydv3br18K1btx6+devWw7du3Xr41q1bD9+8efPhmzdvPnzz5s2Hb968+fCNGzce/vvvvx/+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//777//+++++//7779+/f//9999d//9999d//9999d//9999d//9999d//9999d//9999d//9999d//9999d//9999d//9999d//9999d//9999d//9999d//9999d//999999999999";
   
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     
-    try {
-      // Draw logo background circle
-      doc.setFillColor(40, 116, 240); // DTTools blue
-      doc.roundedRect(162, 16, 16, 12, 2, 2, 'F'); // x, y, width, height, rx, ry, style
-      
-      // Draw "DT" text inside circle
-      doc.setTextColor(255, 255, 255); // White text
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.text("DT", 167, 25);
-      
-      // Draw "Tools" text next to circle
-      doc.setTextColor(40, 116, 240); // Blue text
-      doc.setFontSize(12);
-      doc.text("Tools", 179, 25);
-      
-      // Reset colors
-      doc.setTextColor(0, 0, 0); 
-      doc.setFont("helvetica", "normal");
-    } catch (error) {
-      // Fallback to text logo if image fails
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(40, 116, 240);
-      doc.text("DTTools", 160, 25);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("helvetica", "normal");
-    }
+    // HEADER: Logo "Design Thinking Tools" no canto superior esquerdo
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 58, 138); // Azul escuro #1E3A8A para "Design Thinking"
+    doc.text("Design Thinking ", 20, 15);
     
-    // Footer text
+    doc.setTextColor(16, 185, 129); // Verde #10B981 para "Tools"
+    doc.text("Tools", 72, 15);
+    
+    // Reset colors
+    doc.setTextColor(0, 0, 0); 
+    doc.setFont("helvetica", "normal");
+    
+    // FOOTER: Link para o site (centralizado, azul clicável)
     doc.setFontSize(10);
-    doc.text(`Página ${i} de ${totalPages}`, 170, 290);
-    doc.text("Gerado por DT Tools - Análise IA", 20, 290);
+    doc.setTextColor(37, 99, 235); // Azul link #2563EB
+    doc.textWithLink("https://www.designthinkingtools.com", 105, 285, { 
+      url: "https://www.designthinkingtools.com",
+      align: "center"
+    });
+    
+    // Número da página (cinza, à direita)
+    doc.setTextColor(107, 114, 128); // Cinza #6B7280
+    doc.text(`Página ${i} de ${totalPages}`, 180, 285);
+    
+    // Reset colors
+    doc.setTextColor(0, 0, 0);
   }
 
   // Generate blob URL
