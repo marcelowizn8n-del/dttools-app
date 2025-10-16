@@ -2736,6 +2736,1422 @@ var designThinkingAI = new DesignThinkingAI();
 
 // server/routes.ts
 init_geminiService();
+
+// server/pptxService.ts
+import pptxgen from "pptxgenjs";
+import { jsPDF } from "jspdf";
+var PPTXService = class {
+  constructor() {
+  }
+  setupMasterSlide(pres) {
+    pres.defineSlideMaster({
+      title: "DTTools_MASTER",
+      background: { color: "FFFFFF" },
+      // White background
+      objects: [
+        // Header logo "Design Thinking Tools" no canto superior esquerdo
+        {
+          text: {
+            text: "Design Thinking ",
+            options: {
+              x: 0.3,
+              y: 0.2,
+              w: 4,
+              h: 0.4,
+              color: "1E3A8A",
+              // Azul escuro #1E3A8A
+              fontSize: 16,
+              fontFace: "Arial",
+              bold: true
+            }
+          }
+        },
+        {
+          text: {
+            text: "Tools",
+            options: {
+              x: 2.2,
+              y: 0.2,
+              w: 1,
+              h: 0.4,
+              color: "10B981",
+              // Verde #10B981
+              fontSize: 16,
+              fontFace: "Arial",
+              bold: true
+            }
+          }
+        },
+        // Footer com link para o site (centralizado)
+        {
+          text: {
+            text: "https://www.designthinkingtools.com",
+            options: {
+              x: 3,
+              y: 7,
+              w: 4,
+              h: 0.3,
+              color: "2563EB",
+              // Azul link #2563EB
+              fontSize: 10,
+              fontFace: "Arial",
+              align: "center"
+            }
+          }
+        }
+      ]
+    });
+  }
+  addTitleSlide(pres, projectName, description = "") {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+    slide.addText(projectName, {
+      x: 1,
+      y: 2,
+      w: 8,
+      h: 1.5,
+      fontSize: 36,
+      bold: true,
+      color: "1E40AF",
+      align: "center"
+    });
+    if (description) {
+      slide.addText(description, {
+        x: 1,
+        y: 3.5,
+        w: 8,
+        h: 1,
+        fontSize: 16,
+        color: "333333",
+        align: "center"
+      });
+    }
+    slide.addText("Processo de Design Thinking", {
+      x: 1,
+      y: 4.5,
+      w: 8,
+      h: 0.8,
+      fontSize: 14,
+      color: "666666",
+      align: "center",
+      italic: true
+    });
+    const phases = ["Empatizar", "Definir", "Idear", "Prototipar", "Testar"];
+    phases.forEach((phase, index) => {
+      slide.addText(`${index + 1}. ${phase}`, {
+        x: 1 + index * 1.6,
+        y: 5.5,
+        w: 1.5,
+        h: 0.5,
+        fontSize: 12,
+        color: "1E40AF",
+        align: "center",
+        bold: true
+      });
+    });
+  }
+  addPhaseOverviewSlide(pres, phase, title, description) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+    slide.addText(`Fase ${phase}: ${title}`, {
+      x: 1,
+      y: 1.2,
+      w: 8,
+      h: 1,
+      fontSize: 28,
+      bold: true,
+      color: "1E40AF"
+    });
+    slide.addText(description, {
+      x: 1,
+      y: 2.5,
+      w: 8,
+      h: 1.5,
+      fontSize: 16,
+      color: "333333"
+    });
+  }
+  addEmpathyMapSlide(pres, empathyMap) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+    slide.addText(`Mapa de Empatia: ${empathyMap.title}`, {
+      x: 1,
+      y: 1.2,
+      w: 8,
+      h: 0.8,
+      fontSize: 24,
+      bold: true,
+      color: "1E40AF"
+    });
+    const quadrants = [
+      { title: "DIZ", data: empathyMap.says, x: 1, y: 2.2, color: "E8F4FA" },
+      { title: "PENSA", data: empathyMap.thinks, x: 5, y: 2.2, color: "E2E6ED" },
+      { title: "FAZ", data: empathyMap.does, x: 1, y: 4.7, color: "FFFBEB" },
+      { title: "SENTE", data: empathyMap.feels, x: 5, y: 4.7, color: "FFF2EC" }
+    ];
+    quadrants.forEach((quadrant) => {
+      slide.addShape("rect", {
+        x: quadrant.x,
+        y: quadrant.y,
+        w: 3.5,
+        h: 2.2,
+        fill: { color: quadrant.color },
+        line: { color: "CCCCCC", width: 1 }
+      });
+      slide.addText(quadrant.title, {
+        x: quadrant.x,
+        y: quadrant.y + 0.1,
+        w: 3.5,
+        h: 0.4,
+        fontSize: 14,
+        bold: true,
+        color: "333333",
+        align: "center"
+      });
+      const items = quadrant.data.slice(0, 3);
+      items.forEach((item, index) => {
+        slide.addText(`\u2022 ${item}`, {
+          x: quadrant.x + 0.2,
+          y: quadrant.y + 0.6 + index * 0.4,
+          w: 3.1,
+          h: 0.3,
+          fontSize: 11,
+          color: "333333"
+        });
+      });
+    });
+  }
+  addPersonasSlide(pres, personas2) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+    slide.addText("Personas do Projeto", {
+      x: 1,
+      y: 1.2,
+      w: 8,
+      h: 0.8,
+      fontSize: 24,
+      bold: true,
+      color: "1E40AF"
+    });
+    personas2.slice(0, 2).forEach((persona, index) => {
+      const xPos = index === 0 ? 1 : 5;
+      slide.addShape("rect", {
+        x: xPos,
+        y: 2.2,
+        w: 3.5,
+        h: 4,
+        fill: { color: "F8F9FA" },
+        line: { color: "CCCCCC", width: 1 }
+      });
+      slide.addText(persona.name, {
+        x: xPos + 0.2,
+        y: 2.4,
+        w: 3.1,
+        h: 0.5,
+        fontSize: 16,
+        bold: true,
+        color: "1E40AF"
+      });
+      slide.addText(`${persona.age} anos \u2022 ${persona.occupation}`, {
+        x: xPos + 0.2,
+        y: 2.9,
+        w: 3.1,
+        h: 0.3,
+        fontSize: 12,
+        color: "666666"
+      });
+      if (persona.bio) {
+        slide.addText(persona.bio.slice(0, 150) + "...", {
+          x: xPos + 0.2,
+          y: 3.3,
+          w: 3.1,
+          h: 1,
+          fontSize: 10,
+          color: "333333"
+        });
+      }
+      if (persona.goals && Array.isArray(persona.goals) && persona.goals.length > 0) {
+        slide.addText("Objetivos:", {
+          x: xPos + 0.2,
+          y: 4.5,
+          w: 3.1,
+          h: 0.3,
+          fontSize: 11,
+          bold: true,
+          color: "1E40AF"
+        });
+        persona.goals.slice(0, 2).forEach((goal, goalIndex) => {
+          slide.addText(`\u2022 ${goal}`, {
+            x: xPos + 0.2,
+            y: 4.8 + goalIndex * 0.3,
+            w: 3.1,
+            h: 0.25,
+            fontSize: 9,
+            color: "333333"
+          });
+        });
+      }
+    });
+  }
+  addIdeasSlide(pres, ideas2) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+    slide.addText("Ideias Geradas", {
+      x: 1,
+      y: 1.2,
+      w: 8,
+      h: 0.8,
+      fontSize: 24,
+      bold: true,
+      color: "1E40AF"
+    });
+    const sortedIdeas = ideas2.sort((a, b) => (b.dvfScore || 0) - (a.dvfScore || 0)).slice(0, 5);
+    sortedIdeas.forEach((idea, index) => {
+      const yPos = 2.2 + index * 0.9;
+      slide.addShape("rect", {
+        x: 1,
+        y: yPos,
+        w: 8,
+        h: 0.8,
+        fill: { color: index < 3 ? "E8F5E8" : "F8F9FA" },
+        line: { color: "CCCCCC", width: 1 }
+      });
+      slide.addText(idea.title, {
+        x: 1.2,
+        y: yPos + 0.1,
+        w: 5,
+        h: 0.3,
+        fontSize: 12,
+        bold: true,
+        color: "1E40AF"
+      });
+      if (idea.dvfScore) {
+        slide.addText(`DVF: ${idea.dvfScore.toFixed(1)}/5`, {
+          x: 6.5,
+          y: yPos + 0.1,
+          w: 1.5,
+          h: 0.3,
+          fontSize: 11,
+          bold: true,
+          color: idea.dvfScore >= 3.5 ? "22C55E" : idea.dvfScore >= 2.5 ? "F59E0B" : "EF4444"
+        });
+      }
+      if (idea.actionDecision && idea.actionDecision !== "evaluate") {
+        const actionColors = {
+          love_it: "22C55E",
+          change_it: "F59E0B",
+          leave_it: "EF4444"
+        };
+        const actionTexts = {
+          love_it: "\u{1F49A} AMAR",
+          change_it: "\u{1F504} MUDAR",
+          leave_it: "\u274C DEIXAR"
+        };
+        slide.addText(actionTexts[idea.actionDecision] || "", {
+          x: 8,
+          y: yPos + 0.1,
+          w: 1,
+          h: 0.3,
+          fontSize: 10,
+          bold: true,
+          color: actionColors[idea.actionDecision] || "666666"
+        });
+      }
+      slide.addText(idea.description.slice(0, 80) + "...", {
+        x: 1.2,
+        y: yPos + 0.4,
+        w: 6.6,
+        h: 0.3,
+        fontSize: 10,
+        color: "333333"
+      });
+    });
+  }
+  addDVFAnalysisSlide(pres, ideas2) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+    slide.addText("An\xE1lise DVF - Benchmarking", {
+      x: 1,
+      y: 1.2,
+      w: 8,
+      h: 0.8,
+      fontSize: 24,
+      bold: true,
+      color: "1E40AF"
+    });
+    const validIdeas = ideas2.filter((idea) => idea.dvfScore);
+    if (validIdeas.length === 0) return;
+    const avgDesirability = validIdeas.reduce((sum, idea) => sum + (idea.desirability || 0), 0) / validIdeas.length;
+    const avgViability = validIdeas.reduce((sum, idea) => sum + (idea.viability || 0), 0) / validIdeas.length;
+    const avgFeasibility = validIdeas.reduce((sum, idea) => sum + (idea.feasibility || 0), 0) / validIdeas.length;
+    const avgDVF = validIdeas.reduce((sum, idea) => sum + (idea.dvfScore || 0), 0) / validIdeas.length;
+    const metrics = [
+      { label: "Desejabilidade", value: avgDesirability, color: "22C55E" },
+      { label: "Viabilidade", value: avgViability, color: "3B82F6" },
+      { label: "Exequibilidade", value: avgFeasibility, color: "8B5CF6" }
+    ];
+    slide.addText("M\xE9tricas M\xE9dias do Projeto:", {
+      x: 1,
+      y: 2.2,
+      w: 8,
+      h: 0.5,
+      fontSize: 16,
+      bold: true,
+      color: "333333"
+    });
+    metrics.forEach((metric, index) => {
+      const yPos = 2.8 + index * 0.8;
+      slide.addText(metric.label, {
+        x: 1,
+        y: yPos,
+        w: 2,
+        h: 0.4,
+        fontSize: 14,
+        color: "333333"
+      });
+      slide.addShape("rect", {
+        x: 3.5,
+        y: yPos + 0.05,
+        w: 4,
+        h: 0.3,
+        fill: { color: "E5E7EB" },
+        line: { color: "D1D5DB", width: 1 }
+      });
+      slide.addShape("rect", {
+        x: 3.5,
+        y: yPos + 0.05,
+        w: metric.value / 5 * 4,
+        h: 0.3,
+        fill: { color: metric.color },
+        line: { width: 0 }
+      });
+      slide.addText(`${metric.value.toFixed(1)}/5`, {
+        x: 7.8,
+        y: yPos,
+        w: 1,
+        h: 0.4,
+        fontSize: 12,
+        bold: true,
+        color: metric.color
+      });
+    });
+    slide.addText("Pontua\xE7\xE3o DVF Geral:", {
+      x: 1,
+      y: 5.5,
+      w: 3,
+      h: 0.5,
+      fontSize: 16,
+      bold: true,
+      color: "1E40AF"
+    });
+    slide.addText(`${avgDVF.toFixed(1)}/5`, {
+      x: 4,
+      y: 5.5,
+      w: 1.5,
+      h: 0.5,
+      fontSize: 24,
+      bold: true,
+      color: avgDVF >= 3.5 ? "22C55E" : avgDVF >= 2.5 ? "F59E0B" : "EF4444"
+    });
+    slide.addText("vs. M\xE9dia da Ind\xFAstria: 3.2/5", {
+      x: 6,
+      y: 5.5,
+      w: 2.5,
+      h: 0.5,
+      fontSize: 12,
+      color: "666666"
+    });
+  }
+  addSummarySlide(pres, project, data) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+    slide.addText("Resumo do Projeto", {
+      x: 1,
+      y: 1.2,
+      w: 8,
+      h: 0.8,
+      fontSize: 28,
+      bold: true,
+      color: "1E40AF"
+    });
+    slide.addText(project.name, {
+      x: 1,
+      y: 2,
+      w: 8,
+      h: 0.5,
+      fontSize: 20,
+      bold: true,
+      color: "333333"
+    });
+    if (project.description) {
+      slide.addText(project.description, {
+        x: 1,
+        y: 2.6,
+        w: 8,
+        h: 0.6,
+        fontSize: 12,
+        color: "666666"
+      });
+    }
+    const metrics = [
+      { label: "Fase Atual", value: `${project.currentPhase}/5` },
+      { label: "Progresso", value: `${project.completionRate || 0}%` },
+      { label: "Mapas de Empatia", value: data.empathyMaps.length.toString() },
+      { label: "Personas", value: data.personas.length.toString() },
+      { label: "Entrevistas", value: data.interviews.length.toString() },
+      { label: "Ideias", value: data.ideas.length.toString() },
+      { label: "Prot\xF3tipos", value: data.prototypes.length.toString() },
+      { label: "Testes", value: data.testResults.length.toString() }
+    ];
+    metrics.forEach((metric, index) => {
+      const col = index % 4;
+      const row = Math.floor(index / 4);
+      const xPos = 1 + col * 2;
+      const yPos = 3.5 + row * 0.8;
+      slide.addShape("rect", {
+        x: xPos,
+        y: yPos,
+        w: 1.8,
+        h: 0.6,
+        fill: { color: "F8F9FA" },
+        line: { color: "E5E7EB", width: 1 }
+      });
+      slide.addText(metric.value, {
+        x: xPos + 0.1,
+        y: yPos + 0.05,
+        w: 1.6,
+        h: 0.3,
+        fontSize: 16,
+        bold: true,
+        color: "1E40AF",
+        align: "center"
+      });
+      slide.addText(metric.label, {
+        x: xPos + 0.1,
+        y: yPos + 0.35,
+        w: 1.6,
+        h: 0.2,
+        fontSize: 8,
+        color: "666666",
+        align: "center"
+      });
+    });
+    if (data.ideas.length > 0) {
+      const validIdeas = data.ideas.filter((idea) => idea.dvfScore);
+      if (validIdeas.length > 0) {
+        const avgDVF = validIdeas.reduce((sum, idea) => sum + (idea.dvfScore || 0), 0) / validIdeas.length;
+        slide.addText("An\xE1lise DVF Geral:", {
+          x: 1,
+          y: 5.5,
+          w: 3,
+          h: 0.4,
+          fontSize: 14,
+          bold: true,
+          color: "1E40AF"
+        });
+        slide.addText(`${avgDVF.toFixed(1)}/5`, {
+          x: 4,
+          y: 5.5,
+          w: 1.5,
+          h: 0.4,
+          fontSize: 20,
+          bold: true,
+          color: avgDVF >= 3.5 ? "22C55E" : avgDVF >= 2.5 ? "F59E0B" : "EF4444"
+        });
+        slide.addText("vs. M\xE9dia da Ind\xFAstria: 3.2/5", {
+          x: 6,
+          y: 5.5,
+          w: 2.5,
+          h: 0.4,
+          fontSize: 11,
+          color: "666666"
+        });
+      }
+    }
+    slide.addText(`Gerado em: ${(/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR")} \xE0s ${(/* @__PURE__ */ new Date()).toLocaleTimeString("pt-BR")}`, {
+      x: 1,
+      y: 6.2,
+      w: 8,
+      h: 0.3,
+      fontSize: 10,
+      color: "999999",
+      italic: true
+    });
+  }
+  addFinalControlsSlide(pres) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+    slide.addText("Apresenta\xE7\xE3o Conclu\xEDda", {
+      x: 1,
+      y: 2,
+      w: 8,
+      h: 1,
+      fontSize: 32,
+      bold: true,
+      color: "1E40AF",
+      align: "center"
+    });
+    slide.addText("Parab\xE9ns! Voc\xEA completou sua jornada de Design Thinking.", {
+      x: 1,
+      y: 3,
+      w: 8,
+      h: 0.6,
+      fontSize: 16,
+      color: "333333",
+      align: "center"
+    });
+    slide.addText("Use os controles abaixo para salvar ou fechar esta apresenta\xE7\xE3o:", {
+      x: 1,
+      y: 3.8,
+      w: 8,
+      h: 0.4,
+      fontSize: 12,
+      color: "666666",
+      align: "center"
+    });
+    slide.addShape("rect", {
+      x: 2.5,
+      y: 4.5,
+      w: 2,
+      h: 0.8,
+      fill: { color: "22C55E" },
+      line: { width: 0 }
+    });
+    slide.addText("\u{1F4BE} SALVAR", {
+      x: 2.5,
+      y: 4.7,
+      w: 2,
+      h: 0.4,
+      fontSize: 14,
+      bold: true,
+      color: "FFFFFF",
+      align: "center"
+    });
+    slide.addText("Baixar apresenta\xE7\xE3o", {
+      x: 2.5,
+      y: 5,
+      w: 2,
+      h: 0.3,
+      fontSize: 10,
+      color: "FFFFFF",
+      align: "center"
+    });
+    slide.addShape("rect", {
+      x: 5.5,
+      y: 4.5,
+      w: 2,
+      h: 0.8,
+      fill: { color: "EF4444" },
+      line: { width: 0 }
+    });
+    slide.addText("\u2716\uFE0F FECHAR", {
+      x: 5.5,
+      y: 4.7,
+      w: 2,
+      h: 0.4,
+      fontSize: 14,
+      bold: true,
+      color: "FFFFFF",
+      align: "center"
+    });
+    slide.addText("Sair da apresenta\xE7\xE3o", {
+      x: 5.5,
+      y: 5,
+      w: 2,
+      h: 0.3,
+      fontSize: 10,
+      color: "FFFFFF",
+      align: "center"
+    });
+    slide.addText("\u{1F4A1} Dica: Para usar os controles, clique nos bot\xF5es durante a apresenta\xE7\xE3o ou use as teclas de atalho.", {
+      x: 1,
+      y: 5.8,
+      w: 8,
+      h: 0.4,
+      fontSize: 10,
+      color: "666666",
+      align: "center",
+      italic: true
+    });
+    slide.addText("Pr\xF3ximos Passos:", {
+      x: 1,
+      y: 6.4,
+      w: 8,
+      h: 0.3,
+      fontSize: 12,
+      bold: true,
+      color: "1E40AF",
+      align: "center"
+    });
+    slide.addText("\u2022 Continue iterando suas ideias \u2022 Implemente os prot\xF3tipos \u2022 Colete mais feedback dos usu\xE1rios", {
+      x: 1,
+      y: 6.7,
+      w: 8,
+      h: 0.3,
+      fontSize: 10,
+      color: "333333",
+      align: "center"
+    });
+  }
+  async generateProjectPPTX(projectId, userId) {
+    try {
+      const pres = new pptxgen();
+      this.setupMasterSlide(pres);
+      const project = await storage.getProject(projectId, userId);
+      if (!project) {
+        throw new Error("Project not found");
+      }
+      const empathyMaps2 = await storage.getEmpathyMaps(projectId);
+      const personas2 = await storage.getPersonas(projectId);
+      const interviews2 = await storage.getInterviews(projectId);
+      const observations2 = await storage.getObservations(projectId);
+      const povStatements2 = await storage.getPovStatements(projectId);
+      const hmwQuestions2 = await storage.getHmwQuestions(projectId);
+      const ideas2 = await storage.getIdeas(projectId);
+      const prototypes2 = await storage.getPrototypes(projectId);
+      const testPlans2 = await storage.getTestPlans(projectId);
+      const testResults2 = await storage.getTestResults(projectId);
+      this.addTitleSlide(pres, project.name, project.description || "");
+      if (empathyMaps2.length > 0 || personas2.length > 0) {
+        this.addPhaseOverviewSlide(pres, 1, "Empatizar", "Compreenda profundamente seus usu\xE1rios atrav\xE9s de pesquisas, entrevistas e observa\xE7\xF5es.");
+        empathyMaps2.forEach((empathyMap) => {
+          this.addEmpathyMapSlide(pres, empathyMap);
+        });
+        if (personas2.length > 0) {
+          this.addPersonasSlide(pres, personas2);
+        }
+        if (interviews2.length > 0) {
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+          slide.addText("Entrevistas Realizadas", {
+            x: 1,
+            y: 1.2,
+            w: 8,
+            h: 0.8,
+            fontSize: 24,
+            bold: true,
+            color: "1E40AF"
+          });
+          interviews2.slice(0, 3).forEach((interview, index) => {
+            const yPos = 2.2 + index * 1.5;
+            slide.addText(`${index + 1}. ${interview.participantName}`, {
+              x: 1,
+              y: yPos,
+              w: 8,
+              h: 0.4,
+              fontSize: 14,
+              bold: true,
+              color: "1E40AF"
+            });
+            slide.addText(`Dura\xE7\xE3o: ${interview.duration || "N/A"} min`, {
+              x: 1,
+              y: yPos + 0.4,
+              w: 8,
+              h: 0.3,
+              fontSize: 11,
+              color: "666666"
+            });
+            if (interview.insights) {
+              slide.addText(`Insights: ${interview.insights.slice(0, 100)}...`, {
+                x: 1,
+                y: yPos + 0.7,
+                w: 8,
+                h: 0.6,
+                fontSize: 10,
+                color: "333333"
+              });
+            }
+          });
+        }
+        if (observations2.length > 0) {
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+          slide.addText("Observa\xE7\xF5es de Campo", {
+            x: 1,
+            y: 1.2,
+            w: 8,
+            h: 0.8,
+            fontSize: 24,
+            bold: true,
+            color: "1E40AF"
+          });
+          observations2.slice(0, 4).forEach((observation, index) => {
+            const yPos = 2.2 + index * 1.2;
+            slide.addText(`${index + 1}. ${observation.location}`, {
+              x: 1,
+              y: yPos,
+              w: 8,
+              h: 0.4,
+              fontSize: 14,
+              bold: true,
+              color: "1E40AF"
+            });
+            if (observation.behavior) {
+              slide.addText(`Comportamento: ${observation.behavior.slice(0, 120)}...`, {
+                x: 1,
+                y: yPos + 0.4,
+                w: 8,
+                h: 0.6,
+                fontSize: 10,
+                color: "333333"
+              });
+            }
+          });
+        }
+      }
+      if (povStatements2.length > 0 || hmwQuestions2.length > 0) {
+        this.addPhaseOverviewSlide(pres, 2, "Definir", "Defina claramente o problema e crie declara\xE7\xF5es de ponto de vista focadas.");
+        if (povStatements2.length > 0) {
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+          slide.addText("Declara\xE7\xF5es POV", {
+            x: 1,
+            y: 1.2,
+            w: 8,
+            h: 0.8,
+            fontSize: 24,
+            bold: true,
+            color: "1E40AF"
+          });
+          povStatements2.slice(0, 3).forEach((pov, index) => {
+            const yPos = 2.2 + index * 1.5;
+            slide.addText(pov.statement, {
+              x: 1,
+              y: yPos,
+              w: 8,
+              h: 1,
+              fontSize: 12,
+              color: "333333"
+            });
+          });
+        }
+        if (hmwQuestions2.length > 0) {
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+          slide.addText("Como Podemos (HMW)", {
+            x: 1,
+            y: 1.2,
+            w: 8,
+            h: 0.8,
+            fontSize: 24,
+            bold: true,
+            color: "1E40AF"
+          });
+          hmwQuestions2.slice(0, 5).forEach((hmw, index) => {
+            const yPos = 2.2 + index * 0.9;
+            slide.addText(`${index + 1}. ${hmw.question}`, {
+              x: 1,
+              y: yPos,
+              w: 8,
+              h: 0.8,
+              fontSize: 12,
+              color: "333333"
+            });
+          });
+        }
+      }
+      if (ideas2.length > 0) {
+        this.addPhaseOverviewSlide(pres, 3, "Idear", "Gere uma ampla gama de ideias criativas atrav\xE9s de brainstorming estruturado.");
+        this.addIdeasSlide(pres, ideas2);
+        this.addDVFAnalysisSlide(pres, ideas2);
+      }
+      if (prototypes2.length > 0) {
+        this.addPhaseOverviewSlide(pres, 4, "Prototipar", "Construa prot\xF3tipos r\xE1pidos e baratos para testar suas melhores ideias.");
+        const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+        slide.addText("Prot\xF3tipos Criados", {
+          x: 1,
+          y: 1.2,
+          w: 8,
+          h: 0.8,
+          fontSize: 24,
+          bold: true,
+          color: "1E40AF"
+        });
+        prototypes2.slice(0, 3).forEach((prototype, index) => {
+          const yPos = 2.2 + index * 1.2;
+          slide.addText(`${prototype.name} (${prototype.type})`, {
+            x: 1,
+            y: yPos,
+            w: 8,
+            h: 0.4,
+            fontSize: 14,
+            bold: true,
+            color: "1E40AF"
+          });
+          if (prototype.description) {
+            slide.addText(prototype.description.slice(0, 100) + "...", {
+              x: 1,
+              y: yPos + 0.4,
+              w: 8,
+              h: 0.6,
+              fontSize: 11,
+              color: "333333"
+            });
+          }
+        });
+      }
+      if (testPlans2.length > 0 || testResults2.length > 0) {
+        this.addPhaseOverviewSlide(pres, 5, "Testar", "Teste seus prot\xF3tipos com usu\xE1rios reais e colete feedback valioso.");
+        if (testResults2.length > 0) {
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
+          slide.addText("Resultados dos Testes", {
+            x: 1,
+            y: 1.2,
+            w: 8,
+            h: 0.8,
+            fontSize: 24,
+            bold: true,
+            color: "1E40AF"
+          });
+          testResults2.slice(0, 2).forEach((result, index) => {
+            const yPos = 2.2 + index * 2;
+            slide.addText(`Teste ID: ${result.participantId}`, {
+              x: 1,
+              y: yPos,
+              w: 8,
+              h: 0.4,
+              fontSize: 14,
+              bold: true,
+              color: "1E40AF"
+            });
+            if (result.insights) {
+              slide.addText(result.insights.slice(0, 150) + "...", {
+                x: 1,
+                y: yPos + 0.5,
+                w: 8,
+                h: 1,
+                fontSize: 11,
+                color: "333333"
+              });
+            }
+          });
+        }
+      }
+      this.addSummarySlide(pres, project, {
+        empathyMaps: empathyMaps2,
+        personas: personas2,
+        interviews: interviews2,
+        observations: observations2,
+        povStatements: povStatements2,
+        hmwQuestions: hmwQuestions2,
+        ideas: ideas2,
+        prototypes: prototypes2,
+        testPlans: testPlans2,
+        testResults: testResults2
+      });
+      this.addFinalControlsSlide(pres);
+      const buffer = await pres.write({ outputType: "nodebuffer" });
+      return buffer;
+    } catch (error) {
+      console.error("Error generating PPTX:", error);
+      throw new Error("Failed to generate PPTX presentation");
+    }
+  }
+  async generateProjectPDF(projectId, userId) {
+    try {
+      const project = await storage.getProject(projectId, userId);
+      if (!project) {
+        throw new Error("Project not found");
+      }
+      const empathyMaps2 = await storage.getEmpathyMaps(projectId);
+      const personas2 = await storage.getPersonas(projectId);
+      const interviews2 = await storage.getInterviews(projectId);
+      const observations2 = await storage.getObservations(projectId);
+      const povStatements2 = await storage.getPovStatements(projectId);
+      const hmwQuestions2 = await storage.getHmwQuestions(projectId);
+      const ideas2 = await storage.getIdeas(projectId);
+      const prototypes2 = await storage.getPrototypes(projectId);
+      const testPlans2 = await storage.getTestPlans(projectId);
+      const testResults2 = await storage.getTestResults(projectId);
+      const doc = new jsPDF();
+      let yPosition = 20;
+      const addText = (text2, fontSize = 12, isBold = false) => {
+        doc.setFontSize(fontSize);
+        if (isBold) {
+          doc.setFont("helvetica", "bold");
+        } else {
+          doc.setFont("helvetica", "normal");
+        }
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        const lines = doc.splitTextToSize(text2, 170);
+        doc.text(lines, 20, yPosition);
+        yPosition += lines.length * (fontSize / 2.5) + 5;
+      };
+      const addSectionHeader = (title) => {
+        yPosition += 10;
+        addText(title, 16, true);
+        yPosition += 5;
+      };
+      doc.setFillColor(30, 64, 175);
+      doc.rect(0, 0, 210, 40, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont("helvetica", "bold");
+      doc.text("DTTools - Design Thinking", 105, 20, { align: "center" });
+      doc.setFontSize(18);
+      doc.text(project.name, 105, 30, { align: "center" });
+      doc.setTextColor(0, 0, 0);
+      yPosition = 60;
+      if (project.description) {
+        addText(`Descri\xE7\xE3o: ${project.description}`, 14);
+      }
+      addText(`Data de cria\xE7\xE3o: ${project.createdAt ? new Date(project.createdAt).toLocaleDateString("pt-BR") : "N/A"}`, 12);
+      addText(`Fase atual: ${project.currentPhase}/5`, 12);
+      addText(`Progresso: ${project.completionRate || 0}%`, 12);
+      if (empathyMaps2.length > 0 || personas2.length > 0 || interviews2.length > 0) {
+        addSectionHeader("FASE 1: EMPATIZAR");
+        addText("Compreenda profundamente seus usu\xE1rios atrav\xE9s de pesquisas, entrevistas e observa\xE7\xF5es.");
+        if (empathyMaps2.length > 0) {
+          addText("Mapas de Empatia:", 14, true);
+          empathyMaps2.forEach((empathyMap, index) => {
+            addText(`${index + 1}. ${empathyMap.title}`, 12, true);
+            if (empathyMap.says && Array.isArray(empathyMap.says)) {
+              addText(`Diz: ${empathyMap.says.join(", ")}`, 10);
+            }
+            if (empathyMap.thinks && Array.isArray(empathyMap.thinks)) {
+              addText(`Pensa: ${empathyMap.thinks.join(", ")}`, 10);
+            }
+            if (empathyMap.does && Array.isArray(empathyMap.does)) {
+              addText(`Faz: ${empathyMap.does.join(", ")}`, 10);
+            }
+            if (empathyMap.feels && Array.isArray(empathyMap.feels)) {
+              addText(`Sente: ${empathyMap.feels.join(", ")}`, 10);
+            }
+            yPosition += 5;
+          });
+        }
+        if (personas2.length > 0) {
+          addText("Personas:", 14, true);
+          personas2.forEach((persona, index) => {
+            addText(`${index + 1}. ${persona.name}`, 12, true);
+            addText(`${persona.age} anos \u2022 ${persona.occupation}`, 10);
+            if (persona.bio) {
+              addText(`Bio: ${persona.bio}`, 10);
+            }
+            if (persona.goals && Array.isArray(persona.goals)) {
+              addText(`Objetivos: ${persona.goals.join(", ")}`, 10);
+            }
+            yPosition += 5;
+          });
+        }
+        if (interviews2.length > 0) {
+          addText("Entrevistas:", 14, true);
+          interviews2.forEach((interview, index) => {
+            addText(`${index + 1}. ${interview.participantName}`, 12, true);
+            if (interview.insights) {
+              addText(`Insights: ${interview.insights}`, 10);
+            }
+          });
+        }
+      }
+      if (povStatements2.length > 0 || hmwQuestions2.length > 0) {
+        addSectionHeader("FASE 2: DEFINIR");
+        addText("Defina claramente o problema e crie declara\xE7\xF5es de ponto de vista focadas.");
+        if (povStatements2.length > 0) {
+          addText("Declara\xE7\xF5es POV:", 14, true);
+          povStatements2.forEach((pov, index) => {
+            addText(`${index + 1}. ${pov.statement}`, 10);
+          });
+        }
+        if (hmwQuestions2.length > 0) {
+          addText("Como Podemos (HMW):", 14, true);
+          hmwQuestions2.forEach((hmw, index) => {
+            addText(`${index + 1}. ${hmw.question}`, 10);
+          });
+        }
+      }
+      if (ideas2.length > 0) {
+        addSectionHeader("FASE 3: IDEAR");
+        addText("Gere uma ampla gama de ideias criativas atrav\xE9s de brainstorming estruturado.");
+        const sortedIdeas = ideas2.sort((a, b) => (b.dvfScore || 0) - (a.dvfScore || 0));
+        addText("Ideias Geradas:", 14, true);
+        sortedIdeas.forEach((idea, index) => {
+          addText(`${index + 1}. ${idea.title}`, 12, true);
+          addText(`Descri\xE7\xE3o: ${idea.description}`, 10);
+          if (idea.dvfScore) {
+            addText(`Pontua\xE7\xE3o DVF: ${idea.dvfScore.toFixed(1)}/5`, 10);
+            addText(`- Desejabilidade: ${idea.desirability || 0}/5`, 9);
+            addText(`- Viabilidade: ${idea.viability || 0}/5`, 9);
+            addText(`- Exequibilidade: ${idea.feasibility || 0}/5`, 9);
+          }
+          if (idea.actionDecision && idea.actionDecision !== "evaluate") {
+            const actionTexts = {
+              love_it: "\u{1F49A} AMAR",
+              change_it: "\u{1F504} MUDAR",
+              leave_it: "\u274C DEIXAR"
+            };
+            addText(`Decis\xE3o: ${actionTexts[idea.actionDecision] || idea.actionDecision}`, 10);
+          }
+          yPosition += 5;
+        });
+        const validIdeas = ideas2.filter((idea) => idea.dvfScore);
+        if (validIdeas.length > 0) {
+          addText("An\xE1lise DVF - M\xE9tricas do Projeto:", 14, true);
+          const avgDesirability = validIdeas.reduce((sum, idea) => sum + (idea.desirability || 0), 0) / validIdeas.length;
+          const avgViability = validIdeas.reduce((sum, idea) => sum + (idea.viability || 0), 0) / validIdeas.length;
+          const avgFeasibility = validIdeas.reduce((sum, idea) => sum + (idea.feasibility || 0), 0) / validIdeas.length;
+          const avgDVF = validIdeas.reduce((sum, idea) => sum + (idea.dvfScore || 0), 0) / validIdeas.length;
+          addText(`Desejabilidade M\xE9dia: ${avgDesirability.toFixed(1)}/5`, 12);
+          addText(`Viabilidade M\xE9dia: ${avgViability.toFixed(1)}/5`, 12);
+          addText(`Exequibilidade M\xE9dia: ${avgFeasibility.toFixed(1)}/5`, 12);
+          addText(`Pontua\xE7\xE3o DVF Geral: ${avgDVF.toFixed(1)}/5`, 12, true);
+          addText(`vs. M\xE9dia da Ind\xFAstria: 3.2/5`, 10);
+        }
+      }
+      if (prototypes2.length > 0) {
+        addSectionHeader("FASE 4: PROTOTIPAR");
+        addText("Construa prot\xF3tipos r\xE1pidos e baratos para testar suas melhores ideias.");
+        addText("Prot\xF3tipos Criados:", 14, true);
+        prototypes2.forEach((prototype, index) => {
+          addText(`${index + 1}. ${prototype.name} (${prototype.type})`, 12, true);
+          if (prototype.description) {
+            addText(`Descri\xE7\xE3o: ${prototype.description}`, 10);
+          }
+          if (prototype.materials) {
+            addText(`Materiais: ${prototype.materials}`, 10);
+          }
+          yPosition += 5;
+        });
+      }
+      if (testPlans2.length > 0 || testResults2.length > 0) {
+        addSectionHeader("FASE 5: TESTAR");
+        addText("Teste seus prot\xF3tipos com usu\xE1rios reais e colete feedback valioso.");
+        if (testPlans2.length > 0) {
+          addText("Planos de Teste:", 14, true);
+          testPlans2.forEach((plan, index) => {
+            addText(`${index + 1}. ${plan.objective}`, 12, true);
+            if (plan.methodology) {
+              addText(`Metodologia: ${plan.methodology}`, 10);
+            }
+          });
+        }
+        if (testResults2.length > 0) {
+          addText("Resultados dos Testes:", 14, true);
+          testResults2.forEach((result, index) => {
+            addText(`${index + 1}. Participante: ${result.participantId}`, 12, true);
+            if (result.insights) {
+              addText(`Insights: ${result.insights}`, 10);
+            }
+            if (result.feedback) {
+              addText(`Feedback: ${result.feedback}`, 10);
+            }
+          });
+        }
+      }
+      yPosition += 20;
+      if (yPosition > 270) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      doc.setTextColor(100, 100, 100);
+      addText("Gerado pelo DTTools \u2022 dttools.app", 10);
+      addText(`Data de gera\xE7\xE3o: ${(/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR")}`, 10);
+      const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
+      return pdfBuffer;
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      throw new Error("Failed to generate PDF document");
+    }
+  }
+  async generateProjectMarkdown(projectId, userId) {
+    try {
+      const project = await storage.getProject(projectId, userId);
+      if (!project) {
+        throw new Error("Project not found");
+      }
+      const empathyMaps2 = await storage.getEmpathyMaps(projectId);
+      const personas2 = await storage.getPersonas(projectId);
+      const interviews2 = await storage.getInterviews(projectId);
+      const observations2 = await storage.getObservations(projectId);
+      const povStatements2 = await storage.getPovStatements(projectId);
+      const hmwQuestions2 = await storage.getHmwQuestions(projectId);
+      const ideas2 = await storage.getIdeas(projectId);
+      const prototypes2 = await storage.getPrototypes(projectId);
+      const testPlans2 = await storage.getTestPlans(projectId);
+      const testResults2 = await storage.getTestResults(projectId);
+      let markdown = "";
+      markdown += `# ${project.name}
+
+`;
+      markdown += `> **Projeto de Design Thinking**  
+`;
+      markdown += `> Gerado pelo [DTTools](https://dttools.app) \u2022 ${(/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR")}
+
+`;
+      markdown += `---
+
+`;
+      markdown += `## \u{1F4CB} Vis\xE3o Geral do Projeto
+
+`;
+      markdown += `**Descri\xE7\xE3o:** ${project.description}
+
+`;
+      markdown += `**Status:** ${project.status}
+
+`;
+      markdown += `**Fase atual:** ${project.currentPhase}
+
+`;
+      markdown += `**Taxa de conclus\xE3o:** ${project.completionRate}%
+
+`;
+      markdown += `---
+
+`;
+      markdown += `## \u{1F91D} Fase 1: Empatizar
+
+`;
+      if (empathyMaps2.length > 0) {
+        markdown += `### \u{1F5FA}\uFE0F Mapas de Empatia
+
+`;
+        empathyMaps2.forEach((map, index) => {
+          markdown += `#### ${index + 1}. ${map.title}
+
+`;
+          markdown += `**O que diz:**
+`;
+          if (Array.isArray(map.says)) {
+            map.says.forEach((item) => markdown += `- ${item}
+`);
+          }
+          markdown += `
+**O que pensa:**
+`;
+          if (Array.isArray(map.thinks)) {
+            map.thinks.forEach((item) => markdown += `- ${item}
+`);
+          }
+          markdown += `
+**O que faz:**
+`;
+          if (Array.isArray(map.does)) {
+            map.does.forEach((item) => markdown += `- ${item}
+`);
+          }
+          markdown += `
+**O que sente:**
+`;
+          if (Array.isArray(map.feels)) {
+            map.feels.forEach((item) => markdown += `- ${item}
+`);
+          }
+          markdown += `
+`;
+        });
+      }
+      if (personas2.length > 0) {
+        markdown += `### \u{1F464} Personas
+
+`;
+        personas2.forEach((persona, index) => {
+          markdown += `#### ${index + 1}. ${persona.name}
+
+`;
+          markdown += `- **Idade:** ${persona.age} anos
+`;
+          markdown += `- **Ocupa\xE7\xE3o:** ${persona.occupation}
+`;
+          if (persona.bio) markdown += `- **Bio:** ${persona.bio}
+`;
+          if (persona.goals) markdown += `- **Objetivos:** ${persona.goals}
+`;
+          if (persona.frustrations) markdown += `- **Frustra\xE7\xF5es:** ${persona.frustrations}
+`;
+          if (persona.motivations) markdown += `- **Motiva\xE7\xF5es:** ${persona.motivations}
+`;
+          if (persona.techSavviness) markdown += `- **N\xEDvel t\xE9cnico:** ${persona.techSavviness}
+`;
+          markdown += `
+`;
+        });
+      }
+      if (interviews2.length > 0) {
+        markdown += `### \u{1F3A4} Entrevistas
+
+`;
+        interviews2.forEach((interview, index) => {
+          markdown += `#### ${index + 1}. ${interview.participantName}
+
+`;
+          markdown += `- **Data:** ${interview.date}
+`;
+          if (interview.duration) markdown += `- **Dura\xE7\xE3o:** ${interview.duration} minutos
+`;
+          if (interview.questions) markdown += `- **Perguntas:** ${interview.questions}
+`;
+          if (interview.responses) markdown += `- **Respostas:** ${interview.responses}
+`;
+          if (interview.insights) markdown += `- **Insights:** ${interview.insights}
+`;
+          markdown += `
+`;
+        });
+      }
+      if (observations2.length > 0) {
+        markdown += `### \u{1F440} Observa\xE7\xF5es
+
+`;
+        observations2.forEach((obs, index) => {
+          markdown += `#### ${index + 1}. ${obs.location}
+
+`;
+          markdown += `- **Data:** ${obs.date}
+`;
+          if (obs.context) markdown += `- **Contexto:** ${obs.context}
+`;
+          if (obs.behavior) markdown += `- **Comportamento:** ${obs.behavior}
+`;
+          if (obs.insights) markdown += `- **Insights:** ${obs.insights}
+`;
+          markdown += `
+`;
+        });
+      }
+      markdown += `## \u{1F3AF} Fase 2: Definir
+
+`;
+      if (povStatements2.length > 0) {
+        markdown += `### \u{1F4DD} Declara\xE7\xF5es de Ponto de Vista (POV)
+
+`;
+        povStatements2.forEach((pov, index) => {
+          markdown += `#### ${index + 1}. ${pov.user}
+
+`;
+          markdown += `> **${pov.user}** precisa **${pov.need}** porque **${pov.insight}**.
+
+`;
+        });
+      }
+      if (hmwQuestions2.length > 0) {
+        markdown += `### \u2753 Perguntas "Como Podemos" (HMW)
+
+`;
+        hmwQuestions2.forEach((hmw, index) => {
+          markdown += `${index + 1}. **${hmw.question}**`;
+          if (hmw.category) markdown += ` *(${hmw.category})*`;
+          markdown += `
+`;
+        });
+        markdown += `
+`;
+      }
+      markdown += `## \u{1F4A1} Fase 3: Idear
+
+`;
+      if (ideas2.length > 0) {
+        markdown += `### \u{1F680} Ideias Geradas
+
+`;
+        ideas2.forEach((idea, index) => {
+          markdown += `#### ${index + 1}. ${idea.title}
+
+`;
+          markdown += `${idea.description}
+
+`;
+          if (idea.category) markdown += `**Categoria:** ${idea.category}
+
+`;
+          if (idea.feasibility || idea.impact || idea.desirability) {
+            markdown += `**Avalia\xE7\xE3o DVF:**
+`;
+            if (idea.desirability) markdown += `- Desejabilidade: ${idea.desirability}/10
+`;
+            if (idea.feasibility) markdown += `- Viabilidade: ${idea.feasibility}/10
+`;
+            if (idea.impact) markdown += `- Exequibilidade: ${idea.impact}/10
+`;
+            markdown += `
+`;
+          }
+        });
+      }
+      markdown += `## \u{1F527} Fase 4: Prototipar
+
+`;
+      if (prototypes2.length > 0) {
+        markdown += `### \u{1F6E0}\uFE0F Prot\xF3tipos Desenvolvidos
+
+`;
+        prototypes2.forEach((prototype, index) => {
+          markdown += `#### ${index + 1}. ${prototype.name}
+
+`;
+          markdown += `${prototype.description}
+
+`;
+          if (prototype.type) markdown += `**Tipo:** ${prototype.type}
+
+`;
+          if (prototype.materials && Array.isArray(prototype.materials)) {
+            markdown += `**Materiais:**
+`;
+            prototype.materials.forEach((material) => markdown += `- ${material}
+`);
+            markdown += `
+`;
+          }
+          if (prototype.feedback) markdown += `**Feedback:** ${prototype.feedback}
+
+`;
+        });
+      }
+      markdown += `## \u{1F9EA} Fase 5: Testar
+
+`;
+      if (testPlans2.length > 0) {
+        markdown += `### \u{1F4CB} Planos de Teste
+
+`;
+        testPlans2.forEach((plan, index) => {
+          markdown += `#### ${index + 1}. ${plan.name}
+
+`;
+          if (plan.objective) markdown += `**Objetivo:** ${plan.objective}
+
+`;
+          if (plan.methodology) markdown += `**Metodologia:** ${plan.methodology}
+
+`;
+          if (plan.participants) markdown += `**Participantes:** ${plan.participants}
+
+`;
+          if (plan.duration) markdown += `**Dura\xE7\xE3o:** ${plan.duration} dias
+
+`;
+        });
+      }
+      if (testResults2.length > 0) {
+        markdown += `### \u{1F4CA} Resultados dos Testes
+
+`;
+        testResults2.forEach((result, index) => {
+          markdown += `#### ${index + 1}. ${result.participantId}
+
+`;
+          if (result.feedback) markdown += `**Feedback:** ${result.feedback}
+
+`;
+          if (result.insights) markdown += `**Insights:** ${result.insights}
+
+`;
+          if (result.successRate) markdown += `**Taxa de sucesso:** ${result.successRate}%
+
+`;
+        });
+      }
+      markdown += `---
+
+`;
+      markdown += `*Relat\xF3rio gerado pelo **DTTools** - Plataforma de Design Thinking*  
+`;
+      markdown += `*Acesse: [dttools.app](https://dttools.app)*  
+`;
+      markdown += `*Data: ${(/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR")} \xE0s ${(/* @__PURE__ */ new Date()).toLocaleTimeString("pt-BR")}*
+`;
+      return markdown;
+    } catch (error) {
+      console.error("Error generating Markdown:", error);
+      throw new Error("Failed to generate Markdown document");
+    }
+  }
+};
+
+// server/routes.ts
 var stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-08-27.basil"
 }) : null;
@@ -4634,6 +6050,66 @@ async function registerRoutes(app2) {
         error: "Failed to generate AI recommendations",
         details: error instanceof Error ? error.message : "Unknown error"
       });
+    }
+  });
+  app2.get("/api/projects/:id/export-pptx", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.session.userId;
+      const project = await storage.getProject(id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      const pptxService = new PPTXService();
+      const pptxBuffer = await pptxService.generateProjectPPTX(id, userId);
+      const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, "_")}_DTTools.pptx`;
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader("Content-Length", pptxBuffer.length);
+      res.send(pptxBuffer);
+    } catch (error) {
+      console.error("Error generating PPTX:", error);
+      res.status(500).json({ error: "Failed to generate PPTX presentation" });
+    }
+  });
+  app2.get("/api/projects/:id/export-pdf", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.session.userId;
+      const project = await storage.getProject(id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      const pptxService = new PPTXService();
+      const pdfBuffer = await pptxService.generateProjectPDF(id, userId);
+      const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, "_")}_DTTools.pdf`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader("Content-Length", pdfBuffer.length);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ error: "Failed to generate PDF document" });
+    }
+  });
+  app2.get("/api/projects/:id/export-markdown", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.session.userId;
+      const project = await storage.getProject(id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      const pptxService = new PPTXService();
+      const markdown = await pptxService.generateProjectMarkdown(id, userId);
+      const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, "_")}_DTTools.md`;
+      res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader("Content-Length", Buffer.byteLength(markdown, "utf8"));
+      res.send(markdown);
+    } catch (error) {
+      console.error("Error generating Markdown:", error);
+      res.status(500).json({ error: "Failed to generate Markdown document" });
     }
   });
   app2.get("/api/help", async (req, res) => {
