@@ -30,16 +30,13 @@ export interface PPTXExportData {
 }
 
 export class PPTXService {
-  private pres: pptxgen;
-
   constructor() {
-    this.pres = new pptxgen();
-    this.setupMasterSlide();
+    // No longer storing pres instance - create fresh instance per export
   }
 
-  private setupMasterSlide() {
+  private setupMasterSlide(pres: pptxgen) {
     // Define master slide following new DTTools brand template
-    this.pres.defineSlideMaster({
+    pres.defineSlideMaster({
       title: "DTTools_MASTER",
       background: { color: "FFFFFF" }, // White background
       objects: [
@@ -85,8 +82,8 @@ export class PPTXService {
     });
   }
 
-  private addTitleSlide(projectName: string, description: string = "") {
-    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+  private addTitleSlide(pres: pptxgen, projectName: string, description: string = "") {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
     
     slide.addText(projectName, {
       x: 1, y: 2, w: 8, h: 1.5,
@@ -126,8 +123,8 @@ export class PPTXService {
     });
   }
 
-  private addPhaseOverviewSlide(phase: number, title: string, description: string) {
-    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+  private addPhaseOverviewSlide(pres: pptxgen, phase: number, title: string, description: string) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
     
     slide.addText(`Fase ${phase}: ${title}`, {
       x: 1, y: 1.2, w: 8, h: 1,
@@ -143,8 +140,8 @@ export class PPTXService {
     });
   }
 
-  private addEmpathyMapSlide(empathyMap: EmpathyMap) {
-    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+  private addEmpathyMapSlide(pres: pptxgen, empathyMap: EmpathyMap) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
     
     slide.addText(`Mapa de Empatia: ${empathyMap.title}`, {
       x: 1, y: 1.2, w: 8, h: 0.8,
@@ -190,8 +187,8 @@ export class PPTXService {
     });
   }
 
-  private addPersonasSlide(personas: Persona[]) {
-    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+  private addPersonasSlide(pres: pptxgen, personas: Persona[]) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
     
     slide.addText("Personas do Projeto", {
       x: 1, y: 1.2, w: 8, h: 0.8,
@@ -252,8 +249,8 @@ export class PPTXService {
     });
   }
 
-  private addIdeasSlide(ideas: Idea[]) {
-    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+  private addIdeasSlide(pres: pptxgen, ideas: Idea[]) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
     
     slide.addText("Ideias Geradas", {
       x: 1, y: 1.2, w: 8, h: 0.8,
@@ -323,8 +320,8 @@ export class PPTXService {
     });
   }
 
-  private addDVFAnalysisSlide(ideas: Idea[]) {
-    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+  private addDVFAnalysisSlide(pres: pptxgen, ideas: Idea[]) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
     
     slide.addText("Análise DVF - Benchmarking", {
       x: 1, y: 1.2, w: 8, h: 0.8,
@@ -412,8 +409,8 @@ export class PPTXService {
     });
   }
 
-  private addSummarySlide(project: Project, data: any) {
-    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+  private addSummarySlide(pres: pptxgen, project: Project, data: any) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
     
     slide.addText("Resumo do Projeto", {
       x: 1, y: 1.2, w: 8, h: 0.8,
@@ -518,8 +515,8 @@ export class PPTXService {
     });
   }
 
-  private addFinalControlsSlide() {
-    const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+  private addFinalControlsSlide(pres: pptxgen) {
+    const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
     
     slide.addText("Apresentação Concluída", {
       x: 1, y: 2, w: 8, h: 1,
@@ -615,6 +612,10 @@ export class PPTXService {
 
   async generateProjectPPTX(projectId: string, userId: string): Promise<Buffer> {
     try {
+      // Create fresh pptxgen instance for this export
+      const pres = new pptxgen();
+      this.setupMasterSlide(pres);
+      
       // Fetch all project data
       const project = await storage.getProject(projectId, userId);
       if (!project) {
@@ -633,23 +634,23 @@ export class PPTXService {
       const testResults = await storage.getTestResults(projectId);
 
       // Build presentation
-      this.addTitleSlide(project.name, project.description || "");
+      this.addTitleSlide(pres, project.name, project.description || "");
 
       // Phase 1: Empathize
       if (empathyMaps.length > 0 || personas.length > 0) {
-        this.addPhaseOverviewSlide(1, "Empatizar", "Compreenda profundamente seus usuários através de pesquisas, entrevistas e observações.");
+        this.addPhaseOverviewSlide(pres, 1, "Empatizar", "Compreenda profundamente seus usuários através de pesquisas, entrevistas e observações.");
         
         empathyMaps.forEach(empathyMap => {
-          this.addEmpathyMapSlide(empathyMap);
+          this.addEmpathyMapSlide(pres, empathyMap);
         });
 
         if (personas.length > 0) {
-          this.addPersonasSlide(personas);
+          this.addPersonasSlide(pres, personas);
         }
 
         // Add interviews slide if any
         if (interviews.length > 0) {
-          const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
           slide.addText("Entrevistas Realizadas", {
             x: 1, y: 1.2, w: 8, h: 0.8,
             fontSize: 24,
@@ -685,7 +686,7 @@ export class PPTXService {
 
         // Add observations slide if any
         if (observations.length > 0) {
-          const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
           slide.addText("Observações de Campo", {
             x: 1, y: 1.2, w: 8, h: 0.8,
             fontSize: 24,
@@ -716,11 +717,11 @@ export class PPTXService {
 
       // Phase 2: Define
       if (povStatements.length > 0 || hmwQuestions.length > 0) {
-        this.addPhaseOverviewSlide(2, "Definir", "Defina claramente o problema e crie declarações de ponto de vista focadas.");
+        this.addPhaseOverviewSlide(pres, 2, "Definir", "Defina claramente o problema e crie declarações de ponto de vista focadas.");
         
         // Add POV statements slide
         if (povStatements.length > 0) {
-          const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
           slide.addText("Declarações POV", {
             x: 1, y: 1.2, w: 8, h: 0.8,
             fontSize: 24,
@@ -740,7 +741,7 @@ export class PPTXService {
 
         // Add HMW questions slide
         if (hmwQuestions.length > 0) {
-          const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
           slide.addText("Como Podemos (HMW)", {
             x: 1, y: 1.2, w: 8, h: 0.8,
             fontSize: 24,
@@ -761,16 +762,16 @@ export class PPTXService {
 
       // Phase 3: Ideate
       if (ideas.length > 0) {
-        this.addPhaseOverviewSlide(3, "Idear", "Gere uma ampla gama de ideias criativas através de brainstorming estruturado.");
-        this.addIdeasSlide(ideas);
-        this.addDVFAnalysisSlide(ideas);
+        this.addPhaseOverviewSlide(pres, 3, "Idear", "Gere uma ampla gama de ideias criativas através de brainstorming estruturado.");
+        this.addIdeasSlide(pres, ideas);
+        this.addDVFAnalysisSlide(pres, ideas);
       }
 
       // Phase 4: Prototype
       if (prototypes.length > 0) {
-        this.addPhaseOverviewSlide(4, "Prototipar", "Construa protótipos rápidos e baratos para testar suas melhores ideias.");
+        this.addPhaseOverviewSlide(pres, 4, "Prototipar", "Construa protótipos rápidos e baratos para testar suas melhores ideias.");
         
-        const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+        const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
         slide.addText("Protótipos Criados", {
           x: 1, y: 1.2, w: 8, h: 0.8,
           fontSize: 24,
@@ -799,10 +800,10 @@ export class PPTXService {
 
       // Phase 5: Test
       if (testPlans.length > 0 || testResults.length > 0) {
-        this.addPhaseOverviewSlide(5, "Testar", "Teste seus protótipos com usuários reais e colete feedback valioso.");
+        this.addPhaseOverviewSlide(pres, 5, "Testar", "Teste seus protótipos com usuários reais e colete feedback valioso.");
         
         if (testResults.length > 0) {
-          const slide = this.pres.addSlide({ masterName: "DTTools_MASTER" });
+          const slide = pres.addSlide({ masterName: "DTTools_MASTER" });
           slide.addText("Resultados dos Testes", {
             x: 1, y: 1.2, w: 8, h: 0.8,
             fontSize: 24,
@@ -831,7 +832,7 @@ export class PPTXService {
       }
 
       // Add summary and final slide
-      this.addSummarySlide(project, {
+      this.addSummarySlide(pres, project, {
         empathyMaps,
         personas,
         interviews,
@@ -844,10 +845,10 @@ export class PPTXService {
         testResults
       });
       
-      this.addFinalControlsSlide();
+      this.addFinalControlsSlide(pres);
 
-      // Generate buffer
-      const buffer = await this.pres.write({ outputType: "nodebuffer" }) as Buffer;
+      // Generate buffer from fresh pres instance
+      const buffer = await pres.write({ outputType: "nodebuffer" }) as Buffer;
       return buffer;
 
     } catch (error) {
