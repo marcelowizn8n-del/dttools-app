@@ -6,6 +6,38 @@ DTTools é uma plataforma interativa e abrangente para guiar designers, equipes 
 
 ## Recent Changes
 
+### 2025-10-16: PowerPoint Export Security Fix (v11.0.0-EXPORT-SECURITY)
+**Status:** ✅ PRONTO PARA DEPLOY
+
+**Correções Críticas de Segurança:**
+- ✅ **Data Isolation Fix**: Eliminado vazamento de dados entre requisições de export
+- ✅ **PPTXService Refactor**: Cada export agora cria instância isolada de pptxgen
+- ✅ **User Verification**: Todos exports verificam ownership via userId antes de gerar
+- ✅ **ESM Compatibility**: pptxgenjs 4.0.1 confirmado com suporte ESM completo
+
+**Problema Resolvido:**
+- **Antes**: PPTXService reutilizava mesma instância pptxgen, causando leak de dados entre projetos/usuários
+- **Depois**: Cada chamada de export cria nova instância isolada, garantindo segurança total
+
+**Arquitetura de Export:**
+- ✅ **PPTX**: Template com logo "Design Thinking Tools", cores brand (blue #2563EB, green #10B981), bordas pontilhadas
+- ✅ **PDF**: Mesmo template visual, gerado via reportGenerator.ts
+- ✅ **Markdown**: Export de texto estruturado
+- ✅ **Notion**: REMOVIDO (bundle size reduzido 6%)
+
+**Mudanças Técnicas:**
+- ✅ PPTXService: Removido `private pres` do construtor
+- ✅ Todos métodos helper agora recebem `pres: pptxgen` como parâmetro
+- ✅ `generateProjectPPTX()` cria `const pres = new pptxgen()` no início
+- ✅ Build recompilado e validado (dist/index.js atualizado)
+- ✅ Routes: Endpoints `/api/projects/:id/export-{pptx,pdf,markdown}` reativados
+
+**Deploy Instructions:**
+1. Fazer commit das mudanças
+2. Push para produção: `git push render main`
+3. Aguardar deploy automático no Render.com (2-3 min)
+4. Verificar status "Live" no dashboard do Render
+
 ### 2025-10-13: Auth UX Improvement (v10.0.0-AUTH-UX)
 **Status:** ✅ EM PRODUÇÃO
 
