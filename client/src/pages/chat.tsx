@@ -34,6 +34,8 @@ interface ChatMessage {
 
 interface DesignThinkingContext {
   projectId?: string;
+  projectName?: string;
+  projectDescription?: string;
   currentPhase: number;
   userLevel: 'beginner' | 'intermediate' | 'advanced';
   focusArea?: 'empathize' | 'define' | 'ideate' | 'prototype' | 'test';
@@ -263,10 +265,15 @@ export default function ChatPage() {
                     <select
                       className="w-full p-2 text-xs border rounded-md bg-background"
                       value={context.projectId || ''}
-                      onChange={(e) => setContext(prev => ({ 
-                        ...prev, 
-                        projectId: e.target.value || undefined 
-                      }))}
+                      onChange={(e) => {
+                        const selectedProject = projects.find(p => p.id === e.target.value);
+                        setContext(prev => ({ 
+                          ...prev, 
+                          projectId: e.target.value || undefined,
+                          projectName: selectedProject?.name,
+                          projectDescription: selectedProject?.description || undefined
+                        }));
+                      }}
                       data-testid="select-project"
                     >
                       <option value="">Selecione um projeto</option>
