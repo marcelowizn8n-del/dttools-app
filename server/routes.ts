@@ -2442,15 +2442,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const userId = req.session!.userId!;
       
+      console.log(`[PPTX Export] Starting export for project ${id}, user ${userId}`);
+      
       // Verify project ownership
       const project = await storage.getProject(id, userId);
       if (!project) {
+        console.log(`[PPTX Export] Project not found: ${id}`);
         return res.status(404).json({ error: "Project not found" });
       }
 
+      console.log(`[PPTX Export] Generating PPTX for project: ${project.name}`);
+      
       // Generate PPTX with new brand template
       const pptxService = new PPTXService();
       const pptxBuffer = await pptxService.generateProjectPPTX(id, userId);
+      
+      console.log(`[PPTX Export] PPTX generated successfully, size: ${pptxBuffer.length} bytes`);
       
       // Set response headers for file download
       const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pptx`;
@@ -2458,12 +2465,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.setHeader('Content-Length', pptxBuffer.length);
       
-      // Send the buffer
-      res.send(pptxBuffer);
+      // CRITICAL: End the response properly without calling next()
+      res.end(pptxBuffer);
       
     } catch (error) {
-      console.error("Error generating PPTX:", error);
-      res.status(500).json({ error: "Failed to generate PPTX presentation" });
+      console.error("[PPTX Export] Error generating PPTX:", error);
+      // Return JSON error, not HTML
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Failed to generate PPTX presentation" });
+      }
     }
   });
 
@@ -2473,15 +2483,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const userId = req.session!.userId!;
       
+      console.log(`[PDF Export] Starting export for project ${id}, user ${userId}`);
+      
       // Verify project ownership
       const project = await storage.getProject(id, userId);
       if (!project) {
+        console.log(`[PDF Export] Project not found: ${id}`);
         return res.status(404).json({ error: "Project not found" });
       }
 
+      console.log(`[PDF Export] Generating PDF for project: ${project.name}`);
+      
       // Generate PDF using PPTX service
       const pptxService = new PPTXService();
       const pdfBuffer = await pptxService.generateProjectPDF(id, userId);
+      
+      console.log(`[PDF Export] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
       
       // Set response headers for file download
       const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_DTTools.pdf`;
@@ -2489,12 +2506,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.setHeader('Content-Length', pdfBuffer.length);
       
-      // Send the buffer
-      res.send(pdfBuffer);
+      // CRITICAL: End the response properly without calling next()
+      res.end(pdfBuffer);
       
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      res.status(500).json({ error: "Failed to generate PDF document" });
+      console.error("[PDF Export] Error generating PDF:", error);
+      // Return JSON error, not HTML
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Failed to generate PDF document" });
+      }
     }
   });
 

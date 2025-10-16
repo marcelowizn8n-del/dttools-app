@@ -6056,40 +6056,52 @@ async function registerRoutes(app2) {
     try {
       const { id } = req.params;
       const userId = req.session.userId;
+      console.log(`[PPTX Export] Starting export for project ${id}, user ${userId}`);
       const project = await storage.getProject(id, userId);
       if (!project) {
+        console.log(`[PPTX Export] Project not found: ${id}`);
         return res.status(404).json({ error: "Project not found" });
       }
+      console.log(`[PPTX Export] Generating PPTX for project: ${project.name}`);
       const pptxService = new PPTXService();
       const pptxBuffer = await pptxService.generateProjectPPTX(id, userId);
+      console.log(`[PPTX Export] PPTX generated successfully, size: ${pptxBuffer.length} bytes`);
       const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, "_")}_DTTools.pptx`;
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
       res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
       res.setHeader("Content-Length", pptxBuffer.length);
-      res.send(pptxBuffer);
+      res.end(pptxBuffer);
     } catch (error) {
-      console.error("Error generating PPTX:", error);
-      res.status(500).json({ error: "Failed to generate PPTX presentation" });
+      console.error("[PPTX Export] Error generating PPTX:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Failed to generate PPTX presentation" });
+      }
     }
   });
   app2.get("/api/projects/:id/export-pdf", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const userId = req.session.userId;
+      console.log(`[PDF Export] Starting export for project ${id}, user ${userId}`);
       const project = await storage.getProject(id, userId);
       if (!project) {
+        console.log(`[PDF Export] Project not found: ${id}`);
         return res.status(404).json({ error: "Project not found" });
       }
+      console.log(`[PDF Export] Generating PDF for project: ${project.name}`);
       const pptxService = new PPTXService();
       const pdfBuffer = await pptxService.generateProjectPDF(id, userId);
+      console.log(`[PDF Export] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
       const filename = `${project.name.replace(/[^a-zA-Z0-9]/g, "_")}_DTTools.pdf`;
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
       res.setHeader("Content-Length", pdfBuffer.length);
-      res.send(pdfBuffer);
+      res.end(pdfBuffer);
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      res.status(500).json({ error: "Failed to generate PDF document" });
+      console.error("[PDF Export] Error generating PDF:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Failed to generate PDF document" });
+      }
     }
   });
   app2.get("/api/projects/:id/export-markdown", requireAuth, async (req, res) => {
