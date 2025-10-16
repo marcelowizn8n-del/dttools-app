@@ -201,15 +201,20 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Auto-detect production: use NODE_ENV
+  // Auto-detect production: check if running from dist/ OR if NODE_ENV is production
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const isProductionBuild = process.env.NODE_ENV === 'production';
+  
+  // Consider it production if:
+  // 1. Running from dist/index.js (compiled build)
+  // 2. OR NODE_ENV is explicitly set to production
+  const isProductionBuild = __filename.includes('/dist/index.js') || process.env.NODE_ENV === 'production';
 
   const server = await registerRoutes(app);
 
   // Initialize database and default data in background (after server starts)
-  if (isProductionBuild && process.env.DATABASE_URL) {
+  // Run schema verification if we have a database connection
+  if (process.env.DATABASE_URL) {
     // Run database setup asynchronously without blocking server startup
     (async () => {
       let migrationCompleted = false;
@@ -282,8 +287,12 @@ app.use((req, res, next) => {
       }
     })();
   } else {
-    // In development, run normally
-    await initializeDefaultData();
+    // In development without database, run normally
+    try {
+      await initializeDefaultData();
+    } catch (error) {
+      log('⚠️  Development initialization error:', String(error).substring(0, 100));
+    }
   }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

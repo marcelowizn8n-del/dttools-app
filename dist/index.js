@@ -6651,9 +6651,9 @@ app.use((req, res, next) => {
 (async () => {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path4.dirname(__filename);
-  const isProductionBuild = process.env.NODE_ENV === "production";
+  const isProductionBuild = __filename.includes("/dist/index.js") || process.env.NODE_ENV === "production";
   const server = await registerRoutes(app);
-  if (isProductionBuild && process.env.DATABASE_URL) {
+  if (process.env.DATABASE_URL) {
     (async () => {
       let migrationCompleted = false;
       try {
@@ -6710,7 +6710,11 @@ app.use((req, res, next) => {
       }
     })();
   } else {
-    await initializeDefaultData();
+    try {
+      await initializeDefaultData();
+    } catch (error) {
+      log2("\u26A0\uFE0F  Development initialization error:", String(error).substring(0, 100));
+    }
   }
   app.use((err, _req, res, _next) => {
     const status = err.status || err.statusCode || 500;
