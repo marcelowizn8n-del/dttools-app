@@ -6,8 +6,35 @@ DTTools é uma plataforma interativa e abrangente para guiar designers, equipes 
 
 ## Recent Changes
 
-### 2025-10-16: PowerPoint Export Security Fix (v11.0.0-EXPORT-SECURITY)
+### 2025-10-16: AI Chat Project Context Fix + Export Response Hardening (v11.1.0)
 **Status:** ✅ PRONTO PARA DEPLOY
+
+**AI Chat - Correção "projeto undefined":**
+- ✅ **Problema Identificado**: Chat IA mostrava "projeto undefined" ao invés do nome real do projeto
+- ✅ **Root Cause**: Frontend enviava apenas `projectId`, mas backend esperava `projectName` e `projectDescription`
+- ✅ **Solução Implementada**:
+  - Extendida interface `DesignThinkingContext` no frontend com campos `projectName` e `projectDescription`
+  - Modificado handler de seleção de projeto para popular todos os 3 campos (id, name, description)
+  - Gemini agora recebe contexto completo do projeto e responde com nome correto
+- ✅ **Arquivos Modificados**: `client/src/pages/chat.tsx` (linhas 38-45, 269-276)
+
+**Export - Correção PDF/PPTX retornando HTML:**
+- ✅ **Problema Identificado**: Arquivos PDF exportados abriam como HTML no Adobe Acrobat
+- ✅ **Root Cause**: Erros de export caíam no middleware Vite, retornando index.html com extensão .pdf
+- ✅ **Solução Implementada**:
+  - Mudado `res.send()` para `res.end()` para terminar resposta sem passar para next()
+  - Adicionado logging detalhado para rastreamento de export (project ID, user ID, buffer size)
+  - Guard `!res.headersSent` antes de enviar erros JSON
+  - Aplicado mesmo padrão para PPTX, PDF e Markdown
+- ✅ **Arquivos Modificados**: `server/routes.ts` (endpoints export-pptx, export-pdf)
+
+**Deploy No Render:**
+- ℹ️ Logs analisados: Warnings normais (OPENAI_API_KEY, migration), **sem erros críticos**
+- ✅ Serviço funcionando: "Your service is live 🎉", status 200/304
+- ✅ Database: Default data initialized, PostgreSQL operacional
+
+### 2025-10-16: PowerPoint Export Security Fix (v11.0.0-EXPORT-SECURITY)
+**Status:** ✅ EM PRODUÇÃO
 
 **Correções Críticas de Segurança:**
 - ✅ **Data Isolation Fix**: Eliminado vazamento de dados entre requisições de export
