@@ -6658,6 +6658,21 @@ app.use((req, res, next) => {
       let migrationCompleted = false;
       try {
         log2("\u{1F527} Running database setup in background...");
+        try {
+          const { db: db2 } = await Promise.resolve().then(() => (init_db(), db_exports));
+          log2("\u{1F50D} Verifying schema columns...");
+          await db2.execute(`
+            ALTER TABLE subscription_plans 
+            ADD COLUMN IF NOT EXISTS included_users INTEGER;
+          `);
+          await db2.execute(`
+            ALTER TABLE subscription_plans 
+            ADD COLUMN IF NOT EXISTS price_per_additional_user INTEGER;
+          `);
+          log2("\u2705 Schema columns verified");
+        } catch (schemaError) {
+          log2("\u26A0\uFE0F  Schema verification error:", String(schemaError).substring(0, 100));
+        }
         const migrationPromise = new Promise((resolve, reject) => {
           const { spawn } = __require("child_process");
           const migration = spawn("npm", ["run", "db:push"], {

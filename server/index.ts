@@ -217,6 +217,27 @@ app.use((req, res, next) => {
       try {
         log('🔧 Running database setup in background...');
         
+        // CRITICAL: Ensure schema columns exist before migration
+        try {
+          const { db } = await import('./db.js');
+          log('🔍 Verifying schema columns...');
+          
+          // Add missing columns if they don't exist (idempotent)
+          await db.execute(`
+            ALTER TABLE subscription_plans 
+            ADD COLUMN IF NOT EXISTS included_users INTEGER;
+          `);
+          
+          await db.execute(`
+            ALTER TABLE subscription_plans 
+            ADD COLUMN IF NOT EXISTS price_per_additional_user INTEGER;
+          `);
+          
+          log('✅ Schema columns verified');
+        } catch (schemaError) {
+          log('⚠️  Schema verification error:', String(schemaError).substring(0, 100));
+        }
+        
         // Run migration with proper timeout handling
         const migrationPromise = new Promise<void>((resolve, reject) => {
           const { spawn } = require('child_process');
