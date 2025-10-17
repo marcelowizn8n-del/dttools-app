@@ -657,7 +657,7 @@ export class DatabaseStorage implements IStorage {
 
   // Subscription Plans
   async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
-    return await db.select().from(subscriptionPlans).orderBy(desc(subscriptionPlans.createdAt));
+    return await db.select().from(subscriptionPlans).orderBy(subscriptionPlans.order);
   }
 
   async getSubscriptionPlan(id: string): Promise<SubscriptionPlan | undefined> {
