@@ -1577,7 +1577,7 @@ var DatabaseStorage = class {
   }
   // Subscription Plans
   async getSubscriptionPlans() {
-    return await db.select().from(subscriptionPlans).orderBy(desc(subscriptionPlans.createdAt));
+    return await db.select().from(subscriptionPlans).orderBy(subscriptionPlans.order);
   }
   async getSubscriptionPlan(id) {
     const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, id));
