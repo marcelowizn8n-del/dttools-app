@@ -1968,7 +1968,8 @@ async function initializeDefaultData() {
         priceYearly: 0,
         features: ["3 projetos", "Ferramentas b\xE1sicas", "Suporte por email"],
         maxProjects: 3,
-        isActive: true
+        isActive: true,
+        order: 1
       });
       await storage.createSubscriptionPlan({
         name: "Pro",
@@ -1981,7 +1982,8 @@ async function initializeDefaultData() {
         features: ["Projetos ilimitados", "Todas as ferramentas", "An\xE1lise AI", "Suporte priorit\xE1rio"],
         maxProjects: -1,
         // unlimited
-        isActive: true
+        isActive: true,
+        order: 2
       });
       await storage.createSubscriptionPlan({
         name: "Enterprise",
@@ -1994,9 +1996,15 @@ async function initializeDefaultData() {
         features: ["Tudo do Pro", "10 usu\xE1rios inclusos", "Usu\xE1rios adicionais: R$ 29,90/usu\xE1rio", "Time ilimitado", "Suporte dedicado", "Treinamentos"],
         maxProjects: -1,
         // unlimited
-        isActive: true
+        isActive: true,
+        order: 3
       });
       console.log("\u2705 Subscription plans created");
+    } else {
+      await db.update(subscriptionPlans).set({ order: 1 }).where(eq(subscriptionPlans.name, "Free"));
+      await db.update(subscriptionPlans).set({ order: 2 }).where(eq(subscriptionPlans.name, "Pro"));
+      await db.update(subscriptionPlans).set({ order: 3 }).where(eq(subscriptionPlans.name, "Enterprise"));
+      console.log("\u2705 Subscription plan order updated");
     }
     const existingArticles = await storage.getArticles();
     const dtToolsArticles = existingArticles.filter((a) => a.author === "DTTools");
