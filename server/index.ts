@@ -210,6 +210,32 @@ app.use((req, res, next) => {
   // 2. OR NODE_ENV is explicitly set to production
   const isProductionBuild = __filename.includes('/dist/index.js') || process.env.NODE_ENV === 'production';
 
+  // CRITICAL: Verify schema BEFORE anything else if database exists
+  if (process.env.DATABASE_URL) {
+    log('🔧 [STARTUP] Ensuring database schema is correct...');
+    
+    try {
+      const { db } = await import('./db.js');
+      log('🔍 [STARTUP] Verifying critical schema columns...');
+      
+      // Add missing columns if they don't exist (idempotent, safe to run multiple times)
+      await db.execute(`
+        ALTER TABLE IF EXISTS subscription_plans 
+        ADD COLUMN IF NOT EXISTS included_users INTEGER;
+      `);
+      
+      await db.execute(`
+        ALTER TABLE IF EXISTS subscription_plans 
+        ADD COLUMN IF NOT EXISTS price_per_additional_user INTEGER;
+      `);
+      
+      log('✅ [STARTUP] Schema columns verified and ready');
+    } catch (schemaError) {
+      // Log but don't crash - table might not exist yet
+      log('⚠️  [STARTUP] Schema verification skipped (table may not exist yet):', String(schemaError).substring(0, 100));
+    }
+  }
+
   const server = await registerRoutes(app);
 
   // Initialize database and default data in background (after server starts)
@@ -220,28 +246,7 @@ app.use((req, res, next) => {
       let migrationCompleted = false;
       
       try {
-        log('🔧 Running database setup in background...');
-        
-        // CRITICAL: Ensure schema columns exist before migration
-        try {
-          const { db } = await import('./db.js');
-          log('🔍 Verifying schema columns...');
-          
-          // Add missing columns if they don't exist (idempotent)
-          await db.execute(`
-            ALTER TABLE subscription_plans 
-            ADD COLUMN IF NOT EXISTS included_users INTEGER;
-          `);
-          
-          await db.execute(`
-            ALTER TABLE subscription_plans 
-            ADD COLUMN IF NOT EXISTS price_per_additional_user INTEGER;
-          `);
-          
-          log('✅ Schema columns verified');
-        } catch (schemaError) {
-          log('⚠️  Schema verification error:', String(schemaError).substring(0, 100));
-        }
+        log('🔧 Running database migration in background...');
         
         // Run migration with proper timeout handling
         const migrationPromise = new Promise<void>((resolve, reject) => {
