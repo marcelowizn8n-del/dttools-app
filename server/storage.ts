@@ -1173,7 +1173,8 @@ export async function initializeDefaultData() {
         priceYearly: 0,
         features: ['3 projetos', 'Ferramentas básicas', 'Suporte por email'],
         maxProjects: 3,
-        isActive: true
+        isActive: true,
+        order: 1
       });
 
       await storage.createSubscriptionPlan({
@@ -1184,7 +1185,8 @@ export async function initializeDefaultData() {
         priceYearly: 43200, // R$ 432,00 in cents (10% discount)
         features: ['Projetos ilimitados', 'Todas as ferramentas', 'Análise AI', 'Suporte prioritário'],
         maxProjects: -1, // unlimited
-        isActive: true
+        isActive: true,
+        order: 2
       });
 
       await storage.createSubscriptionPlan({
@@ -1195,9 +1197,16 @@ export async function initializeDefaultData() {
         priceYearly: 322920, // R$ 3.229,20 in cents (10% discount: 29900 * 12 * 0.9)
         features: ['Tudo do Pro', '10 usuários inclusos', 'Usuários adicionais: R$ 29,90/usuário', 'Time ilimitado', 'Suporte dedicado', 'Treinamentos'],
         maxProjects: -1, // unlimited
-        isActive: true
+        isActive: true,
+        order: 3
       });
       console.log('✅ Subscription plans created');
+    } else {
+      // ALWAYS update plan order even if they exist
+      await db.update(subscriptionPlans).set({ order: 1 }).where(eq(subscriptionPlans.name, 'Free'));
+      await db.update(subscriptionPlans).set({ order: 2 }).where(eq(subscriptionPlans.name, 'Pro'));
+      await db.update(subscriptionPlans).set({ order: 3 }).where(eq(subscriptionPlans.name, 'Enterprise'));
+      console.log('✅ Subscription plan order updated');
     }
 
     // Initialize default articles for Library
