@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LogIn, Eye, EyeOff } from "lucide-react";
+import { SiGoogle } from "react-icons/si";
 import { useAuth } from "@/contexts/AuthContext";
 
 const loginSchema = z.object({
@@ -126,6 +127,28 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             data-testid="button-submit"
           >
             {isLoading ? "Entrando..." : "Entrar"}
+          </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Ou continue com
+              </span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => window.location.href = "/api/auth/google"}
+            data-testid="button-google-login"
+          >
+            <SiGoogle className="mr-2 h-4 w-4" />
+            Entrar com Google
           </Button>
         </form>
       </CardContent>

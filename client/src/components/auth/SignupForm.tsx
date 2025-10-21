@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserPlus, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
+import { SiGoogle } from "react-icons/si";
 import { Link } from "wouter";
 
 const signupSchema = z.object({
@@ -238,6 +239,28 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
             data-testid="button-submit"
           >
             {isLoading ? "Criando conta..." : "Criar Conta"}
+          </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Ou continue com
+              </span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => window.location.href = "/api/auth/google"}
+            data-testid="button-google-signup"
+          >
+            <SiGoogle className="mr-2 h-4 w-4" />
+            Cadastrar com Google
           </Button>
 
           <div className="text-center text-sm text-gray-600">
