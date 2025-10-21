@@ -8,6 +8,28 @@ DTTools is an interactive platform designed to guide designers, innovation teams
 
 Preferred communication style: Simple, everyday language.
 
+## **CRITICAL DEPLOYMENT WORKFLOW**
+
+⚠️ **Changes ONLY work in production after BOTH steps:**
+
+1. **Git commit + push to GitHub**:
+   ```bash
+   git add .
+   git commit -m "Description of changes"
+   git push origin main
+   ```
+
+2. **Manual deploy on Render.com**:
+   - Go to Render Dashboard → Your service → "Manual Deploy" → "Deploy latest commit"
+   - Or wait for automatic deploy (if configured)
+
+**IMPORTANT NOTES:**
+- Replit Preview does NOT reflect production changes
+- Replit Preview has aggressive caching and is unreliable for testing
+- ALWAYS test on `www.designthinkingtools.com` after Render deployment
+- DO NOT waste time debugging on Replit Preview - it's only for local development
+- Apex domain `designthinkingtools.com` (without www) is not configured - only `www.designthinkingtools.com` works
+
 ## System Architecture
 
 ### Frontend Architecture
