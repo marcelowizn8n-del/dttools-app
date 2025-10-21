@@ -31,16 +31,16 @@ function getTranslatedArticle(article: Article, language: Language) {
 }
 
 const categories = [
-  { id: "all", label: "Todos", icon: BookOpen, description: "Todos os artigos" },
-  { id: "empathize", label: "Empatizar", icon: Book, description: "Compreender usuários" },
-  { id: "define", label: "Definir", icon: Search, description: "Definir problemas" },
-  { id: "ideate", label: "Idear", icon: ArrowRight, description: "Gerar soluções" },
-  { id: "prototype", label: "Prototipar", icon: Filter, description: "Construir protótipos" },
-  { id: "test", label: "Testar", icon: User, description: "Validar soluções" },
+  { id: "all", labelKey: "library.all", icon: BookOpen, descriptionKey: "library.all.desc" },
+  { id: "empathize", labelKey: "library.category.empathize", icon: Book, descriptionKey: "library.category.empathize.desc" },
+  { id: "define", labelKey: "library.category.define", icon: Search, descriptionKey: "library.category.define.desc" },
+  { id: "ideate", labelKey: "library.category.ideate", icon: ArrowRight, descriptionKey: "library.category.ideate.desc" },
+  { id: "prototype", labelKey: "library.category.prototype", icon: Filter, descriptionKey: "library.category.prototype.desc" },
+  { id: "test", labelKey: "library.category.test", icon: User, descriptionKey: "library.category.test.desc" },
 ];
 
 function ArticleCard({ article }: { article: Article }) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const translated = getTranslatedArticle(article, language);
   
   const formatDate = (date: Date | string | null) => {
@@ -54,7 +54,7 @@ function ArticleCard({ article }: { article: Article }) {
 
   const getCategoryLabel = (category: string) => {
     const cat = categories.find(c => c.id === category);
-    return cat?.label || category;
+    return cat ? t(cat.labelKey) : category;
   };
 
   const getCategoryColor = (category: string) => {
@@ -117,7 +117,7 @@ function ArticleCard({ article }: { article: Article }) {
       <CardFooter>
         <Link href={`/library/article/${article.id}`} className="w-full">
           <Button className="w-full" data-testid={`button-read-${article.id}`}>
-            Ler artigo
+            {t("library.read.article")}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
@@ -158,7 +158,7 @@ function ArticleCardSkeleton() {
 export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const { data: articles = [], isLoading } = useQuery<Article[]>({
     queryKey: ["/api/articles"],
@@ -189,10 +189,10 @@ export default function LibraryPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold tracking-tight mb-4" data-testid="page-title">
-            Biblioteca Design Thinking
+            {t("library.title")}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="page-description">
-            Explore artigos, guias e recursos para dominar a metodologia de Design Thinking
+            {t("library.subtitle")}
           </p>
         </div>
 
@@ -201,7 +201,7 @@ export default function LibraryPage() {
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Pesquisar artigos..."
+              placeholder={t("library.search.placeholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -225,7 +225,7 @@ export default function LibraryPage() {
                   data-testid={`tab-${category.id}`}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="text-xs font-medium">{category.label}</span>
+                  <span className="text-xs font-medium">{t(category.labelKey)}</span>
                   <Badge variant="secondary" className="text-xs">
                     {count}
                   </Badge>
@@ -239,10 +239,10 @@ export default function LibraryPage() {
               {/* Category description */}
               <div className="text-center">
                 <h2 className="text-2xl font-semibold mb-2" data-testid={`category-title-${category.id}`}>
-                  {category.id === "all" ? "Todos os Artigos" : category.label}
+                  {t(category.labelKey)}
                 </h2>
                 <p className="text-muted-foreground" data-testid={`category-description-${category.id}`}>
-                  {category.description}
+                  {t(category.descriptionKey)}
                 </p>
                 <Separator className="mt-4" />
               </div>
@@ -264,12 +264,12 @@ export default function LibraryPage() {
                 <div className="text-center py-12">
                   <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2" data-testid="no-articles-title">
-                    Nenhum artigo encontrado
+                    {t("library.no.articles")}
                   </h3>
                   <p className="text-muted-foreground" data-testid="no-articles-description">
                     {searchTerm 
-                      ? `Não encontramos artigos que correspondam à sua pesquisa "${searchTerm}".`
-                      : "Não há artigos disponíveis nesta categoria no momento."
+                      ? t("library.no.match", { term: searchTerm })
+                      : t("library.no.articles.category")
                     }
                   </p>
                   {searchTerm && (
@@ -279,7 +279,7 @@ export default function LibraryPage() {
                       className="mt-4"
                       data-testid="button-clear-search"
                     >
-                      Limpar pesquisa
+                      {t("library.clear.search")}
                     </Button>
                   )}
                 </div>
