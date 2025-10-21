@@ -7,7 +7,26 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
 import type { Article } from "@shared/schema";
+
+// Helper to get translated article content
+function getTranslatedArticle(article: Article, language: Language) {
+  const langMap: Record<Language, { title: string | null; description: string | null; content: string | null }> = {
+    "pt-BR": { title: article.title, description: article.description, content: article.content },
+    "en": { title: article.titleEn, description: article.descriptionEn, content: article.contentEn },
+    "es": { title: article.titleEs, description: article.descriptionEs, content: article.contentEs },
+    "fr": { title: article.titleFr, description: article.descriptionFr, content: article.contentFr },
+  };
+
+  const translation = langMap[language];
+  
+  return {
+    title: translation.title || article.title,
+    description: translation.description || article.description,
+    content: translation.content || article.content,
+  };
+}
 
 // Simple markdown renderer for article content
 function MarkdownRenderer({ content }: { content: string }) {
@@ -71,6 +90,7 @@ export default function ArticleDetailPage() {
   const { id } = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { language, t } = useLanguage();
 
   const { data: article, isLoading, error } = useQuery<Article>({
     queryKey: ["/api/articles", id],
@@ -116,10 +136,11 @@ export default function ArticleDetailPage() {
 
   const handleShare = async () => {
     if (navigator.share && article) {
+      const translated = getTranslatedArticle(article, language);
       try {
         await navigator.share({
-          title: article.title,
-          text: article.description || "",
+          title: translated.title,
+          text: translated.description || "",
           url: window.location.href,
         });
       } catch (err) {
@@ -190,25 +211,28 @@ export default function ArticleDetailPage() {
         {isLoading ? (
           <ArticleSkeleton />
         ) : article ? (
-          <article className="space-y-6">
-            {/* Header */}
-            <header className="space-y-4">
-              <Badge 
-                className={getCategoryColor(article.category)} 
-                data-testid="article-category"
-              >
-                {getCategoryLabel(article.category)}
-              </Badge>
-              
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight" data-testid="article-title">
-                {article.title}
-              </h1>
-              
-              {article.description && (
-                <p className="text-xl text-muted-foreground" data-testid="article-description">
-                  {article.description}
-                </p>
-              )}
+          (() => {
+            const translated = getTranslatedArticle(article, language);
+            return (
+              <article className="space-y-6">
+                {/* Header */}
+                <header className="space-y-4">
+                  <Badge 
+                    className={getCategoryColor(article.category)} 
+                    data-testid="article-category"
+                  >
+                    {getCategoryLabel(article.category)}
+                  </Badge>
+                  
+                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight" data-testid="article-title">
+                    {translated.title}
+                  </h1>
+                  
+                  {translated.description && (
+                    <p className="text-xl text-muted-foreground" data-testid="article-description">
+                      {translated.description}
+                    </p>
+                  )}
 
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1" data-testid="article-author">
@@ -216,14 +240,16 @@ export default function ArticleDetailPage() {
                   {article.author}
                 </div>
                 
-                <div className="flex items-center gap-1" data-testid="article-date">
-                  <Calendar className="h-4 w-4" />
-                  {formatDate(article.createdAt)}
-                </div>
+                {article.createdAt && (
+                  <div className="flex items-center gap-1" data-testid="article-date">
+                    <Calendar className="h-4 w-4" />
+                    {formatDate(article.createdAt)}
+                  </div>
+                )}
                 
                 <div className="flex items-center gap-1" data-testid="article-reading-time">
                   <Clock className="h-4 w-4" />
-                  {estimateReadingTime(article.content)} min de leitura
+                  {estimateReadingTime(translated.content)} min de leitura
                 </div>
                 
                 <Button 
@@ -254,30 +280,32 @@ export default function ArticleDetailPage() {
               )}
             </header>
 
-            <Separator />
+                <Separator />
 
-            {/* Content */}
-            <div className="prose prose-neutral dark:prose-invert max-w-none">
-              <MarkdownRenderer content={article.content} />
-            </div>
+                {/* Content */}
+                <div className="prose prose-neutral dark:prose-invert max-w-none">
+                  <MarkdownRenderer content={translated.content} />
+                </div>
 
-            <Separator />
+                <Separator />
 
-            {/* Footer */}
-            <footer className="flex justify-between items-center pt-6">
-              <Link href="/library">
-                <Button variant="outline" data-testid="button-back-footer">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Voltar à biblioteca
-                </Button>
-              </Link>
-              
-              <Button onClick={handleShare} data-testid="button-share-footer">
-                <Share className="mr-2 h-4 w-4" />
-                Compartilhar
-              </Button>
-            </footer>
-          </article>
+                {/* Footer */}
+                <footer className="flex justify-between items-center pt-6">
+                  <Link href="/library">
+                    <Button variant="outline" data-testid="button-back-footer">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Voltar à biblioteca
+                    </Button>
+                  </Link>
+                  
+                  <Button onClick={handleShare} data-testid="button-share-footer">
+                    <Share className="mr-2 h-4 w-4" />
+                    Compartilhar
+                  </Button>
+                </footer>
+              </article>
+            );
+          })()
         ) : null}
       </div>
     </div>
