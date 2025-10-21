@@ -13,6 +13,7 @@ import {
   type UserProgress, type InsertUserProgress,
   type User, type InsertUser,
   type Article, type InsertArticle,
+  type Testimonial, type InsertTestimonial,
   type SubscriptionPlan, type InsertSubscriptionPlan,
   type UserSubscription, type InsertUserSubscription,
   type CanvasDrawing, type InsertCanvasDrawing,
@@ -27,7 +28,7 @@ import {
   type HelpArticle, type InsertHelpArticle,
   projects, empathyMaps, personas, interviews, observations,
   povStatements, hmwQuestions, ideas, prototypes, testPlans, testResults,
-  userProgress, users, articles, subscriptionPlans, userSubscriptions,
+  userProgress, users, articles, testimonials, subscriptionPlans, userSubscriptions,
   canvasDrawings, phaseCards, benchmarks, benchmarkAssessments,
   dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis,
   projectBackups, helpArticles
@@ -128,6 +129,14 @@ export interface IStorage {
   createArticle(article: InsertArticle): Promise<Article>;
   updateArticle(id: string, article: Partial<InsertArticle>): Promise<Article | undefined>;
   deleteArticle(id: string): Promise<boolean>;
+
+  // Testimonials
+  getTestimonials(): Promise<Testimonial[]>;
+  getActiveTestimonials(): Promise<Testimonial[]>;
+  getTestimonial(id: string): Promise<Testimonial | undefined>;
+  createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
+  updateTestimonial(id: string, testimonial: Partial<InsertTestimonial>): Promise<Testimonial | undefined>;
+  deleteTestimonial(id: string): Promise<boolean>;
 
   // Canvas Drawings
   getCanvasDrawings(projectId: string): Promise<CanvasDrawing[]>;
@@ -317,6 +326,40 @@ export class DatabaseStorage implements IStorage {
 
   async deleteArticle(id: string): Promise<boolean> {
     const result = await db.delete(articles).where(eq(articles.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Testimonials
+  async getTestimonials(): Promise<Testimonial[]> {
+    return await db.select().from(testimonials).orderBy(testimonials.order, desc(testimonials.createdAt));
+  }
+
+  async getActiveTestimonials(): Promise<Testimonial[]> {
+    return await db.select().from(testimonials)
+      .where(eq(testimonials.isActive, true))
+      .orderBy(testimonials.order, desc(testimonials.createdAt));
+  }
+
+  async getTestimonial(id: string): Promise<Testimonial | undefined> {
+    const [testimonial] = await db.select().from(testimonials).where(eq(testimonials.id, id));
+    return testimonial;
+  }
+
+  async createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial> {
+    const [newTestimonial] = await db.insert(testimonials).values(testimonial).returning();
+    return newTestimonial;
+  }
+
+  async updateTestimonial(id: string, testimonial: Partial<InsertTestimonial>): Promise<Testimonial | undefined> {
+    const [updatedTestimonial] = await db.update(testimonials)
+      .set({ ...testimonial, updatedAt: new Date() })
+      .where(eq(testimonials.id, id))
+      .returning();
+    return updatedTestimonial;
+  }
+
+  async deleteTestimonial(id: string): Promise<boolean> {
+    const result = await db.delete(testimonials).where(eq(testimonials.id, id));
     return (result.rowCount || 0) > 0;
   }
 

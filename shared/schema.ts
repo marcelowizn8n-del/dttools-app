@@ -278,13 +278,44 @@ export const userSubscriptions = pgTable("user_subscriptions", {
 // Articles for Design Thinking library
 export const articles = pgTable("articles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
+  title: text("title").notNull(), // pt-BR (default)
+  content: text("content").notNull(), // pt-BR (default)
+  description: text("description"),
+  // English translations
+  titleEn: text("title_en"),
+  contentEn: text("content_en"),
+  descriptionEn: text("description_en"),
+  // Spanish translations
+  titleEs: text("title_es"),
+  contentEs: text("content_es"),
+  descriptionEs: text("description_es"),
+  // French translations
+  titleFr: text("title_fr"),
+  contentFr: text("content_fr"),
+  descriptionFr: text("description_fr"),
   category: text("category").notNull(), // empathize, define, ideate, prototype, test
   author: text("author").notNull(),
-  description: text("description"),
   tags: jsonb("tags").default([]), // Array of tags
   published: boolean("published").default(true),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Testimonials for landing page
+export const testimonials = pgTable("testimonials", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  role: text("role").notNull(),
+  company: text("company").notNull(),
+  // Testimonial text in different languages
+  testimonialPt: text("testimonial_pt").notNull(), // Portuguese (default)
+  testimonialEn: text("testimonial_en"),
+  testimonialEs: text("testimonial_es"),
+  testimonialFr: text("testimonial_fr"),
+  avatarUrl: text("avatar_url"),
+  rating: integer("rating").default(5), // 1-5 stars
+  order: integer("order").default(0), // for display ordering
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").default(sql`now()`),
   updatedAt: timestamp("updated_at").default(sql`now()`),
 });
@@ -369,6 +400,12 @@ export const insertArticleSchema = createInsertSchema(articles).omit({
   updatedAt: true,
 });
 
+export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
   id: true,
   createdAt: true,
@@ -442,6 +479,9 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type Article = typeof articles.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
+
+export type Testimonial = typeof testimonials.$inferSelect;
+export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 
 export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type InsertSubscriptionPlan = z.infer<typeof insertSubscriptionPlanSchema>;
