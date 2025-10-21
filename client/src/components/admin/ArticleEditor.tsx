@@ -145,16 +145,6 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
         tags: data.tags ? data.tags.split(",").map(tag => tag.trim()).filter(Boolean) : [],
       };
 
-      console.log("🚀 SALVANDO ARTIGO - Payload completo:", {
-        titleEn: payload.titleEn,
-        titleEs: payload.titleEs,
-        titleFr: payload.titleFr,
-        contentEn: payload.contentEn ? `✅ ${payload.contentEn.substring(0, 50)}...` : "❌ VAZIO",
-        contentEs: payload.contentEs ? `✅ ${payload.contentEs.substring(0, 50)}...` : "❌ VAZIO",
-        contentFr: payload.contentFr ? `✅ ${payload.contentFr.substring(0, 50)}...` : "❌ VAZIO",
-        allFields: Object.keys(payload)
-      });
-
       const response = await apiRequest("PUT", `/api/articles/${article?.id}`, payload);
       if (!response.ok) {
         throw new Error("Failed to update article");
