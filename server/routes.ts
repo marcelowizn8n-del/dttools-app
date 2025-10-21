@@ -1011,7 +1011,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/articles/:id", requireAdmin, async (req, res) => {
     try {
+      console.log("📝 UPDATE ARTICLE - Received data:", {
+        id: req.params.id,
+        titleEn: req.body.titleEn,
+        titleEs: req.body.titleEs,
+        titleFr: req.body.titleFr,
+        contentEn: req.body.contentEn ? "✅ Has content" : "❌ Empty",
+        contentEs: req.body.contentEs ? "✅ Has content" : "❌ Empty",
+        contentFr: req.body.contentFr ? "✅ Has content" : "❌ Empty",
+      });
       const validatedData = insertArticleSchema.partial().parse(req.body);
+      console.log("✅ VALIDATED DATA:", {
+        titleEn: validatedData.titleEn,
+        titleEs: validatedData.titleEs,
+        titleFr: validatedData.titleFr,
+      });
       const article = await storage.updateArticle(req.params.id, validatedData);
       if (!article) {
         return res.status(404).json({ error: "Article not found" });
