@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { X, Save, Eye } from "lucide-react";
+import { X, Save, Eye, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,15 @@ const articleFormSchema = insertArticleSchema.extend({
   title: z.string().min(1, "Título é obrigatório"),
   author: z.string().min(1, "Autor é obrigatório"),
   content: z.string().min(1, "Conteúdo é obrigatório"),
+  titleEn: z.string().optional(),
+  contentEn: z.string().optional(),
+  descriptionEn: z.string().optional(),
+  titleEs: z.string().optional(),
+  contentEs: z.string().optional(),
+  descriptionEs: z.string().optional(),
+  titleFr: z.string().optional(),
+  contentFr: z.string().optional(),
+  descriptionFr: z.string().optional(),
 });
 
 type ArticleFormData = z.infer<typeof articleFormSchema>;
@@ -66,6 +75,7 @@ function MarkdownPreview({ content }: { content: string }) {
 
 export default function ArticleEditor({ article, isOpen, onClose }: ArticleEditorProps) {
   const [activeTab, setActiveTab] = useState("edit");
+  const [languageTab, setLanguageTab] = useState("pt");
   const [customCategory, setCustomCategory] = useState("");
   const [isCustomCategorySelected, setIsCustomCategorySelected] = useState(false);
   const { toast } = useToast();
@@ -74,11 +84,20 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
   const defaultFormValues: ArticleFormData = {
     title: "",
     author: "",
-    category: "design-thinking", // Default category - never empty!
+    category: "design-thinking",
     description: "",
     content: "",
     tags: "",
     published: true,
+    titleEn: "",
+    contentEn: "",
+    descriptionEn: "",
+    titleEs: "",
+    contentEs: "",
+    descriptionEs: "",
+    titleFr: "",
+    contentFr: "",
+    descriptionFr: "",
   };
 
   const form = useForm<ArticleFormData>({
@@ -87,6 +106,9 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
   });
 
   const contentValue = form.watch("content") || "";
+  const contentEnValue = form.watch("contentEn") || "";
+  const contentEsValue = form.watch("contentEs") || "";
+  const contentFrValue = form.watch("contentFr") || "";
 
   // Single useEffect for form initialization - controlled sequencing
   useEffect(() => {
@@ -96,11 +118,20 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
         form.reset({
           title: article.title || "",
           author: article.author || "",
-          category: article.category || "design-thinking", // Never empty!
+          category: article.category || "design-thinking",
           description: article.description || "",
           content: article.content || "",
           tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
           published: article.published ?? true,
+          titleEn: article.titleEn || "",
+          contentEn: article.contentEn || "",
+          descriptionEn: article.descriptionEn || "",
+          titleEs: article.titleEs || "",
+          contentEs: article.contentEs || "",
+          descriptionEs: article.descriptionEs || "",
+          titleFr: article.titleFr || "",
+          contentFr: article.contentFr || "",
+          descriptionFr: article.descriptionFr || "",
         });
       } else {
         // Creating new article - use defaults
@@ -109,14 +140,16 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
         setCustomCategory("");
       }
       setActiveTab("edit");
+      setLanguageTab("pt");
     } else {
       // Modal closed - reset everything
       setActiveTab("edit");
+      setLanguageTab("pt");
       setIsCustomCategorySelected(false);
       setCustomCategory("");
       form.reset(defaultFormValues);
     }
-  }, [isOpen, article]); // Removed form from deps to prevent loops
+  }, [isOpen, article]);
 
   const createArticleMutation = useMutation({
     mutationFn: async (data: ArticleFormData) => {
@@ -202,6 +235,15 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
     { value: "custom", label: "📝 Categoria Personalizada" },
   ];
 
+  const getCurrentContent = () => {
+    switch (languageTab) {
+      case "en": return contentEnValue;
+      case "es": return contentEsValue;
+      case "fr": return contentFrValue;
+      default: return contentValue;
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-[95vw] sm:max-w-3xl lg:max-w-5xl h-[100svh] sm:h-[95vh] max-h-[100svh] sm:max-h-[95vh] p-0 gap-0 overflow-hidden flex flex-col">
@@ -224,24 +266,6 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Título</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Digite o título do artigo"
-                            data-testid="input-title"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
                     name="author"
                     render={({ field }) => (
                       <FormItem>
@@ -257,9 +281,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                       </FormItem>
                     )}
                   />
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="category"
@@ -270,7 +292,7 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                           onValueChange={(value) => {
                             if (value === "custom") {
                               setIsCustomCategorySelected(true);
-                              field.onChange("custom"); // Keep "custom" as value, never empty!
+                              field.onChange("custom");
                             } else {
                               setIsCustomCategorySelected(false);
                               setCustomCategory("");
@@ -309,45 +331,26 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="published"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Publicado</FormLabel>
-                          <div className="text-sm text-muted-foreground">
-                            O artigo será visível na biblioteca
-                          </div>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value ?? true}
-                            onCheckedChange={field.onChange}
-                            data-testid="switch-published"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
                 </div>
 
                 <FormField
                   control={form.control}
-                  name="description"
+                  name="published"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descrição (opcional)</FormLabel>
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Publicado</FormLabel>
+                        <div className="text-sm text-muted-foreground">
+                          O artigo será visível na biblioteca
+                        </div>
+                      </div>
                       <FormControl>
-                        <Textarea
-                          placeholder="Breve descrição do artigo"
-                          data-testid="textarea-description"
-                          {...field}
-                          value={field.value ?? ""}
+                        <Switch
+                          checked={field.value ?? true}
+                          onCheckedChange={field.onChange}
+                          data-testid="switch-published"
                         />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -373,44 +376,333 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                   )}
                 />
 
-                {/* Content Editor with Preview */}
+                {/* Multilingual Content with Tabs */}
                 <div className="space-y-4">
-                  <Label>Conteúdo</Label>
-                  <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="edit" data-testid="tab-edit">
-                        Editar
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-muted-foreground" />
+                    <Label className="text-base font-semibold">Conteúdo Multilíngue</Label>
+                  </div>
+                  
+                  <Tabs value={languageTab} onValueChange={setLanguageTab}>
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="pt" data-testid="tab-lang-pt">
+                        🇧🇷 PT
                       </TabsTrigger>
-                      <TabsTrigger value="preview" data-testid="tab-preview">
-                        Visualizar
+                      <TabsTrigger value="en" data-testid="tab-lang-en">
+                        🇺🇸 EN
+                      </TabsTrigger>
+                      <TabsTrigger value="es" data-testid="tab-lang-es">
+                        🇪🇸 ES
+                      </TabsTrigger>
+                      <TabsTrigger value="fr" data-testid="tab-lang-fr">
+                        🇫🇷 FR
                       </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="edit" className="space-y-2">
+                    {/* Portuguese */}
+                    <TabsContent value="pt" className="space-y-4">
                       <FormField
                         control={form.control}
-                        name="content"
+                        name="title"
                         render={({ field }) => (
                           <FormItem>
+                            <FormLabel>Título (Português)</FormLabel>
                             <FormControl>
-                              <Textarea
-                                placeholder="Escreva o conteúdo do artigo em Markdown..."
-                                className="min-h-[250px] sm:min-h-[400px] resize-none font-mono text-sm"
-                                data-testid="textarea-content"
+                              <Input
+                                placeholder="Digite o título do artigo"
+                                data-testid="input-title"
                                 {...field}
                               />
                             </FormControl>
-                            <div className="text-xs sm:text-sm text-muted-foreground">
-                              Use Markdown: **negrito**, *itálico*, # títulos
-                            </div>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
+
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Descrição (opcional)</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Breve descrição do artigo"
+                                data-testid="textarea-description"
+                                {...field}
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Tabs value={activeTab} onValueChange={setActiveTab}>
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="edit" data-testid="tab-edit">
+                            Editar
+                          </TabsTrigger>
+                          <TabsTrigger value="preview" data-testid="tab-preview">
+                            Visualizar
+                          </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="edit" className="space-y-2">
+                          <FormField
+                            control={form.control}
+                            name="content"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Escreva o conteúdo do artigo em Markdown..."
+                                    className="min-h-[250px] sm:min-h-[400px] resize-none font-mono text-sm"
+                                    data-testid="textarea-content"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <div className="text-xs sm:text-sm text-muted-foreground">
+                                  Use Markdown: **negrito**, *itálico*, # títulos
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </TabsContent>
+
+                        <TabsContent value="preview">
+                          <MarkdownPreview content={getCurrentContent()} />
+                        </TabsContent>
+                      </Tabs>
                     </TabsContent>
 
-                    <TabsContent value="preview">
-                      <MarkdownPreview content={contentValue} />
+                    {/* English */}
+                    <TabsContent value="en" className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="titleEn"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Title (English)</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter the article title"
+                                data-testid="input-title-en"
+                                {...field}
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="descriptionEn"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description (optional)</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Brief article description"
+                                data-testid="textarea-description-en"
+                                {...field}
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Tabs value={activeTab} onValueChange={setActiveTab}>
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="edit">Edit</TabsTrigger>
+                          <TabsTrigger value="preview">Preview</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="edit" className="space-y-2">
+                          <FormField
+                            control={form.control}
+                            name="contentEn"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Write the article content in Markdown..."
+                                    className="min-h-[250px] sm:min-h-[400px] resize-none font-mono text-sm"
+                                    data-testid="textarea-content-en"
+                                    {...field}
+                                    value={field.value ?? ""}
+                                  />
+                                </FormControl>
+                                <div className="text-xs sm:text-sm text-muted-foreground">
+                                  Use Markdown: **bold**, *italic*, # headings
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </TabsContent>
+
+                        <TabsContent value="preview">
+                          <MarkdownPreview content={getCurrentContent()} />
+                        </TabsContent>
+                      </Tabs>
+                    </TabsContent>
+
+                    {/* Spanish */}
+                    <TabsContent value="es" className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="titleEs"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Título (Español)</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Ingrese el título del artículo"
+                                data-testid="input-title-es"
+                                {...field}
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="descriptionEs"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Descripción (opcional)</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Breve descripción del artículo"
+                                data-testid="textarea-description-es"
+                                {...field}
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Tabs value={activeTab} onValueChange={setActiveTab}>
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="edit">Editar</TabsTrigger>
+                          <TabsTrigger value="preview">Vista previa</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="edit" className="space-y-2">
+                          <FormField
+                            control={form.control}
+                            name="contentEs"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Escriba el contenido del artículo en Markdown..."
+                                    className="min-h-[250px] sm:min-h-[400px] resize-none font-mono text-sm"
+                                    data-testid="textarea-content-es"
+                                    {...field}
+                                    value={field.value ?? ""}
+                                  />
+                                </FormControl>
+                                <div className="text-xs sm:text-sm text-muted-foreground">
+                                  Use Markdown: **negrita**, *cursiva*, # encabezados
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </TabsContent>
+
+                        <TabsContent value="preview">
+                          <MarkdownPreview content={getCurrentContent()} />
+                        </TabsContent>
+                      </Tabs>
+                    </TabsContent>
+
+                    {/* French */}
+                    <TabsContent value="fr" className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="titleFr"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Titre (Français)</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Entrez le titre de l'article"
+                                data-testid="input-title-fr"
+                                {...field}
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="descriptionFr"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description (optionnelle)</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Brève description de l'article"
+                                data-testid="textarea-description-fr"
+                                {...field}
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Tabs value={activeTab} onValueChange={setActiveTab}>
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="edit">Modifier</TabsTrigger>
+                          <TabsTrigger value="preview">Aperçu</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="edit" className="space-y-2">
+                          <FormField
+                            control={form.control}
+                            name="contentFr"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Écrivez le contenu de l'article en Markdown..."
+                                    className="min-h-[250px] sm:min-h-[400px] resize-none font-mono text-sm"
+                                    data-testid="textarea-content-fr"
+                                    {...field}
+                                    value={field.value ?? ""}
+                                  />
+                                </FormControl>
+                                <div className="text-xs sm:text-sm text-muted-foreground">
+                                  Utilisez Markdown: **gras**, *italique*, # titres
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </TabsContent>
+
+                        <TabsContent value="preview">
+                          <MarkdownPreview content={getCurrentContent()} />
+                        </TabsContent>
+                      </Tabs>
                     </TabsContent>
                   </Tabs>
                 </div>

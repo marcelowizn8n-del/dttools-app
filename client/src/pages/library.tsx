@@ -9,7 +9,26 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
 import type { Article } from "@shared/schema";
+
+// Helper to get translated article content
+function getTranslatedArticle(article: Article, language: Language) {
+  const langMap: Record<Language, { title: string | null; description: string | null; content: string | null }> = {
+    "pt-BR": { title: article.title, description: article.description, content: article.content },
+    "en": { title: article.titleEn, description: article.descriptionEn, content: article.contentEn },
+    "es": { title: article.titleEs, description: article.descriptionEs, content: article.contentEs },
+    "fr": { title: article.titleFr, description: article.descriptionFr, content: article.contentFr },
+  };
+
+  const translation = langMap[language];
+  
+  return {
+    title: translation.title || article.title,
+    description: translation.description || article.description,
+    content: translation.content || article.content,
+  };
+}
 
 const categories = [
   { id: "all", label: "Todos", icon: BookOpen, description: "Todos os artigos" },
@@ -21,7 +40,11 @@ const categories = [
 ];
 
 function ArticleCard({ article }: { article: Article }) {
-  const formatDate = (date: Date | string) => {
+  const { language } = useLanguage();
+  const translated = getTranslatedArticle(article, language);
+  
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return '';
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit', 
@@ -58,11 +81,11 @@ function ArticleCard({ article }: { article: Article }) {
           </div>
         </div>
         <CardTitle className="line-clamp-2" data-testid={`title-${article.id}`}>
-          {article.title}
+          {translated.title}
         </CardTitle>
-        {article.description && (
+        {translated.description && (
           <CardDescription className="line-clamp-3" data-testid={`description-${article.id}`}>
-            {article.description}
+            {translated.description}
           </CardDescription>
         )}
       </CardHeader>
@@ -71,9 +94,9 @@ function ArticleCard({ article }: { article: Article }) {
           <User className="mr-1 h-3 w-3" />
           <span data-testid={`author-${article.id}`}>{article.author}</span>
         </div>
-        {article.tags && article.tags.length > 0 && (
+        {article.tags && Array.isArray(article.tags) && article.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {(article.tags as string[]).slice(0, 3).map((tag, index) => (
+            {article.tags.slice(0, 3).map((tag: string, index: number) => (
               <Badge
                 key={index}
                 variant="outline"
@@ -83,9 +106,9 @@ function ArticleCard({ article }: { article: Article }) {
                 {tag}
               </Badge>
             ))}
-            {(article.tags as string[]).length > 3 && (
+            {article.tags.length > 3 && (
               <Badge variant="outline" className="text-xs">
-                +{(article.tags as string[]).length - 3}
+                +{article.tags.length - 3}
               </Badge>
             )}
           </div>
@@ -135,15 +158,20 @@ function ArticleCardSkeleton() {
 export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const { language } = useLanguage();
 
   const { data: articles = [], isLoading } = useQuery<Article[]>({
     queryKey: ["/api/articles"],
   });
 
   const filteredArticles = articles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         article.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         article.author.toLowerCase().includes(searchTerm.toLowerCase());
+    const translated = getTranslatedArticle(article, language);
+    const searchLower = searchTerm.toLowerCase();
+    
+    const matchesSearch = 
+      translated.title.toLowerCase().includes(searchLower) ||
+      translated.description?.toLowerCase().includes(searchLower) ||
+      article.author.toLowerCase().includes(searchLower);
     
     const matchesCategory = selectedCategory === "all" || article.category === selectedCategory;
     
