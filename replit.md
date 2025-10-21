@@ -45,6 +45,7 @@ DTTools provides tools for each of the five Design Thinking phases:
 -   **Export Functionality**: Generation of PPTX, PDF, and Markdown files from project data, with data isolation and user ownership verification.
 -   **Authentication**: Enhanced user registration and login flow using email, display name, email confirmation, password confirmation with strength indicator, and backward compatibility for existing users.
 -   **Automatic Schema Verification**: On application startup (BEFORE server initialization), the system automatically checks and adds missing columns to the `subscription_plans` table (`included_users`, `price_per_additional_user`) using idempotent SQL with `ALTER TABLE IF EXISTS`.
+-   **Multilingual Content System**: Full multilingual support for articles and testimonials with translation columns (PT/EN/ES/FR). Library page and landing page automatically display translated content based on selected language with fallback to Portuguese. Admin panel includes translation tabs for managing content in all supported languages.
 
 ## External Dependencies
 
