@@ -92,6 +92,8 @@ export default function ArticleDetailPage() {
   const { toast } = useToast();
   const { language, t } = useLanguage();
 
+  console.log("🌍 Article Detail - Current Language:", language);
+
   const { data: article, isLoading, error } = useQuery<Article>({
     queryKey: ["/api/articles", id],
     queryFn: async () => {
@@ -213,6 +215,15 @@ export default function ArticleDetailPage() {
         ) : article ? (
           (() => {
             const translated = getTranslatedArticle(article, language);
+            console.log("📄 Article Data:", {
+              id: article.id,
+              title_pt: article.title,
+              title_en: article.titleEn,
+              title_es: article.titleEs,
+              title_fr: article.titleFr,
+              currentLanguage: language,
+              translatedTitle: translated.title
+            });
             return (
               <article className="space-y-6">
                 {/* Header */}
