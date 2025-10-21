@@ -93,7 +93,7 @@ export default function ArticleDetailPage() {
   const { language, t } = useLanguage();
 
   const { data: article, isLoading, error } = useQuery<Article>({
-    queryKey: ["/api/articles", id],
+    queryKey: ["/api/articles", id, language],
     queryFn: async () => {
       const response = await fetch(`/api/articles/${id}`);
       if (!response.ok) {
@@ -102,6 +102,8 @@ export default function ArticleDetailPage() {
       return response.json();
     },
     enabled: !!id,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   const formatDate = (date: Date | string) => {
