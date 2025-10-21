@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Users, Target, Lightbulb, Wrench, TestTube, Star, CheckCircle, Zap, Globe, BookOpen, TrendingUp, BarChart3, Trello } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import type { Testimonial } from "@shared/schema";
 // Use direct path to logo in public root  
 const logoHorizontal = "/logo-horizontal.png";
 import dttoolsIcon from "../assets/dttools-icon.png";
@@ -125,35 +127,27 @@ const features = [
   }
 ];
 
-const testimonials = [
-  {
-    name: "Maria Silva",
-    role: "Head of Innovation",
-    company: "TechCorp",
-    content: "DTTools transformou completamente nossa forma de inovar. Conseguimos reduzir o tempo de desenvolvimento em 40%.",
-    contentEn: "DTTools completely transformed how we innovate. We managed to reduce development time by 40%."
-  },
-  {
-    name: "João Santos", 
-    role: "Product Manager",
-    company: "StartupXYZ",
-    content: "A plataforma mais completa para Design Thinking que já usei. Intuitiva e poderosa.",
-    contentEn: "The most complete Design Thinking platform I've ever used. Intuitive and powerful."
-  },
-  {
-    name: "Ana Costa",
-    role: "Design Lead", 
-    company: "AgencyABC",
-    content: "Nossos clientes ficaram impressionados com a qualidade dos insights que conseguimos gerar.",
-    contentEn: "Our clients were impressed with the quality of insights we were able to generate."
-  }
-];
+// Helper to get translated testimonial text
+function getTranslatedTestimonial(testimonial: Testimonial, language: Language) {
+  const langMap: Record<Language, string | null> = {
+    "pt-BR": testimonial.testimonialPt,
+    "en": testimonial.testimonialEn,
+    "es": testimonial.testimonialEs,
+    "fr": testimonial.testimonialFr,
+  };
+
+  return langMap[language] || testimonial.testimonialPt;
+}
 
 export default function LandingPage() {
   const { t, language } = useLanguage();
   const { isAuthenticated } = useAuth();
   const [hoveredPhase, setHoveredPhase] = useState<number | null>(null);
   const [, setLocation] = useLocation();
+
+  const { data: testimonials = [] } = useQuery<Testimonial[]>({
+    queryKey: ["/api/testimonials"],
+  });
 
   const isEnglish = language === 'en';
 
@@ -480,31 +474,68 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-0 shadow-lg">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-gray-700 italic mb-4 leading-relaxed">
-                    "{t(`landing.testimonial.${index + 1}`)}"
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold">
-                        {testimonial.name.charAt(0)}
-                      </span>
+            {testimonials.length > 0 ? (
+              testimonials.slice(0, 3).map((testimonial) => {
+                const testimonialText = getTranslatedTestimonial(testimonial, language);
+                
+                return (
+                  <Card key={testimonial.id} className="border-0 shadow-lg">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-1 mb-4">
+                        {Array.from({ length: testimonial.rating || 5 }).map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                      <p className="text-gray-700 italic mb-4 leading-relaxed">
+                        "{testimonialText}"
+                      </p>
+                      <div className="flex items-center gap-3">
+                        {testimonial.avatarUrl ? (
+                          <img
+                            src={testimonial.avatarUrl}
+                            alt={testimonial.name}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold">
+                              {testimonial.name.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                          <div className="text-sm text-gray-600">{testimonial.role}, {testimonial.company}</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              // Fallback para quando não houver depoimentos
+              [1, 2, 3].map((i) => (
+                <Card key={i} className="border-0 shadow-lg">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-1 mb-4">
+                      {[1,2,3,4,5].map(j => (
+                        <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      ))}
                     </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                      <div className="text-sm text-gray-600">{testimonial.role}, {testimonial.company}</div>
+                    <p className="text-gray-700 italic mb-4 leading-relaxed">
+                      "{t(`landing.testimonial.${i}`)}"
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full"></div>
+                      <div>
+                        <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                        <div className="h-3 w-32 bg-gray-100 rounded mt-1"></div>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </section>
