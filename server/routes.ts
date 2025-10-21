@@ -4,6 +4,7 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
+import passport from "./passport-config";
 import { storage } from "./storage";
 import { 
   insertProjectSchema,
@@ -1207,6 +1208,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Logout failed" });
     }
   });
+
+  // Google OAuth routes
+  app.get("/api/auth/google", passport.authenticate("google", { 
+    scope: ["profile", "email"] 
+  }));
+
+  app.get("/api/auth/google/callback", 
+    passport.authenticate("google", { 
+      failureRedirect: "/login?error=oauth_failed",
+      failureMessage: true 
+    }),
+    (req, res) => {
+      // Successful authentication
+      if (req.user) {
+        const user = req.user as any;
+        
+        // Create session
+        req.session.userId = user.id;
+        req.session.user = {
+          id: user.id,
+          username: user.username,
+          role: user.role || "user",
+          createdAt: user.createdAt || new Date()
+        };
+        
+        // Save session and redirect
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return res.redirect("/login?error=session_failed");
+          }
+          // Redirect to dashboard after successful login
+          res.redirect("/dashboard");
+        });
+      } else {
+        res.redirect("/login?error=no_user");
+      }
+    }
+  );
 
   // Check current session/user
   app.get("/api/auth/me", async (req, res) => {
