@@ -6,6 +6,8 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { initializeDefaultData } from "./storage";
+import passport from "./passport-config";
+import { setupPassport } from "./passport-config";
 import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
@@ -166,6 +168,11 @@ app.use(session({
     sameSite: isProduction ? 'lax' : 'none' // Lax for production, none for development
   }
 }));
+
+// Initialize Passport (must be after session)
+setupPassport();
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Servir arquivos estáticos da pasta uploads
 app.use('/uploads', express.static('public/uploads'));
