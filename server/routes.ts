@@ -20,6 +20,7 @@ import {
   insertUserProgressSchema,
   insertUserSchema,
   insertArticleSchema,
+  insertTestimonialSchema,
   insertSubscriptionPlanSchema,
   insertUserSubscriptionSchema,
   insertCanvasDrawingSchema,
@@ -1030,6 +1031,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete article" });
+    }
+  });
+
+  // Testimonials routes
+  app.get("/api/testimonials", async (_req, res) => {
+    try {
+      const testimonials = await storage.getActiveTestimonials();
+      res.json(testimonials);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch testimonials" });
+    }
+  });
+
+  app.get("/api/admin/testimonials", requireAdmin, async (_req, res) => {
+    try {
+      const testimonials = await storage.getTestimonials();
+      res.json(testimonials);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch testimonials" });
+    }
+  });
+
+  app.get("/api/testimonials/:id", async (req, res) => {
+    try {
+      const testimonial = await storage.getTestimonial(req.params.id);
+      if (!testimonial || !testimonial.isActive) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      res.json(testimonial);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch testimonial" });
+    }
+  });
+
+  app.post("/api/testimonials", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertTestimonialSchema.parse(req.body);
+      const testimonial = await storage.createTestimonial(validatedData);
+      res.status(201).json(testimonial);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid testimonial data" });
+    }
+  });
+
+  app.put("/api/testimonials/:id", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertTestimonialSchema.partial().parse(req.body);
+      const testimonial = await storage.updateTestimonial(req.params.id, validatedData);
+      if (!testimonial) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      res.json(testimonial);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid testimonial data" });
+    }
+  });
+
+  app.delete("/api/testimonials/:id", requireAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteTestimonial(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete testimonial" });
     }
   });
 
