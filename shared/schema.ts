@@ -206,8 +206,12 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
-  password: text("password").notNull(), // hashed password
+  password: text("password"), // hashed password - optional for OAuth users
   role: text("role").notNull().default("user"), // admin, user
+  // OAuth fields
+  provider: text("provider").default("local"), // 'local', 'google'
+  googleId: text("google_id"), // Google OAuth ID
+  // User profile fields
   company: text("company"),
   jobRole: text("job_role"),
   industry: text("industry"),
@@ -220,6 +224,7 @@ export const users = pgTable("users", {
   bio: text("bio"),
   profilePicture: text("profile_picture"),
   interests: jsonb("interests").default([]),
+  // Subscription fields
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionPlanId: varchar("subscription_plan_id"),
