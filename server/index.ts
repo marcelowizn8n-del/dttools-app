@@ -236,6 +236,23 @@ app.use((req, res, next) => {
         ADD COLUMN IF NOT EXISTS price_per_additional_user INTEGER;
       `);
       
+      // Add OAuth fields to users table
+      await db.execute(`
+        ALTER TABLE IF EXISTS users 
+        ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'local';
+      `);
+      
+      await db.execute(`
+        ALTER TABLE IF EXISTS users 
+        ADD COLUMN IF NOT EXISTS google_id TEXT;
+      `);
+      
+      // Make password optional for OAuth users
+      await db.execute(`
+        ALTER TABLE IF EXISTS users 
+        ALTER COLUMN password DROP NOT NULL;
+      `);
+      
       log('✅ [STARTUP] Schema columns verified and ready');
     } catch (schemaError) {
       // Log but don't crash - table might not exist yet
