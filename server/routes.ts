@@ -1067,7 +1067,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/testimonials", requireAdmin, async (req, res) => {
+  app.post("/api/admin/testimonials", requireAdmin, async (req, res) => {
     try {
       const validatedData = insertTestimonialSchema.parse(req.body);
       const testimonial = await storage.createTestimonial(validatedData);
@@ -1077,7 +1077,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/testimonials/:id", requireAdmin, async (req, res) => {
+  app.put("/api/admin/testimonials/:id", requireAdmin, async (req, res) => {
     try {
       const validatedData = insertTestimonialSchema.partial().parse(req.body);
       const testimonial = await storage.updateTestimonial(req.params.id, validatedData);
@@ -1090,7 +1090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/testimonials/:id", requireAdmin, async (req, res) => {
+  app.delete("/api/admin/testimonials/:id", requireAdmin, async (req, res) => {
     try {
       const success = await storage.deleteTestimonial(req.params.id);
       if (!success) {
