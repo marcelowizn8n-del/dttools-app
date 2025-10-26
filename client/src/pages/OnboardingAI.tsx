@@ -37,7 +37,7 @@ export default function OnboardingAI() {
   // AI generation mutation
   const generateMutation = useMutation({
     mutationFn: async (data: { sectorId: string; successCaseId: string; userProblemDescription: string }) => {
-      const response = await fetch("/api/projects/generate-ai", {
+      const response = await fetch("/api/ai/generate-project", {
         method: "POST",
         body: JSON.stringify(data),
         headers: { "Content-Type": "application/json" },
