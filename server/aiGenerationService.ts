@@ -371,6 +371,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
         user: pov.user,
         need: pov.need,
         insight: pov.insight,
+        statement: `${pov.user} needs ${pov.need} because ${pov.insight}`, // Complete POV statement
         projectId: "", // Will be set after project creation
       }));
     } catch (error) {
