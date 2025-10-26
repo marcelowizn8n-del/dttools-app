@@ -1302,6 +1302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update user progress
       await storage.updateUserProgress({
         userId: req.session.userId!,
+        projectId: project.id, // Link progress to the generated project
         projectsCompleted: 1,
         totalPoints: 500, // Award points for AI-generated project
         badgesEarned: ["ai_pioneer"],
