@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, Sparkles, CheckCircle2, Rocket, Lightbulb, Building2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import UpgradeModal from "@/components/UpgradeModal";
 import type { IndustrySector, SuccessCase } from "@shared/schema";
 
 type WizardStep = 1 | 2 | 3 | 4;
@@ -17,6 +19,9 @@ export default function OnboardingAI() {
   const [selectedSector, setSelectedSector] = useState<IndustrySector | null>(null);
   const [selectedCase, setSelectedCase] = useState<SuccessCase | null>(null);
   const [problemDescription, setProblemDescription] = useState("");
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [limitError, setLimitError] = useState<any>(null);
+  const { toast } = useToast();
 
   // Fetch sectors
   const { data: sectors = [], isLoading: sectorsLoading } = useQuery<IndustrySector[]>({
@@ -38,14 +43,29 @@ export default function OnboardingAI() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
+      
       if (!response.ok) {
-        throw new Error("Failed to generate project");
+        const errorData = await response.json();
+        throw errorData;
       }
       return response.json();
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       setLocation(`/dashboard-ai/${data.project.id}`);
+    },
+    onError: (error: any) => {
+      // Check if it's an AI project limit error
+      if (error.code === "AI_PROJECT_LIMIT_REACHED") {
+        setLimitError(error);
+        setShowUpgradeModal(true);
+      } else {
+        toast({
+          title: "Erro ao gerar projeto",
+          description: error.error || "Ocorreu um erro ao tentar gerar o projeto com IA.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -378,6 +398,16 @@ export default function OnboardingAI() {
           )}
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentPlan={limitError?.planName}
+        currentUsage={limitError?.currentUsage}
+        limit={limitError?.limit}
+        message={limitError?.error}
+      />
     </div>
   );
 }

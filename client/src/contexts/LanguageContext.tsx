@@ -128,12 +128,16 @@ const translations = {
     
     // Plan Names
     "plan.free": "Gratuito",
+    "plan.basic": "Básico",
+    "plan.premium": "Premium",
     "plan.pro": "Pro",
     "plan.team": "Team",
     "plan.enterprise": "Enterprise",
     
     // Plan Descriptions
     "plan.free.desc": "Perfeito para começar sua jornada de Design Thinking",
+    "plan.basic.desc": "Ideal para testar a geração automática de MVPs com IA",
+    "plan.premium.desc": "Para equipes que precisam gerar múltiplos MVPs com IA",
     "plan.pro.desc": "Ideal para profissionais e freelancers que querem mais poder",
     "plan.team.desc": "Para equipes que colaboram em projetos complexos",
     "plan.enterprise.desc": "Solução completa para grandes organizações",
@@ -321,12 +325,16 @@ const translations = {
     
     // Plan Names
     "plan.free": "Free",
+    "plan.basic": "Basic",
+    "plan.premium": "Premium",
     "plan.pro": "Pro",
     "plan.team": "Team",
     "plan.enterprise": "Enterprise",
     
     // Plan Descriptions
     "plan.free.desc": "Perfect to start your Design Thinking journey",
+    "plan.basic.desc": "Ideal for testing AI-powered MVP generation",
+    "plan.premium.desc": "For teams that need to generate multiple MVPs with AI",
     "plan.pro.desc": "Ideal for professionals and freelancers who want more power",
     "plan.team.desc": "For teams collaborating on complex projects",
     "plan.enterprise.desc": "Complete solution for large organizations",
@@ -450,12 +458,16 @@ const translations = {
     
     // Plan Names
     "plan.free": "Gratis",
+    "plan.basic": "Básico",
+    "plan.premium": "Premium",
     "plan.pro": "Pro",
     "plan.team": "Team",
     "plan.enterprise": "Enterprise",
     
     // Plan Descriptions
     "plan.free.desc": "Perfecto para comenzar tu viaje de Design Thinking",
+    "plan.basic.desc": "Ideal para probar la generación automática de MVPs con IA",
+    "plan.premium.desc": "Para equipos que necesitan generar múltiples MVPs con IA",
     "plan.pro.desc": "Ideal para profesionales y freelancers que quieren más poder",
     "plan.team.desc": "Para equipos que colaboran en proyectos complejos",
     "plan.enterprise.desc": "Solución completa para grandes organizaciones",
@@ -579,12 +591,16 @@ const translations = {
     
     // Plan Names
     "plan.free": "Gratuit",
+    "plan.basic": "Basic",
+    "plan.premium": "Premium",
     "plan.pro": "Pro",
     "plan.team": "Team",
     "plan.enterprise": "Enterprise",
     
     // Plan Descriptions
     "plan.free.desc": "Parfait pour commencer votre parcours Design Thinking",
+    "plan.basic.desc": "Idéal pour tester la génération automatique de MVP avec IA",
+    "plan.premium.desc": "Pour les équipes qui ont besoin de générer plusieurs MVP avec IA",
     "plan.pro.desc": "Idéal pour les professionnels et freelances qui veulent plus de puissance",
     "plan.team.desc": "Pour les équipes collaborant sur des projets complexes",
     "plan.enterprise.desc": "Solution complète pour les grandes organisations",
