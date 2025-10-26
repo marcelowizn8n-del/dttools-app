@@ -285,6 +285,7 @@ export const users = pgTable("users", {
   subscriptionPlanId: varchar("subscription_plan_id"),
   subscriptionStatus: text("subscription_status").default("active"), // active, canceled, expired, trialing
   subscriptionEndDate: timestamp("subscription_end_date"),
+  aiProjectsUsed: integer("ai_projects_used").default(0), // Track AI-generated projects used
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
@@ -301,6 +302,7 @@ export const subscriptionPlans = pgTable("subscription_plans", {
   maxProjects: integer("max_projects"), // null for unlimited
   maxPersonasPerProject: integer("max_personas_per_project"), // null for unlimited
   maxUsersPerTeam: integer("max_users_per_team"), // null for unlimited
+  maxAiProjects: integer("max_ai_projects"), // null for unlimited AI-generated projects
   includedUsers: integer("included_users"), // number of users included in base price (null if not applicable)
   pricePerAdditionalUser: integer("price_per_additional_user"), // price in cents for each additional user beyond includedUsers
   aiChatLimit: integer("ai_chat_limit"), // null for unlimited

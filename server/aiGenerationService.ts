@@ -1,3 +1,4 @@
+import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
 import { storage } from "./storage";
 import type { 
@@ -10,7 +11,10 @@ import type {
   InsertAiGeneratedAsset
 } from "../shared/schema";
 
-// Initialize OpenAI with Replit AI Integrations
+// Initialize Gemini AI
+const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+
+// Keep OpenAI for logo generation (DALL-E) - Gemini doesn't have native image generation yet
 const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -65,49 +69,49 @@ export class AIGenerationService {
   ): Promise<GeneratedMVP> {
     
     const startTime = Date.now();
-    console.log(`🤖 Starting AI MVP generation for user ${userId}`);
+    console.log(`🤖 Starting AI MVP generation with Gemini for user ${userId}`);
     
-    // Initialize cost tracking
+    // Initialize cost tracking (Gemini is much cheaper than GPT-4o!)
     let textGenerationCost = 0;
     let imageGenerationCost = 0;
     
     try {
       // Step 1: Generate project core (name, description, business model)
       const projectCore = await this.generateProjectCore(context);
-      textGenerationCost += 0.01; // Estimated cost for GPT-4o call
+      textGenerationCost += 0.002; // Gemini 2.0 Flash is ~5x cheaper than GPT-4o
       
-      // Step 2: Generate logo using DALL-E (gpt-image-1)
+      // Step 2: Generate logo using DALL-E (still using OpenAI for images)
       const logoUrl = await this.generateLogo(context, projectCore.name);
-      imageGenerationCost += 0.05; // Estimated cost for image generation
+      imageGenerationCost += 0.05; // DALL-E cost
       
       // Step 3: Generate personas (2-3 user personas)
       const personas = await this.generatePersonas(context, projectCore);
-      textGenerationCost += 0.01;
+      textGenerationCost += 0.002;
       
       // Step 4: Generate POV statements based on personas
       const povStatements = await this.generatePOVStatements(context, personas);
-      textGenerationCost += 0.008;
+      textGenerationCost += 0.0015;
       
       // Step 5: Generate ideas for solutions
       const ideas = await this.generateIdeas(context, povStatements);
-      textGenerationCost += 0.01;
+      textGenerationCost += 0.002;
       
       // Step 6: Generate landing page content
       const landingPageContent = await this.generateLandingPage(context, projectCore);
-      textGenerationCost += 0.01;
+      textGenerationCost += 0.002;
       
       // Step 7: Generate social media strategy
       const socialMediaStrategy = await this.generateSocialMediaStrategy(context, projectCore);
-      textGenerationCost += 0.008;
+      textGenerationCost += 0.0015;
       
       // Step 8: Generate business model canvas
       const businessModel = await this.generateBusinessModel(context, projectCore);
-      textGenerationCost += 0.01;
+      textGenerationCost += 0.002;
       
       const totalCost = textGenerationCost + imageGenerationCost;
       const duration = Date.now() - startTime;
       
-      console.log(`✅ MVP generation completed in ${duration}ms - Total cost: R$ ${totalCost.toFixed(2)}`);
+      console.log(`✅ MVP generation completed in ${duration}ms - Total cost: R$ ${totalCost.toFixed(4)} (Gemini: R$ ${textGenerationCost.toFixed(4)}, DALL-E: R$ ${imageGenerationCost.toFixed(2)})`);
       
       return {
         project: {
@@ -168,14 +172,16 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : context.language
 
 Be creative, professional, and market-ready. The name should be brandable and memorable.`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
-      max_tokens: 500,
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.0-flash-001",
+      contents: prompt,
+      config: {
+        temperature: 0.8,
+        maxOutputTokens: 500,
+      },
     });
     
-    const content = response.choices[0]?.message?.content || "{}";
+    const content = response.text || "{}";
     
     try {
       const parsed = JSON.parse(content);
@@ -196,6 +202,7 @@ Be creative, professional, and market-ready. The name should be brandable and me
   
   /**
    * Generate logo using DALL-E (gpt-image-1)
+   * Note: Gemini doesn't have native image generation yet, so we still use OpenAI for logos
    */
   private async generateLogo(context: GenerationContext, projectName: string): Promise<string | null> {
     
@@ -246,14 +253,16 @@ Return ONLY a valid JSON array with this structure:
 
 Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 800,
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.0-flash-001",
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 800,
+      },
     });
     
-    const content = response.choices[0]?.message?.content || "[]";
+    const content = response.text || "[]";
     
     try {
       const parsed = JSON.parse(content);
@@ -299,14 +308,16 @@ Return ONLY a valid JSON array:
 
 Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 400,
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.0-flash-001",
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 400,
+      },
     });
     
-    const content = response.choices[0]?.message?.content || "[]";
+    const content = response.text || "[]";
     
     try {
       const parsed = JSON.parse(content);
@@ -351,14 +362,16 @@ Be creative and actionable. Mix quick wins with bold innovations.
 
 Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.9,
-      max_tokens: 800,
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.0-flash-001",
+      contents: prompt,
+      config: {
+        temperature: 0.9,
+        maxOutputTokens: 800,
+      },
     });
     
-    const content = response.choices[0]?.message?.content || "[]";
+    const content = response.text || "[]";
     
     try {
       const parsed = JSON.parse(content);
@@ -398,14 +411,16 @@ Return ONLY a valid JSON object:
 
 Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
-      max_tokens: 500,
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.0-flash-001",
+      contents: prompt,
+      config: {
+        temperature: 0.8,
+        maxOutputTokens: 500,
+      },
     });
     
-    const content = response.choices[0]?.message?.content || "{}";
+    const content = response.text || "{}";
     
     try {
       return JSON.parse(content);
@@ -444,14 +459,16 @@ Return ONLY a valid JSON array:
 
 Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 600,
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.0-flash-001",
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 600,
+      },
     });
     
-    const content = response.choices[0]?.message?.content || "[]";
+    const content = response.text || "[]";
     
     try {
       return JSON.parse(content);
@@ -484,14 +501,16 @@ Return ONLY a valid JSON object:
 
 Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 500,
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.0-flash-001",
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 500,
+      },
     });
     
-    const content = response.choices[0]?.message?.content || "{}";
+    const content = response.text || "{}";
     
     try {
       return JSON.parse(content);
@@ -528,7 +547,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
       projectId,
       assetType: "landing_page",
       content: JSON.stringify(generatedData.landingPageContent),
-      generationCost: 0.01,
+      generationCost: 0.002,
     });
     
     // Save social media strategy
@@ -536,7 +555,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
       projectId,
       assetType: "social_media",
       content: JSON.stringify(generatedData.socialMediaStrategy),
-      generationCost: 0.008,
+      generationCost: 0.0015,
     });
     
     // Save business model
@@ -544,7 +563,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
       projectId,
       assetType: "business_model",
       content: JSON.stringify(generatedData.businessModel),
-      generationCost: 0.01,
+      generationCost: 0.002,
     });
     
     // Batch create assets

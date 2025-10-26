@@ -33,6 +33,8 @@ import { useAuth, ProtectedRoute } from "@/contexts/AuthContext";
 import DashboardPage from "@/pages/dashboard";
 import OnboardingAI from "@/pages/OnboardingAI";
 import DashboardAI from "@/pages/DashboardAI";
+import AdminSectors from "@/pages/AdminSectors";
+import AdminCases from "@/pages/AdminCases";
 
 function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -117,6 +119,16 @@ function Router() {
       <Route path="/admin">
         <ProtectedRoute adminOnly={true}>
           <AdminPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/sectors">
+        <ProtectedRoute adminOnly={true}>
+          <AdminSectors />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/cases">
+        <ProtectedRoute adminOnly={true}>
+          <AdminCases />
         </ProtectedRoute>
       </Route>
       <Route path="/benchmarking">

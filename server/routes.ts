@@ -47,6 +47,7 @@ import {
   checkPersonaLimit, 
   getSubscriptionInfo 
 } from "./subscriptionMiddleware";
+import { checkAiProjectLimits, incrementAiProjectsUsed } from "./middleware/checkAiProjectLimits";
 import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "./aiService";
 import { designThinkingGeminiAI } from "./geminiService";
 import { PPTXService } from "./pptxService";
@@ -1227,7 +1228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Generation: Generate complete MVP
-  app.post("/api/ai/generate-project", requireAuth, loadUserSubscription, async (req, res) => {
+  app.post("/api/ai/generate-project", requireAuth, loadUserSubscription, checkAiProjectLimits, async (req, res) => {
     try {
       const { sectorId, successCaseId, userProblemDescription, language = 'pt' } = req.body;
       
@@ -1305,6 +1306,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalPoints: 500, // Award points for AI-generated project
         badgesEarned: ["ai_pioneer"],
       });
+      
+      // Increment AI projects used counter
+      await incrementAiProjectsUsed(req.session.userId!);
       
       res.json({
         project,
