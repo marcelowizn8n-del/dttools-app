@@ -33,7 +33,10 @@ import {
   insertProjectAnalyticsSchema,
   insertCompetitiveAnalysisSchema,
   updateProfileSchema,
-  insertHelpArticleSchema
+  insertHelpArticleSchema,
+  insertIndustrySectorSchema,
+  insertSuccessCaseSchema,
+  insertAiGeneratedAssetSchema
 } from "../shared/schema";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
@@ -1099,6 +1102,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete testimonial" });
+    }
+  });
+
+  // AI Automation: Industry Sectors routes
+  // Public routes
+  app.get("/api/sectors", async (_req, res) => {
+    try {
+      const sectors = await storage.getActiveIndustrySectors();
+      res.json(sectors);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sectors" });
+    }
+  });
+
+  // Admin routes
+  app.get("/api/admin/sectors", requireAdmin, async (_req, res) => {
+    try {
+      const sectors = await storage.getIndustrySectors();
+      res.json(sectors);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sectors" });
+    }
+  });
+
+  app.post("/api/admin/sectors", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertIndustrySectorSchema.parse(req.body);
+      const sector = await storage.createIndustrySector(validatedData);
+      res.status(201).json(sector);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid sector data" });
+    }
+  });
+
+  app.put("/api/admin/sectors/:id", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertIndustrySectorSchema.partial().parse(req.body);
+      const sector = await storage.updateIndustrySector(req.params.id, validatedData);
+      if (!sector) {
+        return res.status(404).json({ error: "Sector not found" });
+      }
+      res.json(sector);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid sector data" });
+    }
+  });
+
+  app.delete("/api/admin/sectors/:id", requireAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteIndustrySector(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Sector not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete sector" });
+    }
+  });
+
+  // AI Automation: Success Cases routes
+  // Public routes
+  app.get("/api/cases", async (_req, res) => {
+    try {
+      const cases = await storage.getActiveSuccessCases();
+      res.json(cases);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch success cases" });
+    }
+  });
+
+  app.get("/api/cases/sector/:sectorId", async (req, res) => {
+    try {
+      const cases = await storage.getSuccessCasesBySector(req.params.sectorId);
+      res.json(cases);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch success cases" });
+    }
+  });
+
+  // Admin routes
+  app.get("/api/admin/cases", requireAdmin, async (_req, res) => {
+    try {
+      const cases = await storage.getSuccessCases();
+      res.json(cases);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch success cases" });
+    }
+  });
+
+  app.post("/api/admin/cases", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertSuccessCaseSchema.parse(req.body);
+      const successCase = await storage.createSuccessCase(validatedData);
+      res.status(201).json(successCase);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid success case data" });
+    }
+  });
+
+  app.put("/api/admin/cases/:id", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertSuccessCaseSchema.partial().parse(req.body);
+      const successCase = await storage.updateSuccessCase(req.params.id, validatedData);
+      if (!successCase) {
+        return res.status(404).json({ error: "Success case not found" });
+      }
+      res.json(successCase);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid success case data" });
+    }
+  });
+
+  app.delete("/api/admin/cases/:id", requireAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteSuccessCase(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Success case not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete success case" });
     }
   });
 

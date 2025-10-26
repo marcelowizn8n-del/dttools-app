@@ -26,12 +26,15 @@ import {
   type CompetitiveAnalysis, type InsertCompetitiveAnalysis,
   type ProjectBackup, type InsertProjectBackup,
   type HelpArticle, type InsertHelpArticle,
+  type IndustrySector, type InsertIndustrySector,
+  type SuccessCase, type InsertSuccessCase,
+  type AiGeneratedAsset, type InsertAiGeneratedAsset,
   projects, empathyMaps, personas, interviews, observations,
   povStatements, hmwQuestions, ideas, prototypes, testPlans, testResults,
   userProgress, users, articles, testimonials, subscriptionPlans, userSubscriptions,
   canvasDrawings, phaseCards, benchmarks, benchmarkAssessments,
   dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis,
-  projectBackups, helpArticles
+  projectBackups, helpArticles, industrySectors, successCases, aiGeneratedAssets
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
@@ -221,6 +224,31 @@ export interface IStorage {
   createHelpArticle(article: any): Promise<any>;
   updateHelpArticle(id: string, article: any): Promise<any | undefined>;
   deleteHelpArticle(id: string): Promise<boolean>;
+
+  // AI Automation: Industry Sectors
+  getIndustrySectors(): Promise<IndustrySector[]>;
+  getActiveIndustrySectors(): Promise<IndustrySector[]>;
+  getIndustrySector(id: string): Promise<IndustrySector | undefined>;
+  createIndustrySector(sector: InsertIndustrySector): Promise<IndustrySector>;
+  updateIndustrySector(id: string, sector: Partial<InsertIndustrySector>): Promise<IndustrySector | undefined>;
+  deleteIndustrySector(id: string): Promise<boolean>;
+
+  // AI Automation: Success Cases
+  getSuccessCases(): Promise<SuccessCase[]>;
+  getActiveSuccessCases(): Promise<SuccessCase[]>;
+  getSuccessCasesBySector(sectorId: string): Promise<SuccessCase[]>;
+  getSuccessCase(id: string): Promise<SuccessCase | undefined>;
+  createSuccessCase(successCase: InsertSuccessCase): Promise<SuccessCase>;
+  updateSuccessCase(id: string, successCase: Partial<InsertSuccessCase>): Promise<SuccessCase | undefined>;
+  deleteSuccessCase(id: string): Promise<boolean>;
+
+  // AI Automation: Generated Assets
+  getAiGeneratedAssets(projectId: string): Promise<AiGeneratedAsset[]>;
+  getAiGeneratedAssetsByType(projectId: string, assetType: string): Promise<AiGeneratedAsset[]>;
+  getAiGeneratedAsset(id: string): Promise<AiGeneratedAsset | undefined>;
+  createAiGeneratedAsset(asset: InsertAiGeneratedAsset): Promise<AiGeneratedAsset>;
+  updateAiGeneratedAsset(id: string, asset: Partial<InsertAiGeneratedAsset>): Promise<AiGeneratedAsset | undefined>;
+  deleteAiGeneratedAsset(id: string): Promise<boolean>;
 }
 
 // Database implementation using PostgreSQL via Drizzle ORM
@@ -1172,6 +1200,119 @@ export class DatabaseStorage implements IStorage {
 
   async deleteHelpArticle(id: string): Promise<boolean> {
     const result = await db.delete(helpArticles).where(eq(helpArticles.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // AI Automation: Industry Sectors
+  async getIndustrySectors(): Promise<IndustrySector[]> {
+    return await db.select().from(industrySectors).orderBy(industrySectors.order, desc(industrySectors.createdAt));
+  }
+
+  async getActiveIndustrySectors(): Promise<IndustrySector[]> {
+    return await db.select().from(industrySectors)
+      .where(eq(industrySectors.isActive, true))
+      .orderBy(industrySectors.order, desc(industrySectors.createdAt));
+  }
+
+  async getIndustrySector(id: string): Promise<IndustrySector | undefined> {
+    const [sector] = await db.select().from(industrySectors).where(eq(industrySectors.id, id));
+    return sector;
+  }
+
+  async createIndustrySector(sector: InsertIndustrySector): Promise<IndustrySector> {
+    const [newSector] = await db.insert(industrySectors).values(sector).returning();
+    return newSector;
+  }
+
+  async updateIndustrySector(id: string, sector: Partial<InsertIndustrySector>): Promise<IndustrySector | undefined> {
+    const [updated] = await db.update(industrySectors)
+      .set({ ...sector, updatedAt: new Date() })
+      .where(eq(industrySectors.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteIndustrySector(id: string): Promise<boolean> {
+    const result = await db.delete(industrySectors).where(eq(industrySectors.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // AI Automation: Success Cases
+  async getSuccessCases(): Promise<SuccessCase[]> {
+    return await db.select().from(successCases).orderBy(successCases.order, desc(successCases.createdAt));
+  }
+
+  async getActiveSuccessCases(): Promise<SuccessCase[]> {
+    return await db.select().from(successCases)
+      .where(eq(successCases.isActive, true))
+      .orderBy(successCases.order, desc(successCases.createdAt));
+  }
+
+  async getSuccessCasesBySector(sectorId: string): Promise<SuccessCase[]> {
+    return await db.select().from(successCases)
+      .where(and(eq(successCases.sectorId, sectorId), eq(successCases.isActive, true)))
+      .orderBy(successCases.order, desc(successCases.createdAt));
+  }
+
+  async getSuccessCase(id: string): Promise<SuccessCase | undefined> {
+    const [successCase] = await db.select().from(successCases).where(eq(successCases.id, id));
+    return successCase;
+  }
+
+  async createSuccessCase(caseData: InsertSuccessCase): Promise<SuccessCase> {
+    const [newCase] = await db.insert(successCases).values(caseData).returning();
+    return newCase;
+  }
+
+  async updateSuccessCase(id: string, caseData: Partial<InsertSuccessCase>): Promise<SuccessCase | undefined> {
+    const [updated] = await db.update(successCases)
+      .set({ ...caseData, updatedAt: new Date() })
+      .where(eq(successCases.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteSuccessCase(id: string): Promise<boolean> {
+    const result = await db.delete(successCases).where(eq(successCases.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // AI Automation: Generated Assets
+  async getAiGeneratedAssets(projectId: string): Promise<AiGeneratedAsset[]> {
+    return await db.select().from(aiGeneratedAssets)
+      .where(eq(aiGeneratedAssets.projectId, projectId))
+      .orderBy(desc(aiGeneratedAssets.createdAt));
+  }
+
+  async getAiGeneratedAssetsByType(projectId: string, assetType: string): Promise<AiGeneratedAsset[]> {
+    return await db.select().from(aiGeneratedAssets)
+      .where(and(
+        eq(aiGeneratedAssets.projectId, projectId),
+        eq(aiGeneratedAssets.assetType, assetType)
+      ))
+      .orderBy(desc(aiGeneratedAssets.createdAt));
+  }
+
+  async getAiGeneratedAsset(id: string): Promise<AiGeneratedAsset | undefined> {
+    const [asset] = await db.select().from(aiGeneratedAssets).where(eq(aiGeneratedAssets.id, id));
+    return asset;
+  }
+
+  async createAiGeneratedAsset(asset: InsertAiGeneratedAsset): Promise<AiGeneratedAsset> {
+    const [newAsset] = await db.insert(aiGeneratedAssets).values(asset).returning();
+    return newAsset;
+  }
+
+  async updateAiGeneratedAsset(id: string, asset: Partial<InsertAiGeneratedAsset>): Promise<AiGeneratedAsset | undefined> {
+    const [updated] = await db.update(aiGeneratedAssets)
+      .set(asset)
+      .where(eq(aiGeneratedAssets.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteAiGeneratedAsset(id: string): Promise<boolean> {
+    const result = await db.delete(aiGeneratedAssets).where(eq(aiGeneratedAssets.id, id));
     return (result.rowCount || 0) > 0;
   }
 }

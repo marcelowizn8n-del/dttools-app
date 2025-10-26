@@ -3,6 +3,54 @@ import { pgTable, text, varchar, integer, real, timestamp, boolean, jsonb } from
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// AI Automation: Industry Sectors (for AI-guided onboarding)
+export const industrySectors = pgTable("industry_sectors", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(), // English name (canonical)
+  namePt: text("name_pt").notNull(), // Portuguese name
+  nameEn: text("name_en"), // English translation
+  nameEs: text("name_es"), // Spanish translation
+  nameFr: text("name_fr"), // French translation
+  description: text("description"),
+  icon: text("icon"), // Lucide icon name
+  isActive: boolean("is_active").default(true),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// AI Automation: Success Cases (for AI-guided onboarding)
+export const successCases = pgTable("success_cases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(), // Case name (e.g., "Airbnb")
+  company: text("company").notNull(), // Company name
+  sectorId: varchar("sector_id").references(() => industrySectors.id),
+  descriptionPt: text("description_pt"),
+  descriptionEn: text("description_en"),
+  descriptionEs: text("description_es"),
+  descriptionFr: text("description_fr"),
+  logoUrl: text("logo_url"),
+  foundedYear: integer("founded_year"),
+  keyInnovation: text("key_innovation"), // Main innovation/differentiator
+  businessModel: text("business_model"), // 'marketplace', 'saas', 'freemium', etc.
+  isActive: boolean("is_active").default(true),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// AI Automation: Generated Assets (logos, landing pages, etc.)
+export const aiGeneratedAssets = pgTable("ai_generated_assets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  assetType: text("asset_type").notNull(), // 'logo', 'landing_page', 'social_media', 'persona', 'idea', 'business_model'
+  content: text("content"), // JSON or HTML depending on type
+  metadata: jsonb("metadata"), // Extra information
+  storageUrl: text("storage_url"), // If image/file stored in object storage
+  generationCost: real("generation_cost"), // Cost in credits/tokens
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
 // Core project entity
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -12,6 +60,13 @@ export const projects = pgTable("projects", {
   status: text("status").notNull().default("in_progress"), // in_progress, completed
   currentPhase: integer("current_phase").default(1), // 1-5 phases
   completionRate: real("completion_rate").default(0),
+  // AI Automation fields
+  sectorId: varchar("sector_id").references(() => industrySectors.id),
+  successCaseId: varchar("success_case_id").references(() => successCases.id),
+  userProblemDescription: text("user_problem_description"), // User's initial problem description
+  aiGenerated: boolean("ai_generated").default(false), // Was this project AI-generated?
+  generationTimestamp: timestamp("generation_timestamp"),
+  businessModelBase: jsonb("business_model_base"), // AI-generated business model canvas
   createdAt: timestamp("created_at").default(sql`now()`),
   updatedAt: timestamp("updated_at").default(sql`now()`),
 });
@@ -895,3 +950,30 @@ export const insertHelpArticleSchema = createInsertSchema(helpArticles).omit({
 
 export type HelpArticle = typeof helpArticles.$inferSelect;
 export type InsertHelpArticle = z.infer<typeof insertHelpArticleSchema>;
+
+// AI Automation schemas and types
+export const insertIndustrySectorSchema = createInsertSchema(industrySectors).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type IndustrySector = typeof industrySectors.$inferSelect;
+export type InsertIndustrySector = z.infer<typeof insertIndustrySectorSchema>;
+
+export const insertSuccessCaseSchema = createInsertSchema(successCases).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type SuccessCase = typeof successCases.$inferSelect;
+export type InsertSuccessCase = z.infer<typeof insertSuccessCaseSchema>;
+
+export const insertAiGeneratedAssetSchema = createInsertSchema(aiGeneratedAssets).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type AiGeneratedAsset = typeof aiGeneratedAssets.$inferSelect;
+export type InsertAiGeneratedAsset = z.infer<typeof insertAiGeneratedAssetSchema>;
