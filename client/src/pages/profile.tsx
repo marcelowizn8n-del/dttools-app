@@ -134,14 +134,23 @@ export default function ProfilePage() {
     },
     onSuccess: (updatedProfile) => {
       // Force update the local profile picture state
-      if (updatedProfile && updatedProfile.profile_picture) {
-        setProfilePicture(updatedProfile.profile_picture);
+      if (updatedProfile && (updatedProfile.profile_picture || updatedProfile.profilePicture)) {
+        const pic = updatedProfile.profile_picture || updatedProfile.profilePicture;
+        setProfilePicture(pic);
       }
       
+      // Invalidate both profile and user queries to update avatar everywhere
       queryClient.invalidateQueries({ queryKey: ["/api/users/profile"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      // Force a small delay to ensure the image is fully loaded
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+      
       toast({
         title: "Perfil atualizado!",
-        description: "Suas informações foram salvas com sucesso.",
+        description: "Suas informações foram salvas. A página será recarregada.",
       });
     },
     onError: (error: Error) => {

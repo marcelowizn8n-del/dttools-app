@@ -145,24 +145,30 @@ export default function OnboardingAI() {
                       <button
                         key={sector.id}
                         onClick={() => setSelectedSector(sector)}
-                        className={`p-6 rounded-lg border-2 transition-all text-left ${
+                        className={`p-4 rounded-lg border-2 transition-all text-left min-h-[140px] flex flex-col ${
                           selectedSector?.id === sector.id
                             ? "border-purple-600 bg-purple-50 dark:bg-purple-900/20"
                             : "border-gray-200 hover:border-purple-300 bg-white dark:bg-gray-800"
                         }`}
                         data-testid={`button-sector-${sector.id}`}
                       >
-                        <div className="flex items-center gap-3 mb-2">
-                          {sector.icon && <span className="text-2xl">{sector.icon}</span>}
-                          <h3 className="font-semibold text-lg">{sector.namePt}</h3>
+                        <div className="flex items-start gap-3 mb-2">
+                          {sector.icon && (
+                            <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-purple-600 text-xl">
+                              {sector.icon}
+                            </div>
+                          )}
+                          <h3 className="font-semibold text-base leading-tight flex-1">{sector.namePt}</h3>
                         </div>
                         {sector.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 flex-1">
                             {sector.description}
                           </p>
                         )}
                         {selectedSector?.id === sector.id && (
-                          <CheckCircle2 className="h-5 w-5 text-purple-600 mt-2" />
+                          <div className="mt-2">
+                            <CheckCircle2 className="h-5 w-5 text-purple-600" />
+                          </div>
                         )}
                       </button>
                     ))}
