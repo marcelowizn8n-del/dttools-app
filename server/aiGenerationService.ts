@@ -56,6 +56,23 @@ interface GeneratedMVP {
 export class AIGenerationService {
   
   /**
+   * Helper function to clean JSON responses from Gemini
+   * Removes markdown code blocks and other formatting
+   */
+  private cleanJSONResponse(text: string): string {
+    // Remove markdown code blocks (```json ... ``` or ``` ... ```)
+    let cleaned = text.trim();
+    
+    // Remove leading ```json or ```
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '');
+    
+    // Remove trailing ```
+    cleaned = cleaned.replace(/\s*```\s*$/,'');
+    
+    return cleaned.trim();
+  }
+  
+  /**
    * Generate a complete business MVP based on sector, success case, and user problem
    */
   async generateCompleteMVP(
@@ -175,9 +192,10 @@ Be creative, professional, and market-ready. The name should be brandable and me
     });
     
     const content = response.text || "{}";
+    const cleanedContent = this.cleanJSONResponse(content);
     
     try {
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(cleanedContent);
       return {
         name: parsed.name || "Unnamed Project",
         description: parsed.description || "No description available",
@@ -185,6 +203,7 @@ Be creative, professional, and market-ready. The name should be brandable and me
       };
     } catch (error) {
       console.error("Failed to parse project core JSON:", content);
+      console.error("Cleaned content:", cleanedContent);
       return {
         name: "Unnamed Project",
         description: "No description available",
@@ -287,9 +306,10 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.text || "[]";
+    const cleanedContent = this.cleanJSONResponse(content);
     
     try {
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(cleanedContent);
       return parsed.map((p: any) => ({
         name: p.name,
         age: p.age,
@@ -302,6 +322,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
       }));
     } catch (error) {
       console.error("Failed to parse personas JSON:", content);
+      console.error("Cleaned content:", cleanedContent);
       return [];
     }
   }
@@ -342,9 +363,10 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.text || "[]";
+    const cleanedContent = this.cleanJSONResponse(content);
     
     try {
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(cleanedContent);
       return parsed.map((pov: any) => ({
         user: pov.user,
         need: pov.need,
@@ -353,6 +375,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
       }));
     } catch (error) {
       console.error("Failed to parse POV statements JSON:", content);
+      console.error("Cleaned content:", cleanedContent);
       return [];
     }
   }
@@ -396,9 +419,10 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.text || "[]";
+    const cleanedContent = this.cleanJSONResponse(content);
     
     try {
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(cleanedContent);
       return parsed.map((idea: any) => ({
         title: idea.title,
         description: idea.description,
@@ -407,6 +431,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
       }));
     } catch (error) {
       console.error("Failed to parse ideas JSON:", content);
+      console.error("Cleaned content:", cleanedContent);
       return [];
     }
   }
@@ -445,11 +470,13 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.text || "{}";
+    const cleanedContent = this.cleanJSONResponse(content);
     
     try {
-      return JSON.parse(content);
+      return JSON.parse(cleanedContent);
     } catch (error) {
       console.error("Failed to parse landing page JSON:", content);
+      console.error("Cleaned content:", cleanedContent);
       return {
         headline: "Welcome",
         subheadline: "Your solution awaits",
@@ -493,11 +520,13 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.text || "[]";
+    const cleanedContent = this.cleanJSONResponse(content);
     
     try {
-      return JSON.parse(content);
+      return JSON.parse(cleanedContent);
     } catch (error) {
       console.error("Failed to parse social media strategy JSON:", content);
+      console.error("Cleaned content:", cleanedContent);
       return [];
     }
   }
@@ -535,11 +564,13 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.text || "{}";
+    const cleanedContent = this.cleanJSONResponse(content);
     
     try {
-      return JSON.parse(content);
+      return JSON.parse(cleanedContent);
     } catch (error) {
       console.error("Failed to parse business model JSON:", content);
+      console.error("Cleaned content:", cleanedContent);
       return {
         revenueStreams: [],
         keyResources: [],
