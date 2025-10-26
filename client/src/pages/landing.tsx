@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Users, Target, Lightbulb, Wrench, TestTube, Star, CheckCircle, Zap, Globe, BookOpen, TrendingUp, BarChart3, Trello } from "lucide-react";
+import { ArrowRight, Users, Target, Lightbulb, Wrench, TestTube, Star, CheckCircle, Zap, Globe, BookOpen, TrendingUp, BarChart3, Trello, Sparkles, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -200,6 +200,63 @@ export default function LandingPage() {
               {t("landing.trial.info")}
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* AI MVP Generator Highlight - For Non-Logged Users */}
+      <section className="py-12 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600">
+        <div className="container mx-auto px-6">
+          <Card className="border-0 shadow-2xl bg-white overflow-hidden">
+            <CardContent className="p-8 md:p-12">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="flex items-start gap-6 flex-1">
+                  <div className="p-5 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl shadow-lg flex-shrink-0">
+                    <Sparkles className="w-10 h-10 text-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <h3 className="text-3xl font-bold text-gray-900">
+                        {isEnglish ? "Generate Complete MVP with AI" : "Gere seu MVP Completo com IA"}
+                      </h3>
+                      <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold text-sm px-3 py-1">
+                        {isEnglish ? "NEW" : "NOVO"}
+                      </Badge>
+                    </div>
+                    <p className="text-gray-600 text-lg mb-4 leading-relaxed">
+                      {isEnglish 
+                        ? "In 5-10 minutes, our AI creates a complete business project for you: professional logo, personas, landing page, social media strategy, business model and much more!"
+                        : "Em 5-10 minutos, nossa IA cria um projeto completo de negócio para você: logo profissional, personas, landing page, estratégia de redes sociais, modelo de negócio e muito mais!"
+                      }
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(isEnglish 
+                        ? ["Professional Logo", "User Personas", "Landing Page", "Social Media Strategy", "Business Model Canvas"]
+                        : ["Logo Profissional", "Personas de Usuários", "Landing Page", "Estratégia Social Media", "Business Model Canvas"]
+                      ).map((feature) => (
+                        <Badge key={feature} variant="secondary" className="bg-gray-100 text-gray-700">
+                          <CheckCircle className="w-3 h-3 mr-1 text-green-600" />
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-shrink-0">
+                  <Link href="/signup">
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-xl px-10 py-7 shadow-xl hover:shadow-2xl transition-all duration-300"
+                      data-testid="button-create-ai-mvp-landing"
+                    >
+                      <Rocket className="mr-3 h-7 w-7" />
+                      {isEnglish ? "Create My MVP Now" : "Criar Meu MVP Agora"}
+                      <ArrowRight className="ml-3 h-6 w-6" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 

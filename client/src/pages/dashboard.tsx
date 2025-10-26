@@ -15,7 +15,9 @@ import {
   Award,
   Zap,
   BookOpen,
-  BarChart3
+  BarChart3,
+  Sparkles,
+  Rocket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -247,6 +249,53 @@ export default function Dashboard() {
       </section>
 
       <div className="container mx-auto px-6 py-8">
+        {/* AI MVP Generator Card - Featured */}
+        <Card className="mb-8 border-2 border-purple-500 bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 shadow-xl">
+          <CardContent className="p-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-start gap-4 flex-1">
+                <div className="p-4 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl shadow-lg">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Gerar MVP Automático com IA
+                    </h3>
+                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold">
+                      NOVO
+                    </Badge>
+                  </div>
+                  <p className="text-gray-600 text-lg mb-3">
+                    Em 5-10 minutos, nossa IA cria um projeto completo de negócio para você: personas, logo, ideias, landing page e muito mais!
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {["Logo Profissional", "Personas", "Landing Page", "Estratégia Social Media", "Business Model"].map((feature) => (
+                      <Badge key={feature} variant="secondary" className="bg-white/60">
+                        <CheckCircle className="w-3 h-3 mr-1 text-green-600" />
+                        {feature}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <Link href="/onboarding-ai">
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                    data-testid="button-generate-ai-mvp"
+                  >
+                    <Rocket className="mr-2 h-6 w-6" />
+                    Criar Meu MVP Agora
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
