@@ -1,5 +1,4 @@
 import { GoogleGenAI } from "@google/genai";
-import OpenAI from "openai";
 import { storage } from "./storage";
 import type { 
   IndustrySector, 
@@ -11,27 +10,10 @@ import type {
   InsertAiGeneratedAsset
 } from "../shared/schema";
 
-// Initialize Gemini AI
+// Initialize Gemini AI - 100% Google AI solution
 const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-// Keep OpenAI for logo generation (DALL-E) - Gemini doesn't have native image generation yet
-// This is optional - if credentials are not available, we skip logo generation
-let openai: OpenAI | null = null;
-try {
-  const hasOpenAICredentials = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
-  if (hasOpenAICredentials) {
-    openai = new OpenAI({
-      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
-    });
-    console.log("✅ OpenAI initialized for logo generation");
-  } else {
-    console.log("⚠️ OpenAI credentials not found - logo generation will be skipped");
-  }
-} catch (error) {
-  console.warn("⚠️ Failed to initialize OpenAI:", error);
-  openai = null;
-}
+console.log("✅ AI Service initialized with Google Gemini 2.0 Flash (100% Google AI)");
 
 interface GenerationContext {
   sector: IndustrySector;
@@ -82,20 +64,18 @@ export class AIGenerationService {
   ): Promise<GeneratedMVP> {
     
     const startTime = Date.now();
-    console.log(`🤖 Starting AI MVP generation with Gemini for user ${userId}`);
+    console.log(`🤖 Starting 100% Google AI MVP generation with Gemini 2.0 Flash for user ${userId}`);
     
-    // Initialize cost tracking (Gemini is much cheaper than GPT-4o!)
+    // Initialize cost tracking (100% Gemini - no OpenAI costs!)
     let textGenerationCost = 0;
-    let imageGenerationCost = 0;
     
     try {
       // Step 1: Generate project core (name, description, business model)
       const projectCore = await this.generateProjectCore(context);
       textGenerationCost += 0.002; // Gemini 2.0 Flash is ~5x cheaper than GPT-4o
       
-      // Step 2: Generate logo using DALL-E (still using OpenAI for images)
+      // Step 2: Generate placeholder logo (free, no AI cost)
       const logoUrl = await this.generateLogo(context, projectCore.name);
-      imageGenerationCost += 0.05; // DALL-E cost
       
       // Step 3: Generate personas (2-3 user personas)
       const personas = await this.generatePersonas(context, projectCore);
@@ -121,10 +101,10 @@ export class AIGenerationService {
       const businessModel = await this.generateBusinessModel(context, projectCore);
       textGenerationCost += 0.002;
       
-      const totalCost = textGenerationCost + imageGenerationCost;
+      const totalCost = textGenerationCost; // 100% Gemini, no image generation costs
       const duration = Date.now() - startTime;
       
-      console.log(`✅ MVP generation completed in ${duration}ms - Total cost: R$ ${totalCost.toFixed(4)} (Gemini: R$ ${textGenerationCost.toFixed(4)}, DALL-E: R$ ${imageGenerationCost.toFixed(2)})`);
+      console.log(`✅ 100% Google AI MVP generation completed in ${duration}ms - Total cost: R$ ${totalCost.toFixed(4)} (Gemini 2.0 Flash only)`);
       
       return {
         project: {
@@ -145,7 +125,7 @@ export class AIGenerationService {
         logoUrl,
         generationCosts: {
           textGeneration: textGenerationCost,
-          imageGeneration: imageGenerationCost,
+          imageGeneration: 0, // No image generation cost (using free placeholder)
           total: totalCost,
         },
       };
@@ -214,32 +194,57 @@ Be creative, professional, and market-ready. The name should be brandable and me
   }
   
   /**
-   * Generate logo using DALL-E (gpt-image-1)
-   * Note: Gemini doesn't have native image generation yet, so we still use OpenAI for logos
+   * Generate placeholder logo using UI Avatars API
+   * This is a free service that creates professional-looking logos from initials
+   * Note: When Google Imagen 3 becomes available in the SDK, we can switch to AI-generated logos
    */
   private async generateLogo(context: GenerationContext, projectName: string): Promise<string | null> {
     
-    // Skip logo generation if OpenAI is not available
-    if (!openai) {
-      console.log("⚠️ Skipping logo generation - OpenAI not initialized");
-      return null;
-    }
-    
     try {
-      const prompt = `Professional, modern, minimalist logo for "${projectName}" - a ${context.sector.namePt} business inspired by ${context.successCase.name}. Clean design, suitable for digital platforms, memorable brand identity. No text in the image.`;
+      // Validate project name
+      if (!projectName || projectName.trim().length === 0) {
+        console.warn("⚠️ Empty project name, cannot generate logo");
+        return null;
+      }
       
-      const response = await openai.images.generate({
-        model: "gpt-image-1",
-        prompt,
-        n: 1,
-        size: "1024x1024",
-      });
+      // Extract initials from project name (first letters of first 2 words)
+      const words = projectName.trim().split(' ').filter(w => w.length > 0);
+      if (words.length === 0) {
+        console.warn("⚠️ No valid words in project name");
+        return null;
+      }
       
-      return response.data?.[0]?.url || null;
+      const initials = words.slice(0, 2).map(w => w[0].toUpperCase()).join('');
+      
+      // Fallback to first 2 characters if no valid initials
+      const logoText = initials.length > 0 ? initials : projectName.substring(0, 2).toUpperCase();
+      
+      // Pick a color based on the sector for visual consistency
+      const sectorColors: Record<string, string> = {
+        'sector_tech': '6366f1', // Indigo
+        'sector_ecommerce': '8b5cf6', // Purple
+        'sector_health': '10b981', // Green
+        'sector_education': '3b82f6', // Blue
+        'sector_finance': '14b8a6', // Teal
+        'sector_food': 'f59e0b', // Amber
+        'sector_entertainment': 'ec4899', // Pink
+        'sector_travel': '06b6d4', // Cyan
+      };
+      
+      const color = sectorColors[context.sector.id] || '6366f1';
+      
+      // Generate logo using UI Avatars API (free, no auth required)
+      // This service is highly reliable and doesn't require validation
+      const logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(logoText)}&size=512&background=${color}&color=fff&bold=true&format=png`;
+      
+      console.log(`✅ Generated placeholder logo for "${projectName}" (${logoText}) - Color: #${color}`);
+      
+      return logoUrl;
       
     } catch (error) {
-      console.error("Error generating logo:", error);
-      return null; // Continue without logo if generation fails
+      console.error("⚠️ Error generating placeholder logo:", error);
+      // Logo is optional - MVP generation continues without it
+      return null;
     }
   }
   
@@ -551,22 +556,27 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     
     const assets: InsertAiGeneratedAsset[] = [];
     
-    // Save logo
+    // Save logo (free placeholder, no generation cost)
     if (generatedData.logoUrl) {
       assets.push({
         projectId,
         assetType: "logo",
         content: JSON.stringify({ url: generatedData.logoUrl }),
-        generationCost: generatedData.generationCosts.imageGeneration,
+        generationCost: 0, // Free placeholder logo
       });
     }
+    
+    // Distribute total text generation cost across the 3 stored assets
+    // Note: Other generation costs (project core, personas, POV, ideas) are included in the total
+    // but not stored as separate assets - they're part of the project data
+    const assetCostShare = generatedData.generationCosts.textGeneration / 3;
     
     // Save landing page
     assets.push({
       projectId,
       assetType: "landing_page",
       content: JSON.stringify(generatedData.landingPageContent),
-      generationCost: 0.002,
+      generationCost: assetCostShare,
     });
     
     // Save social media strategy
@@ -574,7 +584,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
       projectId,
       assetType: "social_media",
       content: JSON.stringify(generatedData.socialMediaStrategy),
-      generationCost: 0.0015,
+      generationCost: assetCostShare,
     });
     
     // Save business model
@@ -582,7 +592,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
       projectId,
       assetType: "business_model",
       content: JSON.stringify(generatedData.businessModel),
-      generationCost: 0.002,
+      generationCost: assetCostShare,
     });
     
     // Batch create assets
