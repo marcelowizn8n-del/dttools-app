@@ -1226,6 +1226,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Generation: Generate complete MVP
+  app.post("/api/ai/generate-project", requireAuth, loadUserSubscription, async (req, res) => {
+    try {
+      const { sectorId, successCaseId, userProblemDescription, language = 'pt' } = req.body;
+      
+      if (!sectorId || !successCaseId || !userProblemDescription) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      if (userProblemDescription.length < 50 || userProblemDescription.length > 500) {
+        return res.status(400).json({ error: "Problem description must be between 50 and 500 characters" });
+      }
+      
+      // Get sector and success case
+      const sector = await storage.getIndustrySectors().then(sectors => 
+        sectors.find(s => s.id === sectorId)
+      );
+      const successCase = await storage.getSuccessCases().then(cases => 
+        cases.find(c => c.id === successCaseId)
+      );
+      
+      if (!sector || !successCase) {
+        return res.status(404).json({ error: "Sector or success case not found" });
+      }
+      
+      // Import AI service dynamically
+      const { aiGenerationService } = await import("./aiGenerationService");
+      
+      // Generate complete MVP (this takes 5-10 minutes)
+      const generatedMVP = await aiGenerationService.generateCompleteMVP(
+        req.session.userId!,
+        {
+          sector,
+          successCase,
+          userProblemDescription,
+          language,
+        }
+      );
+      
+      // Create project
+      const project = await storage.createProject({
+        ...generatedMVP.project,
+        userId: req.session.userId!,
+      });
+      
+      // Create personas
+      for (const persona of generatedMVP.personas) {
+        await storage.createPersona({
+          ...persona,
+          projectId: project.id,
+        });
+      }
+      
+      // Create POV statements
+      for (const pov of generatedMVP.povStatements) {
+        await storage.createPovStatement({
+          ...pov,
+          projectId: project.id,
+        });
+      }
+      
+      // Create ideas
+      for (const idea of generatedMVP.ideas) {
+        await storage.createIdea({
+          ...idea,
+          projectId: project.id,
+        });
+      }
+      
+      // Save AI-generated assets
+      await aiGenerationService.saveGeneratedAssets(project.id, generatedMVP);
+      
+      // Update user progress
+      await storage.updateUserProgress({
+        userId: req.session.userId!,
+        projectsCompleted: 1,
+        totalPoints: 500, // Award points for AI-generated project
+        badgesEarned: ["ai_pioneer"],
+      });
+      
+      res.json({
+        project,
+        generationCosts: generatedMVP.generationCosts,
+        message: "MVP successfully generated",
+      });
+      
+    } catch (error) {
+      console.error("AI generation error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate project",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Get AI-generated assets for a project
+  app.get("/api/projects/:projectId/ai-assets", requireAuth, async (req, res) => {
+    try {
+      const project = await storage.getProjectById(req.params.projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      if (project.userId !== req.session.userId && req.session.user?.role !== "admin") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const assets = await storage.getAiGeneratedAssetsByProject(req.params.projectId);
+      res.json(assets);
+      
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch AI assets" });
+    }
+  });
+
+  // Get specific AI-generated asset by type
+  app.get("/api/projects/:projectId/ai-assets/:assetType", requireAuth, async (req, res) => {
+    try {
+      const project = await storage.getProjectById(req.params.projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      if (project.userId !== req.session.userId && req.session.user?.role !== "admin") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const assets = await storage.getAiGeneratedAssetsByProject(req.params.projectId);
+      const asset = assets.find(a => a.assetType === req.params.assetType);
+      
+      if (!asset) {
+        return res.status(404).json({ error: "Asset not found" });
+      }
+      
+      res.json(asset);
+      
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch AI asset" });
+    }
+  });
+
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {
