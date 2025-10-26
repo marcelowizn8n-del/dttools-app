@@ -74,7 +74,7 @@ export const projects = pgTable("projects", {
 // Phase 1: Empathize - Empathy Maps
 export const empathyMaps = pgTable("empathy_maps", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   title: text("title").notNull(),
   says: jsonb("says").default([]), // Array of strings
   thinks: jsonb("thinks").default([]),
@@ -87,7 +87,7 @@ export const empathyMaps = pgTable("empathy_maps", {
 // Phase 1: Empathize - Personas
 export const personas = pgTable("personas", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   name: text("name").notNull(),
   age: integer("age"),
   occupation: text("occupation"),
@@ -104,7 +104,7 @@ export const personas = pgTable("personas", {
 // Phase 1: Empathize - User Interviews
 export const interviews = pgTable("interviews", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   participantName: text("participant_name").notNull(),
   date: timestamp("date").notNull(),
   duration: integer("duration"), // minutes
@@ -117,7 +117,7 @@ export const interviews = pgTable("interviews", {
 // Phase 1: Empathize - Field Observations
 export const observations = pgTable("observations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   location: text("location").notNull(),
   context: text("context").notNull(),
   behavior: text("behavior").notNull(),
@@ -129,7 +129,7 @@ export const observations = pgTable("observations", {
 // Phase 2: Define - POV Statements
 export const povStatements = pgTable("pov_statements", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   user: text("user").notNull(), // user description
   need: text("need").notNull(), // user need
   insight: text("insight").notNull(), // surprising insight
@@ -141,7 +141,7 @@ export const povStatements = pgTable("pov_statements", {
 // Phase 2: Define - How Might We questions
 export const hmwQuestions = pgTable("hmw_questions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   question: text("question").notNull(),
   context: text("context"),
   challenge: text("challenge"),
@@ -155,7 +155,7 @@ export const hmwQuestions = pgTable("hmw_questions", {
 // Phase 3: Ideate - Ideas
 export const ideas = pgTable("ideas", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   title: text("title").notNull(),
   description: text("description").notNull(),
   category: text("category"),
@@ -182,7 +182,7 @@ export const ideas = pgTable("ideas", {
 // Phase 4: Prototype - Prototypes
 export const prototypes = pgTable("prototypes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   ideaId: varchar("idea_id").references(() => ideas.id),
   name: text("name").notNull(),
   type: text("type").notNull(), // paper, digital, physical, storyboard, canvas
@@ -199,7 +199,7 @@ export const prototypes = pgTable("prototypes", {
 // Canvas Drawings - For reusable sketches across phases
 export const canvasDrawings = pgTable("canvas_drawings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   title: text("title").notNull(),
   description: text("description"),
   phase: integer("phase").notNull(), // 1-5 phases where this drawing is used
@@ -216,7 +216,7 @@ export const canvasDrawings = pgTable("canvas_drawings", {
 // Phase 5: Test - Test Plans
 export const testPlans = pgTable("test_plans", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   prototypeId: varchar("prototype_id").references(() => prototypes.id),
   name: text("name").notNull(),
   objective: text("objective").notNull(),
@@ -246,7 +246,7 @@ export const testResults = pgTable("test_results", {
 export const userProgress = pgTable("user_progress", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id").notNull(),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   phase: integer("phase").notNull(), // 1-5
   completedTools: jsonb("completed_tools").default([]),
   badges: jsonb("badges").default([]),
@@ -609,7 +609,7 @@ export interface AIProjectAnalysis {
 // Kanban Phase Cards - Cards that can move between project phases
 export const phaseCards = pgTable("phase_cards", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   title: text("title").notNull(),
   description: text("description"),
   phase: integer("phase").notNull().default(1), // 1-5 phases (Empatizar, Definir, Idear, Prototipar, Testar)
@@ -629,7 +629,7 @@ export const phaseCards = pgTable("phase_cards", {
 // Benchmarking - Compare Design Thinking maturity across organizations
 export const benchmarks = pgTable("benchmarks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   name: text("name").notNull(),
   description: text("description"),
   industry: text("industry").notNull(), // tech, healthcare, finance, retail, etc.
@@ -685,7 +685,7 @@ export type InsertPhaseCard = z.infer<typeof insertPhaseCardSchema>;
 // DVF Assessment - Desirability, Feasibility, Viability evaluation for ideas
 export const dvfAssessments = pgTable("dvf_assessments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   itemType: text("item_type").notNull(), // idea, prototype, solution, etc.
   itemId: varchar("item_id").notNull(), // Reference to the evaluated item
   itemName: text("item_name").notNull(),
@@ -723,7 +723,7 @@ export const dvfAssessments = pgTable("dvf_assessments", {
 // Lovability Metrics - Emotional response and satisfaction tracking
 export const lovabilityMetrics = pgTable("lovability_metrics", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   itemType: text("item_type").notNull(), // idea, prototype, solution
   itemId: varchar("item_id").notNull(), // Reference to the item being evaluated
   itemName: text("item_name").notNull(),
@@ -765,7 +765,7 @@ export const lovabilityMetrics = pgTable("lovability_metrics", {
 // Project Analytics - Detailed usage and success metrics
 export const projectAnalytics = pgTable("project_analytics", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   
   // Usage metrics
   totalTimeSpent: integer("total_time_spent").default(0), // minutes
@@ -817,7 +817,7 @@ export const projectAnalytics = pgTable("project_analytics", {
 // Competitive Analysis - External benchmarking data
 export const competitiveAnalysis = pgTable("competitive_analysis", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   
   // Competitor info
   competitorName: text("competitor_name").notNull(), // Miro, Figma, Notion, etc.
@@ -851,7 +851,7 @@ export const competitiveAnalysis = pgTable("competitive_analysis", {
 // Project Backups - Automatic versioning and recovery
 export const projectBackups = pgTable("project_backups", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
   
   // Backup metadata
   backupType: text("backup_type").notNull(), // auto, manual
