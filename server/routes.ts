@@ -1344,7 +1344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied" });
       }
       
-      const assets = await storage.getAiGeneratedAssetsByProject(req.params.projectId);
+      const assets = await storage.getAiGeneratedAssets(req.params.projectId);
       res.json(assets);
       
     } catch (error) {
