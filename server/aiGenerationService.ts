@@ -176,13 +176,22 @@ Be creative, professional, and market-ready. The name should be brandable and me
     });
     
     const content = response.choices[0]?.message?.content || "{}";
-    const parsed = JSON.parse(content);
     
-    return {
-      name: parsed.name || "Unnamed Project",
-      description: parsed.description || "No description available",
-      tagline: parsed.tagline || "",
-    };
+    try {
+      const parsed = JSON.parse(content);
+      return {
+        name: parsed.name || "Unnamed Project",
+        description: parsed.description || "No description available",
+        tagline: parsed.tagline || "",
+      };
+    } catch (error) {
+      console.error("Failed to parse project core JSON:", content);
+      return {
+        name: "Unnamed Project",
+        description: "No description available",
+        tagline: "",
+      };
+    }
   }
   
   /**
@@ -245,18 +254,23 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.choices[0]?.message?.content || "[]";
-    const parsed = JSON.parse(content);
     
-    return parsed.map((p: any) => ({
-      name: p.name,
-      age: p.age,
-      occupation: p.occupation,
-      bio: p.bio,
-      goals: p.goals,
-      frustrations: p.frustrations,
-      behaviors: p.behaviors,
-      projectId: "", // Will be set after project creation
-    }));
+    try {
+      const parsed = JSON.parse(content);
+      return parsed.map((p: any) => ({
+        name: p.name,
+        age: p.age,
+        occupation: p.occupation,
+        bio: p.bio,
+        goals: p.goals,
+        frustrations: p.frustrations,
+        behaviors: p.behaviors,
+        projectId: "", // Will be set after project creation
+      }));
+    } catch (error) {
+      console.error("Failed to parse personas JSON:", content);
+      return [];
+    }
   }
   
   /**
@@ -293,14 +307,19 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.choices[0]?.message?.content || "[]";
-    const parsed = JSON.parse(content);
     
-    return parsed.map((pov: any) => ({
-      user: pov.user,
-      need: pov.need,
-      insight: pov.insight,
-      projectId: "", // Will be set after project creation
-    }));
+    try {
+      const parsed = JSON.parse(content);
+      return parsed.map((pov: any) => ({
+        user: pov.user,
+        need: pov.need,
+        insight: pov.insight,
+        projectId: "", // Will be set after project creation
+      }));
+    } catch (error) {
+      console.error("Failed to parse POV statements JSON:", content);
+      return [];
+    }
   }
   
   /**
@@ -340,14 +359,19 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.choices[0]?.message?.content || "[]";
-    const parsed = JSON.parse(content);
     
-    return parsed.map((idea: any) => ({
-      title: idea.title,
-      description: idea.description,
-      category: idea.category || "feature",
-      projectId: "", // Will be set after project creation
-    }));
+    try {
+      const parsed = JSON.parse(content);
+      return parsed.map((idea: any) => ({
+        title: idea.title,
+        description: idea.description,
+        category: idea.category || "feature",
+        projectId: "", // Will be set after project creation
+      }));
+    } catch (error) {
+      console.error("Failed to parse ideas JSON:", content);
+      return [];
+    }
   }
   
   /**
@@ -382,7 +406,19 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.choices[0]?.message?.content || "{}";
-    return JSON.parse(content);
+    
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      console.error("Failed to parse landing page JSON:", content);
+      return {
+        headline: "Welcome",
+        subheadline: "Your solution awaits",
+        valueProposition: "We provide value.",
+        features: [],
+        ctaText: "Get Started"
+      };
+    }
   }
   
   /**
@@ -416,7 +452,13 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.choices[0]?.message?.content || "[]";
-    return JSON.parse(content);
+    
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      console.error("Failed to parse social media strategy JSON:", content);
+      return [];
+    }
   }
   
   /**
@@ -450,7 +492,18 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     });
     
     const content = response.choices[0]?.message?.content || "{}";
-    return JSON.parse(content);
+    
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      console.error("Failed to parse business model JSON:", content);
+      return {
+        revenueStreams: [],
+        keyResources: [],
+        keyActivities: [],
+        costStructure: []
+      };
+    }
   }
   
   /**

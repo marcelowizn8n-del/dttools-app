@@ -31,6 +31,8 @@ import ScreenshotCapture from "@/components/ScreenshotCapture";
 import NotFound from "@/pages/not-found";
 import { useAuth, ProtectedRoute } from "@/contexts/AuthContext";
 import DashboardPage from "@/pages/dashboard";
+import OnboardingAI from "@/pages/OnboardingAI";
+import DashboardAI from "@/pages/DashboardAI";
 
 function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -120,6 +122,16 @@ function Router() {
       <Route path="/benchmarking">
         <ProtectedRoute>
           <BenchmarkingPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/onboarding-ai">
+        <ProtectedRoute>
+          <OnboardingAI />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard-ai/:projectId">
+        <ProtectedRoute>
+          <DashboardAI />
         </ProtectedRoute>
       </Route>
       <Route path="/help" component={HelpCenter} />
