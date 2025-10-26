@@ -1303,6 +1303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUserProgress({
         userId: req.session.userId!,
         projectId: project.id, // Link progress to the generated project
+        phase: 5, // AI-generated MVP completes all 5 Design Thinking phases
         projectsCompleted: 1,
         totalPoints: 500, // Award points for AI-generated project
         badgesEarned: ["ai_pioneer"],
