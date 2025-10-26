@@ -1,4 +1,4 @@
-import type { AIProjectAnalysis, Project } from "@shared/schema";
+import type { AIProjectAnalysis, Project, Persona, PovStatement, Idea, AiGeneratedAsset } from "@shared/schema";
 
 interface ReportData {
   eventName: string;
@@ -407,6 +407,357 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   }
 
   // Generate blob URL
+  const pdfBlob = doc.output("blob");
+  return URL.createObjectURL(pdfBlob);
+}
+
+interface AIMVPExportData {
+  project: Project;
+  personas: Persona[];
+  povStatements: PovStatement[];
+  ideas: Idea[];
+  aiAssets: AiGeneratedAsset[];
+}
+
+export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
+  const jsPDF = (await import("jspdf")).default;
+  
+  const doc = new jsPDF();
+  const { project, personas, povStatements, ideas, aiAssets } = data;
+  let yPos = 20;
+
+  // Helper functions
+  const checkPageBreak = (requiredSpace: number) => {
+    if (yPos + requiredSpace > 280) {
+      doc.addPage();
+      yPos = 20;
+    }
+  };
+
+  const addWrappedText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 12) => {
+    doc.setFontSize(fontSize);
+    const splitText = doc.splitTextToSize(text, maxWidth);
+    doc.text(splitText, x, y);
+    return splitText.length * (fontSize * 0.4);
+  };
+
+  // Parse AI assets
+  const logoAsset = aiAssets.find(a => a.assetType === "logo");
+  const landingPageAsset = aiAssets.find(a => a.assetType === "landing_page");
+  const socialMediaAsset = aiAssets.find(a => a.assetType === "social_media");
+  const businessModelAsset = aiAssets.find(a => a.assetType === "business_model");
+
+  const logo = logoAsset ? JSON.parse(logoAsset.content as string) : null;
+  const landingPage = landingPageAsset ? JSON.parse(landingPageAsset.content as string) : null;
+  const socialMedia = socialMediaAsset ? JSON.parse(socialMediaAsset.content as string) : [];
+  const businessModel = businessModelAsset ? JSON.parse(businessModelAsset.content as string) : null;
+
+  // Title Page
+  doc.setFontSize(28);
+  doc.setFont(undefined, "bold");
+  doc.text("MVP Completo", 105, 80, { align: "center" });
+  
+  yPos = 100;
+  doc.setFontSize(18);
+  doc.setFont(undefined, "normal");
+  doc.text(project.name, 105, yPos, { align: "center" });
+  
+  yPos += 20;
+  doc.setFontSize(12);
+  const descHeight = addWrappedText(project.description || "", 105 - 70, yPos, 140, 12);
+  
+  yPos += descHeight + 30;
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Gerado 100% por IA em ${new Date().toLocaleDateString('pt-BR')}`, 105, yPos, { align: "center" });
+  doc.text("Powered by Google Gemini 2.0 Flash", 105, yPos + 8, { align: "center" });
+  doc.setTextColor(0, 0, 0);
+
+  // New page for content
+  doc.addPage();
+  yPos = 20;
+
+  // Project Overview
+  doc.setFontSize(20);
+  doc.setFont(undefined, "bold");
+  doc.text("1. Visão Geral do Projeto", 20, yPos);
+  doc.setFont(undefined, "normal");
+  
+  yPos += 15;
+  doc.setFontSize(12);
+  doc.text(`Nome: ${project.name}`, 20, yPos);
+  yPos += 10;
+  const projectDescHeight = addWrappedText(project.description || "", 20, yPos, 170, 12);
+  yPos += projectDescHeight + 15;
+
+  // Personas Section
+  if (personas.length > 0) {
+    checkPageBreak(60);
+    doc.setFontSize(20);
+    doc.setFont(undefined, "bold");
+    doc.text("2. Personas", 20, yPos);
+    doc.setFont(undefined, "normal");
+    
+    yPos += 15;
+    
+    personas.forEach((persona, idx) => {
+      checkPageBreak(50);
+      
+      doc.setFontSize(14);
+      doc.setFont(undefined, "bold");
+      doc.text(`${idx + 1}. ${persona.name}`, 25, yPos);
+      doc.setFont(undefined, "normal");
+      
+      yPos += 10;
+      doc.setFontSize(11);
+      doc.text(`Idade: ${persona.age || 'N/A'}  |  Ocupação: ${persona.occupation || 'N/A'}`, 30, yPos);
+      
+      yPos += 8;
+      if (persona.background) {
+        const bgHeight = addWrappedText(`Background: ${persona.background}`, 30, yPos, 160, 10);
+        yPos += bgHeight + 5;
+      }
+      
+      if (persona.goals) {
+        const goalsHeight = addWrappedText(`Objetivos: ${persona.goals}`, 30, yPos, 160, 10);
+        yPos += goalsHeight + 5;
+      }
+      
+      if (persona.frustrations) {
+        const frustHeight = addWrappedText(`Frustrações: ${persona.frustrations}`, 30, yPos, 160, 10);
+        yPos += frustHeight + 5;
+      }
+      
+      yPos += 8;
+    });
+  }
+
+  // POV Statements
+  if (povStatements.length > 0) {
+    yPos += 10;
+    checkPageBreak(60);
+    doc.setFontSize(20);
+    doc.setFont(undefined, "bold");
+    doc.text("3. Pontos de Vista (POV)", 20, yPos);
+    doc.setFont(undefined, "normal");
+    
+    yPos += 15;
+    
+    povStatements.forEach((pov, idx) => {
+      checkPageBreak(30);
+      
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      doc.text(`POV ${idx + 1}:`, 25, yPos);
+      doc.setFont(undefined, "normal");
+      
+      yPos += 8;
+      doc.setFontSize(11);
+      const povHeight = addWrappedText(pov.statement, 30, yPos, 160, 11);
+      yPos += povHeight + 10;
+    });
+  }
+
+  // Ideas
+  if (ideas.length > 0) {
+    yPos += 10;
+    checkPageBreak(60);
+    doc.setFontSize(20);
+    doc.setFont(undefined, "bold");
+    doc.text("4. Ideias Geradas", 20, yPos);
+    doc.setFont(undefined, "normal");
+    
+    yPos += 15;
+    
+    ideas.forEach((idea, idx) => {
+      checkPageBreak(30);
+      
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      doc.text(`${idx + 1}. ${idea.title}`, 25, yPos);
+      doc.setFont(undefined, "normal");
+      
+      yPos += 8;
+      doc.setFontSize(11);
+      const ideaHeight = addWrappedText(idea.description || "", 30, yPos, 160, 10);
+      yPos += ideaHeight + 10;
+    });
+  }
+
+  // Landing Page
+  if (landingPage) {
+    doc.addPage();
+    yPos = 20;
+    
+    doc.setFontSize(20);
+    doc.setFont(undefined, "bold");
+    doc.text("5. Landing Page", 20, yPos);
+    doc.setFont(undefined, "normal");
+    
+    yPos += 15;
+    
+    if (landingPage.headline) {
+      doc.setFontSize(16);
+      doc.setFont(undefined, "bold");
+      const headlineHeight = addWrappedText(landingPage.headline, 20, yPos, 170, 14);
+      doc.setFont(undefined, "normal");
+      yPos += headlineHeight + 10;
+    }
+    
+    if (landingPage.subheadline) {
+      doc.setFontSize(12);
+      const subHeight = addWrappedText(landingPage.subheadline, 20, yPos, 170, 12);
+      yPos += subHeight + 15;
+    }
+    
+    if (landingPage.features && landingPage.features.length > 0) {
+      checkPageBreak(40);
+      doc.setFontSize(14);
+      doc.setFont(undefined, "bold");
+      doc.text("Recursos Principais:", 20, yPos);
+      doc.setFont(undefined, "normal");
+      yPos += 10;
+      
+      landingPage.features.forEach((feature: any) => {
+        checkPageBreak(15);
+        doc.setFontSize(11);
+        doc.setFont(undefined, "bold");
+        doc.text(`• ${feature.title}`, 25, yPos);
+        doc.setFont(undefined, "normal");
+        yPos += 7;
+        const featDescHeight = addWrappedText(feature.description, 30, yPos, 160, 10);
+        yPos += featDescHeight + 5;
+      });
+    }
+    
+    if (landingPage.cta) {
+      yPos += 10;
+      checkPageBreak(20);
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      doc.text(`Call-to-Action: ${landingPage.cta}`, 20, yPos);
+      doc.setFont(undefined, "normal");
+      yPos += 10;
+    }
+  }
+
+  // Social Media Strategy
+  if (socialMedia && socialMedia.length > 0) {
+    doc.addPage();
+    yPos = 20;
+    
+    doc.setFontSize(20);
+    doc.setFont(undefined, "bold");
+    doc.text("6. Estratégia de Redes Sociais", 20, yPos);
+    doc.setFont(undefined, "normal");
+    
+    yPos += 15;
+    
+    socialMedia.forEach((post: any, idx: number) => {
+      checkPageBreak(35);
+      
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      doc.text(`Post ${idx + 1} - ${post.platform}`, 25, yPos);
+      doc.setFont(undefined, "normal");
+      
+      yPos += 8;
+      doc.setFontSize(11);
+      const postHeight = addWrappedText(post.content, 30, yPos, 160, 10);
+      yPos += postHeight + 5;
+      
+      if (post.hashtags && post.hashtags.length > 0) {
+        doc.setTextColor(59, 130, 246);
+        doc.text(post.hashtags.join(' '), 30, yPos);
+        doc.setTextColor(0, 0, 0);
+        yPos += 8;
+      }
+      
+      yPos += 5;
+    });
+  }
+
+  // Business Model Canvas
+  if (businessModel) {
+    doc.addPage();
+    yPos = 20;
+    
+    doc.setFontSize(20);
+    doc.setFont(undefined, "bold");
+    doc.text("7. Modelo de Negócio", 20, yPos);
+    doc.setFont(undefined, "normal");
+    
+    yPos += 15;
+    
+    const sections = [
+      { title: "Proposta de Valor", key: "valueProposition" },
+      { title: "Segmentos de Clientes", key: "customerSegments" },
+      { title: "Canais", key: "channels" },
+      { title: "Relacionamento com Clientes", key: "customerRelationships" },
+      { title: "Fontes de Receita", key: "revenueStreams" },
+      { title: "Estrutura de Custos", key: "costStructure" },
+      { title: "Recursos Chave", key: "keyResources" },
+      { title: "Atividades Chave", key: "keyActivities" },
+      { title: "Parcerias Chave", key: "keyPartnerships" }
+    ];
+    
+    sections.forEach(section => {
+      const content = businessModel[section.key];
+      if (content && (Array.isArray(content) ? content.length > 0 : content)) {
+        checkPageBreak(30);
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, "bold");
+        doc.text(section.title, 20, yPos);
+        doc.setFont(undefined, "normal");
+        yPos += 10;
+        
+        doc.setFontSize(11);
+        if (Array.isArray(content)) {
+          content.forEach((item: string) => {
+            checkPageBreak(10);
+            const itemHeight = addWrappedText(`• ${item}`, 25, yPos, 165, 10);
+            yPos += itemHeight + 3;
+          });
+        } else {
+          const contentHeight = addWrappedText(content, 25, yPos, 165, 10);
+          yPos += contentHeight + 5;
+        }
+        
+        yPos += 8;
+      }
+    });
+  }
+
+  // Add header and footer to all pages
+  const totalPages = doc.getNumberOfPages();
+  
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    
+    if (i > 1) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 58, 138);
+      doc.text("Design Thinking ", 20, 15);
+      doc.setTextColor(16, 185, 129);
+      doc.text("Tools", 72, 15);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "normal");
+    }
+    
+    doc.setFontSize(10);
+    doc.setTextColor(37, 99, 235);
+    doc.textWithLink("www.designthinkingtools.com", 105, 285, { 
+      url: "https://www.designthinkingtools.com",
+      align: "center"
+    });
+    
+    doc.setTextColor(107, 114, 128);
+    doc.text(`Página ${i} de ${totalPages}`, 180, 285);
+    doc.setTextColor(0, 0, 0);
+  }
+
   const pdfBlob = doc.output("blob");
   return URL.createObjectURL(pdfBlob);
 }

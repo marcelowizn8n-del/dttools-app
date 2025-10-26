@@ -1,14 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Sparkles, Users, Target, Lightbulb, Globe, Share2, DollarSign, ArrowLeft, Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { generateAIMVPPDF } from "@/lib/reportGenerator";
 import type { Project, Persona, PovStatement, Idea, AiGeneratedAsset } from "@shared/schema";
 
 export default function DashboardAI() {
   const { projectId } = useParams();
+  const { toast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
 
   // Fetch project data
   const { data: project, isLoading: projectLoading } = useQuery<Project>({
@@ -102,6 +107,45 @@ export default function DashboardAI() {
   const socialMedia = socialMediaAsset ? JSON.parse(socialMediaAsset.content as string) : [];
   const businessModel = businessModelAsset ? JSON.parse(businessModelAsset.content as string) : null;
 
+  const handleExport = async () => {
+    if (!project) return;
+    
+    try {
+      setIsExporting(true);
+      
+      const pdfUrl = await generateAIMVPPDF({
+        project,
+        personas,
+        povStatements,
+        ideas,
+        aiAssets,
+      });
+      
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `mvp-${project.name.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(pdfUrl);
+      
+      toast({
+        title: "MVP Exportado!",
+        description: "O PDF do seu MVP foi baixado com sucesso.",
+      });
+    } catch (error) {
+      console.error('Error exporting MVP:', error);
+      toast({
+        title: "Erro ao exportar",
+        description: "Não foi possível gerar o PDF. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8">
@@ -129,9 +173,23 @@ export default function DashboardAI() {
                 <p className="text-gray-600 dark:text-gray-300 text-lg">{project.description}</p>
               </div>
             </div>
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600" data-testid="button-download">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
+            <Button 
+              className="bg-gradient-to-r from-purple-600 to-blue-600" 
+              data-testid="button-download"
+              onClick={handleExport}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Exportando...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar PDF
+                </>
+              )}
             </Button>
           </div>
         </div>
