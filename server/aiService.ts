@@ -1,37 +1,18 @@
-import OpenAI from "openai";
-
 /*
-Integration blueprint: javascript_openai
-Follow these instructions when using this blueprint:
-1. Note that the newest OpenAI model is "gpt-5", not "gpt-4o" or "gpt-4". gpt-5 was released August 7, 2025 after your knowledge cutoff. Always prefer using gpt-5 as it is the latest model. When copying code from this blueprint, ensure you also mention this information verbatim as a comment so that you don't revert it to older models: `// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user`
-2. Use the response_format: { type: "json_object" } option
-3. Request output in JSON format in the prompt
-*/
+ * AI Chat and Analysis Service
+ * 
+ * This service provides optional AI-powered features:
+ * - Design Thinking mentor chat
+ * - Project analysis and recommendations
+ * 
+ * Note: These features are currently disabled as we've migrated to 100% Google Gemini
+ * for MVP generation. Future versions may implement these features using Gemini.
+ * 
+ * For now, all methods return helpful fallback messages and guidance.
+ */
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-
-// Initialize OpenAI client with improved error handling
-let openai: OpenAI | null = null;
-
-function initializeOpenAI(): OpenAI | null {
-  const apiKey = process.env.OPENAI_API_KEY;
-  
-  if (!apiKey) {
-    console.warn('WARNING: OPENAI_API_KEY not found in environment variables. AI features will be disabled.');
-    console.warn('To enable AI features: Add OPENAI_API_KEY to Secrets panel and restart the application.');
-    return null;
-  }
-  
-  try {
-    return new OpenAI({ apiKey });
-  } catch (error) {
-    console.error('ERROR: Failed to initialize OpenAI client:', error);
-    return null;
-  }
-}
-
-// Initialize the client
-openai = initializeOpenAI();
+// OpenAI integration removed - all features use graceful fallbacks
+const openai = null;
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -217,11 +198,11 @@ Para funcionalidades avançadas de IA, configure a chave da API OpenAI nos Secre
         }))
       ];
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      // This code is unreachable as openai is always null, but kept for future reference
+      const response = await (openai as any).chat.completions.create({
+        model: "gpt-5",
         messages: openaiMessages,
         max_tokens: 1000,
-        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
 
       return response.choices[0].message.content || "Desculpe, não consegui gerar uma resposta. Tente novamente.";
@@ -246,15 +227,15 @@ Para funcionalidades avançadas de IA, configure a chave da API OpenAI nos Secre
     try {
       const prompt = `Baseado no contexto de Design Thinking na fase ${context.currentPhase} e no tópico "${currentTopic}", gere 3 sugestões práticas e específicas de próximos passos ou perguntas relevantes. Responda em formato JSON com um array de strings chamado "suggestions".`;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      // This code is unreachable as openai is always null, but kept for future reference
+      const response = await (openai as any).chat.completions.create({
+        model: "gpt-5",
         messages: [
           { role: 'system', content: this.getSystemPrompt(context) },
           { role: 'user', content: prompt }
         ],
         response_format: { type: "json_object" },
         max_tokens: 500,
-        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"suggestions": []}');
@@ -291,15 +272,15 @@ Para funcionalidades avançadas de IA, configure a chave da API OpenAI nos Secre
         };
       }
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      // This code is unreachable as openai is always null, but kept for future reference
+      const response = await (openai as any).chat.completions.create({
+        model: "gpt-5",
         messages: [
           { role: 'system', content: this.getSystemPrompt({ currentPhase, userLevel: 'intermediate' }) },
           { role: 'user', content: prompt }
         ],
         response_format: { type: "json_object" },
         max_tokens: 800,
-        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"insights": [], "nextSteps": [], "completeness": 0}');
@@ -382,8 +363,9 @@ CRITÉRIOS DE ANÁLISE:
 
 Seja específico, construtivo e ofereça insights acionáveis. Responda em português brasileiro.`;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      // This code is unreachable as openai is always null, but kept for future reference
+      const response = await (openai as any).chat.completions.create({
+        model: "gpt-5",
         messages: [
           { 
             role: 'system', 
@@ -393,7 +375,6 @@ Seja específico, construtivo e ofereça insights acionáveis. Responda em portu
         ],
         response_format: { type: "json_object" },
         max_tokens: 3000,
-        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
