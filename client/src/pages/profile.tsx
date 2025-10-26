@@ -58,7 +58,7 @@ const profileFormSchema = z.object({
 type ProfileFormData = z.infer<typeof profileFormSchema>;
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
   const { toast } = useToast();
   const [_, navigate] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -132,7 +132,7 @@ export default function ProfilePage() {
       }
       return response.json();
     },
-    onSuccess: (updatedProfile) => {
+    onSuccess: async (updatedProfile) => {
       // Update local state with the returned profile picture
       // Handle both snake_case (backend) and camelCase (Drizzle) formats
       if (updatedProfile) {
@@ -145,6 +145,9 @@ export default function ProfilePage() {
       // Invalidate both profile and user queries to update avatar everywhere
       queryClient.invalidateQueries({ queryKey: ["/api/users/profile"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      // Refresh auth context to update avatar in header/menu
+      await refreshUser();
       
       toast({
         title: "Perfil atualizado!",

@@ -152,15 +152,12 @@ export default function OnboardingAI() {
                         }`}
                         data-testid={`button-sector-${sector.id}`}
                       >
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            {sector.icon && (
-                              <span className="text-2xl shrink-0">{sector.icon}</span>
-                            )}
-                            <h3 className="font-semibold text-sm leading-tight">{sector.namePt}</h3>
-                          </div>
+                        <div className="space-y-3 pr-8">
+                          <h3 className="font-semibold text-base text-gray-900 dark:text-white">
+                            {sector.namePt}
+                          </h3>
                           {sector.description && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed">
                               {sector.description}
                             </p>
                           )}

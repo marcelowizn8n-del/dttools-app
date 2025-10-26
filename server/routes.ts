@@ -1317,10 +1317,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
     } catch (error) {
-      console.error("AI generation error:", error);
+      console.error("❌ [AI Generation Error] Full error:", error);
+      console.error("❌ [AI Generation Error] Stack:", error instanceof Error ? error.stack : 'No stack trace');
+      console.error("❌ [AI Generation Error] Message:", error instanceof Error ? error.message : error);
+      
       res.status(500).json({ 
         error: "Failed to generate project",
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
       });
     }
   });
