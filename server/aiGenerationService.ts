@@ -15,10 +15,23 @@ import type {
 const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 // Keep OpenAI for logo generation (DALL-E) - Gemini doesn't have native image generation yet
-const openai = new OpenAI({
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-});
+// This is optional - if credentials are not available, we skip logo generation
+let openai: OpenAI | null = null;
+try {
+  const hasOpenAICredentials = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+  if (hasOpenAICredentials) {
+    openai = new OpenAI({
+      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+    });
+    console.log("✅ OpenAI initialized for logo generation");
+  } else {
+    console.log("⚠️ OpenAI credentials not found - logo generation will be skipped");
+  }
+} catch (error) {
+  console.warn("⚠️ Failed to initialize OpenAI:", error);
+  openai = null;
+}
 
 interface GenerationContext {
   sector: IndustrySector;
@@ -205,6 +218,12 @@ Be creative, professional, and market-ready. The name should be brandable and me
    * Note: Gemini doesn't have native image generation yet, so we still use OpenAI for logos
    */
   private async generateLogo(context: GenerationContext, projectName: string): Promise<string | null> {
+    
+    // Skip logo generation if OpenAI is not available
+    if (!openai) {
+      console.log("⚠️ Skipping logo generation - OpenAI not initialized");
+      return null;
+    }
     
     try {
       const prompt = `Professional, modern, minimalist logo for "${projectName}" - a ${context.sector.namePt} business inspired by ${context.successCase.name}. Clean design, suitable for digital platforms, memorable brand identity. No text in the image.`;
