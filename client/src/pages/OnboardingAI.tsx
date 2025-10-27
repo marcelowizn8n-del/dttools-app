@@ -18,6 +18,7 @@ export default function OnboardingAI() {
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [selectedSector, setSelectedSector] = useState<IndustrySector | null>(null);
   const [selectedCase, setSelectedCase] = useState<SuccessCase | null>(null);
+  const [customInspiration, setCustomInspiration] = useState("");
   const [problemDescription, setProblemDescription] = useState("");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [limitError, setLimitError] = useState<any>(null);
@@ -36,7 +37,7 @@ export default function OnboardingAI() {
 
   // AI generation mutation
   const generateMutation = useMutation({
-    mutationFn: async (data: { sectorId: string; successCaseId: string; userProblemDescription: string }) => {
+    mutationFn: async (data: { sectorId: string; successCaseId: string; userProblemDescription: string; customInspiration?: string }) => {
       const response = await fetch("/api/ai/generate-project", {
         method: "POST",
         body: JSON.stringify(data),
@@ -87,6 +88,7 @@ export default function OnboardingAI() {
         sectorId: selectedSector.id,
         successCaseId: selectedCase.id,
         userProblemDescription: problemDescription,
+        customInspiration: customInspiration.trim() || undefined,
       });
     }
   };
@@ -237,6 +239,28 @@ export default function OnboardingAI() {
                     ))}
                   </div>
                 )}
+                
+                {/* Custom Inspiration Field */}
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Inspirações Adicionais (Opcional)
+                  </label>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    Adicione empresas, produtos ou projetos que servem como referência para seu MVP
+                  </p>
+                  <Textarea
+                    placeholder="Ex: Airbnb, Uber, Nubank, iFood..."
+                    value={customInspiration}
+                    onChange={(e) => setCustomInspiration(e.target.value)}
+                    className="min-h-[100px]"
+                    maxLength={300}
+                    data-testid="input-custom-inspiration"
+                  />
+                  <div className="mt-1 text-xs text-gray-500 text-right">
+                    {customInspiration.length}/300 caracteres
+                  </div>
+                </div>
+
                 <div className="mt-6 flex justify-between">
                   <Button variant="outline" onClick={handlePreviousStep} data-testid="button-back-step-2">
                     Voltar

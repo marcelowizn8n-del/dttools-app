@@ -19,6 +19,7 @@ interface GenerationContext {
   sector: IndustrySector;
   successCase: SuccessCase;
   userProblemDescription: string;
+  customInspiration?: string;
   language: string;
 }
 
@@ -162,14 +163,18 @@ export class AIGenerationService {
     tagline: string;
   }> {
     
+    const customInspirationText = context.customInspiration 
+      ? `- Additional User Inspirations: ${context.customInspiration}\n`
+      : '';
+
     const prompt = `You are an expert business consultant and Design Thinking facilitator.
 
 Context:
 - Industry Sector: ${context.sector.namePt}
 - Success Case Inspiration: ${context.successCase.name} (${context.successCase.descriptionPt || context.successCase.descriptionEn || ''})
-- User Problem: ${context.userProblemDescription}
+${customInspirationText}- User Problem: ${context.userProblemDescription}
 
-Task: Generate a complete business project foundation inspired by the success case but adapted to the user's specific problem.
+Task: Generate a complete business project foundation inspired by the success case${context.customInspiration ? ' and user-provided inspirations' : ''} but adapted to the user's specific problem.
 
 Return ONLY a valid JSON object with this structure:
 {

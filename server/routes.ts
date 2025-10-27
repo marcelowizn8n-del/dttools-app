@@ -1230,7 +1230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Generation: Generate complete MVP
   app.post("/api/ai/generate-project", requireAuth, loadUserSubscription, checkAiProjectLimits, async (req, res) => {
     try {
-      const { sectorId, successCaseId, userProblemDescription, language = 'pt' } = req.body;
+      const { sectorId, successCaseId, userProblemDescription, customInspiration, language = 'pt' } = req.body;
       
       if (!sectorId || !successCaseId || !userProblemDescription) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -1238,6 +1238,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (userProblemDescription.length < 50 || userProblemDescription.length > 500) {
         return res.status(400).json({ error: "Problem description must be between 50 and 500 characters" });
+      }
+      
+      // Validate custom inspiration if provided
+      if (customInspiration && customInspiration.length > 300) {
+        return res.status(400).json({ error: "Custom inspiration must be under 300 characters" });
       }
       
       // Get sector and success case
@@ -1262,6 +1267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sector,
           successCase,
           userProblemDescription,
+          customInspiration,
           language,
         }
       );
