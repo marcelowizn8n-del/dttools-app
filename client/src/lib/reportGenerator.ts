@@ -144,9 +144,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   // Logo will be added to all pages in the footer section
 
   doc.setFontSize(24);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Análise Inteligente IA", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 15;
   doc.setFontSize(16);
@@ -161,9 +161,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   yPos += 20;
   checkPageBreak(40);
   doc.setFontSize(18);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Resumo Executivo", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 15;
   const summaryHeight = addWrappedText(analysis.executiveSummary, 20, yPos, 170, 12);
@@ -172,15 +172,15 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   // Maturity Score Section
   checkPageBreak(50);
   doc.setFontSize(18);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Score de Maturidade", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 15;
   doc.setFontSize(14);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text(`Score Geral: ${analysis.maturityScore}/10`, 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 10;
   doc.setFontSize(12);
@@ -211,9 +211,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   // Consistency and Alignment Metrics
   checkPageBreak(40);
   doc.setFontSize(16);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Métricas de Qualidade", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 15;
   doc.setFontSize(12);
@@ -227,9 +227,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   yPos += 20;
   checkPageBreak(80);
   doc.setFontSize(18);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Análise por Fases", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 15;
   
@@ -237,9 +237,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
     checkPageBreak(35);
     
     doc.setFontSize(14);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text(`Fase ${phase.phase}: ${phase.phaseName}`, 20, yPos);
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     
     yPos += 10;
     doc.setFontSize(11);
@@ -264,9 +264,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   yPos += 10;
   checkPageBreak(50);
   doc.setFontSize(18);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Insights Principais", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 15;
   doc.setFontSize(12);
@@ -282,9 +282,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   yPos += 15;
   checkPageBreak(50);
   doc.setFontSize(18);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Pontos de Atenção", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 15;
   doc.setFontSize(12);
@@ -300,17 +300,17 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   yPos += 15;
   checkPageBreak(80);
   doc.setFontSize(18);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Recomendações Estratégicas", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 15;
   
   // Immediate actions
   doc.setFontSize(14);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Ações Imediatas", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 10;
   doc.setFontSize(11);
@@ -324,9 +324,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   yPos += 8;
   checkPageBreak(30);
   doc.setFontSize(14);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Curto Prazo", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 10;
   doc.setFontSize(11);
@@ -340,9 +340,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   yPos += 8;
   checkPageBreak(30);
   doc.setFontSize(14);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Longo Prazo", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 10;
   doc.setFontSize(11);
@@ -357,9 +357,9 @@ export async function generateAIAnalysisPDF(data: AIAnalysisReportData): Promise
   yPos += 15;
   checkPageBreak(50);
   doc.setFontSize(18);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("Próximos Passos Prioritários", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
   yPos += 15;
   doc.setFontSize(12);
@@ -424,13 +424,27 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
   
   const doc = new jsPDF();
   const { project, personas, povStatements, ideas, aiAssets } = data;
-  let yPos = 20;
+  let yPos = 35; // Start lower to give space for logo header
+
+  // Load logo
+  let logoDataUrl: string | null = null;
+  try {
+    const logoResponse = await fetch('/logo-horizontal.png');
+    const logoBlob = await logoResponse.blob();
+    logoDataUrl = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(logoBlob);
+    });
+  } catch (error) {
+    console.error('Failed to load logo:', error);
+  }
 
   // Helper functions
   const checkPageBreak = (requiredSpace: number) => {
-    if (yPos + requiredSpace > 280) {
+    if (yPos + requiredSpace > 270) { // Reduced from 280 to give more bottom margin
       doc.addPage();
-      yPos = 20;
+      yPos = 35; // Start lower on new pages to account for header
     }
   };
 
@@ -454,19 +468,19 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
 
   // Title Page
   doc.setFontSize(28);
-  doc.setFont(undefined, "bold");
-  doc.text("MVP Completo", 105, 80, { align: "center" });
+  doc.setFont("helvetica", "bold");
+  doc.text("MVP Completo", 105, 90, { align: "center" });
   
-  yPos = 100;
+  yPos = 110;
   doc.setFontSize(18);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   doc.text(project.name, 105, yPos, { align: "center" });
   
-  yPos += 20;
+  yPos += 25;
   doc.setFontSize(12);
   const descHeight = addWrappedText(project.description || "", 105 - 70, yPos, 140, 12);
   
-  yPos += descHeight + 30;
+  yPos += descHeight + 35;
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
   doc.text(`Gerado 100% por IA em ${new Date().toLocaleDateString('pt-BR')}`, 105, yPos, { align: "center" });
@@ -475,132 +489,137 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
 
   // New page for content
   doc.addPage();
-  yPos = 20;
+  yPos = 35;
 
   // Project Overview
   doc.setFontSize(20);
-  doc.setFont(undefined, "bold");
+  doc.setFont("helvetica", "bold");
   doc.text("1. Visão Geral do Projeto", 20, yPos);
-  doc.setFont(undefined, "normal");
+  doc.setFont("helvetica", "normal");
   
-  yPos += 15;
-  doc.setFontSize(12);
+  yPos += 18;
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
   doc.text(`Nome: ${project.name}`, 20, yPos);
-  yPos += 10;
+  doc.setFont("helvetica", "normal");
+  
+  yPos += 12;
+  doc.setFontSize(12);
   const projectDescHeight = addWrappedText(project.description || "", 20, yPos, 170, 12);
-  yPos += projectDescHeight + 15;
+  yPos += projectDescHeight + 20;
 
   // Personas Section
   if (personas.length > 0) {
     checkPageBreak(60);
     doc.setFontSize(20);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text("2. Personas", 20, yPos);
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     
-    yPos += 15;
+    yPos += 18;
     
     personas.forEach((persona, idx) => {
-      checkPageBreak(50);
+      checkPageBreak(55);
       
       doc.setFontSize(14);
-      doc.setFont(undefined, "bold");
-      doc.text(`${idx + 1}. ${persona.name}`, 25, yPos);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "bold");
+      doc.text(`  ${idx + 1}. ${persona.name}`, 20, yPos);
+      doc.setFont("helvetica", "normal");
+      
+      yPos += 12;
+      doc.setFontSize(11);
+      doc.text(`     Idade: ${persona.age || 'N/A'}  |  Ocupação: ${persona.occupation || 'N/A'}`, 20, yPos);
       
       yPos += 10;
-      doc.setFontSize(11);
-      doc.text(`Idade: ${persona.age || 'N/A'}  |  Ocupação: ${persona.occupation || 'N/A'}`, 30, yPos);
-      
-      yPos += 8;
-      if (persona.background) {
-        const bgHeight = addWrappedText(`Background: ${persona.background}`, 30, yPos, 160, 10);
-        yPos += bgHeight + 5;
-      }
-      
       if (persona.goals) {
-        const goalsHeight = addWrappedText(`Objetivos: ${persona.goals}`, 30, yPos, 160, 10);
-        yPos += goalsHeight + 5;
+        doc.setFont("helvetica", "bold");
+        doc.text("     Objetivos: ", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        const goalsHeight = addWrappedText(String(persona.goals), 20, yPos + 5, 160, 10);
+        yPos += goalsHeight + 10;
       }
       
       if (persona.frustrations) {
-        const frustHeight = addWrappedText(`Frustrações: ${persona.frustrations}`, 30, yPos, 160, 10);
-        yPos += frustHeight + 5;
+        doc.setFont("helvetica", "bold");
+        doc.text("     Frustrações: ", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        const frustHeight = addWrappedText(String(persona.frustrations), 20, yPos + 5, 160, 10);
+        yPos += frustHeight + 10;
       }
       
-      yPos += 8;
+      yPos += 10;
     });
   }
 
   // POV Statements
   if (povStatements.length > 0) {
-    yPos += 10;
+    yPos += 15;
     checkPageBreak(60);
     doc.setFontSize(20);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text("3. Pontos de Vista (POV)", 20, yPos);
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     
-    yPos += 15;
+    yPos += 18;
     
     povStatements.forEach((pov, idx) => {
-      checkPageBreak(30);
+      checkPageBreak(35);
       
       doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
-      doc.text(`POV ${idx + 1}:`, 25, yPos);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "bold");
+      doc.text(`  POV ${idx + 1}:`, 20, yPos);
+      doc.setFont("helvetica", "normal");
       
-      yPos += 8;
+      yPos += 10;
       doc.setFontSize(11);
-      const povHeight = addWrappedText(pov.statement, 30, yPos, 160, 11);
-      yPos += povHeight + 10;
+      const povHeight = addWrappedText(pov.statement, 25, yPos, 165, 11);
+      yPos += povHeight + 15;
     });
   }
 
   // Ideas
   if (ideas.length > 0) {
-    yPos += 10;
+    yPos += 15;
     checkPageBreak(60);
     doc.setFontSize(20);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text("4. Ideias Geradas", 20, yPos);
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     
-    yPos += 15;
+    yPos += 18;
     
     ideas.forEach((idea, idx) => {
-      checkPageBreak(30);
+      checkPageBreak(35);
       
       doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
-      doc.text(`${idx + 1}. ${idea.title}`, 25, yPos);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "bold");
+      doc.text(`  ${idx + 1}. ${idea.title}`, 20, yPos);
+      doc.setFont("helvetica", "normal");
       
-      yPos += 8;
+      yPos += 10;
       doc.setFontSize(11);
-      const ideaHeight = addWrappedText(idea.description || "", 30, yPos, 160, 10);
-      yPos += ideaHeight + 10;
+      const ideaHeight = addWrappedText(idea.description || "", 25, yPos, 165, 10);
+      yPos += ideaHeight + 15;
     });
   }
 
   // Landing Page
   if (landingPage) {
     doc.addPage();
-    yPos = 20;
+    yPos = 35;
     
     doc.setFontSize(20);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text("5. Landing Page", 20, yPos);
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     
-    yPos += 15;
+    yPos += 18;
     
     if (landingPage.headline) {
       doc.setFontSize(16);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       const headlineHeight = addWrappedText(landingPage.headline, 20, yPos, 170, 14);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
       yPos += headlineHeight + 10;
     }
     
@@ -613,17 +632,17 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
     if (landingPage.features && landingPage.features.length > 0) {
       checkPageBreak(40);
       doc.setFontSize(14);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text("Recursos Principais:", 20, yPos);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
       yPos += 10;
       
       landingPage.features.forEach((feature: any) => {
         checkPageBreak(15);
         doc.setFontSize(11);
-        doc.setFont(undefined, "bold");
+        doc.setFont("helvetica", "bold");
         doc.text(`• ${feature.title}`, 25, yPos);
-        doc.setFont(undefined, "normal");
+        doc.setFont("helvetica", "normal");
         yPos += 7;
         const featDescHeight = addWrappedText(feature.description, 30, yPos, 160, 10);
         yPos += featDescHeight + 5;
@@ -634,9 +653,9 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
       yPos += 10;
       checkPageBreak(20);
       doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text(`Call-to-Action: ${landingPage.cta}`, 20, yPos);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
       yPos += 10;
     }
   }
@@ -644,22 +663,22 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
   // Social Media Strategy
   if (socialMedia && socialMedia.length > 0) {
     doc.addPage();
-    yPos = 20;
+    yPos = 35;
     
     doc.setFontSize(20);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text("6. Estratégia de Redes Sociais", 20, yPos);
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     
-    yPos += 15;
+    yPos += 18;
     
     socialMedia.forEach((post: any, idx: number) => {
       checkPageBreak(35);
       
       doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text(`Post ${idx + 1} - ${post.platform}`, 25, yPos);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
       
       yPos += 8;
       doc.setFontSize(11);
@@ -680,14 +699,14 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
   // Business Model Canvas
   if (businessModel) {
     doc.addPage();
-    yPos = 20;
+    yPos = 35;
     
     doc.setFontSize(20);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text("7. Modelo de Negócio", 20, yPos);
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     
-    yPos += 15;
+    yPos += 18;
     
     const sections = [
       { title: "Proposta de Valor", key: "valueProposition" },
@@ -704,27 +723,27 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
     sections.forEach(section => {
       const content = businessModel[section.key];
       if (content && (Array.isArray(content) ? content.length > 0 : content)) {
-        checkPageBreak(30);
+        checkPageBreak(35);
         
-        doc.setFontSize(14);
-        doc.setFont(undefined, "bold");
+        doc.setFontSize(13);
+        doc.setFont("helvetica", "bold");
         doc.text(section.title, 20, yPos);
-        doc.setFont(undefined, "normal");
-        yPos += 10;
+        doc.setFont("helvetica", "normal");
+        yPos += 12;
         
         doc.setFontSize(11);
         if (Array.isArray(content)) {
           content.forEach((item: string) => {
-            checkPageBreak(10);
+            checkPageBreak(12);
             const itemHeight = addWrappedText(`• ${item}`, 25, yPos, 165, 10);
-            yPos += itemHeight + 3;
+            yPos += itemHeight + 5;
           });
         } else {
           const contentHeight = addWrappedText(content, 25, yPos, 165, 10);
-          yPos += contentHeight + 5;
+          yPos += contentHeight + 8;
         }
         
-        yPos += 8;
+        yPos += 10;
       }
     });
   }
@@ -735,18 +754,36 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     
-    if (i > 1) {
-      doc.setFontSize(14);
+    // Add logo to top-left on all pages
+    if (logoDataUrl) {
+      try {
+        doc.addImage(logoDataUrl, 'PNG', 15, 8, 60, 12); // x, y, width, height
+      } catch (error) {
+        console.error('Failed to add logo to PDF:', error);
+        // Fallback to text if logo fails
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(30, 58, 138);
+        doc.text("Design Thinking ", 15, 15);
+        doc.setTextColor(16, 185, 129);
+        doc.text("Tools", 60, 15);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "normal");
+      }
+    } else {
+      // Fallback to text if logo not loaded
+      doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(30, 58, 138);
-      doc.text("Design Thinking ", 20, 15);
+      doc.text("Design Thinking ", 15, 15);
       doc.setTextColor(16, 185, 129);
-      doc.text("Tools", 72, 15);
+      doc.text("Tools", 60, 15);
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
     }
     
-    doc.setFontSize(10);
+    // Footer with link and page number
+    doc.setFontSize(9);
     doc.setTextColor(37, 99, 235);
     doc.textWithLink("www.designthinkingtools.com", 105, 285, { 
       url: "https://www.designthinkingtools.com",
@@ -754,7 +791,7 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
     });
     
     doc.setTextColor(107, 114, 128);
-    doc.text(`Página ${i} de ${totalPages}`, 180, 285);
+    doc.text(`Página ${i} de ${totalPages}`, 175, 285);
     doc.setTextColor(0, 0, 0);
   }
 
