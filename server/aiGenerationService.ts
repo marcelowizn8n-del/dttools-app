@@ -451,6 +451,8 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
    */
   private async generateLandingPage(context: GenerationContext, projectCore: any) {
     
+    console.log(`🎨 Generating Landing Page for: ${projectCore.name}`);
+    
     const customInspirationText = context.customInspiration 
       ? `User References: ${context.customInspiration}\n`
       : '';
@@ -486,11 +488,17 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     const content = response.text || "{}";
     const cleanedContent = this.cleanJSONResponse(content);
     
+    console.log(`🎨 Landing Page raw response (first 200 chars):`, content.substring(0, 200));
+    console.log(`🎨 Landing Page cleaned (first 200 chars):`, cleanedContent.substring(0, 200));
+    
     try {
-      return JSON.parse(cleanedContent);
+      const parsed = JSON.parse(cleanedContent);
+      console.log(`✅ Landing Page parsed successfully:`, Object.keys(parsed));
+      return parsed;
     } catch (error) {
-      console.error("Failed to parse landing page JSON:", content);
-      console.error("Cleaned content:", cleanedContent);
+      console.error("❌ Failed to parse landing page JSON:", content);
+      console.error("❌ Cleaned content:", cleanedContent);
+      console.error("❌ Error:", error);
       return {
         headline: "Welcome",
         subheadline: "Your solution awaits",
@@ -550,6 +558,8 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
    */
   private async generateBusinessModel(context: GenerationContext, projectCore: any) {
     
+    console.log(`💰 Generating Business Model for: ${projectCore.name}`);
+    
     const customInspirationText = context.customInspiration 
       ? `Additional References: ${context.customInspiration}\n`
       : '';
@@ -584,11 +594,17 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     const content = response.text || "{}";
     const cleanedContent = this.cleanJSONResponse(content);
     
+    console.log(`💰 Business Model raw response (first 200 chars):`, content.substring(0, 200));
+    console.log(`💰 Business Model cleaned (first 200 chars):`, cleanedContent.substring(0, 200));
+    
     try {
-      return JSON.parse(cleanedContent);
+      const parsed = JSON.parse(cleanedContent);
+      console.log(`✅ Business Model parsed successfully:`, Object.keys(parsed));
+      return parsed;
     } catch (error) {
-      console.error("Failed to parse business model JSON:", content);
-      console.error("Cleaned content:", cleanedContent);
+      console.error("❌ Failed to parse business model JSON:", content);
+      console.error("❌ Cleaned content:", cleanedContent);
+      console.error("❌ Error:", error);
       return {
         revenueStreams: [],
         keyResources: [],
@@ -605,6 +621,11 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     
     const assets: InsertAiGeneratedAsset[] = [];
     
+    console.log(`📦 Preparing to save AI assets for project ${projectId}`);
+    console.log(`📦 Landing Page Content:`, JSON.stringify(generatedData.landingPageContent).substring(0, 200));
+    console.log(`📦 Business Model:`, JSON.stringify(generatedData.businessModel).substring(0, 200));
+    console.log(`📦 Social Media Strategy:`, JSON.stringify(generatedData.socialMediaStrategy).substring(0, 200));
+    
     // Save logo (free placeholder, no generation cost)
     if (generatedData.logoUrl) {
       assets.push({
@@ -613,6 +634,7 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
         content: JSON.stringify({ url: generatedData.logoUrl }),
         generationCost: 0, // Free placeholder logo
       });
+      console.log(`✅ Logo asset prepared`);
     }
     
     // Distribute total text generation cost across the 3 stored assets
@@ -621,35 +643,48 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
     const assetCostShare = generatedData.generationCosts.textGeneration / 3;
     
     // Save landing page
+    const landingPageContent = JSON.stringify(generatedData.landingPageContent);
     assets.push({
       projectId,
       assetType: "landing_page",
-      content: JSON.stringify(generatedData.landingPageContent),
+      content: landingPageContent,
       generationCost: assetCostShare,
     });
+    console.log(`✅ Landing Page asset prepared (${landingPageContent.length} chars)`);
     
     // Save social media strategy
+    const socialMediaContent = JSON.stringify(generatedData.socialMediaStrategy);
     assets.push({
       projectId,
       assetType: "social_media",
-      content: JSON.stringify(generatedData.socialMediaStrategy),
+      content: socialMediaContent,
       generationCost: assetCostShare,
     });
+    console.log(`✅ Social Media asset prepared (${socialMediaContent.length} chars)`);
     
     // Save business model
+    const businessModelContent = JSON.stringify(generatedData.businessModel);
     assets.push({
       projectId,
       assetType: "business_model",
-      content: JSON.stringify(generatedData.businessModel),
+      content: businessModelContent,
       generationCost: assetCostShare,
     });
+    console.log(`✅ Business Model asset prepared (${businessModelContent.length} chars)`);
     
     // Batch create assets
+    console.log(`💾 Saving ${assets.length} assets to database...`);
     for (const asset of assets) {
-      await storage.createAiGeneratedAsset(asset);
+      try {
+        const savedAsset = await storage.createAiGeneratedAsset(asset);
+        console.log(`✅ Saved asset type: ${asset.assetType} with ID: ${savedAsset.id}`);
+      } catch (error) {
+        console.error(`❌ Failed to save asset type: ${asset.assetType}`, error);
+        throw error; // Re-throw to ensure the error is visible
+      }
     }
     
-    console.log(`💾 Saved ${assets.length} AI-generated assets for project ${projectId}`);
+    console.log(`💾 Successfully saved ${assets.length} AI-generated assets for project ${projectId}`);
   }
 }
 
