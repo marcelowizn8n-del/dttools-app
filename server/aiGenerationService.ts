@@ -277,13 +277,17 @@ Be creative, professional, and market-ready. The name should be brandable and me
    */
   private async generatePersonas(context: GenerationContext, projectCore: any): Promise<InsertPersona[]> {
     
+    const customInspirationText = context.customInspiration 
+      ? `Additional Inspirations: ${context.customInspiration}\n`
+      : '';
+
     const prompt = `You are a UX researcher creating user personas.
 
 Project: ${projectCore.name}
 Description: ${projectCore.description}
 Industry: ${context.sector.namePt}
 Inspiration: ${context.successCase.name}
-
+${customInspirationText}
 Task: Create 2-3 detailed user personas representing the target audience.
 
 Return ONLY a valid JSON array with this structure:
@@ -447,12 +451,16 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
    */
   private async generateLandingPage(context: GenerationContext, projectCore: any) {
     
+    const customInspirationText = context.customInspiration 
+      ? `User References: ${context.customInspiration}\n`
+      : '';
+
     const prompt = `You are a conversion copywriter creating landing page content.
 
 Project: ${projectCore.name}
 Tagline: ${projectCore.tagline}
 Description: ${projectCore.description}
-
+${customInspirationText}
 Task: Create compelling landing page sections.
 
 Return ONLY a valid JSON object:
@@ -542,12 +550,16 @@ Language: ${context.language === 'pt' ? 'Portuguese (Brazil)' : 'English'}`;
    */
   private async generateBusinessModel(context: GenerationContext, projectCore: any) {
     
+    const customInspirationText = context.customInspiration 
+      ? `Additional References: ${context.customInspiration}\n`
+      : '';
+
     const prompt = `You are a business model consultant.
 
 Project: ${projectCore.name}
 Description: ${projectCore.description}
 Inspired by: ${context.successCase.name}
-
+${customInspirationText}
 Task: Create a simplified business model canvas.
 
 Return ONLY a valid JSON object:
