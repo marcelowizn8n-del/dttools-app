@@ -380,31 +380,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session!.userId!;
       const isAdmin = req.session.user?.role === "admin";
       
+      console.log("[DELETE PROJECT] Request:", {
+        projectId: req.params.id,
+        userId,
+        isAdmin,
+        userRole: req.session.user?.role
+      });
+      
       // Admin can delete any project, users can only delete their own
       let success;
       if (isAdmin) {
+        console.log("[DELETE PROJECT] Admin delete - fetching all projects");
         // Admin: Delete without userId restriction by finding the project first
         const allProjects = await storage.getAllProjects();
         const project = allProjects.find(p => p.id === req.params.id);
         
+        console.log("[DELETE PROJECT] Project found:", { 
+          found: !!project, 
+          projectUserId: project?.userId 
+        });
+        
         if (!project) {
+          console.log("[DELETE PROJECT] Project not found");
           return res.status(404).json({ error: "Project not found" });
         }
         
         // Delete using the project's actual userId
+        console.log("[DELETE PROJECT] Calling deleteProject with:", {
+          projectId: req.params.id,
+          projectUserId: project.userId
+        });
         success = await storage.deleteProject(req.params.id, project.userId);
+        console.log("[DELETE PROJECT] Delete result:", success);
       } else {
         // Regular user: Delete only their own projects
+        console.log("[DELETE PROJECT] Regular user delete");
         success = await storage.deleteProject(req.params.id, userId);
+        console.log("[DELETE PROJECT] Delete result:", success);
       }
       
       if (!success) {
+        console.log("[DELETE PROJECT] Delete failed - returning 404");
         return res.status(404).json({ error: "Project not found" });
       }
       
+      console.log("[DELETE PROJECT] Delete successful");
       res.json({ success: true });
     } catch (error) {
-      console.error("Error deleting project:", error);
+      console.error("[DELETE PROJECT] Error:", error);
       res.status(500).json({ error: "Failed to delete project" });
     }
   });
