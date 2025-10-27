@@ -83,10 +83,11 @@ export default function OnboardingAI() {
   };
 
   const handleGenerate = () => {
-    if (selectedSector && selectedCase && problemDescription.length >= 50 && problemDescription.length <= 500) {
+    // Success case is now optional - user can rely only on custom inspiration
+    if (selectedSector && problemDescription.length >= 50 && problemDescription.length <= 500) {
       generateMutation.mutate({
         sectorId: selectedSector.id,
-        successCaseId: selectedCase.id,
+        successCaseId: selectedCase?.id || '', // Empty string if no case selected
         userProblemDescription: problemDescription,
         customInspiration: customInspiration.trim() || undefined,
       });
@@ -196,7 +197,7 @@ export default function OnboardingAI() {
                   Escolha sua Inspiração
                 </CardTitle>
                 <CardDescription>
-                  Selecione um case de sucesso que inspira seu modelo de negócio
+                  Selecione um case de sucesso que inspira seu modelo de negócio, ou pule esta etapa e use apenas inspirações personalizadas
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -267,7 +268,6 @@ export default function OnboardingAI() {
                   </Button>
                   <Button
                     onClick={handleNextStep}
-                    disabled={!selectedCase}
                     className="bg-purple-600 hover:bg-purple-700"
                     data-testid="button-next-step-2"
                   >

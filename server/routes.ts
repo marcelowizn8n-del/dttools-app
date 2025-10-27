@@ -1253,8 +1253,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { sectorId, successCaseId, userProblemDescription, customInspiration, language = 'pt' } = req.body;
       
-      if (!sectorId || !successCaseId || !userProblemDescription) {
-        return res.status(400).json({ error: "Missing required fields" });
+      // Success case is now optional - only sector and problem description are required
+      if (!sectorId || !userProblemDescription) {
+        return res.status(400).json({ error: "Missing required fields: sectorId and userProblemDescription" });
       }
       
       if (userProblemDescription.length < 50 || userProblemDescription.length > 500) {
@@ -1266,16 +1267,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Custom inspiration must be under 300 characters" });
       }
       
-      // Get sector and success case
+      // Get sector
       const sector = await storage.getIndustrySectors().then(sectors => 
         sectors.find(s => s.id === sectorId)
       );
-      const successCase = await storage.getSuccessCases().then(cases => 
-        cases.find(c => c.id === successCaseId)
-      );
       
-      if (!sector || !successCase) {
-        return res.status(404).json({ error: "Sector or success case not found" });
+      if (!sector) {
+        return res.status(404).json({ error: "Sector not found" });
+      }
+      
+      // Get success case if provided, otherwise create a generic one
+      let successCase;
+      if (successCaseId && successCaseId.trim()) {
+        successCase = await storage.getSuccessCases().then(cases => 
+          cases.find(c => c.id === successCaseId)
+        );
+        
+        if (!successCase) {
+          return res.status(404).json({ error: "Success case not found" });
+        }
+      } else {
+        // Create a generic success case based on custom inspiration
+        successCase = {
+          id: 'custom',
+          name: customInspiration || 'Inspiração Personalizada',
+          company: 'Custom',
+          sectorId: sectorId,
+          descriptionPt: customInspiration || 'Baseado em inspirações personalizadas do usuário',
+          descriptionEn: customInspiration || 'Based on user custom inspirations',
+          descriptionEs: customInspiration || 'Basado en inspiraciones personalizadas del usuario',
+          descriptionFr: customInspiration || 'Basé sur des inspirations personnalisées de l\'utilisateur',
+          industry: sector.namePt || 'Custom',
+          businessModel: 'Custom model based on user input',
+          targetAudience: 'To be defined based on user needs',
+          keyFeatures: [],
+          successMetrics: 'Custom metrics',
+          createdAt: new Date(),
+        };
       }
       
       // Import AI service dynamically
