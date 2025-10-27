@@ -378,12 +378,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/projects/:id", requireAuth, async (req, res) => {
     try {
       const userId = req.session!.userId!;
-      const success = await storage.deleteProject(req.params.id, userId);
+      const isAdmin = req.session.user?.role === "admin";
+      
+      // Admin can delete any project, users can only delete their own
+      let success;
+      if (isAdmin) {
+        // Admin: Delete without userId restriction by finding the project first
+        const allProjects = await storage.getAllProjects();
+        const project = allProjects.find(p => p.id === req.params.id);
+        
+        if (!project) {
+          return res.status(404).json({ error: "Project not found" });
+        }
+        
+        // Delete using the project's actual userId
+        success = await storage.deleteProject(req.params.id, project.userId);
+      } else {
+        // Regular user: Delete only their own projects
+        success = await storage.deleteProject(req.params.id, userId);
+      }
+      
       if (!success) {
         return res.status(404).json({ error: "Project not found" });
       }
+      
       res.json({ success: true });
     } catch (error) {
+      console.error("Error deleting project:", error);
       res.status(500).json({ error: "Failed to delete project" });
     }
   });
@@ -1348,14 +1369,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get AI-generated assets for a project
   app.get("/api/projects/:projectId/ai-assets", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getProjectById(req.params.projectId);
+      // Admin can access all projects, users can only access their own
+      const isAdmin = req.session.user?.role === "admin";
+      let project;
+      
+      if (isAdmin) {
+        // Admin: get project without userId restriction
+        const allProjects = await storage.getAllProjects();
+        project = allProjects.find(p => p.id === req.params.projectId);
+      } else {
+        // Regular user: get project with userId restriction
+        project = await storage.getProject(req.params.projectId, req.session.userId!);
+      }
       
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
-      }
-      
-      if (project.userId !== req.session.userId && req.session.user?.role !== "admin") {
-        return res.status(403).json({ error: "Access denied" });
       }
       
       const assets = await storage.getAiGeneratedAssets(req.params.projectId);
@@ -1369,17 +1397,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get specific AI-generated asset by type
   app.get("/api/projects/:projectId/ai-assets/:assetType", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getProjectById(req.params.projectId);
+      // Admin can access all projects, users can only access their own
+      const isAdmin = req.session.user?.role === "admin";
+      let project;
+      
+      if (isAdmin) {
+        // Admin: get project without userId restriction
+        const allProjects = await storage.getAllProjects();
+        project = allProjects.find(p => p.id === req.params.projectId);
+      } else {
+        // Regular user: get project with userId restriction
+        project = await storage.getProject(req.params.projectId, req.session.userId!);
+      }
       
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
       
-      if (project.userId !== req.session.userId && req.session.user?.role !== "admin") {
-        return res.status(403).json({ error: "Access denied" });
-      }
-      
-      const assets = await storage.getAiGeneratedAssetsByProject(req.params.projectId);
+      const assets = await storage.getAiGeneratedAssets(req.params.projectId);
       const asset = assets.find(a => a.assetType === req.params.assetType);
       
       if (!asset) {
@@ -1657,6 +1692,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("[Create User] Request body:", req.body);
       const validatedData = insertUserSchema.parse(req.body);
       console.log("[Create User] Validated data:", validatedData);
+      
+      // Ensure password exists
+      if (!validatedData.password) {
+        return res.status(400).json({ error: "Password is required" });
+      }
       
       // Hash password before storing
       const hashedPassword = await bcrypt.hash(validatedData.password, 10);
@@ -2137,7 +2177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const testPlans = await storage.getTestPlans(projectId);
 
       // Get test results for all test plans
-      const testResults = [];
+      const testResults: any[] = [];
       for (const testPlan of testPlans) {
         const results = await storage.getTestResults(testPlan.id);
         testResults.push(...results);
