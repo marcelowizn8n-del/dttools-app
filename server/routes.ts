@@ -1303,7 +1303,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Save AI-generated assets
-      await aiGenerationService.saveGeneratedAssets(project.id, generatedMVP);
+      console.log(`📦 About to save AI-generated assets for project ${project.id}`);
+      try {
+        await aiGenerationService.saveGeneratedAssets(project.id, generatedMVP);
+        console.log(`✅ AI-generated assets saved successfully for project ${project.id}`);
+      } catch (assetError) {
+        console.error(`❌ CRITICAL: Failed to save AI-generated assets for project ${project.id}:`, assetError);
+        console.error(`❌ Asset Error Stack:`, assetError instanceof Error ? assetError.stack : 'No stack');
+        // Don't throw - let the MVP creation continue even if assets fail
+      }
       
       // Update user progress
       await storage.updateUserProgress({
