@@ -351,19 +351,23 @@ export class DatabaseStorage implements IStorage {
     // Delete project backups
     await deleteTable('projectBackups', () => db.delete(projectBackups).where(eq(projectBackups.projectId, id)));
     
+    // Delete user progress
+    await deleteTable('userProgress', () => db.delete(userProgress).where(eq(userProgress.projectId, id)));
+    
+    // Delete benchmarks
+    await deleteTable('benchmarks', () => db.delete(benchmarks).where(eq(benchmarks.projectId, id)));
+    
     // Finally, delete the project itself
     // We've already cleaned up all child records, so this should succeed
     try {
       const result = await db.delete(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
       const success = (result.rowCount || 0) > 0;
-      console.log(`[DELETE PROJECT] ✓ Final project deletion result: ${success}`);
+      console.log(`[DELETE PROJECT] ✓ Final project deletion result: ${success}, rowCount: ${result.rowCount}`);
       return success;
     } catch (error: any) {
-      // If even the final delete fails, log it but return true
-      // (all child records are already deleted, so the project is effectively gone)
-      console.error(`[DELETE PROJECT] ⚠ Final project deletion failed (error ${error?.code}):`, error?.message);
-      console.log(`[DELETE PROJECT] ℹ All child records already deleted, treating as success`);
-      return true;
+      // If the final delete fails, it means there's still a FK constraint blocking it
+      console.error(`[DELETE PROJECT] ✗ Final project deletion FAILED (error ${error?.code}):`, error?.message);
+      throw error; // Re-throw so the API returns proper error
     }
   }
 
