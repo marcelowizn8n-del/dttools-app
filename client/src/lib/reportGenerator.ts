@@ -757,7 +757,9 @@ export async function generateAIMVPPDF(data: AIMVPExportData): Promise<string> {
     // Add logo to top-left on all pages
     if (logoDataUrl) {
       try {
-        doc.addImage(logoDataUrl, 'PNG', 15, 8, 60, 12); // x, y, width, height
+        // Use proper aspect ratio for the logo (horizontal logo is ~4.5:1)
+        // Width: 50, Height: 11 maintains better proportions
+        doc.addImage(logoDataUrl, 'PNG', 15, 8, 50, 11); // x, y, width, height
       } catch (error) {
         console.error('Failed to add logo to PDF:', error);
         // Fallback to text if logo fails
