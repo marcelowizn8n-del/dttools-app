@@ -42,6 +42,12 @@ export async function checkAiProjectLimits(
 
     const userData = user[0];
 
+    // ADMINS have unlimited access - skip all checks
+    if (userData.role === 'admin') {
+      console.log(`✅ Admin user ${userId} bypassing AI project limits`);
+      return next();
+    }
+
     // Check if user has a subscription plan
     if (!userData.subscriptionPlanId) {
       return res.status(403).json({
