@@ -269,45 +269,53 @@ app.use((req, res, next) => {
     (async () => {
       let migrationCompleted = false;
       
-      try {
-        log('🔧 Running database migration in background...');
-        
-        // Run migration with proper timeout handling
-        const migrationPromise = new Promise<void>((resolve, reject) => {
-          const { spawn } = require('child_process');
-          const migration = spawn('npm', ['run', 'db:push'], {
-            stdio: 'inherit' // Inherit to avoid buffer issues
+      // ONLY run db:push in development, NOT in production (Render)
+      // In production, schema should already be applied
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+      
+      if (!isProduction) {
+        try {
+          log('🔧 Running database migration in background...');
+          
+          // Run migration with proper timeout handling
+          const migrationPromise = new Promise<void>((resolve, reject) => {
+            const { spawn } = require('child_process');
+            const migration = spawn('npm', ['run', 'db:push'], {
+              stdio: 'inherit' // Inherit to avoid buffer issues
+            });
+            
+            // Set up timeout killer
+            const timeoutId = setTimeout(() => {
+              migration.kill('SIGTERM');
+              reject(new Error('Migration timeout after 90s'));
+            }, 90000);
+            
+            migration.on('close', (code: number) => {
+              clearTimeout(timeoutId);
+              if (code === 0) {
+                log('✅ Database migration completed');
+                resolve();
+              } else {
+                reject(new Error(`Migration exited with code ${code}`));
+              }
+            });
+            
+            migration.on('error', (error: Error) => {
+              clearTimeout(timeoutId);
+              reject(error);
+            });
           });
           
-          // Set up timeout killer
-          const timeoutId = setTimeout(() => {
-            migration.kill('SIGTERM');
-            reject(new Error('Migration timeout after 90s'));
-          }, 90000);
-          
-          migration.on('close', (code: number) => {
-            clearTimeout(timeoutId);
-            if (code === 0) {
-              log('✅ Database migration completed');
-              resolve();
-            } else {
-              reject(new Error(`Migration exited with code ${code}`));
-            }
-          });
-          
-          migration.on('error', (error: Error) => {
-            clearTimeout(timeoutId);
-            reject(error);
-          });
-        });
-        
-        await migrationPromise;
-        migrationCompleted = true;
-      } catch (error) {
-        log('⚠️  Database migration error (may already be applied):', String(error).substring(0, 100));
+          await migrationPromise;
+          migrationCompleted = true;
+        } catch (error) {
+          log('⚠️  Database migration error (may already be applied):', String(error).substring(0, 100));
+        }
+      } else {
+        log('⏭️  Skipping db:push in production (schema should already be applied)');
       }
       
-      // ALWAYS initialize default data, regardless of migration result
+      // ALWAYS initialize default data, regardless of migration result or environment
       try {
         await initializeDefaultData();
         log('✅ Default data initialized');
