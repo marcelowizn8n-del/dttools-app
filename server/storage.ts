@@ -281,6 +281,67 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProject(id: string, userId: string): Promise<boolean> {
+    // Delete all related records manually (in case cascade delete is not configured in DB)
+    // This ensures the delete works even without proper foreign key constraints
+    
+    // Delete AI generated assets
+    await db.delete(aiGeneratedAssets).where(eq(aiGeneratedAssets.projectId, id));
+    
+    // Delete empathy maps
+    await db.delete(empathyMaps).where(eq(empathyMaps.projectId, id));
+    
+    // Delete personas
+    await db.delete(personas).where(eq(personas.projectId, id));
+    
+    // Delete interviews
+    await db.delete(interviews).where(eq(interviews.projectId, id));
+    
+    // Delete observations
+    await db.delete(observations).where(eq(observations.projectId, id));
+    
+    // Delete POV statements
+    await db.delete(povStatements).where(eq(povStatements.projectId, id));
+    
+    // Delete HMW questions
+    await db.delete(hmwQuestions).where(eq(hmwQuestions.projectId, id));
+    
+    // Delete ideas
+    await db.delete(ideas).where(eq(ideas.projectId, id));
+    
+    // Delete prototypes
+    await db.delete(prototypes).where(eq(prototypes.projectId, id));
+    
+    // Delete test plans
+    await db.delete(testPlans).where(eq(testPlans.projectId, id));
+    
+    // Delete test results
+    await db.delete(testResults).where(eq(testResults.projectId, id));
+    
+    // Delete canvas drawings
+    await db.delete(canvasDrawings).where(eq(canvasDrawings.projectId, id));
+    
+    // Delete phase cards
+    await db.delete(phaseCards).where(eq(phaseCards.projectId, id));
+    
+    // Delete benchmark assessments
+    await db.delete(benchmarkAssessments).where(eq(benchmarkAssessments.projectId, id));
+    
+    // Delete DVF assessments
+    await db.delete(dvfAssessments).where(eq(dvfAssessments.projectId, id));
+    
+    // Delete lovability metrics
+    await db.delete(lovabilityMetrics).where(eq(lovabilityMetrics.projectId, id));
+    
+    // Delete project analytics
+    await db.delete(projectAnalytics).where(eq(projectAnalytics.projectId, id));
+    
+    // Delete competitive analysis
+    await db.delete(competitiveAnalysis).where(eq(competitiveAnalysis.projectId, id));
+    
+    // Delete project backups
+    await db.delete(projectBackups).where(eq(projectBackups.projectId, id));
+    
+    // Finally, delete the project itself
     const result = await db.delete(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
     return (result.rowCount || 0) > 0;
   }
