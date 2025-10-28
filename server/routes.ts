@@ -1550,17 +1550,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // CRITICAL: Hash password before storing
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Create new user
+      // Get Free plan to assign to new users
+      const freePlan = await storage.getSubscriptionPlanByName("free");
+      if (!freePlan) {
+        console.error("❌ Free plan not found in database!");
+        return res.status(500).json({ error: "Erro de configuração do sistema. Contate o suporte." });
+      }
+
+      // Create new user with Free plan automatically assigned
       const userData = {
         username, // Auto-generated from email
         email,
         name, // Display name provided by user
         password: hashedPassword, // Store hashed password
-        role: "user"
+        role: "user",
+        subscriptionPlanId: freePlan.id, // Automatically assign Free plan
+        subscriptionStatus: "active" as const,
       };
 
       const user = await storage.createUser(userData);
-      console.log("User created successfully:", user.email);
+      console.log(`✅ User created successfully with Free plan: ${user.email}`);
       
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;

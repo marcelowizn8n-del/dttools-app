@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { db } from "./db";
-import { users } from "../shared/schema";
+import { users, subscriptionPlans } from "../shared/schema";
 import { eq } from "drizzle-orm";
 
 export function setupPassport() {
@@ -58,7 +58,19 @@ export function setupPassport() {
             return done(null, updatedUser);
           }
 
-          // Create new user with Google account
+          // Get Free plan to assign to new Google OAuth users
+          const [freePlan] = await db
+            .select()
+            .from(subscriptionPlans)
+            .where(eq(subscriptionPlans.name, "free"))
+            .limit(1);
+
+          if (!freePlan) {
+            console.error("❌ [Passport Google] Free plan not found!");
+            return done(new Error("System configuration error"), undefined);
+          }
+
+          // Create new user with Google account and Free plan
           const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(7);
           
           const [newUser] = await db
@@ -72,9 +84,12 @@ export function setupPassport() {
               profilePicture: profilePicture,
               password: null, // No password for OAuth users
               role: "user",
+              subscriptionPlanId: freePlan.id, // Automatically assign Free plan
+              subscriptionStatus: "active",
             })
             .returning();
 
+          console.log(`✅ [Passport Google] New user created with Free plan: ${newUser.email}`);
           return done(null, newUser);
         } catch (error) {
           console.error("[Passport Google] Error:", error);
