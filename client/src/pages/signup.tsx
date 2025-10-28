@@ -36,8 +36,8 @@ export default function SignupPage() {
 
       const result = await response.json();
       
-      // Success - redirect to login
-      navigate("/login");
+      // Success - user is now logged in with session, redirect to dashboard
+      window.location.href = "/dashboard"; // Force full page reload to refresh auth context
     } catch (error) {
       console.error('Signup error:', error);
       // Handle error in SignupForm
