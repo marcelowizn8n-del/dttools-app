@@ -68,12 +68,29 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       setError("");
       setIsLoading(true);
       
-      // Remove confirmPassword and confirmEmail before passing to parent
-      const { confirmPassword, confirmEmail, ...userData } = data;
-      onSuccess?.(userData);
+      // Call signup API directly
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao criar conta');
+      }
+
+      // Success - redirect to dashboard
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar conta");
-    } finally {
       setIsLoading(false);
     }
   };

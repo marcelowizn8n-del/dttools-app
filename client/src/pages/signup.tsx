@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLocation } from "wouter";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,40 +12,9 @@ export default function SignupPage() {
     return null;
   }
 
-  const handleSignupSuccess = async (userData: any) => {
-    try {
-      // Call signup API directly
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: userData.name,
-          email: userData.email,
-          password: userData.password
-        })
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao criar conta');
-      }
-
-      const result = await response.json();
-      
-      // Success - user is now logged in with session, redirect to dashboard
-      window.location.href = "/dashboard"; // Force full page reload to refresh auth context
-    } catch (error) {
-      console.error('Signup error:', error);
-      // Handle error in SignupForm
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <SignupForm onSuccess={handleSignupSuccess} />
+      <SignupForm />
     </div>
   );
 }
