@@ -1571,6 +1571,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.createUser(userData);
       console.log(`✅ User created successfully with Free plan: ${user.email}`);
       
+      // Create session after signup (auto-login)
+      req.session.userId = user.id;
+      req.session.user = {
+        id: user.id,
+        username: user.username,
+        role: user.role || "user",
+        createdAt: user.createdAt || new Date()
+      };
+      
+      // Save session before sending response
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error after signup:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+      
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
       res.status(201).json({ user: userWithoutPassword, message: "Conta criada com sucesso!" });
