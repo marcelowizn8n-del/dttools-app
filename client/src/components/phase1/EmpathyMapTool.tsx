@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertEmpathyMapSchema, type EmpathyMap, type InsertEmpathyMap } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import EditEmpathyMapDialog from "./EditEmpathyMapDialog";
+import { ContextualTooltip } from "@/components/ui/contextual-tooltip";
 
 interface EmpathyMapToolProps {
   projectId: string;
@@ -217,10 +218,38 @@ function CreateEmpathyMapDialog({ projectId }: { projectId: string }) {
   };
 
   const quadrantLabels = [
-    { key: "says" as const, label: "O que DIZ", color: "bg-red-50 border-red-200" },
-    { key: "thinks" as const, label: "O que PENSA", color: "bg-blue-50 border-blue-200" },
-    { key: "does" as const, label: "O que FAZ", color: "bg-green-50 border-green-200" },
-    { key: "feels" as const, label: "O que SENTE", color: "bg-yellow-50 border-yellow-200" },
+    { 
+      key: "says" as const, 
+      label: "O que DIZ", 
+      color: "bg-red-50 border-red-200",
+      tooltip: "Frases e citações diretas que o usuário verbaliza. O que você ouviria se estivesse ao lado dele.",
+      placeholder: "Ex: 'Este app é muito lento', 'Não encontro o que preciso'",
+      examples: ["'Eu queria que fosse mais rápido'", "'Isso é muito complicado'", "'Adoro essa funcionalidade'"]
+    },
+    { 
+      key: "thinks" as const, 
+      label: "O que PENSA", 
+      color: "bg-blue-50 border-blue-200",
+      tooltip: "Pensamentos internos, preocupações e reflexões do usuário (mesmo que não verbalizadas).",
+      placeholder: "Ex: 'Será que isso vale a pena?', 'Tenho medo de errar'",
+      examples: ["'Isso vai me fazer perder tempo'", "'Preciso de algo mais simples'", "'Será que posso confiar nisso?'"]
+    },
+    { 
+      key: "does" as const, 
+      label: "O que FAZ", 
+      color: "bg-green-50 border-green-200",
+      tooltip: "Comportamentos observáveis e ações concretas que o usuário realiza no dia a dia.",
+      placeholder: "Ex: 'Usa o celular enquanto caminha', 'Compara preços'",
+      examples: ["Abre 5 abas antes de decidir", "Abandona carrinho com frequência", "Pede opinião de amigos"]
+    },
+    { 
+      key: "feels" as const, 
+      label: "O que SENTE", 
+      color: "bg-yellow-50 border-yellow-200",
+      tooltip: "Emoções, sentimentos e estados emocionais do usuário durante a experiência.",
+      placeholder: "Ex: 'Frustrado', 'Ansioso', 'Empolgado'",
+      examples: ["Frustrado com demora", "Ansioso para terminar", "Feliz quando funciona", "Confuso com interface"]
+    },
   ];
 
   return (
@@ -231,13 +260,25 @@ function CreateEmpathyMapDialog({ projectId }: { projectId: string }) {
           Novo Mapa de Empatia
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Criar Mapa de Empatia</DialogTitle>
           <DialogDescription>
             O mapa de empatia ajuda a entender o que seu usuário diz, pensa, faz e sente.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Dicas de Boas Práticas */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold text-sm text-blue-900 mb-2">💡 Dicas para um bom Mapa de Empatia:</h4>
+          <ul className="text-xs text-blue-800 space-y-1">
+            <li>• <strong>DIZ:</strong> Use citações reais entre aspas</li>
+            <li>• <strong>PENSA:</strong> Infira pensamentos não verbalizados (preocupações, dúvidas)</li>
+            <li>• <strong>FAZ:</strong> Descreva comportamentos observáveis e concretos</li>
+            <li>• <strong>SENTE:</strong> Identifique emoções (frustração, alegria, ansiedade)</li>
+          </ul>
+        </div>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -261,12 +302,19 @@ function CreateEmpathyMapDialog({ projectId }: { projectId: string }) {
             <div className="grid grid-cols-2 gap-4">
               {quadrantLabels.map((quadrant) => (
                 <div key={quadrant.key} className={`p-4 rounded-lg border ${quadrant.color}`}>
-                  <h4 className="font-semibold text-sm mb-2">{quadrant.label}</h4>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h4 className="font-semibold text-sm">{quadrant.label}</h4>
+                    <ContextualTooltip 
+                      title={quadrant.label} 
+                      content={quadrant.tooltip}
+                      examples={quadrant.examples}
+                    />
+                  </div>
                   <div className="space-y-2">
                     {quadrantInputs[quadrant.key].map((item, index) => (
                       <div key={index} className="flex gap-2">
                         <Input
-                          placeholder={`${quadrant.label.toLowerCase()}...`}
+                          placeholder={quadrant.placeholder}
                           value={item}
                           onChange={(e) => updateQuadrantInput(quadrant.key, index, e.target.value)}
                           className="text-sm"

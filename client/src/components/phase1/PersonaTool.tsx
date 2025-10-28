@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPersonaSchema, type Persona, type InsertPersona } from "@shared/schema";
 import { queryClient } from "@/lib/queryClient";
 import EditPersonaDialog from "./EditPersonaDialog";
+import { ContextualTooltip } from "@/components/ui/contextual-tooltip";
 
 interface PersonaToolProps {
   projectId: string;
@@ -296,9 +297,30 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
   };
 
   const listSections = [
-    { key: "goals" as const, label: "Objetivos", icon: Target, color: "bg-green-50 border-green-200" },
-    { key: "frustrations" as const, label: "Frustrações", icon: Frown, color: "bg-red-50 border-red-200" },
-    { key: "motivations" as const, label: "Motivações", icon: Heart, color: "bg-blue-50 border-blue-200" },
+    { 
+      key: "goals" as const, 
+      label: "Objetivos", 
+      icon: Target, 
+      color: "bg-green-50 border-green-200",
+      tooltip: "O que o usuário quer alcançar ou realizar. Metas específicas relacionadas ao uso do produto/serviço.",
+      placeholder: "Ex: 'Economizar tempo nas tarefas diárias', 'Aprender algo novo'"
+    },
+    { 
+      key: "frustrations" as const, 
+      label: "Frustrações", 
+      icon: Frown, 
+      color: "bg-red-50 border-red-200",
+      tooltip: "Problemas, dificuldades e pontos de dor que o usuário enfrenta atualmente.",
+      placeholder: "Ex: 'App muito lento', 'Interface confusa', 'Suporte ruim'"
+    },
+    { 
+      key: "motivations" as const, 
+      label: "Motivações", 
+      icon: Heart, 
+      color: "bg-blue-50 border-blue-200",
+      tooltip: "Por que o usuário busca uma solução? O que o move a agir?",
+      placeholder: "Ex: 'Crescer profissionalmente', 'Ter mais tempo livre'"
+    },
   ];
 
   return (
@@ -309,13 +331,25 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
           Nova Persona
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[750px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Criar Persona</DialogTitle>
           <DialogDescription>
             Crie um perfil detalhado do seu usuário-alvo incluindo características, objetivos e motivações.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Dicas de Boas Práticas */}
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold text-sm text-purple-900 mb-2">💡 Dicas para uma boa Persona:</h4>
+          <ul className="text-xs text-purple-800 space-y-1">
+            <li>• Baseie-se em dados reais de usuários (entrevistas, pesquisas)</li>
+            <li>• Seja específico - evite generalizações ("todos", "sempre")</li>
+            <li>• Dê um nome e idade para humanizar a persona</li>
+            <li>• Liste 2-3 objetivos e frustrações concretas</li>
+          </ul>
+        </div>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -521,15 +555,21 @@ function CreatePersonaDialog({ projectId }: { projectId: string }) {
                 const Icon = section.icon;
                 return (
                   <div key={section.key} className={`p-4 rounded-lg border ${section.color}`}>
-                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
-                      <Icon className="w-4 h-4" />
-                      {section.label}
-                    </h4>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-semibold text-sm flex items-center gap-1">
+                        <Icon className="w-4 h-4" />
+                        {section.label}
+                      </h4>
+                      <ContextualTooltip 
+                        title={section.label}
+                        content={section.tooltip}
+                      />
+                    </div>
                     <div className="space-y-2">
                       {listInputs[section.key].map((item, index) => (
                         <div key={index} className="flex gap-2">
                           <Input
-                            placeholder={`${section.label.toLowerCase()}...`}
+                            placeholder={section.placeholder}
                             value={item}
                             onChange={(e) => updateListInput(section.key, index, e.target.value)}
                             className="text-sm"
