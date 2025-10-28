@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Users, 
@@ -30,6 +30,9 @@ import type { Project } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import dttoolsIcon from "../assets/dttools-icon.png";
+import { WelcomeMessage } from "@/components/ui/welcome-message";
+import { PhaseNavigator } from "@/components/ui/phase-navigator";
+import { NextStepCard } from "@/components/ui/next-step-card";
 
 const phases = [
   {
@@ -146,10 +149,24 @@ export default function Dashboard() {
   const [selectedPhase, setSelectedPhase] = useState<number | null>(null);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [showWelcome, setShowWelcome] = useState(true);
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
+
+  // Check if user has dismissed welcome message before
+  useEffect(() => {
+    const dismissed = localStorage.getItem('welcomeDismissed');
+    if (dismissed === 'true') {
+      setShowWelcome(false);
+    }
+  }, []);
+
+  const handleDismissWelcome = () => {
+    localStorage.setItem('welcomeDismissed', 'true');
+    setShowWelcome(false);
+  };
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: { name: string; description?: string }) => {
@@ -207,6 +224,123 @@ export default function Dashboard() {
   const avgProgress = totalProjects > 0 
     ? Math.round(projects.reduce((sum, p) => sum + (p.completionRate || 0), 0) / totalProjects)
     : 0;
+
+  // Determine next recommended step based on user progress
+  const getNextStep = () => {
+    if (totalProjects === 0) {
+      return {
+        title: "Crie seu Primeiro Projeto",
+        description: "Comece sua jornada no Design Thinking criando um projeto. Você pode criar manualmente ou usar nossa IA para gerar um MVP completo em minutos!",
+        estimatedTime: "2-10 min",
+        action: {
+          label: "Criar Projeto",
+          onClick: () => setLocation('/projects')
+        },
+        tips: [
+          "Use a geração automática de MVP com IA para aprender rapidamente",
+          "Ou crie um projeto manual para controle total do processo",
+          "Você pode ter múltiplos projetos ativos simultaneamente"
+        ]
+      };
+    }
+
+    // Get the most recent project
+    const recentProject = projects[0];
+    const currentPhase = recentProject?.currentPhase || 1;
+
+    if (currentPhase === 1) {
+      return {
+        title: "Empatize com Seus Usuários",
+        description: "Comece criando Mapas de Empatia e Personas para entender profundamente quem são seus usuários, suas necessidades e frustrações.",
+        estimatedTime: "15-20 min",
+        action: {
+          label: "Ir para Empatizar",
+          onClick: () => setLocation(`/projects/${recentProject.id}`)
+        },
+        tips: [
+          "Crie pelo menos 2-3 personas diferentes",
+          "Mapeie as emoções, pensamentos e comportamentos dos usuários",
+          "Fale com usuários reais sempre que possível"
+        ]
+      };
+    }
+
+    if (currentPhase === 2) {
+      return {
+        title: "Defina o Problema Real",
+        description: "Sintetize suas descobertas da fase de Empatia em Declarações de Ponto de Vista (POV) claras que identifiquem o problema a ser resolvido.",
+        estimatedTime: "10-15 min",
+        action: {
+          label: "Ir para Definir",
+          onClick: () => setLocation(`/projects/${recentProject.id}`)
+        },
+        tips: [
+          "Transforme insights em declarações POV: [Usuário] precisa [necessidade] porque [insight]",
+          "Crie perguntas 'Como Poderíamos' (HMW) para cada POV",
+          "Foque no problema, não na solução"
+        ]
+      };
+    }
+
+    if (currentPhase === 3) {
+      return {
+        title: "Gere Ideias Criativas",
+        description: "Brainstorm de soluções inovadoras usando as perguntas HMW como guia. Quantidade antes de qualidade!",
+        estimatedTime: "20-30 min",
+        action: {
+          label: "Ir para Idear",
+          onClick: () => setLocation(`/projects/${recentProject.id}`)
+        },
+        tips: [
+          "Gere pelo menos 10-15 ideias diferentes",
+          "Não julgue ideias durante o brainstorm - seja livre!",
+          "Use a avaliação DVF (Desejabilidade, Viabilidade, Exequibilidade)"
+        ]
+      };
+    }
+
+    if (currentPhase === 4) {
+      return {
+        title: "Crie Protótipos Rápidos",
+        description: "Transforme suas melhores ideias em protótipos tangíveis para testar com usuários reais.",
+        estimatedTime: "30-60 min",
+        action: {
+          label: "Ir para Prototipar",
+          onClick: () => setLocation(`/projects/${recentProject.id}`)
+        },
+        tips: [
+          "Comece com protótipos de baixa fidelidade (papel, desenhos)",
+          "Foque na funcionalidade core, não na estética",
+          "Crie versões iterativas baseadas em feedback"
+        ]
+      };
+    }
+
+    return {
+      title: "Teste com Usuários Reais",
+      description: "Valide seus protótipos com usuários reais, colete feedback e refine suas soluções.",
+      estimatedTime: "45-90 min",
+      action: {
+        label: "Ir para Testar",
+        onClick: () => setLocation(`/projects/${recentProject.id}`)
+      },
+      tips: [
+        "Teste com pelo menos 5 usuários diferentes",
+        "Observe comportamentos, não apenas ouça opiniões",
+        "Itere baseado nos aprendizados - DT é um processo cíclico!"
+      ]
+    };
+  };
+
+  const nextStep = getNextStep();
+
+  // Prepare phase data for PhaseNavigator
+  const phaseData = phases.map(phase => ({
+    id: phase.id,
+    name: phase.name,
+    completed: phase.completed,
+    current: projects[0]?.currentPhase === phase.id
+  }));
 
   return (
     <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -295,6 +429,37 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Welcome Message - shown on first visit */}
+        {showWelcome && (
+          <WelcomeMessage 
+            userName={user?.username}
+            onDismiss={handleDismissWelcome}
+            className="mb-8"
+          />
+        )}
+
+        {/* Phase Navigator - Visual progress through 5 phases */}
+        {totalProjects > 0 && (
+          <Card className="mb-8 shadow-lg">
+            <CardContent className="p-6">
+              <PhaseNavigator 
+                phases={phaseData}
+                onPhaseClick={handlePhaseClick}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Next Step Card - Contextual recommendation */}
+        <NextStepCard 
+          title={nextStep.title}
+          description={nextStep.description}
+          estimatedTime={nextStep.estimatedTime}
+          action={nextStep.action}
+          tips={nextStep.tips}
+          className="mb-8"
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
