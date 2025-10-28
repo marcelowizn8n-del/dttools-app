@@ -129,7 +129,8 @@ export class AIGenerationService {
           name: projectCore.name,
           description: projectCore.description,
           sectorId: context.sector.id,
-          successCaseId: context.successCase.id,
+          // Only include successCaseId if it's a valid database ID (not 'custom')
+          successCaseId: context.successCase.id !== 'custom' ? context.successCase.id : undefined,
           userProblemDescription: context.userProblemDescription,
           aiGenerated: true,
           businessModelBase: context.successCase.name,
