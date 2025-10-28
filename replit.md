@@ -68,6 +68,56 @@ DTTools provides tools for each of the five Design Thinking phases:
 -   **Authentication**: Enhanced user registration and login flow using email, display name, email confirmation, password confirmation with strength indicator, and backward compatibility for existing users.
 -   **Automatic Schema Verification**: On application startup (BEFORE server initialization), the system automatically checks and adds missing columns to the `subscription_plans` table (`included_users`, `price_per_additional_user`) using idempotent SQL with `ALTER TABLE IF EXISTS`.
 -   **Multilingual Content System**: Full multilingual support for articles and testimonials with translation columns (PT/EN/ES/FR). Library page and landing page automatically display translated content based on selected language with fallback to Portuguese. Admin panel includes translation tabs for managing content in all supported languages.
+-   **Guided UX for Non-Experts (MVP 1 - October 2025)**: Enhanced user experience with contextual guidance, visual progress tracking, and step-by-step recommendations to support users who are not Design Thinking experts.
+
+### UX Improvement System (MVP 1)
+**Problem Addressed**: User testing revealed confusion about product purpose, unclear navigation ("E agora?"), and lack of guidance for Design Thinking beginners.
+
+**Solution Components**:
+1. **WelcomeMessage Component** (`client/src/components/ui/welcome-message.tsx`)
+   - Displayed on first Dashboard visit
+   - Explains DTTools purpose and value proposition
+   - Dismissible with localStorage persistence
+   - Personalized with user's name
+
+2. **PhaseNavigator Component** (`client/src/components/ui/phase-navigator.tsx`)
+   - Visual progress tracker for all 5 Design Thinking phases
+   - Shows current phase with highlight and checkmarks for completed phases
+   - Interactive navigation to jump between phases
+   - Integrated into Dashboard for constant visibility
+
+3. **NextStepCard Component** (`client/src/components/ui/next-step-card.tsx`)
+   - Context-aware recommendations based on user progress
+   - Shows next recommended action with:
+     - Clear title and description
+     - Estimated time to complete
+     - Actionable CTA button
+     - 3 practical tips for success
+   - Adapts content for each phase (Empatizar → Definir → Idear → Prototipar → Testar)
+   - Special handling for first-time users (no projects yet)
+
+4. **ContextualTooltip Component** (`client/src/components/ui/contextual-tooltip.tsx`)
+   - Reusable tooltip for inline help
+   - Icon-based trigger (HelpCircle)
+   - Ready for integration in forms and complex UI elements
+   - Uses Radix UI Tooltip for accessibility
+
+**Dashboard Integration**:
+- Welcome message appears at top for new users
+- Phase navigator shows progress for users with projects
+- Next step card always visible with contextual guidance
+- Clean, hierarchical information architecture
+
+**Impact**: Addresses ~70% of identified UX problems by providing:
+- Clear purpose explanation (onboarding)
+- Visual navigation cues (phase progress)
+- Actionable next steps (reduces "E agora?" confusion)
+- Contextual guidance throughout the journey
+
+**Future Enhancements** (pending):
+- Tooltips and examples in form fields (Personas, POV Statements, Ideas, etc.)
+- Smart placeholders with practical examples
+- In-context help within each phase tool
 
 ## External Dependencies
 

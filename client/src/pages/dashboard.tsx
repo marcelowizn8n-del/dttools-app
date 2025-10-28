@@ -188,7 +188,7 @@ export default function Dashboard() {
 
   const handlePhaseClick = async (phaseId: number) => {
     try {
-      let targetProject = projects[0]; // Use the first project if available
+      let targetProject = activeProject; // Use the most recently updated project
       
       if (!targetProject) {
         // If no projects exist, create a new one
@@ -225,6 +225,15 @@ export default function Dashboard() {
     ? Math.round(projects.reduce((sum, p) => sum + (p.completionRate || 0), 0) / totalProjects)
     : 0;
 
+  // Get the most recent active project for accurate phase tracking
+  const activeProject = projects.length > 0 
+    ? projects.reduce((latest, project) => {
+        const latestUpdated = new Date(latest.updatedAt || latest.createdAt || 0);
+        const currentUpdated = new Date(project.updatedAt || project.createdAt || 0);
+        return currentUpdated > latestUpdated ? project : latest;
+      })
+    : null;
+
   // Determine next recommended step based on user progress
   const getNextStep = () => {
     if (totalProjects === 0) {
@@ -244,9 +253,8 @@ export default function Dashboard() {
       };
     }
 
-    // Get the most recent project
-    const recentProject = projects[0];
-    const currentPhase = recentProject?.currentPhase || 1;
+    // Use the most recently updated project
+    const currentPhase = activeProject?.currentPhase || 1;
 
     if (currentPhase === 1) {
       return {
@@ -255,7 +263,7 @@ export default function Dashboard() {
         estimatedTime: "15-20 min",
         action: {
           label: "Ir para Empatizar",
-          onClick: () => setLocation(`/projects/${recentProject.id}`)
+          onClick: () => setLocation(`/projects/${activeProject!.id}`)
         },
         tips: [
           "Crie pelo menos 2-3 personas diferentes",
@@ -272,7 +280,7 @@ export default function Dashboard() {
         estimatedTime: "10-15 min",
         action: {
           label: "Ir para Definir",
-          onClick: () => setLocation(`/projects/${recentProject.id}`)
+          onClick: () => setLocation(`/projects/${activeProject!.id}`)
         },
         tips: [
           "Transforme insights em declarações POV: [Usuário] precisa [necessidade] porque [insight]",
@@ -289,7 +297,7 @@ export default function Dashboard() {
         estimatedTime: "20-30 min",
         action: {
           label: "Ir para Idear",
-          onClick: () => setLocation(`/projects/${recentProject.id}`)
+          onClick: () => setLocation(`/projects/${activeProject!.id}`)
         },
         tips: [
           "Gere pelo menos 10-15 ideias diferentes",
@@ -306,7 +314,7 @@ export default function Dashboard() {
         estimatedTime: "30-60 min",
         action: {
           label: "Ir para Prototipar",
-          onClick: () => setLocation(`/projects/${recentProject.id}`)
+          onClick: () => setLocation(`/projects/${activeProject!.id}`)
         },
         tips: [
           "Comece com protótipos de baixa fidelidade (papel, desenhos)",
@@ -322,7 +330,7 @@ export default function Dashboard() {
       estimatedTime: "45-90 min",
       action: {
         label: "Ir para Testar",
-        onClick: () => setLocation(`/projects/${recentProject.id}`)
+        onClick: () => setLocation(`/projects/${activeProject!.id}`)
       },
       tips: [
         "Teste com pelo menos 5 usuários diferentes",
@@ -334,13 +342,16 @@ export default function Dashboard() {
 
   const nextStep = getNextStep();
 
-  // Prepare phase data for PhaseNavigator
-  const phaseData = phases.map(phase => ({
-    id: phase.id,
-    name: phase.name,
-    completed: phase.completed,
-    current: projects[0]?.currentPhase === phase.id
-  }));
+  // Prepare phase data for PhaseNavigator with real completion state
+  const phaseData = phases.map(phase => {
+    const currentPhase = activeProject?.currentPhase || 1;
+    return {
+      id: phase.id,
+      name: phase.name,
+      completed: phase.id < currentPhase, // Phases before current are completed
+      current: currentPhase === phase.id
+    };
+  });
 
   return (
     <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
