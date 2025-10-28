@@ -1550,10 +1550,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // CRITICAL: Hash password before storing
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Get Free plan to assign to new users
-      const freePlan = await storage.getSubscriptionPlanByName("free");
+      // Get Free plan to assign to new users (case-insensitive search)
+      const allPlans = await storage.getSubscriptionPlans();
+      const freePlan = allPlans.find(p => p.name.toLowerCase() === "free");
+      
       if (!freePlan) {
         console.error("❌ Free plan not found in database!");
+        console.error("Available plans:", allPlans.map(p => p.name).join(", "));
         return res.status(500).json({ error: "Erro de configuração do sistema. Contate o suporte." });
       }
 

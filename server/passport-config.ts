@@ -58,15 +58,13 @@ export function setupPassport() {
             return done(null, updatedUser);
           }
 
-          // Get Free plan to assign to new Google OAuth users
-          const [freePlan] = await db
-            .select()
-            .from(subscriptionPlans)
-            .where(eq(subscriptionPlans.name, "free"))
-            .limit(1);
+          // Get Free plan to assign to new Google OAuth users (case-insensitive)
+          const allPlans = await db.select().from(subscriptionPlans);
+          const freePlan = allPlans.find(p => p.name.toLowerCase() === "free");
 
           if (!freePlan) {
             console.error("❌ [Passport Google] Free plan not found!");
+            console.error("Available plans:", allPlans.map(p => p.name).join(", "));
             return done(new Error("System configuration error"), undefined);
           }
 
