@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPovStatementSchema, type PovStatement, type InsertPovStatement } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import EditPovStatementDialog from "./EditPovStatementDialog";
+import { ContextualTooltip } from "@/components/ui/contextual-tooltip";
 
 interface PovStatementToolProps {
   projectId: string;
@@ -214,13 +215,26 @@ function CreatePovStatementDialog({ projectId }: { projectId: string }) {
           Novo POV Statement
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Criar POV Statement</DialogTitle>
           <DialogDescription>
             Um POV (Point of View) Statement define claramente quem é o usuário, qual é sua necessidade e por que ela existe.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Dicas de Boas Práticas */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold text-sm text-green-900 mb-2">💡 Fórmula do POV Statement:</h4>
+          <p className="text-xs text-green-800 font-mono bg-white px-3 py-2 rounded border border-green-300">
+            [Usuário] <strong>precisa</strong> [Necessidade] <strong>porque</strong> [Insight]
+          </p>
+          <ul className="text-xs text-green-800 space-y-1 mt-2">
+            <li>• <strong>Usuário:</strong> Seja específico (idade, contexto, características relevantes)</li>
+            <li>• <strong>Necessidade:</strong> Foque na necessidade real, não na solução desejada</li>
+            <li>• <strong>Insight:</strong> Descubra o "porquê" surpreendente que explica a necessidade</li>
+          </ul>
+        </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -229,10 +243,21 @@ function CreatePovStatementDialog({ projectId }: { projectId: string }) {
               name="user"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Usuário (Quem?)</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <FormLabel>Usuário (Quem?)</FormLabel>
+                    <ContextualTooltip
+                      title="Usuário"
+                      content="Descreva quem é o usuário de forma específica. Inclua características demográficas, comportamentais ou contextuais relevantes."
+                      examples={[
+                        "Uma médica de 42 anos que trabalha em hospital público",
+                        "Estudante universitário de 20 anos que mora sozinho",
+                        "Empreendedor iniciante sem experiência em tecnologia"
+                      ]}
+                    />
+                  </div>
                   <FormControl>
                     <Textarea
-                      placeholder="Descreva o usuário alvo (ex: Uma mãe ocupada de 35 anos...)"
+                      placeholder="Ex: Uma mãe ocupada de 35 anos que trabalha em tempo integral..."
                       className="resize-none"
                       rows={2}
                       {...field}
@@ -249,10 +274,21 @@ function CreatePovStatementDialog({ projectId }: { projectId: string }) {
               name="need"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Necessidade (O que?)</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <FormLabel>Necessidade (O que?)</FormLabel>
+                    <ContextualTooltip
+                      title="Necessidade"
+                      content="Descreva o que o usuário precisa alcançar ou realizar. Foque na necessidade, não em uma solução específica."
+                      examples={[
+                        "de uma forma rápida e confiável de agendar consultas",
+                        "de organizar suas finanças sem conhecimento técnico",
+                        "de aprender novos conceitos de forma prática e visual"
+                      ]}
+                    />
+                  </div>
                   <FormControl>
                     <Textarea
-                      placeholder="Descreva a necessidade (ex: de uma forma rápida e confiável de...)"
+                      placeholder="Ex: de economizar tempo nas tarefas domésticas sem comprometer a qualidade..."
                       className="resize-none"
                       rows={2}
                       {...field}
@@ -269,10 +305,21 @@ function CreatePovStatementDialog({ projectId }: { projectId: string }) {
               name="insight"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Insight (Por que?)</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <FormLabel>Insight (Por que?)</FormLabel>
+                    <ContextualTooltip
+                      title="Insight"
+                      content="Explique POR QUE essa necessidade existe. Revele uma verdade surpreendente sobre o comportamento ou motivação do usuário."
+                      examples={[
+                        "ela se sente culpada quando não consegue cuidar da família",
+                        "ele tem medo de parecer incompetente na frente dos colegas",
+                        "ela já tentou outras soluções mas todas eram muito complexas"
+                      ]}
+                    />
+                  </div>
                   <FormControl>
                     <Textarea
-                      placeholder="Descreva o insight surpreendente (ex: ela valoriza mais a conveniência que o preço...)"
+                      placeholder="Ex: ela valoriza mais ter tempo com a família do que uma casa perfeitamente limpa..."
                       className="resize-none"
                       rows={2}
                       {...field}

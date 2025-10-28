@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertHmwQuestionSchema, type HmwQuestion, type InsertHmwQuestion } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import EditHmwQuestionDialog from "./EditHmwQuestionDialog";
+import { ContextualTooltip } from "@/components/ui/contextual-tooltip";
 
 interface HmwQuestionToolProps {
   projectId: string;
@@ -204,13 +205,25 @@ function CreateHmwQuestionDialog({ projectId }: { projectId: string }) {
           Nova Pergunta HMW
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Criar Pergunta "How Might We"</DialogTitle>
           <DialogDescription>
             As perguntas "How Might We" (Como Poderíamos) transformam problemas em oportunidades de design, abrindo espaço para soluções criativas.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Dicas de Boas Práticas */}
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold text-sm text-orange-900 mb-2">💡 Dicas para boas perguntas HMW:</h4>
+          <ul className="text-xs text-orange-800 space-y-1">
+            <li>• Comece sempre com "Como poderíamos..." (How Might We)</li>
+            <li>• Não seja muito amplo (não "Como poderíamos mudar o mundo?")</li>
+            <li>• Não seja muito específico/restritivo (deixe espaço para criatividade)</li>
+            <li>• Foque na necessidade do usuário, não em uma solução pré-definida</li>
+            <li>• Crie múltiplas HMW para cada POV Statement (explore diferentes ângulos)</li>
+          </ul>
+        </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -219,10 +232,21 @@ function CreateHmwQuestionDialog({ projectId }: { projectId: string }) {
               name="question"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Pergunta "How Might We"</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <FormLabel>Pergunta "How Might We"</FormLabel>
+                    <ContextualTooltip
+                      title="How Might We (HMW)"
+                      content="Transforme o POV Statement em uma pergunta aberta que convida à ideação criativa. A pergunta deve ser ampla o suficiente para permitir múltiplas soluções, mas focada o bastante para ser acionável."
+                      examples={[
+                        "Como poderíamos tornar o agendamento de consultas mais rápido e intuitivo?",
+                        "Como poderíamos ajudar pessoas sem experiência técnica a organizar suas finanças?",
+                        "Como poderíamos reduzir a ansiedade de estudantes durante provas?"
+                      ]}
+                    />
+                  </div>
                   <FormControl>
                     <Textarea
-                      placeholder="Como poderíamos... (ex: tornar o processo de entrega mais sustentável?)"
+                      placeholder="Como poderíamos... (ex: ajudar mães ocupadas a economizar tempo em tarefas domésticas?)"
                       className="resize-none"
                       rows={3}
                       {...field}
