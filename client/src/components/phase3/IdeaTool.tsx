@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertIdeaSchema, type Idea, type InsertIdea } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import EditIdeaDialog from "./EditIdeaDialog";
+import { ContextualTooltip } from "@/components/ui/contextual-tooltip";
 
 interface IdeaToolProps {
   projectId: string;
@@ -414,6 +415,16 @@ function CreateIdeaDialog({ projectId }: { projectId: string }) {
           </DialogDescription>
         </DialogHeader>
 
+        {/* Dicas DVF */}
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold text-sm text-indigo-900 mb-2">💡 Framework DVF para Avaliação de Ideias:</h4>
+          <div className="grid grid-cols-3 gap-2 text-xs text-indigo-800">
+            <div><strong className="text-pink-700">Desejabilidade:</strong> Os usuários querem isso?</div>
+            <div><strong className="text-green-700">Viabilidade:</strong> É um bom negócio?</div>
+            <div><strong className="text-blue-700">Exequibilidade:</strong> Conseguimos construir?</div>
+          </div>
+        </div>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -492,12 +503,19 @@ function CreateIdeaDialog({ projectId }: { projectId: string }) {
                   name="desirability"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        <div className="flex items-center gap-1">
-                          <span className="w-3 h-3 bg-pink-500 rounded-full"></span>
-                          Desejabilidade
-                        </div>
-                      </FormLabel>
+                      <div className="flex items-center gap-2 mb-1">
+                        <FormLabel className="text-sm font-medium">
+                          <div className="flex items-center gap-1">
+                            <span className="w-3 h-3 bg-pink-500 rounded-full"></span>
+                            Desejabilidade
+                          </div>
+                        </FormLabel>
+                        <ContextualTooltip
+                          title="Desejabilidade"
+                          content="Avalie se a ideia realmente resolve um problema importante do usuário e se as pessoas vão querer usar. Pense: 'Isso satisfaz uma necessidade real?'"
+                          examples={["5 = Resolve problema crítico e frequente", "3 = Útil mas não essencial", "1 = Usuários não se importam"]}
+                        />
+                      </div>
                       <p className="text-xs text-gray-600 mb-2">Satisfaz necessidade do usuário?</p>
                       <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                         <FormControl>
@@ -524,12 +542,19 @@ function CreateIdeaDialog({ projectId }: { projectId: string }) {
                   name="viability"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">
-                        <div className="flex items-center gap-1">
-                          <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                          Viabilidade
-                        </div>
-                      </FormLabel>
+                      <div className="flex items-center gap-2 mb-1">
+                        <FormLabel className="text-sm font-medium">
+                          <div className="flex items-center gap-1">
+                            <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                            Viabilidade
+                          </div>
+                        </FormLabel>
+                        <ContextualTooltip
+                          title="Viabilidade"
+                          content="Avalie se é possível transformar isso em um negócio sustentável. Pense: 'Isso gera receita? As pessoas pagariam? Temos recursos/parceiros?'"
+                          examples={["5 = Modelo de negócio claro e escalável", "3 = Viável mas requer validação", "1 = Sem potencial de monetização"]}
+                        />
+                      </div>
                       <p className="text-xs text-gray-600 mb-2">Potencial de negócio/lucro?</p>
                       <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                         <FormControl>
