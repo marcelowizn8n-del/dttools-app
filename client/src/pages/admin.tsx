@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus, CreditCard, MessageSquare } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus, CreditCard, MessageSquare, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { useAuth, ProtectedRoute } from "@/contexts/AuthContext";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import ArticleEditor from "@/components/admin/ArticleEditor";
 import TestimonialsTab from "@/components/admin/TestimonialsTab";
+import AdminVideos from "./AdminVideos";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -1757,12 +1758,12 @@ export default function AdminPage() {
               Administração
             </h1>
             <p className="text-muted-foreground">
-              Gerencie artigos, usuários, projetos e configurações do sistema
+              Gerencie artigos, vídeos, usuários, projetos e configurações do sistema
             </p>
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="dashboard" data-testid="tab-dashboard">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Dashboard
@@ -1778,6 +1779,10 @@ export default function AdminPage() {
               <TabsTrigger value="articles" data-testid="tab-articles">
                 <Eye className="mr-2 h-4 w-4" />
                 Artigos
+              </TabsTrigger>
+              <TabsTrigger value="videos" data-testid="tab-videos">
+                <Video className="mr-2 h-4 w-4" />
+                Vídeos
               </TabsTrigger>
               <TabsTrigger value="testimonials" data-testid="tab-testimonials">
                 <MessageSquare className="mr-2 h-4 w-4" />
@@ -1803,6 +1808,10 @@ export default function AdminPage() {
 
             <TabsContent value="articles">
               <ArticlesTab />
+            </TabsContent>
+
+            <TabsContent value="videos">
+              <AdminVideos />
             </TabsContent>
 
             <TabsContent value="testimonials">
