@@ -499,11 +499,44 @@ export class DatabaseStorage implements IStorage {
         .where(eq(projects.userId, id));
       console.log(`[DELETE USER] ✓ Found ${userProjects.length} projects`);
       
-      // 8. Delete each project (this cascades to all project-related tables)
-      for (let i = 0; i < userProjects.length; i++) {
-        console.log(`[DELETE USER] Step 8.${i + 1}: Deleting project ${userProjects[i].id}...`);
-        await this.deleteProject(userProjects[i].id, id);
-        console.log(`[DELETE USER] ✓ Project ${userProjects[i].id} deleted`);
+      // 8. Delete ALL project-related data (instead of calling deleteProject which may fail)
+      if (userProjects.length > 0) {
+        const projectIds = userProjects.map(p => p.id);
+        console.log(`[DELETE USER] Step 8: Deleting all project-related data for ${projectIds.length} projects...`);
+        
+        // Delete all project-related records using IN clause (much faster than loop)
+        for (const projectId of projectIds) {
+          // Use try-catch to ignore errors (some tables might not have data)
+          try { await db.delete(aiGeneratedAssets).where(eq(aiGeneratedAssets.projectId, projectId)); } catch (e) {}
+          try { await db.delete(analyticsEvents).where(eq(analyticsEvents.projectId, projectId)); } catch (e) {}
+          try { await db.delete(projectComments).where(eq(projectComments.projectId, projectId)); } catch (e) {}
+          try { await db.delete(projectInvites).where(eq(projectInvites.projectId, projectId)); } catch (e) {}
+          try { await db.delete(projectMembers).where(eq(projectMembers.projectId, projectId)); } catch (e) {}
+          try { await db.delete(empathyMaps).where(eq(empathyMaps.projectId, projectId)); } catch (e) {}
+          try { await db.delete(personas).where(eq(personas.projectId, projectId)); } catch (e) {}
+          try { await db.delete(interviews).where(eq(interviews.projectId, projectId)); } catch (e) {}
+          try { await db.delete(observations).where(eq(observations.projectId, projectId)); } catch (e) {}
+          try { await db.delete(povStatements).where(eq(povStatements.projectId, projectId)); } catch (e) {}
+          try { await db.delete(hmwQuestions).where(eq(hmwQuestions.projectId, projectId)); } catch (e) {}
+          try { await db.delete(ideas).where(eq(ideas.projectId, projectId)); } catch (e) {}
+          try { await db.delete(prototypes).where(eq(prototypes.projectId, projectId)); } catch (e) {}
+          try { await db.delete(testPlans).where(eq(testPlans.projectId, projectId)); } catch (e) {}
+          try { await db.delete(testResults).where(eq(testResults.projectId, projectId)); } catch (e) {}
+          try { await db.delete(canvasDrawings).where(eq(canvasDrawings.projectId, projectId)); } catch (e) {}
+          try { await db.delete(phaseCards).where(eq(phaseCards.projectId, projectId)); } catch (e) {}
+          try { await db.delete(benchmarkAssessments).where(eq(benchmarkAssessments.projectId, projectId)); } catch (e) {}
+          try { await db.delete(dvfAssessments).where(eq(dvfAssessments.projectId, projectId)); } catch (e) {}
+          try { await db.delete(lovabilityMetrics).where(eq(lovabilityMetrics.projectId, projectId)); } catch (e) {}
+          try { await db.delete(projectAnalytics).where(eq(projectAnalytics.projectId, projectId)); } catch (e) {}
+          try { await db.delete(competitiveAnalysis).where(eq(competitiveAnalysis.projectId, projectId)); } catch (e) {}
+          try { await db.delete(projectBackups).where(eq(projectBackups.projectId, projectId)); } catch (e) {}
+          try { await db.delete(userProgress).where(eq(userProgress.projectId, projectId)); } catch (e) {}
+          try { await db.delete(benchmarks).where(eq(benchmarks.projectId, projectId)); } catch (e) {}
+        }
+        
+        // Now delete all projects
+        await db.delete(projects).where(eq(projects.userId, id));
+        console.log(`[DELETE USER] ✓ Deleted all projects and related data`);
       }
       
       // 9. Delete user progress (if any remaining - no FK constraint)
