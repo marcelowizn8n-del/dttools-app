@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
-import Header from "@/components/Header";
 import type { VideoTutorial } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -169,9 +168,7 @@ export default function VideoTutorials() {
   const t = content[language] || content["pt"];
 
   return (
-    <div className="bg-background min-h-screen">
-      <Header />
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Video className="h-8 w-8 text-primary" />
@@ -305,6 +302,5 @@ export default function VideoTutorials() {
           </p>
         </div>
       </div>
-    </div>
   );
 }
