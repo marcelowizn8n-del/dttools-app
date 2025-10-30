@@ -253,6 +253,37 @@ app.use((req, res, next) => {
         ALTER COLUMN password DROP NOT NULL;
       `);
       
+      // Add translation columns to video_tutorials (for auto-translation feature)
+      await db.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS title_en TEXT;
+      `);
+      
+      await db.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS title_es TEXT;
+      `);
+      
+      await db.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS title_fr TEXT;
+      `);
+      
+      await db.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS description_en TEXT;
+      `);
+      
+      await db.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS description_es TEXT;
+      `);
+      
+      await db.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS description_fr TEXT;
+      `);
+      
       log('✅ [STARTUP] Schema columns verified and ready');
     } catch (schemaError) {
       // Log but don't crash - table might not exist yet

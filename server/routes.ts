@@ -1412,6 +1412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const videos = await storage.getVideoTutorials();
       res.json(videos);
     } catch (error) {
+      console.error("[ERROR] /api/video-tutorials failed:", error);
       res.status(500).json({ error: "Failed to fetch video tutorials" });
     }
   });
