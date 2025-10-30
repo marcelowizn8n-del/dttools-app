@@ -979,3 +979,84 @@ export const insertAiGeneratedAssetSchema = createInsertSchema(aiGeneratedAssets
 
 export type AiGeneratedAsset = typeof aiGeneratedAssets.$inferSelect;
 export type InsertAiGeneratedAsset = z.infer<typeof insertAiGeneratedAssetSchema>;
+
+// Analytics Events - Track system-wide metrics
+export const analyticsEvents = pgTable("analytics_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventType: text("event_type").notNull(), // 'signup', 'login', 'project_created', 'ai_generation', 'export_pdf', etc.
+  userId: varchar("user_id").references(() => users.id),
+  projectId: varchar("project_id").references(() => projects.id),
+  metadata: jsonb("metadata"), // Additional event data
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const insertAnalyticsEventSchema = createInsertSchema(analyticsEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
+export type InsertAnalyticsEvent = z.infer<typeof insertAnalyticsEventSchema>;
+
+// Project Members - Collaboration/Teams
+export const projectMembers = pgTable("project_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  role: text("role").notNull().default("viewer"), // 'owner', 'editor', 'viewer'
+  addedBy: varchar("added_by").references(() => users.id),
+  addedAt: timestamp("added_at").default(sql`now()`),
+});
+
+export const insertProjectMemberSchema = createInsertSchema(projectMembers).omit({
+  id: true,
+  addedAt: true,
+});
+
+export type ProjectMember = typeof projectMembers.$inferSelect;
+export type InsertProjectMember = z.infer<typeof insertProjectMemberSchema>;
+
+// Project Invites - Pending team invitations
+export const projectInvites = pgTable("project_invites", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  email: text("email").notNull(),
+  role: text("role").notNull().default("viewer"), // 'editor', 'viewer'
+  invitedBy: varchar("invited_by").references(() => users.id).notNull(),
+  status: text("status").notNull().default("pending"), // 'pending', 'accepted', 'declined', 'expired'
+  token: text("token").notNull(), // Unique invite token
+  expiresAt: timestamp("expires_at").notNull(),
+  respondedAt: timestamp("responded_at"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const insertProjectInviteSchema = createInsertSchema(projectInvites).omit({
+  id: true,
+  createdAt: true,
+  respondedAt: true,
+});
+
+export type ProjectInvite = typeof projectInvites.$inferSelect;
+export type InsertProjectInvite = z.infer<typeof insertProjectInviteSchema>;
+
+// Project Comments - Team collaboration
+export const projectComments = pgTable("project_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  entityType: text("entity_type").notNull(), // 'persona', 'pov', 'idea', 'prototype', 'project'
+  entityId: varchar("entity_id"), // ID of the specific entity being commented on
+  comment: text("comment").notNull(),
+  parentCommentId: varchar("parent_comment_id"), // For threaded comments (no FK to avoid circular reference)
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+export const insertProjectCommentSchema = createInsertSchema(projectComments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type ProjectComment = typeof projectComments.$inferSelect;
+export type InsertProjectComment = z.infer<typeof insertProjectCommentSchema>;

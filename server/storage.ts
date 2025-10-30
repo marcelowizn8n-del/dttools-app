@@ -29,12 +29,17 @@ import {
   type IndustrySector, type InsertIndustrySector,
   type SuccessCase, type InsertSuccessCase,
   type AiGeneratedAsset, type InsertAiGeneratedAsset,
+  type AnalyticsEvent, type InsertAnalyticsEvent,
+  type ProjectMember, type InsertProjectMember,
+  type ProjectInvite, type InsertProjectInvite,
+  type ProjectComment, type InsertProjectComment,
   projects, empathyMaps, personas, interviews, observations,
   povStatements, hmwQuestions, ideas, prototypes, testPlans, testResults,
   userProgress, users, articles, testimonials, subscriptionPlans, userSubscriptions,
   canvasDrawings, phaseCards, benchmarks, benchmarkAssessments,
   dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis,
-  projectBackups, helpArticles, industrySectors, successCases, aiGeneratedAssets
+  projectBackups, helpArticles, industrySectors, successCases, aiGeneratedAssets,
+  analyticsEvents, projectMembers, projectInvites, projectComments
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
@@ -249,6 +254,41 @@ export interface IStorage {
   createAiGeneratedAsset(asset: InsertAiGeneratedAsset): Promise<AiGeneratedAsset>;
   updateAiGeneratedAsset(id: string, asset: Partial<InsertAiGeneratedAsset>): Promise<AiGeneratedAsset | undefined>;
   deleteAiGeneratedAsset(id: string): Promise<boolean>;
+
+  // Analytics Events
+  createAnalyticsEvent(event: InsertAnalyticsEvent): Promise<AnalyticsEvent>;
+  getAnalyticsEvents(filters?: { eventType?: string; userId?: string; startDate?: Date; endDate?: Date }): Promise<AnalyticsEvent[]>;
+  getAnalyticsSummary(): Promise<{
+    totalUsers: number;
+    totalProjects: number;
+    totalAiGenerations: number;
+    newUsersThisMonth: number;
+    projectsThisMonth: number;
+    aiGenerationsThisMonth: number;
+  }>;
+
+  // Project Members (Teams)
+  getProjectMembers(projectId: string): Promise<ProjectMember[]>;
+  getProjectMember(projectId: string, userId: string): Promise<ProjectMember | undefined>;
+  createProjectMember(member: InsertProjectMember): Promise<ProjectMember>;
+  updateProjectMemberRole(id: string, role: string): Promise<ProjectMember | undefined>;
+  deleteProjectMember(id: string): Promise<boolean>;
+  getUserProjects(userId: string): Promise<string[]>; // Get all project IDs user has access to
+
+  // Project Invites
+  getProjectInvites(projectId: string): Promise<ProjectInvite[]>;
+  getPendingInvitesByEmail(email: string): Promise<ProjectInvite[]>;
+  getProjectInviteByToken(token: string): Promise<ProjectInvite | undefined>;
+  createProjectInvite(invite: InsertProjectInvite): Promise<ProjectInvite>;
+  updateProjectInviteStatus(id: string, status: string, respondedAt?: Date): Promise<ProjectInvite | undefined>;
+  deleteProjectInvite(id: string): Promise<boolean>;
+
+  // Project Comments
+  getProjectComments(projectId: string): Promise<ProjectComment[]>;
+  getEntityComments(projectId: string, entityType: string, entityId?: string): Promise<ProjectComment[]>;
+  createProjectComment(comment: InsertProjectComment): Promise<ProjectComment>;
+  updateProjectComment(id: string, comment: Partial<InsertProjectComment>): Promise<ProjectComment | undefined>;
+  deleteProjectComment(id: string): Promise<boolean>;
 }
 
 // Database implementation using PostgreSQL via Drizzle ORM
@@ -1399,6 +1439,199 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAiGeneratedAsset(id: string): Promise<boolean> {
     const result = await db.delete(aiGeneratedAssets).where(eq(aiGeneratedAssets.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Analytics Events
+  async createAnalyticsEvent(event: InsertAnalyticsEvent): Promise<AnalyticsEvent> {
+    const [newEvent] = await db.insert(analyticsEvents).values(event).returning();
+    return newEvent;
+  }
+
+  async getAnalyticsEvents(filters?: { eventType?: string; userId?: string; startDate?: Date; endDate?: Date }): Promise<AnalyticsEvent[]> {
+    let query = db.select().from(analyticsEvents);
+    
+    const conditions = [];
+    if (filters?.eventType) conditions.push(eq(analyticsEvents.eventType, filters.eventType));
+    if (filters?.userId) conditions.push(eq(analyticsEvents.userId, filters.userId));
+    if (filters?.startDate) conditions.push(sql`${analyticsEvents.createdAt} >= ${filters.startDate}`);
+    if (filters?.endDate) conditions.push(sql`${analyticsEvents.createdAt} <= ${filters.endDate}`);
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    return await query.orderBy(desc(analyticsEvents.createdAt));
+  }
+
+  async getAnalyticsSummary(): Promise<{
+    totalUsers: number;
+    totalProjects: number;
+    totalAiGenerations: number;
+    newUsersThisMonth: number;
+    projectsThisMonth: number;
+    aiGenerationsThisMonth: number;
+  }> {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [totalUsersResult] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
+    const [totalProjectsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(projects);
+    const [totalAiGenerationsResult] = await db.select({ count: sql<number>`count(*)::int` })
+      .from(projects).where(eq(projects.aiGenerated, true));
+    
+    const [newUsersThisMonthResult] = await db.select({ count: sql<number>`count(*)::int` })
+      .from(users).where(sql`${users.createdAt} >= ${firstDayOfMonth}`);
+    
+    const [projectsThisMonthResult] = await db.select({ count: sql<number>`count(*)::int` })
+      .from(projects).where(sql`${projects.createdAt} >= ${firstDayOfMonth}`);
+    
+    const [aiGenerationsThisMonthResult] = await db.select({ count: sql<number>`count(*)::int` })
+      .from(projects).where(and(
+        eq(projects.aiGenerated, true),
+        sql`${projects.createdAt} >= ${firstDayOfMonth}`
+      ));
+
+    return {
+      totalUsers: totalUsersResult?.count || 0,
+      totalProjects: totalProjectsResult?.count || 0,
+      totalAiGenerations: totalAiGenerationsResult?.count || 0,
+      newUsersThisMonth: newUsersThisMonthResult?.count || 0,
+      projectsThisMonth: projectsThisMonthResult?.count || 0,
+      aiGenerationsThisMonth: aiGenerationsThisMonthResult?.count || 0,
+    };
+  }
+
+  // Project Members (Teams)
+  async getProjectMembers(projectId: string): Promise<ProjectMember[]> {
+    return await db.select().from(projectMembers)
+      .where(eq(projectMembers.projectId, projectId))
+      .orderBy(projectMembers.addedAt);
+  }
+
+  async getProjectMember(projectId: string, userId: string): Promise<ProjectMember | undefined> {
+    const [member] = await db.select().from(projectMembers)
+      .where(and(
+        eq(projectMembers.projectId, projectId),
+        eq(projectMembers.userId, userId)
+      ));
+    return member;
+  }
+
+  async createProjectMember(member: InsertProjectMember): Promise<ProjectMember> {
+    const [newMember] = await db.insert(projectMembers).values(member).returning();
+    return newMember;
+  }
+
+  async updateProjectMemberRole(id: string, role: string): Promise<ProjectMember | undefined> {
+    const [updated] = await db.update(projectMembers)
+      .set({ role })
+      .where(eq(projectMembers.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteProjectMember(id: string): Promise<boolean> {
+    const result = await db.delete(projectMembers).where(eq(projectMembers.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getUserProjects(userId: string): Promise<string[]> {
+    // Get projects owned by user
+    const ownedProjects = await db.select({ id: projects.id })
+      .from(projects)
+      .where(eq(projects.userId, userId));
+    
+    // Get projects where user is a member
+    const memberProjects = await db.select({ projectId: projectMembers.projectId })
+      .from(projectMembers)
+      .where(eq(projectMembers.userId, userId));
+    
+    const projectIds = [
+      ...ownedProjects.map(p => p.id),
+      ...memberProjects.map(m => m.projectId)
+    ];
+    
+    return [...new Set(projectIds)]; // Remove duplicates
+  }
+
+  // Project Invites
+  async getProjectInvites(projectId: string): Promise<ProjectInvite[]> {
+    return await db.select().from(projectInvites)
+      .where(eq(projectInvites.projectId, projectId))
+      .orderBy(desc(projectInvites.createdAt));
+  }
+
+  async getPendingInvitesByEmail(email: string): Promise<ProjectInvite[]> {
+    return await db.select().from(projectInvites)
+      .where(and(
+        eq(projectInvites.email, email),
+        eq(projectInvites.status, 'pending')
+      ))
+      .orderBy(desc(projectInvites.createdAt));
+  }
+
+  async getProjectInviteByToken(token: string): Promise<ProjectInvite | undefined> {
+    const [invite] = await db.select().from(projectInvites)
+      .where(eq(projectInvites.token, token));
+    return invite;
+  }
+
+  async createProjectInvite(invite: InsertProjectInvite): Promise<ProjectInvite> {
+    const [newInvite] = await db.insert(projectInvites).values(invite).returning();
+    return newInvite;
+  }
+
+  async updateProjectInviteStatus(id: string, status: string, respondedAt?: Date): Promise<ProjectInvite | undefined> {
+    const [updated] = await db.update(projectInvites)
+      .set({ status, respondedAt: respondedAt || new Date() })
+      .where(eq(projectInvites.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteProjectInvite(id: string): Promise<boolean> {
+    const result = await db.delete(projectInvites).where(eq(projectInvites.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Project Comments
+  async getProjectComments(projectId: string): Promise<ProjectComment[]> {
+    return await db.select().from(projectComments)
+      .where(eq(projectComments.projectId, projectId))
+      .orderBy(desc(projectComments.createdAt));
+  }
+
+  async getEntityComments(projectId: string, entityType: string, entityId?: string): Promise<ProjectComment[]> {
+    const conditions = [
+      eq(projectComments.projectId, projectId),
+      eq(projectComments.entityType, entityType)
+    ];
+    
+    if (entityId) {
+      conditions.push(eq(projectComments.entityId, entityId));
+    }
+    
+    return await db.select().from(projectComments)
+      .where(and(...conditions))
+      .orderBy(projectComments.createdAt);
+  }
+
+  async createProjectComment(comment: InsertProjectComment): Promise<ProjectComment> {
+    const [newComment] = await db.insert(projectComments).values(comment).returning();
+    return newComment;
+  }
+
+  async updateProjectComment(id: string, comment: Partial<InsertProjectComment>): Promise<ProjectComment | undefined> {
+    const [updated] = await db.update(projectComments)
+      .set({ ...comment, updatedAt: new Date() })
+      .where(eq(projectComments.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteProjectComment(id: string): Promise<boolean> {
+    const result = await db.delete(projectComments).where(eq(projectComments.id, id));
     return (result.rowCount || 0) > 0;
   }
 }
