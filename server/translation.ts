@@ -1,6 +1,8 @@
-import { GoogleGenerativeAI } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const genAI = new GoogleGenAI({ 
+  apiKey: process.env.GEMINI_API_KEY || "" 
+});
 
 export interface TranslationResult {
   en: string;
@@ -15,8 +17,6 @@ export async function translateText(
   if (!portugueseText || portugueseText.trim() === "") {
     return { en: "", es: "", fr: "" };
   }
-
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
   const contextInstructions = {
     title: "This is a title/heading. Keep it concise and impactful.",
@@ -43,9 +43,16 @@ Return ONLY a JSON object with this exact structure (no markdown, no explanation
 }`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
+    });
+    
+    const text = response.text || "";
+    
+    if (!text) {
+      throw new Error("Empty response from AI");
+    }
     
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
