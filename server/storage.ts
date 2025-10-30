@@ -452,58 +452,70 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log(`[DELETE USER] Starting deletion for user ${id}`);
       
-      // 1. Delete analytics events
-      console.log(`[DELETE USER] Deleting analytics events...`);
-      await db.delete(analyticsEvents).where(eq(analyticsEvents.userId, id));
-      
-      // 2. Delete project comments by this user
-      console.log(`[DELETE USER] Deleting project comments...`);
-      await db.delete(projectComments).where(eq(projectComments.userId, id));
-      
-      // 3. Delete project invites where user is the inviter
-      console.log(`[DELETE USER] Deleting project invites (invitedBy)...`);
-      await db.delete(projectInvites).where(eq(projectInvites.invitedBy, id));
-      
-      // 4. Delete project memberships (userId)
-      console.log(`[DELETE USER] Deleting project memberships (userId)...`);
-      await db.delete(projectMembers).where(eq(projectMembers.userId, id));
-      
-      // 5. Update project memberships where user was addedBy (set to null or another admin)
-      console.log(`[DELETE USER] Updating project memberships (addedBy)...`);
-      await db.update(projectMembers)
+      // 1. Update project memberships where user was addedBy (set to null BEFORE deleting memberships)
+      console.log(`[DELETE USER] Step 1: Updating project memberships (addedBy → null)...`);
+      const updated = await db.update(projectMembers)
         .set({ addedBy: null })
         .where(eq(projectMembers.addedBy, id));
+      console.log(`[DELETE USER] ✓ Updated ${updated.rowCount || 0} project memberships`);
+      
+      // 2. Delete analytics events
+      console.log(`[DELETE USER] Step 2: Deleting analytics events...`);
+      const deletedEvents = await db.delete(analyticsEvents).where(eq(analyticsEvents.userId, id));
+      console.log(`[DELETE USER] ✓ Deleted ${deletedEvents.rowCount || 0} analytics events`);
+      
+      // 3. Delete project comments by this user
+      console.log(`[DELETE USER] Step 3: Deleting project comments...`);
+      const deletedComments = await db.delete(projectComments).where(eq(projectComments.userId, id));
+      console.log(`[DELETE USER] ✓ Deleted ${deletedComments.rowCount || 0} comments`);
+      
+      // 4. Delete project invites where user is the inviter
+      console.log(`[DELETE USER] Step 4: Deleting project invites (invitedBy)...`);
+      const deletedInvites = await db.delete(projectInvites).where(eq(projectInvites.invitedBy, id));
+      console.log(`[DELETE USER] ✓ Deleted ${deletedInvites.rowCount || 0} invites`);
+      
+      // 5. Delete project memberships (userId)
+      console.log(`[DELETE USER] Step 5: Deleting project memberships (userId)...`);
+      const deletedMembers = await db.delete(projectMembers).where(eq(projectMembers.userId, id));
+      console.log(`[DELETE USER] ✓ Deleted ${deletedMembers.rowCount || 0} memberships`);
       
       // 6. Delete user subscriptions
-      console.log(`[DELETE USER] Deleting user subscriptions...`);
-      await db.delete(userSubscriptions).where(eq(userSubscriptions.userId, id));
+      console.log(`[DELETE USER] Step 6: Deleting user subscriptions...`);
+      const deletedSubs = await db.delete(userSubscriptions).where(eq(userSubscriptions.userId, id));
+      console.log(`[DELETE USER] ✓ Deleted ${deletedSubs.rowCount || 0} subscriptions`);
       
       // 7. Get all projects owned by this user
+      console.log(`[DELETE USER] Step 7: Finding user's projects...`);
       const userProjects = await db.select({ id: projects.id })
         .from(projects)
         .where(eq(projects.userId, id));
-      
-      console.log(`[DELETE USER] Found ${userProjects.length} projects owned by user`);
+      console.log(`[DELETE USER] ✓ Found ${userProjects.length} projects`);
       
       // 8. Delete each project (this cascades to all project-related tables)
-      for (const project of userProjects) {
-        console.log(`[DELETE USER] Deleting project ${project.id}...`);
-        await this.deleteProject(project.id, id);
+      for (let i = 0; i < userProjects.length; i++) {
+        console.log(`[DELETE USER] Step 8.${i + 1}: Deleting project ${userProjects[i].id}...`);
+        await this.deleteProject(userProjects[i].id, id);
+        console.log(`[DELETE USER] ✓ Project ${userProjects[i].id} deleted`);
       }
       
-      // 9. Delete user progress (if any remaining)
-      console.log(`[DELETE USER] Deleting user progress...`);
-      await db.delete(userProgress).where(eq(userProgress.userId, id));
+      // 9. Delete user progress (if any remaining - no FK constraint)
+      console.log(`[DELETE USER] Step 9: Deleting user progress...`);
+      const deletedProgress = await db.delete(userProgress).where(eq(userProgress.userId, id));
+      console.log(`[DELETE USER] ✓ Deleted ${deletedProgress.rowCount || 0} progress records`);
       
       // 10. Finally, delete the user
-      console.log(`[DELETE USER] Deleting user from users table...`);
+      console.log(`[DELETE USER] Step 10: FINAL - Deleting user from users table...`);
       const result = await db.delete(users).where(eq(users.id, id));
       const success = (result.rowCount || 0) > 0;
       
-      console.log(`[DELETE USER] ✓ User deletion completed: ${success}`);
+      console.log(`[DELETE USER] ${success ? '✅ SUCCESS' : '❌ FAILED'}: User deletion ${success ? 'completed' : 'failed'} (rowCount: ${result.rowCount})`);
       return success;
     } catch (error: any) {
-      console.error(`[DELETE USER] ✗ Failed to delete user ${id}:`, error?.message);
+      console.error(`[DELETE USER] ❌ EXCEPTION: Failed to delete user ${id}`);
+      console.error(`[DELETE USER] Error code: ${error?.code}`);
+      console.error(`[DELETE USER] Error message: ${error?.message}`);
+      console.error(`[DELETE USER] Error detail: ${error?.detail}`);
+      console.error(`[DELETE USER] Full error:`, error);
       throw error;
     }
   }
