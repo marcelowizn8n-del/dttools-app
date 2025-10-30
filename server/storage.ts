@@ -421,6 +421,10 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserById(id: string): Promise<User | undefined> {
+    return this.getUser(id);
+  }
+
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
@@ -1580,6 +1584,14 @@ export class DatabaseStorage implements IStorage {
   async createProjectInvite(invite: InsertProjectInvite): Promise<ProjectInvite> {
     const [newInvite] = await db.insert(projectInvites).values(invite).returning();
     return newInvite;
+  }
+
+  async updateProjectInvite(id: string, updates: Partial<InsertProjectInvite>): Promise<ProjectInvite | undefined> {
+    const [updated] = await db.update(projectInvites)
+      .set(updates)
+      .where(eq(projectInvites.id, id))
+      .returning();
+    return updated;
   }
 
   async updateProjectInviteStatus(id: string, status: string, respondedAt?: Date): Promise<ProjectInvite | undefined> {
