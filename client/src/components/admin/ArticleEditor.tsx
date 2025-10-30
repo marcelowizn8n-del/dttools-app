@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { Globe, Save } from "lucide-react";
+import { Globe, Save, Languages, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,6 +169,53 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
     },
   });
 
+  const translateMutation = useMutation({
+    mutationFn: async () => {
+      const title = form.getValues("title");
+      const description = form.getValues("description");
+      const content = form.getValues("content");
+
+      if (!title || !description || !content) {
+        throw new Error("Preencha título, descrição e conteúdo em português primeiro");
+      }
+
+      const response = await apiRequest("POST", "/api/admin/translate/article", {
+        title,
+        description,
+        content
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to translate");
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      form.setValue("titleEn", data.titleEn);
+      form.setValue("descriptionEn", data.descriptionEn);
+      form.setValue("contentEn", data.contentEn);
+      form.setValue("titleEs", data.titleEs);
+      form.setValue("descriptionEs", data.descriptionEs);
+      form.setValue("contentEs", data.contentEs);
+      form.setValue("titleFr", data.titleFr);
+      form.setValue("descriptionFr", data.descriptionFr);
+      form.setValue("contentFr", data.contentFr);
+
+      toast({
+        title: "Tradução completa! ✨",
+        description: "O artigo foi traduzido para inglês, espanhol e francês automaticamente.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao traduzir",
+        description: error.message || "Ocorreu um erro ao traduzir o artigo.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: ArticleFormData) => {
     if (article) {
       updateArticleMutation.mutate(data);
@@ -231,9 +278,32 @@ export default function ArticleEditor({ article, isOpen, onClose }: ArticleEdito
                   </TabsList>
                 </Tabs>
                 
-                <p className="text-sm text-muted-foreground mt-2">
-                  Preencha os campos abaixo no idioma selecionado
-                </p>
+                <div className="flex items-center justify-between mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Preencha os campos abaixo no idioma selecionado
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => translateMutation.mutate()}
+                    disabled={translateMutation.isPending}
+                    data-testid="button-auto-translate"
+                    className="gap-2"
+                  >
+                    {translateMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Traduzindo...
+                      </>
+                    ) : (
+                      <>
+                        <Languages className="h-4 w-4" />
+                        Traduzir Automaticamente
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
 
               {/* Basic Info */}
