@@ -16,6 +16,7 @@ import ProjectDetailPage from "@/pages/project-detail";
 import LibraryPage from "@/pages/library";
 import ArticleDetailPage from "@/pages/article-detail";
 import AdminPage from "@/pages/admin";
+import AnalyticsPage from "@/pages/Analytics";
 import LoginPage from "@/pages/login";
 import SignupPage from "@/pages/signup";
 import CompleteProfilePage from "@/pages/complete-profile";
@@ -129,6 +130,11 @@ function Router() {
       <Route path="/admin/cases">
         <ProtectedRoute adminOnly={true}>
           <AdminCases />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/analytics">
+        <ProtectedRoute adminOnly={true}>
+          <AnalyticsPage />
         </ProtectedRoute>
       </Route>
       <Route path="/benchmarking">
