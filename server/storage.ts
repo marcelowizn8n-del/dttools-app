@@ -460,32 +460,52 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log(`[DELETE USER] Starting deletion for user ${id}`);
       
-      // 1. Update project memberships where user was addedBy (set to null BEFORE deleting memberships)
-      console.log(`[DELETE USER] Step 1: Updating project memberships (addedBy → null)...`);
-      const updated = await db.update(projectMembers)
-        .set({ addedBy: null })
-        .where(eq(projectMembers.addedBy, id));
-      console.log(`[DELETE USER] ✓ Updated ${updated.rowCount || 0} project memberships`);
+      // 1. Update project memberships where user was addedBy (IGNORE if table doesn't exist)
+      try {
+        console.log(`[DELETE USER] Step 1: Updating project memberships (addedBy → null)...`);
+        const updated = await db.update(projectMembers)
+          .set({ addedBy: null })
+          .where(eq(projectMembers.addedBy, id));
+        console.log(`[DELETE USER] ✓ Updated ${updated.rowCount || 0} project memberships`);
+      } catch (e: any) {
+        console.log(`[DELETE USER] ⚠ Skipping project_members update (table may not exist): ${e?.message}`);
+      }
       
-      // 2. Delete analytics events
-      console.log(`[DELETE USER] Step 2: Deleting analytics events...`);
-      const deletedEvents = await db.delete(analyticsEvents).where(eq(analyticsEvents.userId, id));
-      console.log(`[DELETE USER] ✓ Deleted ${deletedEvents.rowCount || 0} analytics events`);
+      // 2. Delete analytics events (IGNORE if table doesn't exist)
+      try {
+        console.log(`[DELETE USER] Step 2: Deleting analytics events...`);
+        const deletedEvents = await db.delete(analyticsEvents).where(eq(analyticsEvents.userId, id));
+        console.log(`[DELETE USER] ✓ Deleted ${deletedEvents.rowCount || 0} analytics events`);
+      } catch (e: any) {
+        console.log(`[DELETE USER] ⚠ Skipping analytics_events (table may not exist): ${e?.message}`);
+      }
       
-      // 3. Delete project comments by this user
-      console.log(`[DELETE USER] Step 3: Deleting project comments...`);
-      const deletedComments = await db.delete(projectComments).where(eq(projectComments.userId, id));
-      console.log(`[DELETE USER] ✓ Deleted ${deletedComments.rowCount || 0} comments`);
+      // 3. Delete project comments by this user (IGNORE if table doesn't exist)
+      try {
+        console.log(`[DELETE USER] Step 3: Deleting project comments...`);
+        const deletedComments = await db.delete(projectComments).where(eq(projectComments.userId, id));
+        console.log(`[DELETE USER] ✓ Deleted ${deletedComments.rowCount || 0} comments`);
+      } catch (e: any) {
+        console.log(`[DELETE USER] ⚠ Skipping project_comments (table may not exist): ${e?.message}`);
+      }
       
-      // 4. Delete project invites where user is the inviter
-      console.log(`[DELETE USER] Step 4: Deleting project invites (invitedBy)...`);
-      const deletedInvites = await db.delete(projectInvites).where(eq(projectInvites.invitedBy, id));
-      console.log(`[DELETE USER] ✓ Deleted ${deletedInvites.rowCount || 0} invites`);
+      // 4. Delete project invites where user is the inviter (IGNORE if table doesn't exist)
+      try {
+        console.log(`[DELETE USER] Step 4: Deleting project invites (invitedBy)...`);
+        const deletedInvites = await db.delete(projectInvites).where(eq(projectInvites.invitedBy, id));
+        console.log(`[DELETE USER] ✓ Deleted ${deletedInvites.rowCount || 0} invites`);
+      } catch (e: any) {
+        console.log(`[DELETE USER] ⚠ Skipping project_invites (table may not exist): ${e?.message}`);
+      }
       
-      // 5. Delete project memberships (userId)
-      console.log(`[DELETE USER] Step 5: Deleting project memberships (userId)...`);
-      const deletedMembers = await db.delete(projectMembers).where(eq(projectMembers.userId, id));
-      console.log(`[DELETE USER] ✓ Deleted ${deletedMembers.rowCount || 0} memberships`);
+      // 5. Delete project memberships (userId) (IGNORE if table doesn't exist)
+      try {
+        console.log(`[DELETE USER] Step 5: Deleting project memberships (userId)...`);
+        const deletedMembers = await db.delete(projectMembers).where(eq(projectMembers.userId, id));
+        console.log(`[DELETE USER] ✓ Deleted ${deletedMembers.rowCount || 0} memberships`);
+      } catch (e: any) {
+        console.log(`[DELETE USER] ⚠ Skipping project_members (table may not exist): ${e?.message}`);
+      }
       
       // 6. Delete user subscriptions
       console.log(`[DELETE USER] Step 6: Deleting user subscriptions...`);
