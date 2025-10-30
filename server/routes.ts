@@ -2038,7 +2038,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error(`[API DELETE USER] Error code: ${error?.code}`);
       console.error(`[API DELETE USER] Error message: ${error?.message}`);
       console.error(`[API DELETE USER] Error stack:`, error?.stack);
-      res.status(500).json({ error: "Failed to delete user", details: error?.message });
+      
+      // Return detailed error to help debug
+      res.status(500).json({ 
+        error: "Failed to delete user", 
+        details: {
+          message: error?.message,
+          code: error?.code,
+          constraint: error?.constraint,
+          table: error?.table,
+          detail: error?.detail,
+          stack: error?.stack?.split('\n').slice(0, 5).join('\n')
+        }
+      });
     }
   });
 
