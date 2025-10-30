@@ -52,6 +52,7 @@ import { checkAiProjectLimits, incrementAiProjectsUsed } from "./middleware/chec
 import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "./aiService";
 import { designThinkingGeminiAI } from "./geminiService";
 import { PPTXService } from "./pptxService";
+import { translateArticle, translateVideo, translateTestimonial } from "./translation";
 
 // Initialize Stripe with secret key (optional for Railway deployment)
 const stripe = process.env.STRIPE_SECRET_KEY 
@@ -1287,6 +1288,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete article" });
+    }
+  });
+
+  // Auto-translation routes
+  app.post("/api/admin/translate/article", requireAdmin, async (req, res) => {
+    try {
+      const { title, description, content } = req.body;
+      
+      if (!title || !description || !content) {
+        return res.status(400).json({ error: "Title, description, and content are required" });
+      }
+
+      const translations = await translateArticle({ title, description, content });
+      res.json(translations);
+    } catch (error) {
+      console.error("Translation error:", error);
+      res.status(500).json({ error: "Failed to translate article" });
+    }
+  });
+
+  app.post("/api/admin/translate/video", requireAdmin, async (req, res) => {
+    try {
+      const { title, description } = req.body;
+      
+      if (!title || !description) {
+        return res.status(400).json({ error: "Title and description are required" });
+      }
+
+      const translations = await translateVideo({ title, description });
+      res.json(translations);
+    } catch (error) {
+      console.error("Translation error:", error);
+      res.status(500).json({ error: "Failed to translate video" });
+    }
+  });
+
+  app.post("/api/admin/translate/testimonial", requireAdmin, async (req, res) => {
+    try {
+      const { testimonialPt } = req.body;
+      
+      if (!testimonialPt) {
+        return res.status(400).json({ error: "Portuguese testimonial text is required" });
+      }
+
+      const translations = await translateTestimonial({ testimonialPt });
+      res.json(translations);
+    } catch (error) {
+      console.error("Translation error:", error);
+      res.status(500).json({ error: "Failed to translate testimonial" });
     }
   });
 
