@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Edit, Trash2, Star, Globe, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, Edit, Trash2, Star, Globe, CheckCircle2, XCircle, Languages, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -107,6 +107,43 @@ export default function TestimonialsTab() {
     },
     onError: () => {
       toast({ title: "Erro ao excluir depoimento", variant: "destructive" });
+    },
+  });
+
+  const translateMutation = useMutation({
+    mutationFn: async () => {
+      const testimonialPt = form.getValues("testimonialPt");
+
+      if (!testimonialPt) {
+        throw new Error("Preencha o depoimento em português primeiro");
+      }
+
+      const response = await apiRequest("POST", "/api/admin/translate/testimonial", {
+        testimonialPt
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to translate");
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      form.setValue("testimonialEn", data.testimonialEn);
+      form.setValue("testimonialEs", data.testimonialEs);
+      form.setValue("testimonialFr", data.testimonialFr);
+
+      toast({
+        title: "Tradução completa! ✨",
+        description: "O depoimento foi traduzido para inglês, espanhol e francês automaticamente.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao traduzir",
+        description: error.message || "Ocorreu um erro ao traduzir o depoimento.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -406,9 +443,32 @@ export default function TestimonialsTab() {
 
               {/* Multilingual Testimonials */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-muted-foreground" />
-                  <FormLabel className="text-base font-semibold">Depoimento Multilíngue</FormLabel>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-muted-foreground" />
+                    <FormLabel className="text-base font-semibold">Depoimento Multilíngue</FormLabel>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => translateMutation.mutate()}
+                    disabled={translateMutation.isPending}
+                    data-testid="button-auto-translate"
+                    className="gap-2"
+                  >
+                    {translateMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Traduzindo...
+                      </>
+                    ) : (
+                      <>
+                        <Languages className="h-4 w-4" />
+                        Traduzir Automaticamente
+                      </>
+                    )}
+                  </Button>
                 </div>
 
                 <Tabs value={languageTab} onValueChange={setLanguageTab}>
