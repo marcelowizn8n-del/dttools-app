@@ -33,9 +33,9 @@ const videoFormSchema = z.object({
   youtubeUrl: z.string().url("URL do YouTube inválida").optional().or(z.literal("")),
   thumbnailUrl: z.string().url("URL da thumbnail inválida").optional().or(z.literal("")),
   duration: z.string().optional(),
-  order: z.number().int().min(0).default(0),
-  isActive: z.boolean().default(true),
-  tags: z.string().optional(),
+  order: z.number().int().min(0),
+  isActive: z.boolean(),
+  tagsInput: z.string().optional(), // Input field for tags (comma-separated string)
 });
 
 type VideoFormData = z.infer<typeof videoFormSchema>;
@@ -68,7 +68,7 @@ export default function AdminVideos() {
       duration: "",
       order: 0,
       isActive: true,
-      tags: "",
+      tagsInput: "",
     },
   });
 
@@ -189,9 +189,9 @@ export default function AdminVideos() {
       youtubeUrl: video.youtubeUrl || "",
       thumbnailUrl: video.thumbnailUrl || "",
       duration: video.duration || "",
-      order: video.order,
-      isActive: video.isActive,
-      tags: video.tags?.join(", ") || "",
+      order: video.order ?? 0,
+      isActive: video.isActive ?? true,
+      tagsInput: (video.tags && Array.isArray(video.tags)) ? video.tags.join(", ") : "",
     });
     setIsDialogOpen(true);
   };
@@ -213,15 +213,16 @@ export default function AdminVideos() {
       duration: "",
       order: videos.length,
       isActive: true,
-      tags: "",
+      tagsInput: "",
     });
     setIsDialogOpen(true);
   };
 
   const onSubmit = (data: VideoFormData) => {
+    const { tagsInput, ...rest } = data;
     const videoData = {
-      ...data,
-      tags: data.tags ? data.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+      ...rest,
+      tags: tagsInput ? tagsInput.split(",").map(t => t.trim()).filter(Boolean) : [],
     };
 
     if (editingVideo) {
@@ -609,7 +610,7 @@ export default function AdminVideos() {
 
               <FormField
                 control={form.control}
-                name="tags"
+                name="tagsInput"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tags</FormLabel>

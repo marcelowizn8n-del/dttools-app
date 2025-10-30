@@ -386,12 +386,19 @@ export const testimonials = pgTable("testimonials", {
 export const videoTutorials = pgTable("video_tutorials", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
+  titleEn: text("title_en"),
+  titleEs: text("title_es"),
+  titleFr: text("title_fr"),
   description: text("description"),
-  phase: text("phase").notNull(), // 'overview', 'phase1', 'phase2', 'phase3', 'phase4', 'phase5'
+  descriptionEn: text("description_en"),
+  descriptionEs: text("description_es"),
+  descriptionFr: text("description_fr"),
+  phase: text("phase").notNull(), // 'overview', 'empathize', 'define', 'ideate', 'prototype', 'test'
   duration: text("duration"), // e.g., '3-4 min'
   youtubeUrl: text("youtube_url"), // URL do vídeo no YouTube
   thumbnailUrl: text("thumbnail_url"),
-  keywords: jsonb("keywords").default([]), // Array of SEO keywords
+  keywords: text("keywords").array().default(sql`'{}'::text[]`), // Array of SEO keywords
+  tags: text("tags").array().default(sql`'{}'::text[]`), // User-facing category tags
   scriptId: text("script_id"), // Reference to script in markdown file
   order: integer("order").default(0),
   isActive: boolean("is_active").default(true),
