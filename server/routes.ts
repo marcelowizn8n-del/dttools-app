@@ -104,6 +104,53 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
+// Project permission middleware
+function requireProjectAccess(requiredRole: 'owner' | 'editor' | 'viewer' = 'viewer') {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const projectId = req.params.projectId;
+    if (!projectId) {
+      return res.status(400).json({ error: "Project ID required" });
+    }
+
+    try {
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      const userId = req.session.userId;
+      
+      // Owner has full access
+      if (project.userId === userId) {
+        return next();
+      }
+
+      // Check if user is a member
+      const member = await storage.getProjectMember(projectId, userId);
+      if (!member) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Check role permissions
+      const roleHierarchy = { viewer: 1, editor: 2, owner: 3 };
+      const userLevel = roleHierarchy[member.role as keyof typeof roleHierarchy] || 0;
+      const requiredLevel = roleHierarchy[requiredRole];
+
+      if (userLevel < requiredLevel) {
+        return res.status(403).json({ error: "Insufficient permissions" });
+      }
+
+      next();
+    } catch (error) {
+      return res.status(500).json({ error: "Failed to check permissions" });
+    }
+  };
+}
+
 // Configuração do multer para upload de arquivos
 const storage_config = multer.memoryStorage();
 const upload = multer({
@@ -429,6 +476,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[DELETE PROJECT] Error:", error);
       res.status(500).json({ error: "Failed to delete project" });
+    }
+  });
+
+  // Project Members and Team Collaboration routes
+  app.get("/api/projects/:projectId/members", requireAuth, requireProjectAccess('viewer'), async (req, res) => {
+    try {
+      const members = await storage.getProjectMembers(req.params.projectId);
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch project members" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/members/invite", requireAuth, requireProjectAccess('owner'), async (req, res) => {
+    try {
+      const { email, role } = req.body;
+      const userId = req.session!.userId!;
+      const projectId = req.params.projectId;
+      
+      if (!email || !role) {
+        return res.status(400).json({ error: "Email and role are required" });
+      }
+
+      if (!['editor', 'viewer'].includes(role)) {
+        return res.status(400).json({ error: "Invalid role. Must be 'editor' or 'viewer'" });
+      }
+
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      const invite = await storage.createProjectInvite({
+        projectId,
+        email,
+        role,
+        invitedBy: userId,
+        token,
+        expiresAt
+      });
+
+      res.status(201).json(invite);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create invite" });
+    }
+  });
+
+  app.delete("/api/projects/:projectId/members/:userId", requireAuth, requireProjectAccess('owner'), async (req, res) => {
+    try {
+      const success = await storage.deleteProjectMember(req.params.projectId, req.params.userId);
+      if (!success) {
+        return res.status(404).json({ error: "Member not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove member" });
+    }
+  });
+
+  app.patch("/api/projects/:projectId/members/:userId/role", requireAuth, requireProjectAccess('owner'), async (req, res) => {
+    try {
+      const { role } = req.body;
+      if (!role || !['editor', 'viewer'].includes(role)) {
+        return res.status(400).json({ error: "Invalid role" });
+      }
+
+      const member = await storage.updateProjectMemberRole(req.params.projectId, req.params.userId, role);
+      if (!member) {
+        return res.status(404).json({ error: "Member not found" });
+      }
+      res.json(member);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update member role" });
+    }
+  });
+
+  app.get("/api/invites", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session!.userId!;
+      const user = await storage.getUserById(userId);
+      if (!user?.email) {
+        return res.status(400).json({ error: "User email not found" });
+      }
+
+      const invites = await storage.getProjectInvites(user.email);
+      res.json(invites);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch invites" });
+    }
+  });
+
+  app.post("/api/invites/:token/accept", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session!.userId!;
+      const user = await storage.getUserById(userId);
+      if (!user?.email) {
+        return res.status(400).json({ error: "User email not found" });
+      }
+
+      const invite = await storage.getProjectInviteByToken(req.params.token);
+      if (!invite) {
+        return res.status(404).json({ error: "Invite not found" });
+      }
+
+      if (invite.email !== user.email) {
+        return res.status(403).json({ error: "This invite is not for you" });
+      }
+
+      if (invite.status !== 'pending') {
+        return res.status(400).json({ error: "Invite already processed" });
+      }
+
+      if (new Date(invite.expiresAt) < new Date()) {
+        await storage.updateProjectInvite(invite.id, { status: 'expired' });
+        return res.status(400).json({ error: "Invite has expired" });
+      }
+
+      await storage.createProjectMember({
+        projectId: invite.projectId,
+        userId: userId,
+        role: invite.role,
+        invitedBy: invite.invitedBy
+      });
+
+      await storage.updateProjectInvite(invite.id, { 
+        status: 'accepted',
+        respondedAt: new Date()
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to accept invite" });
+    }
+  });
+
+  app.post("/api/invites/:token/decline", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session!.userId!;
+      const user = await storage.getUserById(userId);
+      if (!user?.email) {
+        return res.status(400).json({ error: "User email not found" });
+      }
+
+      const invite = await storage.getProjectInviteByToken(req.params.token);
+      if (!invite) {
+        return res.status(404).json({ error: "Invite not found" });
+      }
+
+      if (invite.email !== user.email) {
+        return res.status(403).json({ error: "This invite is not for you" });
+      }
+
+      await storage.updateProjectInvite(invite.id, { 
+        status: 'declined',
+        respondedAt: new Date()
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to decline invite" });
     }
   });
 
@@ -1878,6 +2083,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(projects);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch projects" });
+    }
+  });
+
+  // Analytics routes
+  app.get("/api/admin/analytics/summary", requireAdmin, async (_req, res) => {
+    try {
+      const summary = await storage.getAnalyticsSummary();
+      res.json(summary);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch analytics summary" });
+    }
+  });
+
+  app.get("/api/admin/analytics/events", requireAdmin, async (req, res) => {
+    try {
+      const { eventType, userId, startDate, endDate } = req.query;
+      const filters: any = {};
+      
+      if (eventType && typeof eventType === 'string') filters.eventType = eventType;
+      if (userId && typeof userId === 'string') filters.userId = userId;
+      if (startDate && typeof startDate === 'string') filters.startDate = new Date(startDate);
+      if (endDate && typeof endDate === 'string') filters.endDate = new Date(endDate);
+      
+      const events = await storage.getAnalyticsEvents(filters);
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch analytics events" });
     }
   });
 
