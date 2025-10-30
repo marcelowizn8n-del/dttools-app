@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Eye, Search, Video, Youtube } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Video, Youtube, Languages, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -114,6 +114,48 @@ export default function AdminVideos() {
       toast({
         title: "Erro ao atualizar vídeo",
         description: "Ocorreu um erro ao tentar atualizar o vídeo tutorial.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const translateMutation = useMutation({
+    mutationFn: async () => {
+      const title = form.getValues("title");
+      const description = form.getValues("description");
+
+      if (!title || !description) {
+        throw new Error("Preencha título e descrição em português primeiro");
+      }
+
+      const response = await apiRequest("POST", "/api/admin/translate/video", {
+        title,
+        description
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to translate");
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      form.setValue("titleEn", data.titleEn);
+      form.setValue("descriptionEn", data.descriptionEn);
+      form.setValue("titleEs", data.titleEs);
+      form.setValue("descriptionEs", data.descriptionEs);
+      form.setValue("titleFr", data.titleFr);
+      form.setValue("descriptionFr", data.descriptionFr);
+
+      toast({
+        title: "Tradução completa! ✨",
+        description: "O vídeo foi traduzido para inglês, espanhol e francês automaticamente.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao traduzir",
+        description: error.message || "Ocorreu um erro ao traduzir o vídeo.",
         variant: "destructive",
       });
     },
@@ -490,6 +532,30 @@ export default function AdminVideos() {
                   </FormItem>
                 )}
               />
+
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => translateMutation.mutate()}
+                  disabled={translateMutation.isPending}
+                  data-testid="button-auto-translate"
+                  className="gap-2"
+                >
+                  {translateMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Traduzindo...
+                    </>
+                  ) : (
+                    <>
+                      <Languages className="h-4 w-4" />
+                      Traduzir Automaticamente
+                    </>
+                  )}
+                </Button>
+              </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <FormField
