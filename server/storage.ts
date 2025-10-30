@@ -14,6 +14,7 @@ import {
   type User, type InsertUser,
   type Article, type InsertArticle,
   type Testimonial, type InsertTestimonial,
+  type VideoTutorial, type InsertVideoTutorial,
   type SubscriptionPlan, type InsertSubscriptionPlan,
   type UserSubscription, type InsertUserSubscription,
   type CanvasDrawing, type InsertCanvasDrawing,
@@ -35,7 +36,7 @@ import {
   type ProjectComment, type InsertProjectComment,
   projects, empathyMaps, personas, interviews, observations,
   povStatements, hmwQuestions, ideas, prototypes, testPlans, testResults,
-  userProgress, users, articles, testimonials, subscriptionPlans, userSubscriptions,
+  userProgress, users, articles, testimonials, videoTutorials, subscriptionPlans, userSubscriptions,
   canvasDrawings, phaseCards, benchmarks, benchmarkAssessments,
   dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis,
   projectBackups, helpArticles, industrySectors, successCases, aiGeneratedAssets,
@@ -1773,6 +1774,48 @@ export class DatabaseStorage implements IStorage {
   async deleteProjectComment(id: string): Promise<boolean> {
     const result = await db.delete(projectComments).where(eq(projectComments.id, id));
     return (result.rowCount || 0) > 0;
+  }
+
+  // Video Tutorials
+  async getVideoTutorials(): Promise<VideoTutorial[]> {
+    return await db.select().from(videoTutorials)
+      .where(eq(videoTutorials.isActive, true))
+      .orderBy(videoTutorials.order);
+  }
+
+  async getVideoTutorialsByPhase(phase: string): Promise<VideoTutorial[]> {
+    return await db.select().from(videoTutorials)
+      .where(and(eq(videoTutorials.phase, phase), eq(videoTutorials.isActive, true)))
+      .orderBy(videoTutorials.order);
+  }
+
+  async getVideoTutorial(id: string): Promise<VideoTutorial | undefined> {
+    const [video] = await db.select().from(videoTutorials).where(eq(videoTutorials.id, id));
+    return video;
+  }
+
+  async createVideoTutorial(video: InsertVideoTutorial): Promise<VideoTutorial> {
+    const [newVideo] = await db.insert(videoTutorials).values(video).returning();
+    return newVideo;
+  }
+
+  async updateVideoTutorial(id: string, video: Partial<InsertVideoTutorial>): Promise<VideoTutorial> {
+    const [updatedVideo] = await db.update(videoTutorials)
+      .set({ ...video, updatedAt: new Date() })
+      .where(eq(videoTutorials.id, id))
+      .returning();
+    return updatedVideo;
+  }
+
+  async deleteVideoTutorial(id: string): Promise<boolean> {
+    const result = await db.delete(videoTutorials).where(eq(videoTutorials.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async incrementVideoView(id: string): Promise<void> {
+    await db.update(videoTutorials)
+      .set({ viewCount: sql`${videoTutorials.viewCount} + 1` })
+      .where(eq(videoTutorials.id, id));
   }
 }
 

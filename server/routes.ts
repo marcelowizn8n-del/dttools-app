@@ -22,6 +22,7 @@ import {
   insertUserSchema,
   insertArticleSchema,
   insertTestimonialSchema,
+  insertVideoTutorialSchema,
   insertSubscriptionPlanSchema,
   insertUserSubscriptionSchema,
   insertCanvasDrawingSchema,
@@ -1352,6 +1353,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete testimonial" });
+    }
+  });
+
+  // Video Tutorials routes
+  app.get("/api/video-tutorials", async (_req, res) => {
+    try {
+      const videos = await storage.getVideoTutorials();
+      res.json(videos);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch video tutorials" });
+    }
+  });
+
+  app.get("/api/video-tutorials/phase/:phase", async (req, res) => {
+    try {
+      const videos = await storage.getVideoTutorialsByPhase(req.params.phase);
+      res.json(videos);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch video tutorials" });
+    }
+  });
+
+  app.get("/api/video-tutorials/:id", async (req, res) => {
+    try {
+      const video = await storage.getVideoTutorial(req.params.id);
+      if (!video) {
+        return res.status(404).json({ error: "Video tutorial not found" });
+      }
+      res.json(video);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch video tutorial" });
+    }
+  });
+
+  app.post("/api/video-tutorials/:id/view", async (req, res) => {
+    try {
+      await storage.incrementVideoView(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to increment view" });
+    }
+  });
+
+  // Admin routes for video tutorials
+  app.post("/api/admin/video-tutorials", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertVideoTutorialSchema.parse(req.body);
+      const video = await storage.createVideoTutorial(validatedData);
+      res.status(201).json(video);
+    } catch (error) {
+      console.error("Error creating video tutorial:", error);
+      res.status(400).json({ error: "Invalid video tutorial data" });
+    }
+  });
+
+  app.put("/api/admin/video-tutorials/:id", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertVideoTutorialSchema.partial().parse(req.body);
+      const video = await storage.updateVideoTutorial(req.params.id, validatedData);
+      if (!video) {
+        return res.status(404).json({ error: "Video tutorial not found" });
+      }
+      res.json(video);
+    } catch (error) {
+      console.error("Error updating video tutorial:", error);
+      res.status(400).json({ error: "Invalid video tutorial data" });
+    }
+  });
+
+  app.delete("/api/admin/video-tutorials/:id", requireAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteVideoTutorial(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Video tutorial not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete video tutorial" });
     }
   });
 

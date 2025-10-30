@@ -382,6 +382,24 @@ export const testimonials = pgTable("testimonials", {
   updatedAt: timestamp("updated_at").default(sql`now()`),
 });
 
+// Video Tutorials for learning Design Thinking
+export const videoTutorials = pgTable("video_tutorials", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description"),
+  phase: text("phase").notNull(), // 'overview', 'phase1', 'phase2', 'phase3', 'phase4', 'phase5'
+  duration: text("duration"), // e.g., '3-4 min'
+  youtubeUrl: text("youtube_url"), // URL do vídeo no YouTube
+  thumbnailUrl: text("thumbnail_url"),
+  keywords: jsonb("keywords").default([]), // Array of SEO keywords
+  scriptId: text("script_id"), // Reference to script in markdown file
+  order: integer("order").default(0),
+  isActive: boolean("is_active").default(true),
+  viewCount: integer("view_count").default(0),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
 // Insert schemas
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
@@ -468,6 +486,13 @@ export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
   updatedAt: true,
 });
 
+export const insertVideoTutorialSchema = createInsertSchema(videoTutorials).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  viewCount: true,
+});
+
 export const insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
   id: true,
   createdAt: true,
@@ -544,6 +569,9 @@ export type InsertArticle = z.infer<typeof insertArticleSchema>;
 
 export type Testimonial = typeof testimonials.$inferSelect;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
+
+export type VideoTutorial = typeof videoTutorials.$inferSelect;
+export type InsertVideoTutorial = z.infer<typeof insertVideoTutorialSchema>;
 
 export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type InsertSubscriptionPlan = z.infer<typeof insertSubscriptionPlanSchema>;
