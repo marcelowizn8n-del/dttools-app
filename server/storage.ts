@@ -334,6 +334,11 @@ export class DatabaseStorage implements IStorage {
       }
     };
     
+    // Delete collaboration tables FIRST (new tables from Teams feature)
+    await deleteTable('projectComments', () => db.delete(projectComments).where(eq(projectComments.projectId, id)));
+    await deleteTable('projectInvites', () => db.delete(projectInvites).where(eq(projectInvites.projectId, id)));
+    await deleteTable('projectMembers', () => db.delete(projectMembers).where(eq(projectMembers.projectId, id)));
+    
     // Delete AI generated assets
     await deleteTable('aiGeneratedAssets', () => db.delete(aiGeneratedAssets).where(eq(aiGeneratedAssets.projectId, id)));
     
