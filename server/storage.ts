@@ -339,6 +339,9 @@ export class DatabaseStorage implements IStorage {
     await deleteTable('projectInvites', () => db.delete(projectInvites).where(eq(projectInvites.projectId, id)));
     await deleteTable('projectMembers', () => db.delete(projectMembers).where(eq(projectMembers.projectId, id)));
     
+    // Delete analytics events for this project
+    await deleteTable('analyticsEvents', () => db.delete(analyticsEvents).where(eq(analyticsEvents.projectId, id)));
+    
     // Delete AI generated assets
     await deleteTable('aiGeneratedAssets', () => db.delete(aiGeneratedAssets).where(eq(aiGeneratedAssets.projectId, id)));
     
