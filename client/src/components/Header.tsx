@@ -8,7 +8,8 @@ import {
   BarChart3,
   MessageCircle,
   Menu,
-  X
+  X,
+  Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -78,6 +79,12 @@ export default function Header() {
               <Button variant="ghost" className="text-sm" data-testid="nav-library">
                 <Book className="mr-1 h-4 w-4" />
                 {t("nav.library")}
+              </Button>
+            </Link>
+            <Link href="/video-tutorials">
+              <Button variant="ghost" className="text-sm" data-testid="nav-video-tutorials">
+                <Video className="mr-1 h-4 w-4" />
+                Tutoriais
               </Button>
             </Link>
             {isAuthenticated && (
@@ -161,6 +168,12 @@ export default function Header() {
                   <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-library" onClick={() => setIsMobileMenuOpen(false)}>
                     <Book className="mr-2 h-4 w-4" />
                     {t("nav.library")}
+                  </Button>
+                </Link>
+                <Link href="/video-tutorials">
+                  <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-video-tutorials" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Video className="mr-2 h-4 w-4" />
+                    Tutoriais
                   </Button>
                 </Link>
                 {isAuthenticated && (

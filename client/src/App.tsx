@@ -36,6 +36,7 @@ import OnboardingAI from "@/pages/OnboardingAI";
 import DashboardAI from "@/pages/DashboardAI";
 import AdminSectors from "@/pages/AdminSectors";
 import AdminCases from "@/pages/AdminCases";
+import VideoTutorials from "@/pages/VideoTutorials";
 
 function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -96,6 +97,8 @@ function Router() {
       <Route path="/biblioteca" component={LibraryPage} />
       <Route path="/library/article/:id" component={ArticleDetailPage} />
       <Route path="/biblioteca/artigo/:id" component={ArticleDetailPage} />
+      <Route path="/video-tutorials" component={VideoTutorials} />
+      <Route path="/tutoriais" component={VideoTutorials} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/signup" component={SignupPage} />
