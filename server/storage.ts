@@ -456,42 +456,46 @@ export class DatabaseStorage implements IStorage {
       console.log(`[DELETE USER] Deleting analytics events...`);
       await db.delete(analyticsEvents).where(eq(analyticsEvents.userId, id));
       
-      // 2. Delete project invites where user is the inviter
+      // 2. Delete project comments by this user
+      console.log(`[DELETE USER] Deleting project comments...`);
+      await db.delete(projectComments).where(eq(projectComments.userId, id));
+      
+      // 3. Delete project invites where user is the inviter
       console.log(`[DELETE USER] Deleting project invites (invitedBy)...`);
       await db.delete(projectInvites).where(eq(projectInvites.invitedBy, id));
       
-      // 3. Delete project memberships (userId)
+      // 4. Delete project memberships (userId)
       console.log(`[DELETE USER] Deleting project memberships (userId)...`);
       await db.delete(projectMembers).where(eq(projectMembers.userId, id));
       
-      // 4. Update project memberships where user was addedBy (set to null or another admin)
+      // 5. Update project memberships where user was addedBy (set to null or another admin)
       console.log(`[DELETE USER] Updating project memberships (addedBy)...`);
       await db.update(projectMembers)
         .set({ addedBy: null })
         .where(eq(projectMembers.addedBy, id));
       
-      // 5. Delete user subscriptions
+      // 6. Delete user subscriptions
       console.log(`[DELETE USER] Deleting user subscriptions...`);
       await db.delete(userSubscriptions).where(eq(userSubscriptions.userId, id));
       
-      // 6. Get all projects owned by this user
+      // 7. Get all projects owned by this user
       const userProjects = await db.select({ id: projects.id })
         .from(projects)
         .where(eq(projects.userId, id));
       
       console.log(`[DELETE USER] Found ${userProjects.length} projects owned by user`);
       
-      // 7. Delete each project (this cascades to all project-related tables)
+      // 8. Delete each project (this cascades to all project-related tables)
       for (const project of userProjects) {
         console.log(`[DELETE USER] Deleting project ${project.id}...`);
         await this.deleteProject(project.id, id);
       }
       
-      // 8. Delete user progress (if any remaining)
+      // 9. Delete user progress (if any remaining)
       console.log(`[DELETE USER] Deleting user progress...`);
       await db.delete(userProgress).where(eq(userProgress.userId, id));
       
-      // 9. Finally, delete the user
+      // 10. Finally, delete the user
       console.log(`[DELETE USER] Deleting user from users table...`);
       const result = await db.delete(users).where(eq(users.id, id));
       const success = (result.rowCount || 0) > 0;
