@@ -3935,7 +3935,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/double-diamond - Lista projetos Double Diamond do usuário
   app.get("/api/double-diamond", requireAuth, async (req, res) => {
     try {
-      const projects = await storage.getDoubleDiamondProjects(req.user!.id);
+      const userId = req.session.userId!;
+      const projects = await storage.getDoubleDiamondProjects(userId);
       res.json(projects);
     } catch (error) {
       console.error("Error fetching Double Diamond projects:", error);
@@ -3946,7 +3947,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/double-diamond/:id - Busca um projeto Double Diamond específico
   app.get("/api/double-diamond/:id", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      const userId = req.session.userId!;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }
@@ -3960,10 +3962,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/double-diamond - Cria novo projeto Double Diamond
   app.post("/api/double-diamond", requireAuth, async (req, res) => {
     try {
+      const userId = req.session.userId!;
       const validatedData = insertDoubleDiamondProjectSchema.parse(req.body);
       const project = await storage.createDoubleDiamondProject({
         ...validatedData,
-        userId: req.user!.id
+        userId
       });
       res.status(201).json(project);
     } catch (error) {
@@ -3975,9 +3978,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // PATCH /api/double-diamond/:id - Atualiza projeto Double Diamond
   app.patch("/api/double-diamond/:id", requireAuth, async (req, res) => {
     try {
+      const userId = req.session.userId!;
       const updated = await storage.updateDoubleDiamondProject(
         req.params.id,
-        req.user!.id,
+        userId,
         req.body
       );
       if (!updated) {
@@ -3993,7 +3997,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // DELETE /api/double-diamond/:id - Deleta projeto Double Diamond
   app.delete("/api/double-diamond/:id", requireAuth, async (req, res) => {
     try {
-      const success = await storage.deleteDoubleDiamondProject(req.params.id, req.user!.id);
+      const userId = req.session.userId!;
+      const success = await storage.deleteDoubleDiamondProject(req.params.id, userId);
       if (!success) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }
@@ -4007,7 +4012,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/double-diamond/:id/generate/discover - Gera Fase 1: Discover com IA
   app.post("/api/double-diamond/:id/generate/discover", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      const userId = req.session.userId!;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }
@@ -4035,7 +4041,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Atualizar projeto com dados gerados
-      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
         discoverPainPoints: result.painPoints as any,
         discoverInsights: result.insights as any,
         discoverUserNeeds: result.userNeeds as any,
@@ -4056,7 +4062,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/double-diamond/:id/generate/define - Gera Fase 2: Define com IA
   app.post("/api/double-diamond/:id/generate/define", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      const userId = req.session.userId!;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }
@@ -4073,7 +4080,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Atualizar projeto
-      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
         definePovStatements: result.povStatements as any,
         defineHmwQuestions: result.hmwQuestions as any,
         defineStatus: "completed",
@@ -4092,7 +4099,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/double-diamond/:id/generate/develop - Gera Fase 3: Develop com IA
   app.post("/api/double-diamond/:id/generate/develop", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      const userId = req.session.userId!;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }
@@ -4116,7 +4124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Atualizar projeto
-      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
         developIdeas: result.ideas as any,
         developCrossPollinatedIdeas: result.crossPollinatedIdeas as any,
         developStatus: "completed",
@@ -4135,7 +4143,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/double-diamond/:id/generate/deliver - Gera Fase 4: Deliver com IA
   app.post("/api/double-diamond/:id/generate/deliver", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      const userId = req.session.userId!;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }
@@ -4159,7 +4168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Atualizar projeto
-      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
         deliverMvpConcept: result.mvpConcept as any,
         deliverLogoSuggestions: result.logoSuggestions as any,
         deliverLandingPage: result.landingPage as any,
@@ -4181,7 +4190,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/double-diamond/:id/generate/dfv - Gera análise DFV com IA
   app.post("/api/double-diamond/:id/generate/dfv", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      const userId = req.session.userId!;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }
@@ -4206,7 +4216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Atualizar projeto
-      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
         dfvDesirabilityScore: result.desirabilityScore,
         dfvFeasibilityScore: result.feasibilityScore,
         dfvViabilityScore: result.viabilityScore,
