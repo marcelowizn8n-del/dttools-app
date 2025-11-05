@@ -4232,6 +4232,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/industry-sectors - Lista setores/indústrias para o Double Diamond
+  app.get("/api/industry-sectors", async (req, res) => {
+    try {
+      const sectors = await storage.listIndustrySectors();
+      res.json(sectors);
+    } catch (error) {
+      console.error("Error fetching industry sectors:", error);
+      res.status(500).json({ error: "Failed to fetch industry sectors" });
+    }
+  });
+
+  // GET /api/success-cases - Lista cases de sucesso para o Double Diamond
+  app.get("/api/success-cases", async (req, res) => {
+    try {
+      const successCases = await storage.listSuccessCases();
+      res.json(successCases);
+    } catch (error) {
+      console.error("Error fetching success cases:", error);
+      res.status(500).json({ error: "Failed to fetch success cases" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

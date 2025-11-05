@@ -298,6 +298,11 @@ export interface IStorage {
   createDoubleDiamondProject(project: InsertDoubleDiamondProject): Promise<DoubleDiamondProject>;
   updateDoubleDiamondProject(id: string, userId: string, updates: Partial<InsertDoubleDiamondProject>): Promise<DoubleDiamondProject | undefined>;
   deleteDoubleDiamondProject(id: string, userId: string): Promise<boolean>;
+  
+  // Industry Sectors & Success Cases (for Double Diamond)
+  listIndustrySectors(): Promise<IndustrySector[]>;
+  getIndustrySector(id: string): Promise<IndustrySector | undefined>;
+  listSuccessCases(): Promise<SuccessCase[]>;
 }
 
 // Database implementation using PostgreSQL via Drizzle ORM
@@ -1871,6 +1876,21 @@ export class DatabaseStorage implements IStorage {
         eq(doubleDiamondProjects.userId, userId)
       ));
     return (result.rowCount || 0) > 0;
+  }
+
+  // Industry Sectors & Success Cases
+  async listIndustrySectors(): Promise<IndustrySector[]> {
+    return await db.select().from(industrySectors).orderBy(industrySectors.name);
+  }
+
+  async getIndustrySector(id: string): Promise<IndustrySector | undefined> {
+    const [sector] = await db.select().from(industrySectors)
+      .where(eq(industrySectors.id, id));
+    return sector;
+  }
+
+  async listSuccessCases(): Promise<SuccessCase[]> {
+    return await db.select().from(successCases).orderBy(successCases.company);
   }
 }
 
