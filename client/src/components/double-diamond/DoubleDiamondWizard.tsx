@@ -18,6 +18,7 @@ const doubleDiamondSchema = z.object({
   description: z.string().optional(),
   sectorId: z.string().optional(),
   successCaseId: z.string().optional(),
+  customSuccessCase: z.string().optional(),
   targetAudience: z.string().min(10, "Descreva o público-alvo (mínimo 10 caracteres)"),
   problemStatement: z.string().min(20, "Descreva o problema (mínimo 20 caracteres)")
 });
@@ -60,6 +61,7 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
       description: "",
       sectorId: "",
       successCaseId: "",
+      customSuccessCase: "",
       targetAudience: "",
       problemStatement: ""
     }
@@ -216,6 +218,36 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
               </Select>
               <FormDescription>
                 A IA aprenderá com estratégias de cases de sucesso similares
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* OU Texto Customizado */}
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-muted"></div>
+          </div>
+          <div className="relative bg-background px-3 text-sm text-muted-foreground">OU</div>
+        </div>
+
+        {/* Case de Sucesso Personalizado */}
+        <FormField
+          control={form.control}
+          name="customSuccessCase"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Case de Sucesso Personalizado</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Digite seu próprio case (ex: Magazine Luiza, Nubank, iFood)"
+                  {...field}
+                  data-testid="input-dd-custom-case"
+                />
+              </FormControl>
+              <FormDescription>
+                Se seu case não está na lista, digite aqui o nome da empresa/produto de referência
               </FormDescription>
               <FormMessage />
             </FormItem>

@@ -3970,6 +3970,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...validatedData,
         sectorId: validatedData.sectorId && validatedData.sectorId.trim() !== '' ? validatedData.sectorId : undefined,
         successCaseId: validatedData.successCaseId && validatedData.successCaseId.trim() !== '' ? validatedData.successCaseId : undefined,
+        customSuccessCase: validatedData.customSuccessCase && validatedData.customSuccessCase.trim() !== '' ? validatedData.customSuccessCase : undefined,
         description: validatedData.description && validatedData.description.trim() !== '' ? validatedData.description : undefined,
         userId
       };

@@ -1107,6 +1107,7 @@ export const doubleDiamondProjects = pgTable("double_diamond_projects", {
   // Initial Setup (Minimal User Input)
   sectorId: varchar("sector_id").references(() => industrySectors.id),
   successCaseId: varchar("success_case_id").references(() => successCases.id), // Case to mirror (Airbnb, Uber, etc.)
+  customSuccessCase: text("custom_success_case"), // User's custom success case (if not in list)
   targetAudience: text("target_audience"), // User's minimal description of audience
   problemStatement: text("problem_statement"), // User's initial problem description
   
