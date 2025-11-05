@@ -1161,6 +1161,7 @@ export const doubleDiamondProjects = pgTable("double_diamond_projects", {
 
 export const insertDoubleDiamondProjectSchema = createInsertSchema(doubleDiamondProjects).omit({
   id: true,
+  userId: true,
   createdAt: true,
   updatedAt: true,
 });
