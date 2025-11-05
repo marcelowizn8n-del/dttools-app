@@ -70,15 +70,15 @@ Return ONLY a JSON object (no markdown):
 }`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-    const result = await model.generateContent({
-      contents: [{
-        role: 'user',
-        parts: [{ text: prompt }]
-      }]
+    const result = await genAI.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
     });
     
-    const text = result.response.text();
+    const text = result.text;
+    if (!text) throw new Error("Empty AI response");
+    if (!text) throw new Error("Empty AI response");
+    
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Invalid AI response format");
     
@@ -148,15 +148,13 @@ Return ONLY a JSON object (no markdown):
 }`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-    const result = await model.generateContent({
-      contents: [{
-        role: 'user',
-        parts: [{ text: prompt }]
-      }]
+    const result = await genAI.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
     });
     
-    const text = result.response.text();
+    const text = result.text;
+    if (!text) throw new Error("Empty AI response");
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Invalid AI response format");
     
@@ -224,15 +222,13 @@ Return ONLY a JSON object (no markdown):
 }`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-    const result = await model.generateContent({
-      contents: [{
-        role: 'user',
-        parts: [{ text: prompt }]
-      }]
+    const result = await genAI.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
     });
     
-    const text = result.response.text();
+    const text = result.text;
+    if (!text) throw new Error("Empty AI response");
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Invalid AI response format");
     
@@ -350,15 +346,13 @@ Return ONLY a JSON object (no markdown):
 }`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-    const result = await model.generateContent({
-      contents: [{
-        role: 'user',
-        parts: [{ text: prompt }]
-      }]
+    const result = await genAI.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
     });
     
-    const text = result.response.text();
+    const text = result.text;
+    if (!text) throw new Error("Empty AI response");
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Invalid AI response format");
     
@@ -460,15 +454,13 @@ Return ONLY a JSON object (no markdown):
 }`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-    const result = await model.generateContent({
-      contents: [{
-        role: 'user',
-        parts: [{ text: prompt }]
-      }]
+    const result = await genAI.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
     });
     
-    const text = result.response.text();
+    const text = result.text;
+    if (!text) throw new Error("Empty AI response");
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Invalid AI response format");
     
