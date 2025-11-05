@@ -4275,6 +4275,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/double-diamond/:id/export/pdf - Exporta projeto Double Diamond em PDF
+  app.get("/api/double-diamond/:id/export/pdf", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+
+      const { generateDoubleDiamondPDF } = await import("./double-diamond-pdf");
+      const pdfBuffer = await generateDoubleDiamondPDF(project);
+      
+      const fileName = `${project.name.replace(/[^a-z0-9]/gi, '_')}_DoubleDiamond.pdf`;
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating Double Diamond PDF:", error);
+      res.status(500).json({ error: "Failed to generate PDF" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

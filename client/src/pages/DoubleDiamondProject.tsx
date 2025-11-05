@@ -253,13 +253,28 @@ export default function DoubleDiamondProject() {
             </div>
           </div>
 
-          <div className="ml-6">
+          <div className="ml-6 flex flex-col gap-2">
             <Badge variant="secondary" className="text-lg px-4 py-2">
               Fase Atual: {project.currentPhase === "discover" ? "Descobrir" : 
                           project.currentPhase === "define" ? "Definir" :
                           project.currentPhase === "develop" ? "Desenvolver" : 
                           project.currentPhase === "deliver" ? "Entregar" : "Análise DFV"}
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                window.open(`/api/double-diamond/${id}/export/pdf`, '_blank');
+                toast({
+                  title: "📄 Gerando PDF",
+                  description: "O download começará em instantes."
+                });
+              }}
+              data-testid="button-export-pdf"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Exportar PDF
+            </Button>
           </div>
         </div>
       </div>
