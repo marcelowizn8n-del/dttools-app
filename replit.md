@@ -53,6 +53,7 @@ Tools are provided for each of the five Design Thinking phases:
 -   **Implementation**: Database schema (`double_diamond_projects`), AI service (Google Gemini 2.0 Flash) with 5 generation functions for each phase, storage layer with CRUD methods, protected API routes, and dedicated frontend pages.
 -   **User Flow**: Users create a project with 5 inputs, then trigger AI generation for each of the Discover, Define, Develop, Deliver, and DFV analysis phases.
 -   **Key Features**: Sequential flow enforcement, progress tracking, current phase indicator, error handling with retry, loading states, responsive interface.
+-   **PDF Export**: Complete project export with DTTools branding, includes all 5 phases (Discover, Define, Develop, Deliver, DFV Analysis) with formatted sections, logo header/footer on all pages.
 
 ### UX Improvement System
 -   **Problem Addressed**: User confusion regarding product purpose, navigation, and guidance for Design Thinking beginners, specifically "what to write" in forms.
