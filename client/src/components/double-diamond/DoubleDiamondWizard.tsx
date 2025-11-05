@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles } from "lucide-react";
 import { apiRequest, queryClient as globalQueryClient } from "@/lib/queryClient";
+import { ContextualTooltip } from "@/components/ui/contextual-tooltip";
 
 const doubleDiamondSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
@@ -66,9 +67,10 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
 
   const createMutation = useMutation({
     mutationFn: async (data: DoubleDiamondFormData) => {
-      return await apiRequest("POST", "/api/double-diamond", data);
+      const response = await apiRequest("POST", "/api/double-diamond", data);
+      return await response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/double-diamond"] });
       toast({
         title: "✨ Projeto criado com sucesso!",
@@ -141,7 +143,13 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
           name="sectorId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Setor / Indústria</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                Setor / Indústria
+                <ContextualTooltip 
+                  title="Por que selecionar um setor?"
+                  content="Selecione o setor da sua solução. A IA utilizará dados específicos do setor (tendências, casos de uso, benchmarks) para gerar insights mais relevantes e contextualizados para o seu projeto." 
+                />
+              </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger data-testid="select-dd-sector">
@@ -170,7 +178,13 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
           name="successCaseId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Case de Sucesso para Espelhar</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                Case de Sucesso para Espelhar
+                <ContextualTooltip 
+                  title="Como usar cases de sucesso?"
+                  content="Escolha uma empresa ou produto de sucesso como referência. A IA analisará as estratégias, modelo de negócio e diferenciação deste case para inspirar soluções inovadoras adaptadas ao seu contexto." 
+                />
+              </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger data-testid="select-dd-success-case">
@@ -199,7 +213,13 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
           name="targetAudience"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Público-Alvo *</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                Público-Alvo *
+                <ContextualTooltip 
+                  title="Como descrever o público-alvo?"
+                  content="Descreva em detalhes quem são seus usuários ideais: idade, localização, profissão, comportamentos, dores, necessidades e hábitos. Quanto mais específico, melhores serão os personas e insights gerados pela IA." 
+                />
+              </FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="Ex: Profissionais ocupados, 25-40 anos, conscientes da saúde, moram em grandes centros urbanos"
@@ -222,7 +242,13 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
           name="problemStatement"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrição do Problema *</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                Descrição do Problema *
+                <ContextualTooltip 
+                  title="Como descrever o problema?"
+                  content="Explique claramente o problema que você deseja resolver. Inclua: contexto atual, dores dos usuários, limitações das soluções existentes e impacto do problema. Esta descrição é fundamental para a IA gerar POV statements e HMW questions assertivos." 
+                />
+              </FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="Ex: Falta de opções saudáveis e rápidas para almoço em horário comercial. As alternativas existentes são caras ou demoradas."
