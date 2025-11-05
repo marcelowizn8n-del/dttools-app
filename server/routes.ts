@@ -37,7 +37,8 @@ import {
   insertHelpArticleSchema,
   insertIndustrySectorSchema,
   insertSuccessCaseSchema,
-  insertAiGeneratedAssetSchema
+  insertAiGeneratedAssetSchema,
+  insertDoubleDiamondProjectSchema
 } from "../shared/schema";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
@@ -53,6 +54,13 @@ import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "
 import { designThinkingGeminiAI } from "./geminiService";
 import { PPTXService } from "./pptxService";
 import { translateArticle, translateVideo, translateTestimonial } from "./translation";
+import { 
+  generateDiscoverPhase, 
+  generateDefinePhase, 
+  generateDevelopPhase, 
+  generateDeliverPhase, 
+  analyzeDFV 
+} from "./double-diamond-ai";
 
 // Initialize Stripe with secret key (optional for Railway deployment)
 const stripe = process.env.STRIPE_SECRET_KEY 
@@ -3919,6 +3927,298 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating prenatal project:", error);
       res.status(500).json({ error: "Failed to create prenatal project" });
+    }
+  });
+
+  // ===== DOUBLE DIAMOND ROUTES =====
+
+  // GET /api/double-diamond - Lista projetos Double Diamond do usuário
+  app.get("/api/double-diamond", requireAuth, async (req, res) => {
+    try {
+      const projects = await storage.getDoubleDiamondProjects(req.user!.id);
+      res.json(projects);
+    } catch (error) {
+      console.error("Error fetching Double Diamond projects:", error);
+      res.status(500).json({ error: "Failed to fetch Double Diamond projects" });
+    }
+  });
+
+  // GET /api/double-diamond/:id - Busca um projeto Double Diamond específico
+  app.get("/api/double-diamond/:id", requireAuth, async (req, res) => {
+    try {
+      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      res.json(project);
+    } catch (error) {
+      console.error("Error fetching Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to fetch Double Diamond project" });
+    }
+  });
+
+  // POST /api/double-diamond - Cria novo projeto Double Diamond
+  app.post("/api/double-diamond", requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertDoubleDiamondProjectSchema.parse(req.body);
+      const project = await storage.createDoubleDiamondProject({
+        ...validatedData,
+        userId: req.user!.id
+      });
+      res.status(201).json(project);
+    } catch (error) {
+      console.error("Error creating Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to create Double Diamond project" });
+    }
+  });
+
+  // PATCH /api/double-diamond/:id - Atualiza projeto Double Diamond
+  app.patch("/api/double-diamond/:id", requireAuth, async (req, res) => {
+    try {
+      const updated = await storage.updateDoubleDiamondProject(
+        req.params.id,
+        req.user!.id,
+        req.body
+      );
+      if (!updated) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to update Double Diamond project" });
+    }
+  });
+
+  // DELETE /api/double-diamond/:id - Deleta projeto Double Diamond
+  app.delete("/api/double-diamond/:id", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteDoubleDiamondProject(req.params.id, req.user!.id);
+      if (!success) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to delete Double Diamond project" });
+    }
+  });
+
+  // POST /api/double-diamond/:id/generate/discover - Gera Fase 1: Discover com IA
+  app.post("/api/double-diamond/:id/generate/discover", requireAuth, async (req, res) => {
+    try {
+      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+
+      // Buscar setor e case se necessário
+      let sectorName = req.body.sector || "General";
+      let caseName = req.body.successCase;
+
+      if (project.sectorId && !req.body.sector) {
+        const sector = await storage.getIndustrySector(project.sectorId);
+        if (sector) sectorName = sector.name;
+      }
+
+      if (project.successCaseId && !req.body.successCase) {
+        const successCase = await storage.getSuccessCase(project.successCaseId);
+        if (successCase) caseName = successCase.name;
+      }
+
+      // Gerar fase Discover com IA
+      const result = await generateDiscoverPhase({
+        sector: sectorName,
+        successCase: caseName,
+        targetAudience: project.targetAudience || "",
+        problemStatement: project.problemStatement || ""
+      });
+
+      // Atualizar projeto com dados gerados
+      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+        discoverPainPoints: result.painPoints as any,
+        discoverInsights: result.insights as any,
+        discoverUserNeeds: result.userNeeds as any,
+        discoverEmpathyMap: result.empathyMap as any,
+        discoverStatus: "completed",
+        currentPhase: "define",
+        completionPercentage: 25,
+        generationCount: (project.generationCount || 0) + 1
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating Discover phase:", error);
+      res.status(500).json({ error: "Failed to generate Discover phase" });
+    }
+  });
+
+  // POST /api/double-diamond/:id/generate/define - Gera Fase 2: Define com IA
+  app.post("/api/double-diamond/:id/generate/define", requireAuth, async (req, res) => {
+    try {
+      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+
+      if (!project.discoverPainPoints || !project.discoverUserNeeds || !project.discoverInsights) {
+        return res.status(400).json({ error: "Discover phase must be completed first" });
+      }
+
+      // Gerar fase Define com IA
+      const result = await generateDefinePhase({
+        painPoints: project.discoverPainPoints as any,
+        userNeeds: project.discoverUserNeeds as any,
+        insights: project.discoverInsights as any
+      });
+
+      // Atualizar projeto
+      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+        definePovStatements: result.povStatements as any,
+        defineHmwQuestions: result.hmwQuestions as any,
+        defineStatus: "completed",
+        currentPhase: "develop",
+        completionPercentage: 50,
+        generationCount: (project.generationCount || 0) + 1
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating Define phase:", error);
+      res.status(500).json({ error: "Failed to generate Define phase" });
+    }
+  });
+
+  // POST /api/double-diamond/:id/generate/develop - Gera Fase 3: Develop com IA
+  app.post("/api/double-diamond/:id/generate/develop", requireAuth, async (req, res) => {
+    try {
+      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+
+      if (!project.defineSelectedPov || !project.defineSelectedHmw) {
+        return res.status(400).json({ error: "Define phase must be completed and POV/HMW selected" });
+      }
+
+      // Buscar setor
+      let sectorName = "General";
+      if (project.sectorId) {
+        const sector = await storage.getIndustrySector(project.sectorId);
+        if (sector) sectorName = sector.name;
+      }
+
+      // Gerar fase Develop com IA
+      const result = await generateDevelopPhase({
+        selectedPov: project.defineSelectedPov,
+        selectedHmw: project.defineSelectedHmw,
+        sector: sectorName
+      });
+
+      // Atualizar projeto
+      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+        developIdeas: result.ideas as any,
+        developCrossPollinatedIdeas: result.crossPollinatedIdeas as any,
+        developStatus: "completed",
+        currentPhase: "deliver",
+        completionPercentage: 75,
+        generationCount: (project.generationCount || 0) + 1
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating Develop phase:", error);
+      res.status(500).json({ error: "Failed to generate Develop phase" });
+    }
+  });
+
+  // POST /api/double-diamond/:id/generate/deliver - Gera Fase 4: Deliver com IA
+  app.post("/api/double-diamond/:id/generate/deliver", requireAuth, async (req, res) => {
+    try {
+      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+
+      if (!project.developSelectedIdeas || (project.developSelectedIdeas as any).length === 0) {
+        return res.status(400).json({ error: "Develop phase must be completed and ideas selected" });
+      }
+
+      // Buscar setor
+      let sectorName = "General";
+      if (project.sectorId) {
+        const sector = await storage.getIndustrySector(project.sectorId);
+        if (sector) sectorName = sector.name;
+      }
+
+      // Gerar fase Deliver com IA
+      const result = await generateDeliverPhase({
+        selectedIdeas: project.developSelectedIdeas as any,
+        pov: project.defineSelectedPov || "",
+        sector: sectorName
+      });
+
+      // Atualizar projeto
+      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+        deliverMvpConcept: result.mvpConcept as any,
+        deliverLogoSuggestions: result.logoSuggestions as any,
+        deliverLandingPage: result.landingPage as any,
+        deliverSocialMediaLines: result.socialMediaLines as any,
+        deliverTestPlan: result.testPlan as any,
+        deliverStatus: "completed",
+        completionPercentage: 100,
+        isCompleted: true,
+        generationCount: (project.generationCount || 0) + 1
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating Deliver phase:", error);
+      res.status(500).json({ error: "Failed to generate Deliver phase" });
+    }
+  });
+
+  // POST /api/double-diamond/:id/generate/dfv - Gera análise DFV com IA
+  app.post("/api/double-diamond/:id/generate/dfv", requireAuth, async (req, res) => {
+    try {
+      const project = await storage.getDoubleDiamondProject(req.params.id, req.user!.id);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+
+      if (!project.deliverMvpConcept) {
+        return res.status(400).json({ error: "Deliver phase must be completed first" });
+      }
+
+      // Buscar setor
+      let sectorName = "General";
+      if (project.sectorId) {
+        const sector = await storage.getIndustrySector(project.sectorId);
+        if (sector) sectorName = sector.name;
+      }
+
+      // Gerar análise DFV com IA
+      const result = await analyzeDFV({
+        pov: project.defineSelectedPov || "",
+        mvpConcept: project.deliverMvpConcept,
+        sector: sectorName,
+        selectedIdeas: project.developSelectedIdeas || []
+      });
+
+      // Atualizar projeto
+      const updated = await storage.updateDoubleDiamondProject(project.id, req.user!.id, {
+        dfvDesirabilityScore: result.desirabilityScore,
+        dfvFeasibilityScore: result.feasibilityScore,
+        dfvViabilityScore: result.viabilityScore,
+        dfvAnalysis: result.analysis as any,
+        dfvFeedback: result.overallAssessment,
+        generationCount: (project.generationCount || 0) + 1
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating DFV analysis:", error);
+      res.status(500).json({ error: "Failed to generate DFV analysis" });
     }
   });
 

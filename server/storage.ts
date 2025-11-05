@@ -291,6 +291,13 @@ export interface IStorage {
   createProjectComment(comment: InsertProjectComment): Promise<ProjectComment>;
   updateProjectComment(id: string, comment: Partial<InsertProjectComment>): Promise<ProjectComment | undefined>;
   deleteProjectComment(id: string): Promise<boolean>;
+
+  // Double Diamond
+  getDoubleDiamondProjects(userId: string): Promise<DoubleDiamondProject[]>;
+  getDoubleDiamondProject(id: string, userId: string): Promise<DoubleDiamondProject | undefined>;
+  createDoubleDiamondProject(project: InsertDoubleDiamondProject): Promise<DoubleDiamondProject>;
+  updateDoubleDiamondProject(id: string, userId: string, updates: Partial<InsertDoubleDiamondProject>): Promise<DoubleDiamondProject | undefined>;
+  deleteDoubleDiamondProject(id: string, userId: string): Promise<boolean>;
 }
 
 // Database implementation using PostgreSQL via Drizzle ORM
@@ -1817,6 +1824,53 @@ export class DatabaseStorage implements IStorage {
     await db.update(videoTutorials)
       .set({ viewCount: sql`${videoTutorials.viewCount} + 1` })
       .where(eq(videoTutorials.id, id));
+  }
+
+  // Double Diamond
+  async getDoubleDiamondProjects(userId: string): Promise<DoubleDiamondProject[]> {
+    return await db.select().from(doubleDiamondProjects)
+      .where(eq(doubleDiamondProjects.userId, userId))
+      .orderBy(desc(doubleDiamondProjects.createdAt));
+  }
+
+  async getDoubleDiamondProject(id: string, userId: string): Promise<DoubleDiamondProject | undefined> {
+    const [project] = await db.select().from(doubleDiamondProjects)
+      .where(and(
+        eq(doubleDiamondProjects.id, id),
+        eq(doubleDiamondProjects.userId, userId)
+      ));
+    return project;
+  }
+
+  async createDoubleDiamondProject(project: InsertDoubleDiamondProject): Promise<DoubleDiamondProject> {
+    const [newProject] = await db.insert(doubleDiamondProjects)
+      .values(project)
+      .returning();
+    return newProject;
+  }
+
+  async updateDoubleDiamondProject(
+    id: string, 
+    userId: string, 
+    updates: Partial<InsertDoubleDiamondProject>
+  ): Promise<DoubleDiamondProject | undefined> {
+    const [updated] = await db.update(doubleDiamondProjects)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(
+        eq(doubleDiamondProjects.id, id),
+        eq(doubleDiamondProjects.userId, userId)
+      ))
+      .returning();
+    return updated;
+  }
+
+  async deleteDoubleDiamondProject(id: string, userId: string): Promise<boolean> {
+    const result = await db.delete(doubleDiamondProjects)
+      .where(and(
+        eq(doubleDiamondProjects.id, id),
+        eq(doubleDiamondProjects.userId, userId)
+      ));
+    return (result.rowCount || 0) > 0;
   }
 }
 
