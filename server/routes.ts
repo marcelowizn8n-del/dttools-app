@@ -4087,10 +4087,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         insights: project.discoverInsights as any
       });
 
-      // Atualizar projeto
+      // Atualizar projeto - auto-selecionar primeiro POV e HMW
       const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
         definePovStatements: result.povStatements as any,
         defineHmwQuestions: result.hmwQuestions as any,
+        defineSelectedPov: result.povStatements[0]?.fullStatement || "",
+        defineSelectedHmw: result.hmwQuestions[0]?.question || "",
         defineStatus: "completed",
         currentPhase: "develop",
         completionPercentage: 50,

@@ -255,10 +255,10 @@ export default function DoubleDiamondProject() {
 
           <div className="ml-6">
             <Badge variant="secondary" className="text-lg px-4 py-2">
-              Fase Atual: {project.currentPhase === "discover" ? "Discover" : 
-                          project.currentPhase === "define" ? "Define" :
-                          project.currentPhase === "develop" ? "Develop" : 
-                          project.currentPhase === "deliver" ? "Deliver" : "DFV Analysis"}
+              Fase Atual: {project.currentPhase === "discover" ? "Descobrir" : 
+                          project.currentPhase === "define" ? "Definir" :
+                          project.currentPhase === "develop" ? "Desenvolver" : 
+                          project.currentPhase === "deliver" ? "Entregar" : "Análise DFV"}
             </Badge>
           </div>
         </div>
@@ -269,7 +269,7 @@ export default function DoubleDiamondProject() {
         <Card className={activeTab === "discover" ? "border-blue-500" : ""}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">1. Discover</CardTitle>
+              <CardTitle className="text-sm font-medium">1. Descobrir</CardTitle>
               {getPhaseIcon(project.discoverStatus)}
             </div>
           </CardHeader>
@@ -278,7 +278,7 @@ export default function DoubleDiamondProject() {
         <Card className={activeTab === "define" ? "border-blue-500" : ""}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">2. Define</CardTitle>
+              <CardTitle className="text-sm font-medium">2. Definir</CardTitle>
               {getPhaseIcon(project.defineStatus)}
             </div>
           </CardHeader>
@@ -287,7 +287,7 @@ export default function DoubleDiamondProject() {
         <Card className={activeTab === "develop" ? "border-blue-500" : ""}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">3. Develop</CardTitle>
+              <CardTitle className="text-sm font-medium">3. Desenvolver</CardTitle>
               {getPhaseIcon(project.developStatus)}
             </div>
           </CardHeader>
@@ -296,7 +296,7 @@ export default function DoubleDiamondProject() {
         <Card className={activeTab === "deliver" ? "border-blue-500" : ""}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">4. Deliver</CardTitle>
+              <CardTitle className="text-sm font-medium">4. Entregar</CardTitle>
               {getPhaseIcon(project.deliverStatus)}
             </div>
           </CardHeader>
@@ -306,11 +306,11 @@ export default function DoubleDiamondProject() {
       {/* Main Content Tabs */}
       <Tabs value={activeTab || "discover"} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid grid-cols-5 w-full">
-          <TabsTrigger value="discover" data-testid="tab-discover">Discover</TabsTrigger>
-          <TabsTrigger value="define" data-testid="tab-define">Define</TabsTrigger>
-          <TabsTrigger value="develop" data-testid="tab-develop">Develop</TabsTrigger>
-          <TabsTrigger value="deliver" data-testid="tab-deliver">Deliver</TabsTrigger>
-          <TabsTrigger value="dfv" data-testid="tab-dfv">DFV Analysis</TabsTrigger>
+          <TabsTrigger value="discover" data-testid="tab-discover">Descobrir</TabsTrigger>
+          <TabsTrigger value="define" data-testid="tab-define">Definir</TabsTrigger>
+          <TabsTrigger value="develop" data-testid="tab-develop">Desenvolver</TabsTrigger>
+          <TabsTrigger value="deliver" data-testid="tab-deliver">Entregar</TabsTrigger>
+          <TabsTrigger value="dfv" data-testid="tab-dfv">Análise DFV</TabsTrigger>
         </TabsList>
 
         {/* DISCOVER TAB */}
