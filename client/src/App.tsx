@@ -37,6 +37,7 @@ import DashboardAI from "@/pages/DashboardAI";
 import AdminSectors from "@/pages/AdminSectors";
 import AdminCases from "@/pages/AdminCases";
 import VideoTutorials from "@/pages/VideoTutorials";
+import DoubleDiamond from "@/pages/DoubleDiamond";
 
 function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -143,6 +144,11 @@ function Router() {
       <Route path="/benchmarking">
         <ProtectedRoute>
           <BenchmarkingPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/double-diamond">
+        <ProtectedRoute>
+          <DoubleDiamond />
         </ProtectedRoute>
       </Route>
       <Route path="/onboarding-ai">
