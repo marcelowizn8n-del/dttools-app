@@ -3964,10 +3964,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId!;
       const validatedData = insertDoubleDiamondProjectSchema.parse(req.body);
-      const project = await storage.createDoubleDiamondProject({
+      
+      // Transform empty strings to undefined for optional FK fields
+      const cleanedData = {
         ...validatedData,
+        sectorId: validatedData.sectorId && validatedData.sectorId.trim() !== '' ? validatedData.sectorId : undefined,
+        successCaseId: validatedData.successCaseId && validatedData.successCaseId.trim() !== '' ? validatedData.successCaseId : undefined,
+        description: validatedData.description && validatedData.description.trim() !== '' ? validatedData.description : undefined,
         userId
-      });
+      };
+      
+      const project = await storage.createDoubleDiamondProject(cleanedData);
       res.status(201).json(project);
     } catch (error) {
       console.error("Error creating Double Diamond project:", error);
