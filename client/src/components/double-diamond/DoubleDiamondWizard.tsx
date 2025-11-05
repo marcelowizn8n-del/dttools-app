@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, HelpCircle } from "lucide-react";
 import { apiRequest, queryClient as globalQueryClient } from "@/lib/queryClient";
-import { ContextualTooltip } from "@/components/ui/contextual-tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const doubleDiamondSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
@@ -93,8 +93,9 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <TooltipProvider delayDuration={300}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Nome do Projeto */}
         <FormField
           control={form.control}
@@ -145,10 +146,17 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
             <FormItem>
               <FormLabel className="flex items-center gap-2">
                 Setor / Indústria
-                <ContextualTooltip 
-                  title="Por que selecionar um setor?"
-                  content="Selecione o setor da sua solução. A IA utilizará dados específicos do setor (tendências, casos de uso, benchmarks) para gerar insights mais relevantes e contextualizados para o seu projeto." 
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="inline-flex items-center">
+                      <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-sm" side="right">
+                    <p className="font-semibold mb-1">Por que selecionar um setor?</p>
+                    <p className="text-sm">Selecione o setor da sua solução. A IA utilizará dados específicos do setor (tendências, casos de uso, benchmarks) para gerar insights mais relevantes e contextualizados para o seu projeto.</p>
+                  </TooltipContent>
+                </Tooltip>
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
@@ -180,10 +188,17 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
             <FormItem>
               <FormLabel className="flex items-center gap-2">
                 Case de Sucesso para Espelhar
-                <ContextualTooltip 
-                  title="Como usar cases de sucesso?"
-                  content="Escolha uma empresa ou produto de sucesso como referência. A IA analisará as estratégias, modelo de negócio e diferenciação deste case para inspirar soluções inovadoras adaptadas ao seu contexto." 
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="inline-flex items-center">
+                      <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-sm" side="right">
+                    <p className="font-semibold mb-1">Como usar cases de sucesso?</p>
+                    <p className="text-sm">Escolha uma empresa ou produto de sucesso como referência. A IA analisará as estratégias, modelo de negócio e diferenciação deste case para inspirar soluções inovadoras adaptadas ao seu contexto.</p>
+                  </TooltipContent>
+                </Tooltip>
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
@@ -215,10 +230,17 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
             <FormItem>
               <FormLabel className="flex items-center gap-2">
                 Público-Alvo *
-                <ContextualTooltip 
-                  title="Como descrever o público-alvo?"
-                  content="Descreva em detalhes quem são seus usuários ideais: idade, localização, profissão, comportamentos, dores, necessidades e hábitos. Quanto mais específico, melhores serão os personas e insights gerados pela IA." 
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="inline-flex items-center">
+                      <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-sm" side="right">
+                    <p className="font-semibold mb-1">Como descrever o público-alvo?</p>
+                    <p className="text-sm">Descreva em detalhes quem são seus usuários ideais: idade, localização, profissão, comportamentos, dores, necessidades e hábitos. Quanto mais específico, melhores serão os personas e insights gerados pela IA.</p>
+                  </TooltipContent>
+                </Tooltip>
               </FormLabel>
               <FormControl>
                 <Textarea 
@@ -244,10 +266,17 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
             <FormItem>
               <FormLabel className="flex items-center gap-2">
                 Descrição do Problema *
-                <ContextualTooltip 
-                  title="Como descrever o problema?"
-                  content="Explique claramente o problema que você deseja resolver. Inclua: contexto atual, dores dos usuários, limitações das soluções existentes e impacto do problema. Esta descrição é fundamental para a IA gerar POV statements e HMW questions assertivos." 
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="inline-flex items-center">
+                      <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-sm" side="right">
+                    <p className="font-semibold mb-1">Como descrever o problema?</p>
+                    <p className="text-sm">Explique claramente o problema que você deseja resolver. Inclua: contexto atual, dores dos usuários, limitações das soluções existentes e impacto do problema. Esta descrição é fundamental para a IA gerar POV statements e HMW questions assertivos.</p>
+                  </TooltipContent>
+                </Tooltip>
               </FormLabel>
               <FormControl>
                 <Textarea 
@@ -311,7 +340,8 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
             </div>
           </div>
         </div>
-      </form>
-    </Form>
+        </form>
+      </Form>
+    </TooltipProvider>
   );
 }
