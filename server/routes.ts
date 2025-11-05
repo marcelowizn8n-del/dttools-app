@@ -4133,10 +4133,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sector: sectorName
       });
 
-      // Atualizar projeto
+      // Atualizar projeto - auto-selecionar as 3 melhores ideias
+      const topIdeas = result.ideas.slice(0, 3);
       const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
         developIdeas: result.ideas as any,
         developCrossPollinatedIdeas: result.crossPollinatedIdeas as any,
+        developSelectedIdeas: topIdeas as any,
         developStatus: "completed",
         currentPhase: "deliver",
         completionPercentage: 75,
