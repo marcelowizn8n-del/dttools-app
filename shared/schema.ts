@@ -1095,3 +1095,74 @@ export const insertProjectCommentSchema = createInsertSchema(projectComments).om
 
 export type ProjectComment = typeof projectComments.$inferSelect;
 export type InsertProjectComment = z.infer<typeof insertProjectCommentSchema>;
+
+// Double Diamond - AI-Powered Design Thinking Framework
+export const doubleDiamondProjects = pgTable("double_diamond_projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  description: text("description"),
+  
+  // Initial Setup (Minimal User Input)
+  sectorId: varchar("sector_id").references(() => industrySectors.id),
+  successCaseId: varchar("success_case_id").references(() => successCases.id), // Case to mirror (Airbnb, Uber, etc.)
+  targetAudience: text("target_audience"), // User's minimal description of audience
+  problemStatement: text("problem_statement"), // User's initial problem description
+  
+  // Phase 1: Discover (Divergence) - Diamond 1
+  discoverStatus: text("discover_status").default("pending"), // pending, in_progress, completed
+  discoverPainPoints: jsonb("discover_pain_points"), // AI-generated list of pain points [{text, validated}]
+  discoverInsights: jsonb("discover_insights"), // AI-generated insights from sector/case
+  discoverUserNeeds: jsonb("discover_user_needs"), // AI-generated user needs
+  discoverEmpathyMap: jsonb("discover_empathy_map"), // Auto-generated empathy map {says, thinks, does, feels}
+  
+  // Phase 2: Define (Convergence) - Diamond 1
+  defineStatus: text("define_status").default("pending"),
+  definePovStatements: jsonb("define_pov_statements"), // AI-generated POV statements [{user, need, insight, selected}]
+  defineHmwQuestions: jsonb("define_hmw_questions"), // AI-generated HMW questions [{question, selected}]
+  defineSelectedPov: text("define_selected_pov"), // User-selected POV statement
+  defineSelectedHmw: text("define_selected_hmw"), // User-selected HMW question
+  
+  // Phase 3: Develop (Divergence) - Diamond 2
+  developStatus: text("develop_status").default("pending"),
+  developIdeas: jsonb("develop_ideas"), // AI-generated ideas [{title, description, category, score}]
+  developCrossPollinatedIdeas: jsonb("develop_cross_pollinated_ideas"), // AI cross-domain ideas
+  developSelectedIdeas: jsonb("develop_selected_ideas"), // User-selected ideas for prototyping
+  
+  // Phase 4: Deliver (Convergence) - Diamond 2
+  deliverStatus: text("deliver_status").default("pending"),
+  deliverMvpConcept: jsonb("deliver_mvp_concept"), // AI-generated MVP concept
+  deliverLogoSuggestions: jsonb("deliver_logo_suggestions"), // AI-generated logo ideas [{description, style}]
+  deliverLandingPage: jsonb("deliver_landing_page"), // AI-generated landing page structure {headline, sections, cta}
+  deliverSocialMediaLines: jsonb("deliver_social_media_lines"), // AI-generated social media copy
+  deliverTestPlan: jsonb("deliver_test_plan"), // AI-generated basic test plan
+  
+  // DFV Analysis (Desirability, Feasibility, Viability)
+  dfvDesirabilityScore: integer("dfv_desirability_score"), // 0-100
+  dfvFeasibilityScore: integer("dfv_feasibility_score"), // 0-100
+  dfvViabilityScore: integer("dfv_viability_score"), // 0-100
+  dfvAnalysis: jsonb("dfv_analysis"), // AI-generated analysis and recommendations
+  dfvFeedback: text("dfv_feedback"), // AI-generated actionable feedback
+  
+  // Progress and Completion
+  currentPhase: text("current_phase").default("discover"), // discover, define, develop, deliver
+  completionPercentage: integer("completion_percentage").default(0),
+  isCompleted: boolean("is_completed").default(false),
+  
+  // AI Generation Metadata
+  totalAiCost: real("total_ai_cost").default(0), // Total cost in credits
+  generationCount: integer("generation_count").default(0), // Number of AI calls made
+  
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+export const insertDoubleDiamondProjectSchema = createInsertSchema(doubleDiamondProjects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type DoubleDiamondProject = typeof doubleDiamondProjects.$inferSelect;
+export type InsertDoubleDiamondProject = z.infer<typeof insertDoubleDiamondProjectSchema>;

@@ -34,13 +34,14 @@ import {
   type ProjectMember, type InsertProjectMember,
   type ProjectInvite, type InsertProjectInvite,
   type ProjectComment, type InsertProjectComment,
+  type DoubleDiamondProject, type InsertDoubleDiamondProject,
   projects, empathyMaps, personas, interviews, observations,
   povStatements, hmwQuestions, ideas, prototypes, testPlans, testResults,
   userProgress, users, articles, testimonials, videoTutorials, subscriptionPlans, userSubscriptions,
   canvasDrawings, phaseCards, benchmarks, benchmarkAssessments,
   dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis,
   projectBackups, helpArticles, industrySectors, successCases, aiGeneratedAssets,
-  analyticsEvents, projectMembers, projectInvites, projectComments
+  analyticsEvents, projectMembers, projectInvites, projectComments, doubleDiamondProjects
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
