@@ -341,72 +341,73 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
   
   yPos += 15;
 
-  if (project.dfvDesirability) {
-    checkPageBreak(40);
-    const dfv = project.dfvDesirability as any;
+  if (project.dfvAnalysis) {
+    const dfvData = project.dfvAnalysis as any;
     
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Desirability (Desejabilidade)", 20, yPos);
-    doc.setFont("helvetica", "normal");
-    yPos += 10;
-    
-    if (dfv.score !== undefined) {
-      doc.setFontSize(12);
-      doc.text(`Score: ${dfv.score}/10`, 20, yPos);
+    if (dfvData.desirability) {
+      checkPageBreak(40);
+      
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Desirability (Desejabilidade)", 20, yPos);
+      doc.setFont("helvetica", "normal");
       yPos += 10;
+      
+      if (dfvData.desirability.score !== undefined) {
+        doc.setFontSize(12);
+        doc.text(`Score: ${dfvData.desirability.score}/10`, 20, yPos);
+        yPos += 10;
+      }
+      
+      if (dfvData.desirability.analysis) {
+        doc.setFontSize(11);
+        const dfvHeight = addWrappedText(dfvData.desirability.analysis, 20, yPos, 170, 11);
+        yPos += dfvHeight + 15;
+      }
     }
-    
-    if (dfv.analysis) {
-      doc.setFontSize(11);
-      const dfvHeight = addWrappedText(dfv.analysis, 20, yPos, 170, 11);
-      yPos += dfvHeight + 15;
-    }
-  }
 
-  if (project.dfvFeasibility) {
-    checkPageBreak(40);
-    const feas = project.dfvFeasibility as any;
-    
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Feasibility (Viabilidade Técnica)", 20, yPos);
-    doc.setFont("helvetica", "normal");
-    yPos += 10;
-    
-    if (feas.score !== undefined) {
-      doc.setFontSize(12);
-      doc.text(`Score: ${feas.score}/10`, 20, yPos);
+    if (dfvData.feasibility) {
+      checkPageBreak(40);
+      
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Feasibility (Viabilidade Técnica)", 20, yPos);
+      doc.setFont("helvetica", "normal");
       yPos += 10;
+      
+      if (dfvData.feasibility.score !== undefined) {
+        doc.setFontSize(12);
+        doc.text(`Score: ${dfvData.feasibility.score}/10`, 20, yPos);
+        yPos += 10;
+      }
+      
+      if (dfvData.feasibility.analysis) {
+        doc.setFontSize(11);
+        const feasHeight = addWrappedText(dfvData.feasibility.analysis, 20, yPos, 170, 11);
+        yPos += feasHeight + 15;
+      }
     }
-    
-    if (feas.analysis) {
-      doc.setFontSize(11);
-      const feasHeight = addWrappedText(feas.analysis, 20, yPos, 170, 11);
-      yPos += feasHeight + 15;
-    }
-  }
 
-  if (project.dfvViability) {
-    checkPageBreak(40);
-    const viab = project.dfvViability as any;
-    
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Viability (Viabilidade de Negócio)", 20, yPos);
-    doc.setFont("helvetica", "normal");
-    yPos += 10;
-    
-    if (viab.score !== undefined) {
-      doc.setFontSize(12);
-      doc.text(`Score: ${viab.score}/10`, 20, yPos);
+    if (dfvData.viability) {
+      checkPageBreak(40);
+      
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Viability (Viabilidade de Negócio)", 20, yPos);
+      doc.setFont("helvetica", "normal");
       yPos += 10;
-    }
-    
-    if (viab.analysis) {
-      doc.setFontSize(11);
-      const viabHeight = addWrappedText(viab.analysis, 20, yPos, 170, 11);
-      yPos += viabHeight + 15;
+      
+      if (dfvData.viability.score !== undefined) {
+        doc.setFontSize(12);
+        doc.text(`Score: ${dfvData.viability.score}/10`, 20, yPos);
+        yPos += 10;
+      }
+      
+      if (dfvData.viability.analysis) {
+        doc.setFontSize(11);
+        const viabHeight = addWrappedText(dfvData.viability.analysis, 20, yPos, 170, 11);
+        yPos += viabHeight + 15;
+      }
     }
   }
 
