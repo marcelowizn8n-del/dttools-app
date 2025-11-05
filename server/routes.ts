@@ -4156,9 +4156,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/double-diamond/:id/generate/deliver", requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId!;
-      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      let project = await storage.getDoubleDiamondProject(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+
+      // AUTO-FIX: Se o projeto não tem ideias selecionadas mas tem ideias geradas, auto-seleciona as 3 melhores
+      if ((!project.developSelectedIdeas || (project.developSelectedIdeas as any).length === 0) && project.developIdeas && (project.developIdeas as any).length > 0) {
+        console.log(`[AUTO-FIX] Auto-selecting top 3 ideas for project ${project.id}`);
+        const topIdeas = (project.developIdeas as any).slice(0, 3);
+        project = await storage.updateDoubleDiamondProject(project.id, userId, {
+          developSelectedIdeas: topIdeas as any
+        });
       }
 
       if (!project.developSelectedIdeas || (project.developSelectedIdeas as any).length === 0) {
