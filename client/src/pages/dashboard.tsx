@@ -649,6 +649,102 @@ export default function Dashboard() {
               </div>
             </section>
 
+            {/* Advanced Tools Section */}
+            <section>
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  {t("dashboard.advanced.tools")}
+                </h2>
+                <p className="text-lg text-gray-600">
+                  {t("dashboard.advanced.tools.subtitle")}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Link href="/double-diamond">
+                  <Card 
+                    className="cursor-pointer transition-all duration-300 border-2 hover:shadow-xl hover:scale-105 bg-gradient-to-br from-blue-600 to-purple-600 text-white border-blue-500"
+                    data-testid="card-double-diamond"
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-4">
+                        <div 
+                          className="w-16 h-16 rounded-lg flex items-center justify-center bg-white/20 backdrop-blur-sm"
+                        >
+                          <Sparkles className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl mb-2">
+                            Double Diamond + IA
+                          </CardTitle>
+                          <CardDescription className="text-white/90">
+                            {language === 'pt-BR' 
+                              ? "Framework completo com geração automática de MVP, POV statements, ideias e análise DFV"
+                              : "Complete framework with automatic MVP generation, POV statements, ideas and DFV analysis"}
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2 text-sm text-white/80">
+                        <Rocket className="w-4 h-4" />
+                        <span>
+                          {language === 'pt-BR' 
+                            ? "100% automatizado com IA" 
+                            : "100% AI-powered automation"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-white/80 mt-2">
+                        <Zap className="w-4 h-4" />
+                        <span>
+                          {language === 'pt-BR' 
+                            ? "Mínimo input, máximo output" 
+                            : "Minimum input, maximum output"}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+
+                <Link href="/benchmarking">
+                  <Card 
+                    className="cursor-pointer transition-all duration-300 border-2 hover:shadow-xl hover:scale-105 bg-gradient-to-br from-green-600 to-teal-600 text-white border-green-500"
+                    data-testid="card-benchmarking"
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-4">
+                        <div 
+                          className="w-16 h-16 rounded-lg flex items-center justify-center bg-white/20 backdrop-blur-sm"
+                        >
+                          <BarChart3 className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl mb-2">
+                            Benchmarking
+                          </CardTitle>
+                          <CardDescription className="text-white/90">
+                            {language === 'pt-BR' 
+                              ? "Compare seu processo com referências da indústria"
+                              : "Compare your process with industry references"}
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2 text-sm text-white/80">
+                        <TrendingUp className="w-4 h-4" />
+                        <span>
+                          {language === 'pt-BR' 
+                            ? "Análise de maturidade" 
+                            : "Maturity analysis"}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+            </section>
+
             {/* Why Use Platform */}
             <section>
               <div className="text-center mb-8">
