@@ -347,6 +347,60 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
   
   yPos += 15;
 
+  // Mostrar scores principais primeiro (se existirem)
+  if (project.dfvDesirabilityScore !== null && project.dfvDesirabilityScore !== undefined ||
+      project.dfvFeasibilityScore !== null && project.dfvFeasibilityScore !== undefined ||
+      project.dfvViabilityScore !== null && project.dfvViabilityScore !== undefined) {
+    
+    checkPageBreak(50);
+    
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Pontuações DFV", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 15;
+    
+    // Desirability Score
+    if (project.dfvDesirabilityScore !== null && project.dfvDesirabilityScore !== undefined) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Desirability (Desejabilidade):", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(18);
+      doc.setTextColor(30, 58, 138); // Azul
+      doc.text(`${project.dfvDesirabilityScore}/100`, 120, yPos);
+      doc.setTextColor(0, 0, 0);
+      yPos += 20;
+    }
+    
+    // Feasibility Score
+    if (project.dfvFeasibilityScore !== null && project.dfvFeasibilityScore !== undefined) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Feasibility (Viabilidade Técnica):", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(18);
+      doc.setTextColor(16, 185, 129); // Verde
+      doc.text(`${project.dfvFeasibilityScore}/100`, 120, yPos);
+      doc.setTextColor(0, 0, 0);
+      yPos += 20;
+    }
+    
+    // Viability Score
+    if (project.dfvViabilityScore !== null && project.dfvViabilityScore !== undefined) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Viability (Viabilidade de Negócio):", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(18);
+      doc.setTextColor(139, 92, 246); // Roxo
+      doc.text(`${project.dfvViabilityScore}/100`, 120, yPos);
+      doc.setTextColor(0, 0, 0);
+      yPos += 25;
+    }
+  }
+
+  // Análise detalhada (se existir)
   if (project.dfvAnalysis) {
     const dfvData = project.dfvAnalysis as any;
     
@@ -355,15 +409,9 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
       
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("Desirability (Desejabilidade)", 20, yPos);
+      doc.text("Análise de Desirability", 20, yPos);
       doc.setFont("helvetica", "normal");
       yPos += 10;
-      
-      if (dfvData.desirability.score !== undefined) {
-        doc.setFontSize(12);
-        doc.text(`Score: ${dfvData.desirability.score}/10`, 20, yPos);
-        yPos += 10;
-      }
       
       if (dfvData.desirability.analysis) {
         doc.setFontSize(11);
@@ -377,15 +425,9 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
       
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("Feasibility (Viabilidade Técnica)", 20, yPos);
+      doc.text("Análise de Feasibility", 20, yPos);
       doc.setFont("helvetica", "normal");
       yPos += 10;
-      
-      if (dfvData.feasibility.score !== undefined) {
-        doc.setFontSize(12);
-        doc.text(`Score: ${dfvData.feasibility.score}/10`, 20, yPos);
-        yPos += 10;
-      }
       
       if (dfvData.feasibility.analysis) {
         doc.setFontSize(11);
@@ -399,15 +441,9 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
       
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("Viability (Viabilidade de Negócio)", 20, yPos);
+      doc.text("Análise de Viability", 20, yPos);
       doc.setFont("helvetica", "normal");
       yPos += 10;
-      
-      if (dfvData.viability.score !== undefined) {
-        doc.setFontSize(12);
-        doc.text(`Score: ${dfvData.viability.score}/10`, 20, yPos);
-        yPos += 10;
-      }
       
       if (dfvData.viability.analysis) {
         doc.setFontSize(11);
@@ -415,6 +451,21 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
         yPos += viabHeight + 15;
       }
     }
+  }
+
+  // Recomendações (se existir)
+  if (project.dfvFeedback) {
+    checkPageBreak(40);
+    
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Recomendações", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    
+    doc.setFontSize(11);
+    const feedbackHeight = addWrappedText(project.dfvFeedback, 20, yPos, 170, 11);
+    yPos += feedbackHeight + 15;
   }
 
   const totalPages = doc.getNumberOfPages();
