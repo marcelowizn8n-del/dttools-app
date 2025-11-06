@@ -33,30 +33,46 @@ export async function generateDiscoverPhase(input: {
   successCase?: string;
   targetAudience: string;
   problemStatement: string;
+  language?: string;
 }): Promise<DiscoverResult> {
-  const prompt = `You are a Design Thinking expert conducting the DISCOVER phase of the Double Diamond framework.
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  
+  const languageInstruction = isPortuguese 
+    ? "IMPORTANTE: Responda APENAS em PORTUGUÊS DO BRASIL. Todos os textos devem estar em português."
+    : isSpanish
+    ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol."
+    : isFrench
+    ? "IMPORTANTE: Responda APENAS em FRANCÊS. Todos os textos devem estar em francês."
+    : "IMPORTANTE: Responda APENAS em INGLÊS. Todos os textos devem estar em inglês.";
 
-CONTEXT:
-- Sector: ${input.sector}
-- Success Case Reference: ${input.successCase || 'None'}
-- Target Audience: ${input.targetAudience}
-- Problem Statement: ${input.problemStatement}
+  const prompt = `Você é um especialista em Design Thinking conduzindo a fase DISCOVER do framework Double Diamond.
 
-Generate a comprehensive discovery analysis with:
+${languageInstruction}
 
-1. **Pain Points** (8-12 items): Identify specific problems, frustrations, and challenges the target audience faces
-   - Include category (operational, emotional, financial, technological)
-   - Rate severity 1-5 (5 = critical)
+CONTEXTO:
+- Setor: ${input.sector}
+- Case de Sucesso de Referência: ${input.successCase || 'Nenhum'}
+- Público-Alvo: ${input.targetAudience}
+- Declaração do Problema: ${input.problemStatement}
 
-2. **Insights** (6-10 items): Key observations about user behavior, market trends, or sector patterns
-   - Mark source: 'sector', 'case', or 'persona'
+Gere uma análise de descoberta abrangente com:
 
-3. **User Needs** (8-12 items): Core needs that users are trying to fulfill
-   - Prioritize 1-5 (5 = essential)
+1. **Pain Points** (8-12 itens): Identifique problemas específicos, frustrações e desafios que o público-alvo enfrenta
+   - Inclua categoria (operacional, emocional, financeiro, tecnológico)
+   - Classifique severidade 1-5 (5 = crítico)
 
-4. **Empathy Map**: What the user Says, Thinks, Does, and Feels (3-5 items per quadrant)
+2. **Insights** (6-10 itens): Observações-chave sobre comportamento do usuário, tendências de mercado ou padrões do setor
+   - Marque fonte: 'setor', 'case' ou 'persona'
 
-Return ONLY a JSON object (no markdown):
+3. **Necessidades do Usuário** (8-12 itens): Necessidades centrais que os usuários estão tentando satisfazer
+   - Priorize 1-5 (5 = essencial)
+
+4. **Mapa de Empatia**: O que o usuário Diz, Pensa, Faz e Sente (3-5 itens por quadrante)
+
+Retorne APENAS um objeto JSON (sem markdown):
 {
   "painPoints": [{"text": "...", "category": "...", "severity": 3}],
   "insights": [{"text": "...", "source": "sector"}],
@@ -108,8 +124,24 @@ export async function generateDefinePhase(input: {
   painPoints: Array<{ text: string; category: string; severity: number }>;
   userNeeds: Array<{ need: string; priority: number }>;
   insights: Array<{ text: string; source: string }>;
+  language?: string;
 }): Promise<DefineResult> {
-  const prompt = `You are a Design Thinking expert conducting the DEFINE phase of the Double Diamond framework.
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  
+  const languageInstruction = isPortuguese 
+    ? "IMPORTANTE: Responda APENAS em PORTUGUÊS DO BRASIL. Todos os textos devem estar em português."
+    : isSpanish
+    ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol."
+    : isFrench
+    ? "IMPORTANTE: Responda APENAS em FRANCÊS. Todos os textos devem estar em francês."
+    : "IMPORTANTE: Responda APENAS em INGLÊS. Todos os textos devem estar em inglês.";
+
+  const prompt = `Você é um especialista em Design Thinking conduzindo a fase DEFINE do framework Double Diamond.
+
+${languageInstruction}
 
 Based on the DISCOVER phase findings, synthesize the problem:
 
@@ -186,8 +218,24 @@ export async function generateDevelopPhase(input: {
   selectedPov: string;
   selectedHmw: string;
   sector: string;
+  language?: string;
 }): Promise<DevelopResult> {
-  const prompt = `You are a creative Design Thinking facilitator conducting the DEVELOP phase (Ideation).
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  
+  const languageInstruction = isPortuguese 
+    ? "IMPORTANTE: Responda APENAS em PORTUGUÊS DO BRASIL. Todos os textos devem estar em português."
+    : isSpanish
+    ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol."
+    : isFrench
+    ? "IMPORTANTE: Responda APENAS em FRANCÊS. Todos os textos devem estar em francês."
+    : "IMPORTANTE: Responda APENAS em INGLÊS. Todos os textos devem estar em inglês.";
+
+  const prompt = `Você é um facilitador criativo de Design Thinking conduzindo a fase DEVELOP (Ideação).
+
+${languageInstruction}
 
 POV STATEMENT: ${input.selectedPov}
 HMW QUESTION: ${input.selectedHmw}
@@ -281,12 +329,28 @@ export async function generateDeliverPhase(input: {
   selectedIdeas: Array<{ title: string; description: string }>;
   pov: string;
   sector: string;
+  language?: string;
 }): Promise<DeliverResult> {
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  
+  const languageInstruction = isPortuguese 
+    ? "IMPORTANTE: Responda APENAS em PORTUGUÊS DO BRASIL. Todos os textos devem estar em português."
+    : isSpanish
+    ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol."
+    : isFrench
+    ? "IMPORTANTE: Responda APENAS em FRANCÊS. Todos os textos devem estar em francês."
+    : "IMPORTANTE: Responda APENAS em INGLÊS. Todos os textos devem estar em inglês.";
+
   const ideaDescriptions = input.selectedIdeas.map(idea => 
     `- ${idea.title}: ${idea.description}`
   ).join('\n');
 
-  const prompt = `You are a Design Thinking expert conducting the DELIVER phase - creating a functional MVP.
+  const prompt = `Você é um especialista em Design Thinking conduzindo a fase DELIVER - criando um MVP funcional.
+
+${languageInstruction}
 
 POV: ${input.pov}
 SECTOR: ${input.sector}
@@ -396,8 +460,24 @@ export async function analyzeDFV(input: {
   mvpConcept: any;
   sector: string;
   selectedIdeas: any[];
+  language?: string;
 }): Promise<DFVAnalysis> {
-  const prompt = `You are a business strategist analyzing a Design Thinking project using the DFV framework.
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  
+  const languageInstruction = isPortuguese 
+    ? "IMPORTANTE: Responda APENAS em PORTUGUÊS DO BRASIL. Todos os textos devem estar em português."
+    : isSpanish
+    ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol."
+    : isFrench
+    ? "IMPORTANTE: Responda APENAS em FRANCÊS. Todos os textos devem estar em francês."
+    : "IMPORTANTE: Responda APENAS em INGLÊS. Todos os textos devem estar em inglês.";
+
+  const prompt = `Você é um estrategista de negócios analisando um projeto de Design Thinking usando o framework DFV.
+
+${languageInstruction}
 
 POV: ${input.pov}
 MVP: ${JSON.stringify(input.mvpConcept, null, 2)}

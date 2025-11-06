@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Sparkles, Loader2, CheckCircle2, Circle, Download } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DoubleDiamondProject {
   id: string;
@@ -49,6 +50,7 @@ export default function DoubleDiamondProject() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const { language } = useLanguage();
 
   // Fetch project
   const { data: project, isLoading, isError, error } = useQuery<DoubleDiamondProject>({
@@ -56,15 +58,29 @@ export default function DoubleDiamondProject() {
     enabled: !!id
   });
 
-  // Set initial active tab based on project's current phase
+  // Set initial active tab - always start with "discover" unless explicitly navigating
   if (project && activeTab === null) {
-    setActiveTab(project.currentPhase || "discover");
+    // Force to "discover" if project is new or if discover phase is not completed
+    if (project.discoverStatus !== "completed") {
+      setActiveTab("discover");
+    } else {
+      // Otherwise, go to the first incomplete phase
+      if (project.defineStatus !== "completed") {
+        setActiveTab("define");
+      } else if (project.developStatus !== "completed") {
+        setActiveTab("develop");
+      } else if (project.deliverStatus !== "completed") {
+        setActiveTab("deliver");
+      } else {
+        setActiveTab("dfv");
+      }
+    }
   }
 
   // Generate Discover Phase
   const generateDiscoverMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("POST", `/api/double-diamond/${id}/generate/discover`, {});
+      return await apiRequest("POST", `/api/double-diamond/${id}/generate/discover`, { language });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/double-diamond", id] });
@@ -86,7 +102,7 @@ export default function DoubleDiamondProject() {
   // Generate Define Phase
   const generateDefineMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("POST", `/api/double-diamond/${id}/generate/define`, {});
+      return await apiRequest("POST", `/api/double-diamond/${id}/generate/define`, { language });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/double-diamond", id] });
@@ -108,7 +124,7 @@ export default function DoubleDiamondProject() {
   // Generate Develop Phase
   const generateDevelopMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("POST", `/api/double-diamond/${id}/generate/develop`, {});
+      return await apiRequest("POST", `/api/double-diamond/${id}/generate/develop`, { language });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/double-diamond", id] });
@@ -130,7 +146,7 @@ export default function DoubleDiamondProject() {
   // Generate Deliver Phase
   const generateDeliverMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("POST", `/api/double-diamond/${id}/generate/deliver`, {});
+      return await apiRequest("POST", `/api/double-diamond/${id}/generate/deliver`, { language });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/double-diamond", id] });
@@ -152,7 +168,7 @@ export default function DoubleDiamondProject() {
   // Generate DFV Analysis
   const generateDFVMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("POST", `/api/double-diamond/${id}/generate/dfv`, {});
+      return await apiRequest("POST", `/api/double-diamond/${id}/generate/dfv`, { language });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/double-diamond", id] });
@@ -260,21 +276,53 @@ export default function DoubleDiamondProject() {
                           project.currentPhase === "develop" ? "Desenvolver" : 
                           project.currentPhase === "deliver" ? "Entregar" : "Análise DFV"}
             </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                window.open(`/api/double-diamond/${id}/export/pdf`, '_blank');
-                toast({
-                  title: "📄 Gerando PDF",
-                  description: "O download começará em instantes."
-                });
-              }}
-              data-testid="button-export-pdf"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Exportar PDF
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  window.open(`/api/double-diamond/${id}/export/pdf`, '_blank');
+                  toast({
+                    title: "📄 Gerando PDF",
+                    description: "O download começará em instantes."
+                  });
+                }}
+                data-testid="button-export-pdf"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Exportar PDF
+              </Button>
+              {activeTab && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (activeTab === "discover") {
+                      generateDiscoverMutation.mutate();
+                    } else if (activeTab === "define") {
+                      generateDefineMutation.mutate();
+                    } else if (activeTab === "develop") {
+                      generateDevelopMutation.mutate();
+                    } else if (activeTab === "deliver") {
+                      generateDeliverMutation.mutate();
+                    } else if (activeTab === "dfv") {
+                      generateDFVMutation.mutate();
+                    }
+                  }}
+                  disabled={
+                    (activeTab === "discover" && generateDiscoverMutation.isPending) ||
+                    (activeTab === "define" && generateDefineMutation.isPending) ||
+                    (activeTab === "develop" && generateDevelopMutation.isPending) ||
+                    (activeTab === "deliver" && generateDeliverMutation.isPending) ||
+                    (activeTab === "dfv" && generateDFVMutation.isPending)
+                  }
+                  data-testid={`button-recreate-${activeTab}`}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Recriar
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -605,10 +653,208 @@ export default function DoubleDiamondProject() {
                 </div>
               ) : (
                 <div className="space-y-6">
+                  {/* MVP Concept */}
                   {project.deliverMvpConcept && (
                     <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
-                      <h4 className="font-semibold mb-2">MVP Concept</h4>
-                      <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(project.deliverMvpConcept, null, 2)}</pre>
+                      <h4 className="font-semibold mb-3 text-lg">Conceito do MVP</h4>
+                      {(() => {
+                        const mvp = project.deliverMvpConcept as any;
+                        return (
+                          <div className="space-y-3">
+                            {mvp.name && (
+                              <div>
+                                <span className="font-semibold">Nome:</span> {mvp.name}
+                              </div>
+                            )}
+                            {mvp.tagline && (
+                              <div>
+                                <span className="font-semibold">Tagline:</span> {mvp.tagline}
+                              </div>
+                            )}
+                            {mvp.valueProposition && (
+                              <div>
+                                <span className="font-semibold">Proposta de Valor:</span>
+                                <p className="mt-1 text-sm">{mvp.valueProposition}</p>
+                              </div>
+                            )}
+                            {mvp.coreFeatures && Array.isArray(mvp.coreFeatures) && mvp.coreFeatures.length > 0 && (
+                              <div>
+                                <span className="font-semibold">Recursos Principais:</span>
+                                <ul className="mt-1 list-disc list-inside space-y-1">
+                                  {mvp.coreFeatures.map((feature: string, idx: number) => (
+                                    <li key={idx} className="text-sm">{feature}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Logo Suggestions */}
+                  {project.deliverLogoSuggestions && Array.isArray(project.deliverLogoSuggestions) && (project.deliverLogoSuggestions as any[]).length > 0 && (
+                    <div>
+                      <h4 className="font-semibold mb-3 text-lg">Sugestões de Logo</h4>
+                      <div className="grid gap-4">
+                        {(project.deliverLogoSuggestions as any[]).map((logo: any, idx: number) => (
+                          <div key={idx} className="p-4 border rounded-lg">
+                            <div className="font-medium mb-2">Opção {idx + 1}</div>
+                            {logo.description && <p className="text-sm mb-2">{logo.description}</p>}
+                            <div className="flex gap-4 text-sm">
+                              {logo.style && <span><span className="font-semibold">Estilo:</span> {logo.style}</span>}
+                              {logo.colors && Array.isArray(logo.colors) && (
+                                <span><span className="font-semibold">Cores:</span> {logo.colors.join(", ")}</span>
+                              )}
+                            </div>
+                            {logo.symbolism && (
+                              <p className="text-sm mt-2 text-muted-foreground">{logo.symbolism}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Landing Page */}
+                  {project.deliverLandingPage && (
+                    <div>
+                      <h4 className="font-semibold mb-3 text-lg">Landing Page</h4>
+                      {(() => {
+                        const landing = project.deliverLandingPage as any;
+                        return (
+                          <div className="space-y-4">
+                            {landing.headline && (
+                              <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                                <div className="font-semibold mb-1">Headline:</div>
+                                <div className="text-lg">{landing.headline}</div>
+                              </div>
+                            )}
+                            {landing.subheadline && (
+                              <div className="p-4 border rounded-lg">
+                                <div className="font-semibold mb-1">Subheadline:</div>
+                                <div>{landing.subheadline}</div>
+                              </div>
+                            )}
+                            {landing.sections && Array.isArray(landing.sections) && landing.sections.length > 0 && (
+                              <div className="space-y-3">
+                                {landing.sections.map((section: any, idx: number) => (
+                                  <div key={idx} className="p-4 border rounded-lg">
+                                    <div className="font-semibold mb-2">{section.title}</div>
+                                    <p className="text-sm">{section.content}</p>
+                                    {section.cta && (
+                                      <div className="mt-2">
+                                        <span className="text-sm font-semibold">CTA:</span> {section.cta}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {landing.finalCta && (
+                              <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
+                                <div className="font-semibold mb-1">Call to Action Final:</div>
+                                <div>{landing.finalCta}</div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Social Media Lines */}
+                  {project.deliverSocialMediaLines && (
+                    <div>
+                      <h4 className="font-semibold mb-3 text-lg">Linhas para Redes Sociais</h4>
+                      {(() => {
+                        const social = project.deliverSocialMediaLines as any;
+                        return (
+                          <div className="grid gap-4 md:grid-cols-3">
+                            {social.twitter && Array.isArray(social.twitter) && social.twitter.length > 0 && (
+                              <div className="p-4 border rounded-lg">
+                                <div className="font-semibold mb-2">Twitter</div>
+                                <ul className="space-y-2 text-sm">
+                                  {social.twitter.map((line: string, idx: number) => (
+                                    <li key={idx}>• {line}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {social.linkedin && Array.isArray(social.linkedin) && social.linkedin.length > 0 && (
+                              <div className="p-4 border rounded-lg">
+                                <div className="font-semibold mb-2">LinkedIn</div>
+                                <ul className="space-y-2 text-sm">
+                                  {social.linkedin.map((line: string, idx: number) => (
+                                    <li key={idx}>• {line}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {social.instagram && Array.isArray(social.instagram) && social.instagram.length > 0 && (
+                              <div className="p-4 border rounded-lg">
+                                <div className="font-semibold mb-2">Instagram</div>
+                                <ul className="space-y-2 text-sm">
+                                  {social.instagram.map((line: string, idx: number) => (
+                                    <li key={idx}>• {line}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Test Plan */}
+                  {project.deliverTestPlan && (
+                    <div>
+                      <h4 className="font-semibold mb-3 text-lg">Plano de Testes</h4>
+                      {(() => {
+                        const plan = project.deliverTestPlan as any;
+                        return (
+                          <div className="space-y-3">
+                            {plan.objectives && Array.isArray(plan.objectives) && plan.objectives.length > 0 && (
+                              <div className="p-4 border rounded-lg">
+                                <div className="font-semibold mb-2">Objetivos:</div>
+                                <ul className="list-disc list-inside space-y-1 text-sm">
+                                  {plan.objectives.map((obj: string, idx: number) => (
+                                    <li key={idx}>{obj}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {plan.targetUsers && (
+                              <div className="p-4 border rounded-lg">
+                                <div className="font-semibold mb-1">Usuários-Alvo:</div>
+                                <div className="text-sm">{plan.targetUsers}</div>
+                              </div>
+                            )}
+                            {plan.metrics && Array.isArray(plan.metrics) && plan.metrics.length > 0 && (
+                              <div className="p-4 border rounded-lg">
+                                <div className="font-semibold mb-2">Métricas:</div>
+                                <ul className="list-disc list-inside space-y-1 text-sm">
+                                  {plan.metrics.map((metric: string, idx: number) => (
+                                    <li key={idx}>{metric}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {plan.testMethods && Array.isArray(plan.testMethods) && plan.testMethods.length > 0 && (
+                              <div className="p-4 border rounded-lg">
+                                <div className="font-semibold mb-2">Métodos de Teste:</div>
+                                <ul className="list-disc list-inside space-y-1 text-sm">
+                                  {plan.testMethods.map((method: string, idx: number) => (
+                                    <li key={idx}>{method}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>

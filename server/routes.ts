@@ -4040,12 +4040,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (successCase) caseName = successCase.name;
       }
 
+      // Get language from request body or default to pt-BR
+      const language = req.body.language || "pt-BR";
+
       // Gerar fase Discover com IA
       const result = await generateDiscoverPhase({
         sector: sectorName,
         successCase: caseName,
         targetAudience: project.targetAudience || "",
-        problemStatement: project.problemStatement || ""
+        problemStatement: project.problemStatement || "",
+        language
       });
 
       // Atualizar projeto com dados gerados
@@ -4080,11 +4084,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Discover phase must be completed first" });
       }
 
+      // Get language from request body or default to pt-BR
+      const language = req.body.language || "pt-BR";
+
       // Gerar fase Define com IA
       const result = await generateDefinePhase({
         painPoints: project.discoverPainPoints as any,
         userNeeds: project.discoverUserNeeds as any,
-        insights: project.discoverInsights as any
+        insights: project.discoverInsights as any,
+        language
       });
 
       // Atualizar projeto - auto-selecionar primeiro POV e HMW
@@ -4126,11 +4134,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (sector) sectorName = sector.name;
       }
 
+      // Get language from request body or default to pt-BR
+      const language = req.body.language || "pt-BR";
+
       // Gerar fase Develop com IA
       const result = await generateDevelopPhase({
         selectedPov: project.defineSelectedPov,
         selectedHmw: project.defineSelectedHmw,
-        sector: sectorName
+        sector: sectorName,
+        language
       });
 
       // Atualizar projeto - auto-selecionar as 3 melhores ideias
@@ -4181,11 +4193,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (sector) sectorName = sector.name;
       }
 
+      // Get language from request body or default to pt-BR
+      const language = req.body.language || "pt-BR";
+
       // Gerar fase Deliver com IA
       const result = await generateDeliverPhase({
         selectedIdeas: project.developSelectedIdeas as any,
         pov: project.defineSelectedPov || "",
-        sector: sectorName
+        sector: sectorName,
+        language
       });
 
       // Atualizar projeto
@@ -4228,12 +4244,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (sector) sectorName = sector.name;
       }
 
+      // Get language from request body or default to pt-BR
+      const language = req.body.language || "pt-BR";
+
       // Gerar análise DFV com IA
       const result = await analyzeDFV({
         pov: project.defineSelectedPov || "",
         mvpConcept: project.deliverMvpConcept,
         sector: sectorName,
-        selectedIdeas: project.developSelectedIdeas || []
+        selectedIdeas: project.developSelectedIdeas || [],
+        language
       });
 
       // Atualizar projeto

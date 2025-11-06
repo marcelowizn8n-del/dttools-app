@@ -59,11 +59,13 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
     doc.setFont("helvetica", "normal");
     yPos += 10;
     
-    (project.discoverPainPoints as any).forEach((pain: string, idx: number) => {
+    (project.discoverPainPoints as any).forEach((pain: any, idx: number) => {
       checkPageBreak(15);
       doc.setFontSize(11);
       doc.text(`${idx + 1}.`, 20, yPos);
-      const painHeight = addWrappedText(pain, 30, yPos, 160, 11);
+      // Handle both string and object formats
+      const painText = typeof pain === 'string' ? pain : (pain.text || pain);
+      const painHeight = addWrappedText(painText, 30, yPos, 160, 11);
       yPos += Math.max(8, painHeight + 3);
     });
     yPos += 10;
@@ -77,11 +79,13 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
     doc.setFont("helvetica", "normal");
     yPos += 10;
     
-    (project.discoverInsights as any).forEach((insight: string, idx: number) => {
+    (project.discoverInsights as any).forEach((insight: any, idx: number) => {
       checkPageBreak(15);
       doc.setFontSize(11);
       doc.text(`${idx + 1}.`, 20, yPos);
-      const insightHeight = addWrappedText(insight, 30, yPos, 160, 11);
+      // Handle both string and object formats
+      const insightText = typeof insight === 'string' ? insight : (insight.text || insight);
+      const insightHeight = addWrappedText(insightText, 30, yPos, 160, 11);
       yPos += Math.max(8, insightHeight + 3);
     });
     yPos += 10;
@@ -95,11 +99,13 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
     doc.setFont("helvetica", "normal");
     yPos += 10;
     
-    (project.discoverUserNeeds as any).forEach((need: string, idx: number) => {
+    (project.discoverUserNeeds as any).forEach((need: any, idx: number) => {
       checkPageBreak(15);
       doc.setFontSize(11);
       doc.text(`${idx + 1}.`, 20, yPos);
-      const needHeight = addWrappedText(need, 30, yPos, 160, 11);
+      // Handle both string and object formats
+      const needText = typeof need === 'string' ? need : (need.need || need);
+      const needHeight = addWrappedText(needText, 30, yPos, 160, 11);
       yPos += Math.max(8, needHeight + 3);
     });
   }
