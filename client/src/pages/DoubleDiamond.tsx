@@ -44,16 +44,16 @@ export default function DoubleDiamond() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-            <TrendingUp className="h-6 w-6 text-white" />
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2">
+          <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+            <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
           </div>
-          <h1 className="text-3xl font-bold">Double Diamond</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Double Diamond</h1>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           Metodologia completa de Design Thinking com automação 100% IA. 
           Input mínimo → Output máximo.
         </p>
@@ -62,28 +62,28 @@ export default function DoubleDiamond() {
       {/* CTA criar novo projeto */}
       <Dialog open={showWizard} onOpenChange={setShowWizard}>
         <DialogTrigger asChild>
-          <Card className="mb-8 cursor-pointer hover:shadow-lg transition-shadow border-2 border-dashed border-primary/50 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-            <CardContent className="p-8 flex items-center gap-6">
-              <div className="p-4 bg-primary rounded-full">
-                <Plus className="h-8 w-8 text-primary-foreground" />
+          <Card className="mb-6 sm:mb-8 cursor-pointer hover:shadow-lg transition-shadow border-2 border-dashed border-primary/50 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+            <CardContent className="p-4 sm:p-6 md:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+              <div className="p-2 sm:p-3 md:p-4 bg-primary rounded-full flex-shrink-0">
+                <Plus className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-primary-foreground" />
               </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold mb-1">Criar Novo Projeto Double Diamond</h3>
-                <p className="text-muted-foreground">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg sm:text-xl font-semibold mb-1.5 sm:mb-2 leading-tight">Criar Novo Projeto Double Diamond</h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   Preencha 5 campos e a IA gera todo o resto: pain points, POVs, ideias, MVP completo e análise DFV
                 </p>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full">
-                <Sparkles className="h-4 w-4" />
+              <div className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-sm sm:text-base flex-shrink-0 w-full sm:w-auto justify-center">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="font-medium">IA Automática</span>
               </div>
             </CardContent>
           </Card>
         </DialogTrigger>
 
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Criar Projeto Double Diamond</DialogTitle>
+            <DialogTitle className="text-xl sm:text-2xl">Criar Projeto Double Diamond</DialogTitle>
           </DialogHeader>
           <DoubleDiamondWizard onComplete={() => setShowWizard(false)} />
         </DialogContent>
