@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus, CreditCard, MessageSquare, Video, Diamond } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus, CreditCard, MessageSquare, Video, Diamond, Globe, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1215,10 +1215,17 @@ function DashboardTab() {
     totalUsers: number;
     totalProjects: number;
     totalArticles: number;
+    totalDoubleDiamondProjects: number;
+    totalVideos: number;
+    totalTestimonials: number;
+    totalPlans: number;
     projectsByStatus: { in_progress: number; completed: number };
     projectsByPhase: { phase1: number; phase2: number; phase3: number; phase4: number; phase5: number };
+    doubleDiamondByPhase: { discover: number; define: number; develop: number; deliver: number; dfv: number };
+    doubleDiamondByStatus: { pending: number; in_progress: number; completed: number };
     usersByRole: { admin: number; user: number };
     articlesByCategory: Record<string, number>;
+    articlesWithTranslations: { withEnglish: number; withSpanish: number; withFrench: number; fullyTranslated: number };
   }>({
     queryKey: ["/api/admin/stats"],
   });
@@ -1291,10 +1298,22 @@ function DashboardTab() {
             <div className="flex items-center">
               <FolderOpen className="h-4 w-4 text-green-600" />
               <h3 className="ml-2 text-sm font-medium text-muted-foreground">
-                Total de Projetos
+                Projetos DT
               </h3>
             </div>
             <p className="text-2xl font-bold">{stats.totalProjects}</p>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-total-double-diamond">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Diamond className="h-4 w-4 text-cyan-600" />
+              <h3 className="ml-2 text-sm font-medium text-muted-foreground">
+                Double Diamond
+              </h3>
+            </div>
+            <p className="text-2xl font-bold">{stats.totalDoubleDiamondProjects}</p>
           </CardContent>
         </Card>
 
@@ -1310,6 +1329,30 @@ function DashboardTab() {
           </CardContent>
         </Card>
 
+        <Card data-testid="card-total-videos">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Video className="h-4 w-4 text-red-600" />
+              <h3 className="ml-2 text-sm font-medium text-muted-foreground">
+                Vídeos Tutoriais
+              </h3>
+            </div>
+            <p className="text-2xl font-bold">{stats.totalVideos}</p>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-total-testimonials">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <MessageSquare className="h-4 w-4 text-yellow-600" />
+              <h3 className="ml-2 text-sm font-medium text-muted-foreground">
+                Depoimentos
+              </h3>
+            </div>
+            <p className="text-2xl font-bold">{stats.totalTestimonials}</p>
+          </CardContent>
+        </Card>
+
         <Card data-testid="card-active-projects">
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -1319,6 +1362,21 @@ function DashboardTab() {
               </h3>
             </div>
             <p className="text-2xl font-bold">{stats.projectsByStatus.in_progress}</p>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-articles-translated">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Globe className="h-4 w-4 text-indigo-600" />
+              <h3 className="ml-2 text-sm font-medium text-muted-foreground">
+                Artigos Traduzidos
+              </h3>
+            </div>
+            <p className="text-2xl font-bold">{stats.articlesWithTranslations?.fullyTranslated || 0}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              de {stats.totalArticles} total
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -1441,6 +1499,174 @@ function DashboardTab() {
                   </div>
                 );
               })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Double Diamond by Phase */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Diamond className="mr-2 h-5 w-5" />
+              Double Diamond por Fase
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {Object.entries(stats.doubleDiamondByPhase || {}).map(([phase, count]) => {
+                const phaseLabels: Record<string, string> = {
+                  discover: "Descobrir",
+                  define: "Definir",
+                  develop: "Desenvolver",
+                  deliver: "Entregar",
+                  dfv: "Análise DFV"
+                };
+                const percentage = stats.totalDoubleDiamondProjects > 0 ? (count as number / stats.totalDoubleDiamondProjects * 100) : 0;
+                
+                return (
+                  <div key={phase} className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{phaseLabels[phase] || phase}</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-cyan-500 transition-all duration-300"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <span className="text-sm text-muted-foreground w-8">{count as number}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Double Diamond Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Diamond className="mr-2 h-5 w-5" />
+              Status Double Diamond
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Pendentes</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gray-500 transition-all duration-300"
+                      style={{ 
+                        width: `${stats.totalDoubleDiamondProjects > 0 ? ((stats.doubleDiamondByStatus?.pending || 0) / stats.totalDoubleDiamondProjects * 100) : 0}%` 
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground w-8">{stats.doubleDiamondByStatus?.pending || 0}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Em Progresso</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500 transition-all duration-300"
+                      style={{ 
+                        width: `${stats.totalDoubleDiamondProjects > 0 ? ((stats.doubleDiamondByStatus?.in_progress || 0) / stats.totalDoubleDiamondProjects * 100) : 0}%` 
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground w-8">{stats.doubleDiamondByStatus?.in_progress || 0}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Completos</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-green-500 transition-all duration-300"
+                      style={{ 
+                        width: `${stats.totalDoubleDiamondProjects > 0 ? ((stats.doubleDiamondByStatus?.completed || 0) / stats.totalDoubleDiamondProjects * 100) : 0}%` 
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground w-8">{stats.doubleDiamondByStatus?.completed || 0}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Articles Translation Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Globe className="mr-2 h-5 w-5" />
+              Status de Tradução dos Artigos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Com Inglês</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500 transition-all duration-300"
+                      style={{ 
+                        width: `${stats.totalArticles > 0 ? ((stats.articlesWithTranslations?.withEnglish || 0) / stats.totalArticles * 100) : 0}%` 
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground w-8">{stats.articlesWithTranslations?.withEnglish || 0}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Com Espanhol</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-yellow-500 transition-all duration-300"
+                      style={{ 
+                        width: `${stats.totalArticles > 0 ? ((stats.articlesWithTranslations?.withSpanish || 0) / stats.totalArticles * 100) : 0}%` 
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground w-8">{stats.articlesWithTranslations?.withSpanish || 0}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Com Francês</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-purple-500 transition-all duration-300"
+                      style={{ 
+                        width: `${stats.totalArticles > 0 ? ((stats.articlesWithTranslations?.withFrench || 0) / stats.totalArticles * 100) : 0}%` 
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground w-8">{stats.articlesWithTranslations?.withFrench || 0}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium flex items-center">
+                  <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                  Totalmente Traduzidos
+                </span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-green-500 transition-all duration-300"
+                      style={{ 
+                        width: `${stats.totalArticles > 0 ? ((stats.articlesWithTranslations?.fullyTranslated || 0) / stats.totalArticles * 100) : 0}%` 
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground w-8">{stats.articlesWithTranslations?.fullyTranslated || 0}</span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

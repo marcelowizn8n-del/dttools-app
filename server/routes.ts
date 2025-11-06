@@ -1265,17 +1265,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/articles", requireAdmin, async (req, res) => {
     try {
-      const validatedData = insertArticleSchema.parse(req.body);
+      let validatedData = insertArticleSchema.parse(req.body);
+      
+      // Auto-translate if translations are missing
+      if (!validatedData.titleEn || !validatedData.contentEn) {
+        try {
+          const translations = await translateArticle({
+            title: validatedData.title,
+            description: validatedData.description || "",
+            content: validatedData.content
+          });
+          
+          // Merge translations with existing data (don't overwrite if already exists)
+          validatedData = {
+            ...validatedData,
+            titleEn: validatedData.titleEn || translations.titleEn,
+            descriptionEn: validatedData.descriptionEn || translations.descriptionEn,
+            contentEn: validatedData.contentEn || translations.contentEn,
+            titleEs: validatedData.titleEs || translations.titleEs,
+            descriptionEs: validatedData.descriptionEs || translations.descriptionEs,
+            contentEs: validatedData.contentEs || translations.contentEs,
+            titleFr: validatedData.titleFr || translations.titleFr,
+            descriptionFr: validatedData.descriptionFr || translations.descriptionFr,
+            contentFr: validatedData.contentFr || translations.contentFr,
+          };
+        } catch (translationError) {
+          console.error("Auto-translation error (continuing without translation):", translationError);
+          // Continue without translation if it fails
+        }
+      }
+      
       const article = await storage.createArticle(validatedData);
       res.status(201).json(article);
     } catch (error) {
+      console.error("Error creating article:", error);
       res.status(400).json({ error: "Invalid article data" });
     }
   });
 
   app.put("/api/articles/:id", requireAdmin, async (req, res) => {
     try {
-      const validatedData = insertArticleSchema.partial().parse(req.body);
+      let validatedData = insertArticleSchema.partial().parse(req.body);
+      
+      // Auto-translate if Portuguese content changed and translations are missing
+      if (validatedData.title || validatedData.description || validatedData.content) {
+        const existingArticle = await storage.getArticle(req.params.id);
+        if (existingArticle) {
+          const needsTranslation = 
+            (validatedData.title && !validatedData.titleEn) ||
+            (validatedData.description && !validatedData.descriptionEn) ||
+            (validatedData.content && !validatedData.contentEn);
+          
+          if (needsTranslation) {
+            try {
+              const translations = await translateArticle({
+                title: validatedData.title || existingArticle.title,
+                description: validatedData.description || existingArticle.description || "",
+                content: validatedData.content || existingArticle.content
+              });
+              
+              // Only update translations if they're missing
+              validatedData = {
+                ...validatedData,
+                titleEn: validatedData.titleEn || existingArticle.titleEn || translations.titleEn,
+                descriptionEn: validatedData.descriptionEn || existingArticle.descriptionEn || translations.descriptionEn,
+                contentEn: validatedData.contentEn || existingArticle.contentEn || translations.contentEn,
+                titleEs: validatedData.titleEs || existingArticle.titleEs || translations.titleEs,
+                descriptionEs: validatedData.descriptionEs || existingArticle.descriptionEs || translations.descriptionEs,
+                contentEs: validatedData.contentEs || existingArticle.contentEs || translations.contentEs,
+                titleFr: validatedData.titleFr || existingArticle.titleFr || translations.titleFr,
+                descriptionFr: validatedData.descriptionFr || existingArticle.descriptionFr || translations.descriptionFr,
+                contentFr: validatedData.contentFr || existingArticle.contentFr || translations.contentFr,
+              };
+            } catch (translationError) {
+              console.error("Auto-translation error (continuing without translation):", translationError);
+              // Continue without translation if it fails
+            }
+          }
+        }
+      }
+      
       const article = await storage.updateArticle(req.params.id, validatedData);
       if (!article) {
         return res.status(404).json({ error: "Article not found" });
@@ -2198,11 +2267,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const users = await storage.getUsers();
       const projects = await storage.getAllProjects();
       const articles = await storage.getArticles();
+      const doubleDiamondProjects = await storage.getAllDoubleDiamondProjects();
+      const videos = await storage.getVideoTutorials();
+      const testimonials = await storage.getTestimonials();
+      const plans = await storage.getSubscriptionPlans();
       
       const stats = {
         totalUsers: users.length,
         totalProjects: projects.length,
         totalArticles: articles.length,
+        totalDoubleDiamondProjects: doubleDiamondProjects.length,
+        totalVideos: videos.length,
+        totalTestimonials: testimonials.length,
+        totalPlans: plans.length,
         projectsByStatus: {
           in_progress: projects.filter(p => p.status === 'in_progress').length,
           completed: projects.filter(p => p.status === 'completed').length,
@@ -2214,6 +2291,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phase4: projects.filter(p => p.currentPhase === 4).length,
           phase5: projects.filter(p => p.currentPhase === 5).length,
         },
+        doubleDiamondByPhase: {
+          discover: doubleDiamondProjects.filter(p => p.currentPhase === 'discover').length,
+          define: doubleDiamondProjects.filter(p => p.currentPhase === 'define').length,
+          develop: doubleDiamondProjects.filter(p => p.currentPhase === 'develop').length,
+          deliver: doubleDiamondProjects.filter(p => p.currentPhase === 'deliver').length,
+          dfv: doubleDiamondProjects.filter(p => p.currentPhase === 'dfv').length,
+        },
+        doubleDiamondByStatus: {
+          pending: doubleDiamondProjects.filter(p => p.discoverStatus === 'pending').length,
+          in_progress: doubleDiamondProjects.filter(p => p.discoverStatus === 'in_progress' || p.defineStatus === 'in_progress' || p.developStatus === 'in_progress' || p.deliverStatus === 'in_progress').length,
+          completed: doubleDiamondProjects.filter(p => p.deliverStatus === 'completed').length,
+        },
         usersByRole: {
           admin: users.filter(u => u.role === 'admin').length,
           user: users.filter(u => u.role === 'user').length,
@@ -2224,11 +2313,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ideate: articles.filter(a => a.category === 'ideate').length,
           prototype: articles.filter(a => a.category === 'prototype').length,
           test: articles.filter(a => a.category === 'test').length,
+        },
+        articlesWithTranslations: {
+          withEnglish: articles.filter(a => a.titleEn && a.contentEn).length,
+          withSpanish: articles.filter(a => a.titleEs && a.contentEs).length,
+          withFrench: articles.filter(a => a.titleFr && a.contentFr).length,
+          fullyTranslated: articles.filter(a => a.titleEn && a.contentEn && a.titleEs && a.contentEs && a.titleFr && a.contentFr).length,
         }
       };
       
       res.json(stats);
     } catch (error) {
+      console.error("Error fetching admin stats:", error);
       res.status(500).json({ error: "Failed to fetch admin stats" });
     }
   });
