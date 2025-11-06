@@ -4279,6 +4279,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== ADMIN ROUTES FOR DOUBLE DIAMOND =====
+  
+  // GET /api/admin/double-diamond - Lista todos os projetos Double Diamond (admin only)
+  app.get("/api/admin/double-diamond", requireAdmin, async (_req, res) => {
+    try {
+      const projects = await storage.getAllDoubleDiamondProjects();
+      res.json(projects);
+    } catch (error) {
+      console.error("Error fetching all Double Diamond projects:", error);
+      res.status(500).json({ error: "Failed to fetch Double Diamond projects" });
+    }
+  });
+
+  // DELETE /api/admin/double-diamond/:id - Deleta projeto Double Diamond (admin only)
+  app.delete("/api/admin/double-diamond/:id", requireAdmin, async (req, res) => {
+    try {
+      // Admin pode deletar qualquer projeto, então buscamos todos e filtramos por ID
+      const allProjects = await storage.getAllDoubleDiamondProjects();
+      const project = allProjects.find(p => p.id === req.params.id);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+
+      const success = await storage.deleteDoubleDiamondProject(req.params.id, project.userId);
+      if (!success) {
+        return res.status(404).json({ error: "Failed to delete project" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to delete Double Diamond project" });
+    }
+  });
+
+  // PUT /api/admin/double-diamond/:id - Atualiza projeto Double Diamond (admin only)
+  app.put("/api/admin/double-diamond/:id", requireAdmin, async (req, res) => {
+    try {
+      // Admin pode atualizar qualquer projeto, então buscamos todos e filtramos por ID
+      const allProjects = await storage.getAllDoubleDiamondProjects();
+      const project = allProjects.find(p => p.id === req.params.id);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+
+      // Admin pode atualizar qualquer campo
+      const updates = req.body;
+      const updated = await storage.updateDoubleDiamondProject(req.params.id, project.userId, updates);
+      
+      if (!updated) {
+        return res.status(404).json({ error: "Failed to update project" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to update Double Diamond project" });
+    }
+  });
+
   // GET /api/industry-sectors - Lista setores/indústrias para o Double Diamond
   app.get("/api/industry-sectors", async (req, res) => {
     try {

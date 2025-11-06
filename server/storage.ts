@@ -294,6 +294,7 @@ export interface IStorage {
 
   // Double Diamond
   getDoubleDiamondProjects(userId: string): Promise<DoubleDiamondProject[]>;
+  getAllDoubleDiamondProjects(): Promise<DoubleDiamondProject[]>;
   getDoubleDiamondProject(id: string, userId: string): Promise<DoubleDiamondProject | undefined>;
   createDoubleDiamondProject(project: InsertDoubleDiamondProject): Promise<DoubleDiamondProject>;
   updateDoubleDiamondProject(id: string, userId: string, updates: Partial<InsertDoubleDiamondProject>): Promise<DoubleDiamondProject | undefined>;
@@ -1835,6 +1836,11 @@ export class DatabaseStorage implements IStorage {
   async getDoubleDiamondProjects(userId: string): Promise<DoubleDiamondProject[]> {
     return await db.select().from(doubleDiamondProjects)
       .where(eq(doubleDiamondProjects.userId, userId))
+      .orderBy(desc(doubleDiamondProjects.createdAt));
+  }
+
+  async getAllDoubleDiamondProjects(): Promise<DoubleDiamondProject[]> {
+    return await db.select().from(doubleDiamondProjects)
       .orderBy(desc(doubleDiamondProjects.createdAt));
   }
 

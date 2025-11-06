@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus, CreditCard, MessageSquare, Video } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus, CreditCard, MessageSquare, Video, Diamond } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { Article, User, Project, SubscriptionPlan } from "@shared/schema";
+import type { Article, User, Project, SubscriptionPlan, DoubleDiamondProject } from "@shared/schema";
 
 function ArticlesTab() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -944,6 +944,271 @@ function ProjectsTab() {
   );
 }
 
+// Double Diamond Management Tab Component
+function DoubleDiamondTab() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [phaseFilter, setPhaseFilter] = useState("all");
+  const { toast } = useToast();
+
+  const { data: projects = [], isLoading } = useQuery<DoubleDiamondProject[]>({
+    queryKey: ["/api/admin/double-diamond"],
+  });
+
+  const deleteProjectMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("DELETE", `/api/admin/double-diamond/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/double-diamond"] });
+      toast({
+        title: "Projeto Double Diamond excluído",
+        description: "O projeto foi removido com sucesso.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro ao excluir projeto",
+        description: "Ocorreu um erro ao tentar excluir o projeto.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const getPhaseLabel = (phase: string | null) => {
+    if (!phase) return "N/A";
+    const phases: Record<string, string> = {
+      "discover": "Descobrir",
+      "define": "Definir",
+      "develop": "Desenvolver",
+      "deliver": "Entregar",
+      "dfv": "Análise DFV"
+    };
+    return phases[phase] || phase;
+  };
+
+  const getStatusLabel = (status: string) => {
+    const statusMap: Record<string, string> = {
+      "pending": "Pendente",
+      "in_progress": "Em Progresso",
+      "completed": "Concluído"
+    };
+    return statusMap[status] || status;
+  };
+
+  const getStatusColor = (status: string) => {
+    if (status === "completed") {
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+    } else if (status === "in_progress") {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    }
+    return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+  };
+
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return "N/A";
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(new Date(date));
+  };
+
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesPhase = phaseFilter === "all" || project.currentPhase === phaseFilter;
+    return matchesSearch && matchesPhase;
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold" data-testid="double-diamond-title">
+            Gerenciar Projetos Double Diamond
+          </h2>
+          <p className="text-muted-foreground">
+            Visualize e gerencie todos os projetos Double Diamond do sistema
+          </p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Pesquisar projetos Double Diamond..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+            data-testid="input-search-double-diamond"
+          />
+        </div>
+        <Select value={phaseFilter} onValueChange={setPhaseFilter}>
+          <SelectTrigger className="w-48" data-testid="select-phase-filter-dd">
+            <Filter className="mr-2 h-4 w-4" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as fases</SelectItem>
+            <SelectItem value="discover">Descobrir</SelectItem>
+            <SelectItem value="define">Definir</SelectItem>
+            <SelectItem value="develop">Desenvolver</SelectItem>
+            <SelectItem value="deliver">Entregar</SelectItem>
+            <SelectItem value="dfv">Análise DFV</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Projects Table */}
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-6 space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="h-4 w-1/5" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome do Projeto</TableHead>
+                  <TableHead>Fase Atual</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Progresso</TableHead>
+                  <TableHead>Data de Criação</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProjects.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <p className="text-muted-foreground" data-testid="no-double-diamond-message">
+                        {searchTerm || phaseFilter !== "all"
+                          ? "Nenhum projeto Double Diamond encontrado com os filtros aplicados."
+                          : "Nenhum projeto Double Diamond encontrado."
+                        }
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredProjects.map((project) => (
+                    <TableRow key={project.id} data-testid={`row-dd-project-${project.id}`}>
+                      <TableCell className="font-medium max-w-xs">
+                        <div className="truncate" title={project.name}>
+                          {project.name}
+                        </div>
+                        {project.description && (
+                          <div className="text-sm text-muted-foreground truncate" title={project.description}>
+                            {project.description}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {getPhaseLabel(project.currentPhase)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <Badge className={getStatusColor(project.discoverStatus || "pending")}>
+                            Descobrir: {getStatusLabel(project.discoverStatus || "pending")}
+                          </Badge>
+                          {project.deliverStatus === "completed" && (
+                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                              Completo
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-12 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-blue-500 transition-all duration-300"
+                              style={{ width: `${project.completionPercentage || 0}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {Math.round(project.completionPercentage || 0)}%
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatDate(project.createdAt)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(`/double-diamond/${project.id}`, '_blank')}
+                            data-testid={`button-view-dd-${project.id}`}
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.location.href = `/double-diamond/${project.id}`}
+                            data-testid={`button-edit-dd-${project.id}`}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive hover:text-destructive"
+                                data-testid={`button-delete-dd-${project.id}`}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir o projeto Double Diamond "{project.name}"? 
+                                  Esta ação não pode ser desfeita e removerá todos os dados associados.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteProjectMutation.mutate(project.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // Admin Dashboard Tab Component
 function DashboardTab() {
   const { data: stats, isLoading } = useQuery<{
@@ -1763,7 +2028,7 @@ export default function AdminPage() {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-8">
               <TabsTrigger value="dashboard" data-testid="tab-dashboard">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Dashboard
@@ -1775,6 +2040,10 @@ export default function AdminPage() {
               <TabsTrigger value="projects" data-testid="tab-projects">
                 <FolderOpen className="mr-2 h-4 w-4" />
                 Projetos
+              </TabsTrigger>
+              <TabsTrigger value="double-diamond" data-testid="tab-double-diamond">
+                <Diamond className="mr-2 h-4 w-4" />
+                Double Diamond
               </TabsTrigger>
               <TabsTrigger value="articles" data-testid="tab-articles">
                 <Eye className="mr-2 h-4 w-4" />
@@ -1804,6 +2073,10 @@ export default function AdminPage() {
 
             <TabsContent value="projects">
               <ProjectsTab />
+            </TabsContent>
+
+            <TabsContent value="double-diamond">
+              <DoubleDiamondTab />
             </TabsContent>
 
             <TabsContent value="articles">
