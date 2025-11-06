@@ -481,56 +481,64 @@ ${languageInstruction}
 
 POV: ${input.pov}
 MVP: ${JSON.stringify(input.mvpConcept, null, 2)}
-SECTOR: ${input.sector}
-IDEAS: ${JSON.stringify(input.selectedIdeas, null, 2)}
+SETOR: ${input.sector}
+IDEIAS: ${JSON.stringify(input.selectedIdeas, null, 2)}
 
-Analyze this project across three dimensions:
+Analise este projeto em três dimensões:
 
-1. **DESIRABILITY** (0-100): Do users want this?
-   - Does it solve a real, validated problem?
-   - Is the value proposition compelling?
-   - Would users choose this over alternatives?
+1. **DESIRABILITY (Desejabilidade)** (0-100): Os usuários querem isso?
+   - Resolve um problema real e validado?
+   - A proposta de valor é convincente?
+   - Os usuários escolheriam isso ao invés de alternativas?
 
-2. **FEASIBILITY** (0-100): Can we build this?
-   - Technical complexity
-   - Resource requirements
-   - Time to market
-   - Team capabilities
+2. **FEASIBILITY (Viabilidade Técnica)** (0-100): Conseguimos construir isso?
+   - Complexidade técnica
+   - Requisitos de recursos
+   - Tempo para mercado
+   - Capacidades da equipe
 
-3. **VIABILITY** (0-100): Is it a sustainable business?
-   - Revenue potential
-   - Cost structure
-   - Competitive advantage
-   - Market size
+3. **VIABILITY (Viabilidade de Negócio)** (0-100): É um negócio sustentável?
+   - Potencial de receita
+   - Estrutura de custos
+   - Vantagem competitiva
+   - Tamanho do mercado
 
-For each dimension, provide:
+Para cada dimensão, forneça:
 - Score (0-100)
-- Strengths (2-3 points)
-- Concerns (2-3 points)
-- Reasoning (1-2 sentences)
+- Pontos Fortes (2-3 pontos)
+- Preocupações (2-3 pontos)
+- Raciocínio (1-2 frases explicando o score)
 
-Then provide:
-- Overall assessment
-- Top 3-5 recommendations
-- Next steps (prioritized)
+Depois forneça:
+- Avaliação geral (overall assessment)
+- Top 3-5 recomendações
+- Próximos passos (priorizados)
 
-Return ONLY a JSON object (no markdown):
+Retorne APENAS um objeto JSON (sem markdown):
 {
   "desirabilityScore": 75,
   "feasibilityScore": 60,
   "viabilityScore": 80,
   "analysis": {
     "desirability": {
-      "strengths": ["Solves validated pain point", "Clear value proposition"],
-      "concerns": ["Market saturation", "User behavior change required"],
-      "reasoning": "Strong product-market fit based on POV, but competitive landscape is crowded"
+      "strengths": ["Resolve problema validado", "Proposta de valor clara"],
+      "concerns": ["Mercado saturado", "Mudança de comportamento do usuário necessária"],
+      "reasoning": "Forte fit produto-mercado baseado no POV, mas o cenário competitivo está lotado"
     },
-    "feasibility": {...},
-    "viability": {...}
+    "feasibility": {
+      "strengths": ["Tecnologia disponível", "Equipe capacitada"],
+      "concerns": ["Complexidade de integração", "Recursos necessários"],
+      "reasoning": "Viável tecnicamente, mas requer investimento significativo em desenvolvimento"
+    },
+    "viability": {
+      "strengths": ["Bom potencial de receita", "Modelo de negócio claro"],
+      "concerns": ["Custos iniciais altos", "Competição intensa"],
+      "reasoning": "Negócio viável com potencial de crescimento, mas precisa de capital inicial"
+    }
   },
-  "overallAssessment": "Promising concept with strong viability but moderate feasibility challenges",
-  "recommendations": ["Start with MVP", "Validate with 20 users", "..."],
-  "nextSteps": ["Build landing page", "Run pre-launch campaign", "..."]
+  "overallAssessment": "Conceito promissor com forte viabilidade mas desafios moderados de viabilidade técnica",
+  "recommendations": ["Começar com MVP", "Validar com 20 usuários", "Buscar investimento inicial"],
+  "nextSteps": ["Construir landing page", "Executar campanha pré-lançamento", "Montar equipe técnica"]
 }`;
 
   try {

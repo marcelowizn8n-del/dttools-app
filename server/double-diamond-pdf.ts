@@ -404,52 +404,229 @@ export async function generateDoubleDiamondPDF(project: DoubleDiamondProject): P
   if (project.dfvAnalysis) {
     const dfvData = project.dfvAnalysis as any;
     
+    // Desirability Analysis
     if (dfvData.desirability) {
-      checkPageBreak(40);
+      checkPageBreak(50);
       
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("Análise de Desirability", 20, yPos);
+      doc.text("Análise de Desirability (Desejabilidade)", 20, yPos);
       doc.setFont("helvetica", "normal");
       yPos += 10;
       
-      if (dfvData.desirability.analysis) {
+      // Strengths
+      if (dfvData.desirability.strengths && Array.isArray(dfvData.desirability.strengths) && dfvData.desirability.strengths.length > 0) {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Pontos Fortes:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        
         doc.setFontSize(11);
-        const dfvHeight = addWrappedText(dfvData.desirability.analysis, 20, yPos, 170, 11);
-        yPos += dfvHeight + 15;
+        dfvData.desirability.strengths.forEach((strength: string) => {
+          checkPageBreak(10);
+          doc.text("•", 25, yPos);
+          const strengthHeight = addWrappedText(strength, 32, yPos, 160, 11);
+          yPos += Math.max(7, strengthHeight + 2);
+        });
+        yPos += 5;
+      }
+      
+      // Concerns
+      if (dfvData.desirability.concerns && Array.isArray(dfvData.desirability.concerns) && dfvData.desirability.concerns.length > 0) {
+        checkPageBreak(30);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Preocupações:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        
+        doc.setFontSize(11);
+        dfvData.desirability.concerns.forEach((concern: string) => {
+          checkPageBreak(10);
+          doc.text("•", 25, yPos);
+          const concernHeight = addWrappedText(concern, 32, yPos, 160, 11);
+          yPos += Math.max(7, concernHeight + 2);
+        });
+        yPos += 5;
+      }
+      
+      // Reasoning
+      if (dfvData.desirability.reasoning) {
+        checkPageBreak(20);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Raciocínio:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        
+        doc.setFontSize(11);
+        const reasoningHeight = addWrappedText(dfvData.desirability.reasoning, 20, yPos, 170, 11);
+        yPos += reasoningHeight + 15;
       }
     }
 
+    // Feasibility Analysis
     if (dfvData.feasibility) {
-      checkPageBreak(40);
+      checkPageBreak(50);
       
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("Análise de Feasibility", 20, yPos);
+      doc.text("Análise de Feasibility (Viabilidade Técnica)", 20, yPos);
       doc.setFont("helvetica", "normal");
       yPos += 10;
       
-      if (dfvData.feasibility.analysis) {
+      // Strengths
+      if (dfvData.feasibility.strengths && Array.isArray(dfvData.feasibility.strengths) && dfvData.feasibility.strengths.length > 0) {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Pontos Fortes:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        
         doc.setFontSize(11);
-        const feasHeight = addWrappedText(dfvData.feasibility.analysis, 20, yPos, 170, 11);
-        yPos += feasHeight + 15;
+        dfvData.feasibility.strengths.forEach((strength: string) => {
+          checkPageBreak(10);
+          doc.text("•", 25, yPos);
+          const strengthHeight = addWrappedText(strength, 32, yPos, 160, 11);
+          yPos += Math.max(7, strengthHeight + 2);
+        });
+        yPos += 5;
+      }
+      
+      // Concerns
+      if (dfvData.feasibility.concerns && Array.isArray(dfvData.feasibility.concerns) && dfvData.feasibility.concerns.length > 0) {
+        checkPageBreak(30);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Preocupações:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        
+        doc.setFontSize(11);
+        dfvData.feasibility.concerns.forEach((concern: string) => {
+          checkPageBreak(10);
+          doc.text("•", 25, yPos);
+          const concernHeight = addWrappedText(concern, 32, yPos, 160, 11);
+          yPos += Math.max(7, concernHeight + 2);
+        });
+        yPos += 5;
+      }
+      
+      // Reasoning
+      if (dfvData.feasibility.reasoning) {
+        checkPageBreak(20);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Raciocínio:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        
+        doc.setFontSize(11);
+        const reasoningHeight = addWrappedText(dfvData.feasibility.reasoning, 20, yPos, 170, 11);
+        yPos += reasoningHeight + 15;
       }
     }
 
+    // Viability Analysis
     if (dfvData.viability) {
+      checkPageBreak(50);
+      
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Análise de Viability (Viabilidade de Negócio)", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 10;
+      
+      // Strengths
+      if (dfvData.viability.strengths && Array.isArray(dfvData.viability.strengths) && dfvData.viability.strengths.length > 0) {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Pontos Fortes:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        
+        doc.setFontSize(11);
+        dfvData.viability.strengths.forEach((strength: string) => {
+          checkPageBreak(10);
+          doc.text("•", 25, yPos);
+          const strengthHeight = addWrappedText(strength, 32, yPos, 160, 11);
+          yPos += Math.max(7, strengthHeight + 2);
+        });
+        yPos += 5;
+      }
+      
+      // Concerns
+      if (dfvData.viability.concerns && Array.isArray(dfvData.viability.concerns) && dfvData.viability.concerns.length > 0) {
+        checkPageBreak(30);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Preocupações:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        
+        doc.setFontSize(11);
+        dfvData.viability.concerns.forEach((concern: string) => {
+          checkPageBreak(10);
+          doc.text("•", 25, yPos);
+          const concernHeight = addWrappedText(concern, 32, yPos, 160, 11);
+          yPos += Math.max(7, concernHeight + 2);
+        });
+        yPos += 5;
+      }
+      
+      // Reasoning
+      if (dfvData.viability.reasoning) {
+        checkPageBreak(20);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Raciocínio:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        
+        doc.setFontSize(11);
+        const reasoningHeight = addWrappedText(dfvData.viability.reasoning, 20, yPos, 170, 11);
+        yPos += reasoningHeight + 15;
+      }
+    }
+
+    // Recommendations
+    if (dfvData.recommendations && Array.isArray(dfvData.recommendations) && dfvData.recommendations.length > 0) {
       checkPageBreak(40);
       
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("Análise de Viability", 20, yPos);
+      doc.text("Recomendações", 20, yPos);
       doc.setFont("helvetica", "normal");
       yPos += 10;
       
-      if (dfvData.viability.analysis) {
-        doc.setFontSize(11);
-        const viabHeight = addWrappedText(dfvData.viability.analysis, 20, yPos, 170, 11);
-        yPos += viabHeight + 15;
-      }
+      doc.setFontSize(11);
+      dfvData.recommendations.forEach((rec: string, idx: number) => {
+        checkPageBreak(10);
+        doc.text(`${idx + 1}.`, 20, yPos);
+        const recHeight = addWrappedText(rec, 30, yPos, 160, 11);
+        yPos += Math.max(8, recHeight + 3);
+      });
+      yPos += 10;
+    }
+
+    // Next Steps
+    if (dfvData.nextSteps && Array.isArray(dfvData.nextSteps) && dfvData.nextSteps.length > 0) {
+      checkPageBreak(40);
+      
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Próximos Passos", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 10;
+      
+      doc.setFontSize(11);
+      dfvData.nextSteps.forEach((step: string, idx: number) => {
+        checkPageBreak(10);
+        doc.text(`${idx + 1}.`, 20, yPos);
+        const stepHeight = addWrappedText(step, 30, yPos, 160, 11);
+        yPos += Math.max(8, stepHeight + 3);
+      });
     }
   }
 

@@ -4256,12 +4256,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         language
       });
 
-      // Atualizar projeto
+      // Atualizar projeto - incluir recommendations e nextSteps na análise
+      const fullAnalysis = {
+        ...result.analysis,
+        recommendations: result.recommendations || [],
+        nextSteps: result.nextSteps || []
+      };
+
       const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
         dfvDesirabilityScore: result.desirabilityScore,
         dfvFeasibilityScore: result.feasibilityScore,
         dfvViabilityScore: result.viabilityScore,
-        dfvAnalysis: result.analysis as any,
+        dfvAnalysis: fullAnalysis as any,
         dfvFeedback: result.overallAssessment,
         generationCount: (project.generationCount || 0) + 1
       });

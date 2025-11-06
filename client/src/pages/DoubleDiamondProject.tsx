@@ -907,6 +907,7 @@ export default function DoubleDiamondProject() {
                 </div>
               ) : (
                 <div className="space-y-6">
+                  {/* Scores */}
                   <div className="grid grid-cols-3 gap-4">
                     <Card>
                       <CardHeader>
@@ -934,11 +935,172 @@ export default function DoubleDiamondProject() {
                     </Card>
                   </div>
 
-                  {project.dfvFeedback && (
-                    <div className="p-4 border rounded-lg bg-muted">
-                      <h4 className="font-semibold mb-2">Recomendações</h4>
-                      <p className="text-sm whitespace-pre-wrap">{project.dfvFeedback}</p>
+                  {/* Análise Detalhada */}
+                  {project.dfvAnalysis && (
+                    <div className="space-y-4">
+                      {(() => {
+                        const dfvData = project.dfvAnalysis as any;
+                        
+                        return (
+                          <>
+                            {/* Desirability Analysis */}
+                            {dfvData.desirability && (
+                              <Card>
+                                <CardHeader>
+                                  <CardTitle className="text-lg">Análise de Desirability (Desejabilidade)</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                  {dfvData.desirability.strengths && Array.isArray(dfvData.desirability.strengths) && dfvData.desirability.strengths.length > 0 && (
+                                    <div>
+                                      <h5 className="font-semibold mb-2 text-green-700 dark:text-green-400">Pontos Fortes:</h5>
+                                      <ul className="list-disc list-inside space-y-1 text-sm">
+                                        {dfvData.desirability.strengths.map((strength: string, idx: number) => (
+                                          <li key={idx}>{strength}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {dfvData.desirability.concerns && Array.isArray(dfvData.desirability.concerns) && dfvData.desirability.concerns.length > 0 && (
+                                    <div>
+                                      <h5 className="font-semibold mb-2 text-orange-700 dark:text-orange-400">Preocupações:</h5>
+                                      <ul className="list-disc list-inside space-y-1 text-sm">
+                                        {dfvData.desirability.concerns.map((concern: string, idx: number) => (
+                                          <li key={idx}>{concern}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {dfvData.desirability.reasoning && (
+                                    <div>
+                                      <h5 className="font-semibold mb-2">Raciocínio:</h5>
+                                      <p className="text-sm text-muted-foreground">{dfvData.desirability.reasoning}</p>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            )}
+
+                            {/* Feasibility Analysis */}
+                            {dfvData.feasibility && (
+                              <Card>
+                                <CardHeader>
+                                  <CardTitle className="text-lg">Análise de Feasibility (Viabilidade Técnica)</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                  {dfvData.feasibility.strengths && Array.isArray(dfvData.feasibility.strengths) && dfvData.feasibility.strengths.length > 0 && (
+                                    <div>
+                                      <h5 className="font-semibold mb-2 text-green-700 dark:text-green-400">Pontos Fortes:</h5>
+                                      <ul className="list-disc list-inside space-y-1 text-sm">
+                                        {dfvData.feasibility.strengths.map((strength: string, idx: number) => (
+                                          <li key={idx}>{strength}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {dfvData.feasibility.concerns && Array.isArray(dfvData.feasibility.concerns) && dfvData.feasibility.concerns.length > 0 && (
+                                    <div>
+                                      <h5 className="font-semibold mb-2 text-orange-700 dark:text-orange-400">Preocupações:</h5>
+                                      <ul className="list-disc list-inside space-y-1 text-sm">
+                                        {dfvData.feasibility.concerns.map((concern: string, idx: number) => (
+                                          <li key={idx}>{concern}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {dfvData.feasibility.reasoning && (
+                                    <div>
+                                      <h5 className="font-semibold mb-2">Raciocínio:</h5>
+                                      <p className="text-sm text-muted-foreground">{dfvData.feasibility.reasoning}</p>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            )}
+
+                            {/* Viability Analysis */}
+                            {dfvData.viability && (
+                              <Card>
+                                <CardHeader>
+                                  <CardTitle className="text-lg">Análise de Viability (Viabilidade de Negócio)</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                  {dfvData.viability.strengths && Array.isArray(dfvData.viability.strengths) && dfvData.viability.strengths.length > 0 && (
+                                    <div>
+                                      <h5 className="font-semibold mb-2 text-green-700 dark:text-green-400">Pontos Fortes:</h5>
+                                      <ul className="list-disc list-inside space-y-1 text-sm">
+                                        {dfvData.viability.strengths.map((strength: string, idx: number) => (
+                                          <li key={idx}>{strength}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {dfvData.viability.concerns && Array.isArray(dfvData.viability.concerns) && dfvData.viability.concerns.length > 0 && (
+                                    <div>
+                                      <h5 className="font-semibold mb-2 text-orange-700 dark:text-orange-400">Preocupações:</h5>
+                                      <ul className="list-disc list-inside space-y-1 text-sm">
+                                        {dfvData.viability.concerns.map((concern: string, idx: number) => (
+                                          <li key={idx}>{concern}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {dfvData.viability.reasoning && (
+                                    <div>
+                                      <h5 className="font-semibold mb-2">Raciocínio:</h5>
+                                      <p className="text-sm text-muted-foreground">{dfvData.viability.reasoning}</p>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
+                  )}
+
+                  {/* Overall Assessment */}
+                  {project.dfvFeedback && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Avaliação Geral</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm whitespace-pre-wrap">{project.dfvFeedback}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Recommendations */}
+                  {project.dfvAnalysis && (project.dfvAnalysis as any).recommendations && Array.isArray((project.dfvAnalysis as any).recommendations) && (project.dfvAnalysis as any).recommendations.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Recomendações</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="list-disc list-inside space-y-2 text-sm">
+                          {(project.dfvAnalysis as any).recommendations.map((rec: string, idx: number) => (
+                            <li key={idx}>{rec}</li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Next Steps */}
+                  {project.dfvAnalysis && (project.dfvAnalysis as any).nextSteps && Array.isArray((project.dfvAnalysis as any).nextSteps) && (project.dfvAnalysis as any).nextSteps.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Próximos Passos</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ol className="list-decimal list-inside space-y-2 text-sm">
+                          {(project.dfvAnalysis as any).nextSteps.map((step: string, idx: number) => (
+                            <li key={idx}>{step}</li>
+                          ))}
+                        </ol>
+                      </CardContent>
+                    </Card>
                   )}
                 </div>
               )}
