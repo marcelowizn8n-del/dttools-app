@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Book, Search, Calendar, User, ArrowRight, Filter, BookOpen } from "lucide-react";
+import { Book, Search, Calendar, User, Lightbulb, Box, TestTube, BookOpen } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -34,9 +34,9 @@ const categories = [
   { id: "all", labelKey: "library.all", icon: BookOpen, descriptionKey: "library.all.desc" },
   { id: "empathize", labelKey: "library.category.empathize", icon: Book, descriptionKey: "library.category.empathize.desc" },
   { id: "define", labelKey: "library.category.define", icon: Search, descriptionKey: "library.category.define.desc" },
-  { id: "ideate", labelKey: "library.category.ideate", icon: ArrowRight, descriptionKey: "library.category.ideate.desc" },
-  { id: "prototype", labelKey: "library.category.prototype", icon: Filter, descriptionKey: "library.category.prototype.desc" },
-  { id: "test", labelKey: "library.category.test", icon: User, descriptionKey: "library.category.test.desc" },
+  { id: "ideate", labelKey: "library.category.ideate", icon: Lightbulb, descriptionKey: "library.category.ideate.desc" },
+  { id: "prototype", labelKey: "library.category.prototype", icon: Box, descriptionKey: "library.category.prototype.desc" },
+  { id: "test", labelKey: "library.category.test", icon: TestTube, descriptionKey: "library.category.test.desc" },
 ];
 
 function ArticleCard({ article }: { article: Article }) {
@@ -80,7 +80,7 @@ function ArticleCard({ article }: { article: Article }) {
             {formatDate(article.createdAt)}
           </div>
         </div>
-        <CardTitle className="line-clamp-2" data-testid={`title-${article.id}`}>
+        <CardTitle className="line-clamp-2 text-lg leading-relaxed font-semibold" data-testid={`title-${article.id}`}>
           {translated.title}
         </CardTitle>
         {translated.description && (
@@ -212,7 +212,7 @@ export default function LibraryPage() {
 
         {/* Categories and Articles */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6" data-testid="tabs-categories">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2" data-testid="tabs-categories">
             {categories.map((category) => {
               const Icon = category.icon;
               const count = getArticleCount(category.id);
@@ -221,11 +221,11 @@ export default function LibraryPage() {
                 <TabsTrigger
                   key={category.id}
                   value={category.id}
-                  className="flex flex-col items-center gap-1 p-3 h-auto"
+                  className="flex flex-col items-center gap-1 p-2 sm:p-3 h-auto text-xs sm:text-sm"
                   data-testid={`tab-${category.id}`}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span className="text-xs font-medium">{t(category.labelKey)}</span>
+                  <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs font-medium whitespace-nowrap">{t(category.labelKey)}</span>
                   <Badge variant="secondary" className="text-xs">
                     {count}
                   </Badge>
@@ -255,7 +255,7 @@ export default function LibraryPage() {
                   ))}
                 </div>
               ) : filteredArticles.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="articles-grid">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" data-testid="articles-grid">
                   {filteredArticles.map((article) => (
                     <ArticleCard key={article.id} article={article} />
                   ))}
