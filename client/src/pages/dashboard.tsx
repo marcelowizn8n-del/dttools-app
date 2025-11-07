@@ -163,6 +163,26 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Handle checkout success redirect
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+    
+    if (sessionId) {
+      // Remove session_id from URL
+      window.history.replaceState({}, '', '/dashboard');
+      
+      // Show success message and refresh subscription info
+      toast({
+        title: "🎉 Assinatura ativada!",
+        description: "Seu plano foi ativado com sucesso. Agora você tem acesso a todos os recursos premium.",
+      });
+      
+      // Invalidate subscription queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription-info"] });
+    }
+  }, [toast]);
+
   const handleDismissWelcome = () => {
     localStorage.setItem('welcomeDismissed', 'true');
     setShowWelcome(false);

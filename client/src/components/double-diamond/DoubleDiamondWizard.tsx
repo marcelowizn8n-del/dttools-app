@@ -69,8 +69,25 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
 
   const createMutation = useMutation({
     mutationFn: async (data: DoubleDiamondFormData) => {
-      const response = await apiRequest("POST", "/api/double-diamond", data);
-      return await response.json();
+      try {
+        const response = await apiRequest("POST", "/api/double-diamond", data);
+        return await response.json();
+      } catch (error: any) {
+        // Try to parse error message as JSON
+        const errorMessage = error.message || "";
+        if (errorMessage.includes("403:")) {
+          try {
+            const jsonMatch = errorMessage.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const errorData = JSON.parse(jsonMatch[0]);
+              throw { ...error, errorData, code: errorData.code };
+            }
+          } catch {
+            // If parsing fails, throw original error
+          }
+        }
+        throw error;
+      }
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/double-diamond"] });
@@ -81,18 +98,9 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
       // Redirecionar para o projeto
       window.location.href = `/double-diamond/${data.id}`;
     },
-    onError: async (error: any) => {
-      let errorData;
-      try {
-        if (error.response) {
-          errorData = await error.response.json();
-        } else {
-          errorData = error;
-        }
-      } catch {
-        errorData = { error: error.message || "Erro desconhecido" };
-      }
-
+    onError: (error: any) => {
+      const errorData = error.errorData || error;
+      
       if (errorData?.code === "DOUBLE_DIAMOND_LIMIT_REACHED") {
         toast({
           title: "Limite atingido",
