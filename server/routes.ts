@@ -50,6 +50,7 @@ import {
   getSubscriptionInfo 
 } from "./subscriptionMiddleware";
 import { checkAiProjectLimits, incrementAiProjectsUsed } from "./middleware/checkAiProjectLimits";
+import { checkDoubleDiamondLimit } from "./middleware/checkDoubleDiamondLimit";
 import { designThinkingAI, type ChatMessage, type DesignThinkingContext } from "./aiService";
 import { designThinkingGeminiAI } from "./geminiService";
 import { PPTXService } from "./pptxService";
@@ -4056,7 +4057,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST /api/double-diamond - Cria novo projeto Double Diamond
-  app.post("/api/double-diamond", requireAuth, async (req, res) => {
+  app.post("/api/double-diamond", requireAuth, checkDoubleDiamondLimit, async (req, res) => {
     try {
       const userId = req.session.userId!;
       const validatedData = insertDoubleDiamondProjectSchema.parse(req.body);

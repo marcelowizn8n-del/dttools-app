@@ -81,12 +81,35 @@ export function DoubleDiamondWizard({ onComplete }: DoubleDiamondWizardProps) {
       // Redirecionar para o projeto
       window.location.href = `/double-diamond/${data.id}`;
     },
-    onError: (error: any) => {
-      toast({
-        title: "Erro ao criar projeto",
-        description: error.message || "Tente novamente",
-        variant: "destructive"
-      });
+    onError: async (error: any) => {
+      let errorData;
+      try {
+        if (error.response) {
+          errorData = await error.response.json();
+        } else {
+          errorData = error;
+        }
+      } catch {
+        errorData = { error: error.message || "Erro desconhecido" };
+      }
+
+      if (errorData?.code === "DOUBLE_DIAMOND_LIMIT_REACHED") {
+        toast({
+          title: "Limite atingido",
+          description: errorData.error || "Você atingiu o limite de projetos Double Diamond. Faça upgrade para criar mais projetos.",
+          variant: "destructive",
+        });
+        // Redirect to pricing after a delay
+        setTimeout(() => {
+          window.location.href = "/pricing";
+        }, 2000);
+      } else {
+        toast({
+          title: "Erro ao criar projeto",
+          description: errorData?.error || error.message || "Tente novamente",
+          variant: "destructive"
+        });
+      }
     }
   });
 

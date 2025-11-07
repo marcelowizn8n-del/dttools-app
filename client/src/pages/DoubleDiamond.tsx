@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Sparkles, TrendingUp, CheckCircle2, Circle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Plus, Sparkles, TrendingUp, CheckCircle2, Circle, AlertCircle, ArrowRight } from "lucide-react";
 import { DoubleDiamondWizard } from "@/components/double-diamond/DoubleDiamondWizard";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 
 interface DoubleDiamondProject {
   id: string;
@@ -16,12 +20,27 @@ interface DoubleDiamondProject {
   createdAt: Date;
 }
 
+const FREE_PLAN_DOUBLE_DIAMOND_LIMIT = 3;
+
 export default function DoubleDiamond() {
   const [showWizard, setShowWizard] = useState(false);
+  const [showLimitAlert, setShowLimitAlert] = useState(false);
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const { data: projects = [], isLoading } = useQuery<DoubleDiamondProject[]>({
     queryKey: ["/api/double-diamond"],
   });
+
+  const { data: subscriptionInfo } = useQuery({
+    queryKey: ["/api/subscription-info"],
+  });
+
+  // Check if user has reached the limit
+  const currentUsage = projects.length;
+  const isFreeUser = !subscriptionInfo?.subscription || subscriptionInfo?.plan?.name === "free" || subscriptionInfo?.plan?.priceMonthly === 0;
+  const hasReachedLimit = isFreeUser && currentUsage >= FREE_PLAN_DOUBLE_DIAMOND_LIMIT;
+  const remainingProjects = isFreeUser ? Math.max(0, FREE_PLAN_DOUBLE_DIAMOND_LIMIT - currentUsage) : null;
 
   const getPhaseLabel = (phase: string) => {
     const phases: Record<string, string> = {
@@ -43,6 +62,23 @@ export default function DoubleDiamond() {
     return colors[phase] || "bg-gray-500";
   };
 
+  const handleCreateClick = () => {
+    if (hasReachedLimit) {
+      setShowLimitAlert(true);
+      toast({
+        title: "Limite atingido",
+        description: `Você atingiu o limite de ${FREE_PLAN_DOUBLE_DIAMOND_LIMIT} projetos Double Diamond do plano gratuito. Faça upgrade para criar projetos ilimitados.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowWizard(true);
+  };
+
+  const handleUpgrade = () => {
+    setLocation("/pricing");
+  };
+
   return (
     <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
       {/* Header */}
@@ -59,23 +95,75 @@ export default function DoubleDiamond() {
         </p>
       </div>
 
+      {/* Limit Alert */}
+      {showLimitAlert && (
+        <Alert className="mb-6 sm:mb-8 border-orange-200 bg-orange-50 dark:bg-orange-950/20">
+          <AlertCircle className="h-4 w-4 text-orange-600" />
+          <AlertTitle className="text-orange-900 dark:text-orange-100">Limite de Projetos Atingido</AlertTitle>
+          <AlertDescription className="text-orange-800 dark:text-orange-200">
+            Você atingiu o limite de {FREE_PLAN_DOUBLE_DIAMOND_LIMIT} projetos Double Diamond do plano gratuito.
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-4 mt-2 border-orange-300 text-orange-700 hover:bg-orange-100"
+              onClick={handleUpgrade}
+            >
+              Fazer Upgrade
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* CTA criar novo projeto */}
       <Dialog open={showWizard} onOpenChange={setShowWizard}>
         <DialogTrigger asChild>
-          <Card className="mb-6 sm:mb-8 cursor-pointer hover:shadow-lg transition-shadow border-2 border-dashed border-primary/50 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+          <Card 
+            className={`mb-6 sm:mb-8 cursor-pointer hover:shadow-lg transition-shadow border-2 border-dashed ${
+              hasReachedLimit 
+                ? "border-orange-300 bg-orange-50/50 dark:bg-orange-950/10 opacity-75" 
+                : "border-primary/50 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
+            }`}
+            onClick={handleCreateClick}
+          >
             <CardContent className="p-4 sm:p-6 md:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-              <div className="p-2 sm:p-3 md:p-4 bg-primary rounded-full flex-shrink-0">
-                <Plus className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-primary-foreground" />
+              <div className={`p-2 sm:p-3 md:p-4 rounded-full flex-shrink-0 ${
+                hasReachedLimit ? "bg-orange-500" : "bg-primary"
+              }`}>
+                <Plus className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg sm:text-xl font-semibold mb-1.5 sm:mb-2 leading-tight">Criar Novo Projeto Double Diamond</h3>
+                <h3 className="text-lg sm:text-xl font-semibold mb-1.5 sm:mb-2 leading-tight">
+                  {hasReachedLimit ? "Limite Atingido - Faça Upgrade" : "Criar Novo Projeto Double Diamond"}
+                </h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Preencha 5 campos e a IA gera todo o resto: pain points, POVs, ideias, MVP completo e análise DFV
+                  {hasReachedLimit 
+                    ? `Você atingiu o limite de ${FREE_PLAN_DOUBLE_DIAMOND_LIMIT} projetos. Faça upgrade para criar projetos ilimitados.`
+                    : `Preencha 5 campos e a IA gera todo o resto: pain points, POVs, ideias, MVP completo e análise DFV`
+                  }
+                  {isFreeUser && !hasReachedLimit && remainingProjects !== null && (
+                    <span className="block mt-1 text-xs font-medium text-blue-600">
+                      {remainingProjects} projeto{remainingProjects !== 1 ? 's' : ''} restante{remainingProjects !== 1 ? 's' : ''} no plano gratuito
+                    </span>
+                  )}
                 </p>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-sm sm:text-base flex-shrink-0 w-full sm:w-auto justify-center">
-                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="font-medium">IA Automática</span>
+              <div className={`flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-sm sm:text-base flex-shrink-0 w-full sm:w-auto justify-center ${
+                hasReachedLimit
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
+                  : "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+              }`}>
+                {hasReachedLimit ? (
+                  <>
+                    <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="font-medium">Upgrade Necessário</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="font-medium">IA Automática</span>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
