@@ -235,7 +235,18 @@ function recordProjectCreation(userId: string, projectName: string): void {
 export async function registerRoutes(app: Express): Promise<Server> {
   // IMPORTANT: Stripe webhook needs raw body for signature verification
   // This must be BEFORE express.json() middleware
-  app.post("/api/stripe-webhook", express.raw({ type: 'application/json' }), async (req, res) => {
+    const expressModule = await import("express");
+  const expressRaw =
+    (expressModule as any).raw ||
+    (expressModule.default && (expressModule.default as any).raw);
+
+  if (!expressRaw) {
+    throw new Error("Failed to load express raw body parser");
+  }
+  app.post(
+  "/api/stripe-webhook",
+  expressRaw({ type: "application/json" }),
+  async (req, res) => {
     if (!stripe) {
       return res.status(503).json({ error: "Stripe not configured" });
     }
