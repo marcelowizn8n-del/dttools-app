@@ -235,130 +235,181 @@ function recordProjectCreation(userId: string, projectName: string): void {
 export async function registerRoutes(app: Express): Promise<Server> {
   // IMPORTANT: Stripe webhook needs raw body for signature verification
   // This must be BEFORE express.json() middleware
-  app.post("/api/stripe-webhook", express.raw({ type: 'application/json' }), async (req, res) => {
-    if (!stripe) {
-      return res.status(503).json({ error: "Stripe not configured" });
-    }
-    
-    const sig = req.headers["stripe-signature"];
-    let event;
+    const expressModule = await import("express");
+  const expressRaw =
+    (expressModule as any).raw ||
+    (expressModule.default && (expressModule.default as any).raw);
 
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || "");
-    } catch (err: any) {
-      console.log(`Webhook signature verification failed.`, err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
+  if (!expressRaw) {
+    throw new Error("Failed to load express raw body parser");
+  }
 
-    try {
-      switch (event.type) {
-        case "checkout.session.completed":
-          const session = event.data.object as Stripe.Checkout.Session;
-          if (session.metadata) {
-            const { userId, planId, billingPeriod } = session.metadata;
-            
-            // Create user subscription
-            await storage.createUserSubscription({
-              userId,
-              planId,
-              stripeSubscriptionId: session.subscription as string,
-              status: "active",
-              billingPeriod: billingPeriod as "monthly" | "yearly",
-              currentPeriodStart: new Date(),
-              currentPeriodEnd: new Date(Date.now() + (billingPeriod === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1000)
-            });
+  app.post(
+    "/api/stripe-webhook",
+    expressRaw({ type: "application/json" }),
+    async (req, res) => {
+      const sig = req.headers["stripe-signature"];
+      let event;
 
-            // Update user subscription info
-            await storage.updateUser(userId, {
-              stripeSubscriptionId: session.subscription as string,
-              subscriptionPlanId: planId,
-              subscriptionStatus: "active"
-            });
-            
-            console.log(`✅ Subscription activated for user ${userId}, plan ${planId}`);
-          }
-          break;
-
-        case "customer.subscription.updated":
-        case "customer.subscription.deleted":
-          const subscription = event.data.object as Stripe.Subscription;
-          const customer = await stripe.customers.retrieve(subscription.customer as string) as Stripe.Customer;
-          
-          if (customer.metadata?.userId) {
-            const status = subscription.status === "active" ? "active" : 
-                          subscription.status === "canceled" ? "canceled" : "expired";
-            
-            await storage.updateUser(customer.metadata.userId, {
-              subscriptionStatus: status,
-              subscriptionEndDate: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : null
-            });
-
-            // Update user subscription
-            const userSub = await storage.getUserActiveSubscription(customer.metadata.userId);
-            if (userSub) {
-              await storage.updateUserSubscription(userSub.id, {
-                status,
-                currentPeriodEnd: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : null,
-                cancelAtPeriodEnd: subscription.cancel_at_period_end
-              });
-            }
-            
-            console.log(`✅ Subscription ${status} for user ${customer.metadata.userId}`);
-          }
-          break;
-
-        case "invoice.payment_succeeded":
-          // Handle successful recurring payment
-          const invoice = event.data.object as Stripe.Invoice;
-          if (invoice.subscription) {
-            const sub = await stripe.subscriptions.retrieve(invoice.subscription as string);
-            const cust = await stripe.customers.retrieve(sub.customer as string) as Stripe.Customer;
-            
-            if (cust.metadata?.userId) {
-              await storage.updateUser(cust.metadata.userId, {
-                subscriptionStatus: "active"
-              });
-              
-              const userSub = await storage.getUserActiveSubscription(cust.metadata.userId);
-              if (userSub) {
-                await storage.updateUserSubscription(userSub.id, {
-                  status: "active",
-                  currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null
-                });
-              }
-              
-              console.log(`✅ Recurring payment succeeded for user ${cust.metadata.userId}`);
-            }
-          }
-          break;
-
-        case "invoice.payment_failed":
-          // Handle failed payment
-          const failedInvoice = event.data.object as Stripe.Invoice;
-          if (failedInvoice.subscription) {
-            const sub = await stripe.subscriptions.retrieve(failedInvoice.subscription as string);
-            const cust = await stripe.customers.retrieve(sub.customer as string) as Stripe.Customer;
-            
-            if (cust.metadata?.userId) {
-              await storage.updateUser(cust.metadata.userId, {
-                subscriptionStatus: "expired"
-              });
-              
-              console.log(`⚠️ Payment failed for user ${cust.metadata.userId}`);
-            }
-          }
-          break;
-
-        default:
-          console.log(`Unhandled event type ${event.type}`);
+      try {
+        event = stripe.webhooks.constructEvent(
+          req.body,
+          sig ?? "",
+          process.env.STRIPE_WEBHOOK_SECRET ?? ""
+        );
+      } catch (err: any) {
+        console.log("Webhook signature verification failed.", err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
       }
 
-      res.json({ received: true });
-    } catch (error) {
-      console.error("Error processing webhook:", error);
-      res.status(500).json({ error: "Webhook processing failed" });
+      try {
+        switch (event.type) {
+          case "checkout.session.completed": {
+            const session = event.data.object as Stripe.Checkout.Session;
+            if (session.metadata) {
+              const { userId, planId, billingPeriod } = session.metadata;
+
+              await storage.createUserSubscription({
+                userId,
+                planId,
+                stripeSubscriptionId: session.subscription as string,
+                status: "active",
+                billingPeriod: billingPeriod as "monthly" | "yearly",
+                currentPeriodStart: new Date(),
+                currentPeriodEnd: new Date(
+                  Date.now() +
+                    (billingPeriod === "yearly" ? 365 : 30) *
+                      24 *
+                      60 *
+                      60 *
+                      1000
+                ),
+              });
+
+              await storage.updateUser(userId, {
+                stripeSubscriptionId: session.subscription as string,
+                subscriptionPlanId: planId,
+                subscriptionStatus: "active",
+              });
+
+              console.log(
+                `✅ Subscription activated for user ${userId}, plan ${planId}`
+              );
+            }
+            break;
+          }
+
+          case "customer.subscription.updated":
+          case "customer.subscription.deleted": {
+            const subscription = event.data.object as Stripe.Subscription;
+            const customer = (await stripe.customers.retrieve(
+              subscription.customer as string
+            )) as Stripe.Customer;
+
+            if (customer.metadata?.userId) {
+              const status =
+                subscription.status === "active"
+                  ? "active"
+                  : subscription.status === "canceled"
+                  ? "canceled"
+                  : "expired";
+
+              await storage.updateUser(customer.metadata.userId, {
+                subscriptionStatus: status,
+                subscriptionEndDate: subscription.current_period_end
+                  ? new Date(subscription.current_period_end * 1000)
+                  : null,
+              });
+
+              const userSub = await storage.getUserActiveSubscription(
+                customer.metadata.userId
+              );
+              if (userSub) {
+                await storage.updateUserSubscription(userSub.id, {
+                  status,
+                  currentPeriodEnd: subscription.current_period_end
+                    ? new Date(subscription.current_period_end * 1000)
+                    : null,
+                  cancelAtPeriodEnd: subscription.cancel_at_period_end,
+                });
+              }
+
+              console.log(
+                `✅ Subscription ${status} for user ${customer.metadata.userId}`
+              );
+            }
+            break;
+          }
+
+          case "invoice.payment_succeeded": {
+            const invoice = event.data.object as Stripe.Invoice;
+            if (invoice.subscription) {
+              const sub = await stripe.subscriptions.retrieve(
+                invoice.subscription as string
+              );
+              const cust = (await stripe.customers.retrieve(
+                sub.customer as string
+              )) as Stripe.Customer;
+
+              if (cust.metadata?.userId) {
+                await storage.updateUser(cust.metadata.userId, {
+                  subscriptionStatus: "active",
+                });
+
+                const userSub = await storage.getUserActiveSubscription(
+                  cust.metadata.userId
+                );
+                if (userSub) {
+                  await storage.updateUserSubscription(userSub.id, {
+                    status: "active",
+                    currentPeriodEnd: sub.current_period_end
+                      ? new Date(sub.current_period_end * 1000)
+                      : null,
+                  });
+                }
+
+                console.log(
+                  `✅ Recurring payment succeeded for user ${cust.metadata.userId}`
+                );
+              }
+            }
+            break;
+          }
+
+          case "invoice.payment_failed": {
+            const failedInvoice = event.data.object as Stripe.Invoice;
+            if (failedInvoice.subscription) {
+              const sub = await stripe.subscriptions.retrieve(
+                failedInvoice.subscription as string
+              );
+              const cust = (await stripe.customers.retrieve(
+                sub.customer as string
+              )) as Stripe.Customer;
+
+              if (cust.metadata?.userId) {
+                await storage.updateUser(cust.metadata.userId, {
+                  subscriptionStatus: "expired",
+                });
+
+                console.log(
+                  `⚠️ Payment failed for user ${cust.metadata.userId}`
+                );
+              }
+            }
+            break;
+          }
+
+          default:
+            console.log(`Unhandled event type ${event.type}`);
+        }
+
+        res.json({ received: true });
+      } catch (error) {
+        console.error("Error processing webhook:", error);
+        res.status(500).json({ error: "Webhook processing failed" });
+      }
     }
-  });
+  );
 
   // Health check endpoint for monitoring
   app.get("/api/health", async (_req, res) => {
