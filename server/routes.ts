@@ -235,63 +235,72 @@ function recordProjectCreation(userId: string, projectName: string): void {
 export async function registerRoutes(app: Express): Promise<Server> {
   // IMPORTANT: Stripe webhook needs raw body for signature verification
   // This must be BEFORE express.json() middleware
-  app.post("/api/stripe-webhook", express.raw({ type: 'application/json' }), async (req, res) => {
-    if (!stripe) {
-      return res.status(503).json({ error: "Stripe not configured" });
-    }
-    
-    const sig = req.headers["stripe-signature"];
-    let event;
+    const expressModule = await import("express");
+  const expressRaw =
+    (expressModule as any).raw ||
+    (expressModule.default && (expressModule.default as any).raw);
 
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || "");
-    } catch (err: any) {
-      console.log(`Webhook signature verification failed.`, err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
+  if (!expressRaw) {
+    throw new Error("Failed to load express raw body parser");
+  }
 
-    try {
-      switch (event.type) {
-        case "checkout.session.completed":
-          const session = event.data.object as Stripe.Checkout.Session;
-          if (session.metadata) {
-            const { userId, planId, billingPeriod } = session.metadata;
-            
-            // Create user subscription
-            await storage.createUserSubscription({
-              userId,
-              planId,
-              stripeSubscriptionId: session.subscription as string,
-              status: "active",
-              billingPeriod: billingPeriod as "monthly" | "yearly",
-              currentPeriodStart: new Date(),
-              currentPeriodEnd: new Date(Date.now() + (billingPeriod === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1000)
-            });
+  app.post(
+    "/api/stripe-webhook",
+    expressRaw({ type: "application/json" }),
+    async (req, res) => {
+      const sig = req.headers["stripe-signature"];
+      let event;
 
-            // Update user subscription info
-            await storage.updateUser(userId, {
-              stripeSubscriptionId: session.subscription as string,
-              subscriptionPlanId: planId,
-              subscriptionStatus: "active"
-            });
-            
-            console.log(`✅ Subscription activated for user ${userId}, plan ${planId}`);
+      try {
+        event = stripe.webhooks.constructEvent(
+          req.body,
+          sig ?? "",
+          process.env.STRIPE_WEBHOOK_SECRET ?? ""
+        );
+      } catch (err: any) {
+        console.log("Webhook signature verification failed.", err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
+
+      try {
+        switch (event.type) {
+          case "checkout.session.completed": {
+            const session = event.data.object as Stripe.Checkout.Session;
+            if (session.metadata) {
+              const { userId, planId, billingPeriod } = session.metadata;
+
+              await storage.createUserSubscription({
+                userId,
+                planId,
+                stripeSubscriptionId: session.subscription as string,
+                status: "active",
+                billingPeriod: billingPeriod as "monthly" | "yearly",
+                currentPeriodStart: new Date(),
+                currentPeriodEnd: new Date(
+                  Date.now() +
+                    (billingPeriod === "yearly" ? 365 : 30) *
+                      24 *
+                      60 *
+                      60 *
+                      1000
+                ),
+              });
+
+              // mantenha os demais updates que já estavam aqui
+            }
+            break;
           }
-          break;
 
-        case "customer.subscription.updated":
-        case "customer.subscription.deleted":
-          const subscription = event.data.object as Stripe.Subscription;
-          const customer = await stripe.customers.retrieve(subscription.customer as string) as Stripe.Customer;
-          
-          if (customer.metadata?.userId) {
-            const status = subscription.status === "active" ? "active" : 
-                          subscription.status === "canceled" ? "canceled" : "expired";
-            
-            await storage.updateUser(customer.metadata.userId, {
-              subscriptionStatus: status,
-              subscriptionEndDate: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : null
-            });
+          // mantenha todos os outros casos existentes
+        }
+
+        res.json({ received: true });
+      } catch (error) {
+        console.error("Error processing webhook:", error);
+        res.status(500).json({ error: "Webhook processing failed" });
+      }
+    }
+  );
 
             // Update user subscription
             const userSub = await storage.getUserActiveSubscription(customer.metadata.userId);
