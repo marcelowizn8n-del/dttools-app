@@ -1889,12 +1889,6 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(industrySectors).orderBy(industrySectors.name);
   }
 
-  async getIndustrySector(id: string): Promise<IndustrySector | undefined> {
-    const [sector] = await db.select().from(industrySectors)
-      .where(eq(industrySectors.id, id));
-    return sector;
-  }
-
   async listSuccessCases(): Promise<SuccessCase[]> {
     return await db.select().from(successCases).orderBy(successCases.company);
   }

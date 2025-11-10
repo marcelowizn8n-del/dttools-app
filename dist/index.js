@@ -17,26 +17,34 @@ var __export = (target, all) => {
 // shared/schema.ts
 var schema_exports = {};
 __export(schema_exports, {
+  aiGeneratedAssets: () => aiGeneratedAssets,
+  analyticsEvents: () => analyticsEvents,
   articles: () => articles,
   benchmarkAssessments: () => benchmarkAssessments,
   benchmarks: () => benchmarks,
   canvasDrawings: () => canvasDrawings,
   competitiveAnalysis: () => competitiveAnalysis,
+  doubleDiamondProjects: () => doubleDiamondProjects,
   dvfAssessments: () => dvfAssessments,
   empathyMaps: () => empathyMaps,
   helpArticles: () => helpArticles,
   hmwQuestions: () => hmwQuestions,
   ideas: () => ideas,
+  industrySectors: () => industrySectors,
+  insertAiGeneratedAssetSchema: () => insertAiGeneratedAssetSchema,
+  insertAnalyticsEventSchema: () => insertAnalyticsEventSchema,
   insertArticleSchema: () => insertArticleSchema,
   insertBenchmarkAssessmentSchema: () => insertBenchmarkAssessmentSchema,
   insertBenchmarkSchema: () => insertBenchmarkSchema,
   insertCanvasDrawingSchema: () => insertCanvasDrawingSchema,
   insertCompetitiveAnalysisSchema: () => insertCompetitiveAnalysisSchema,
+  insertDoubleDiamondProjectSchema: () => insertDoubleDiamondProjectSchema,
   insertDvfAssessmentSchema: () => insertDvfAssessmentSchema,
   insertEmpathyMapSchema: () => insertEmpathyMapSchema,
   insertHelpArticleSchema: () => insertHelpArticleSchema,
   insertHmwQuestionSchema: () => insertHmwQuestionSchema,
   insertIdeaSchema: () => insertIdeaSchema,
+  insertIndustrySectorSchema: () => insertIndustrySectorSchema,
   insertInterviewSchema: () => insertInterviewSchema,
   insertLovabilityMetricSchema: () => insertLovabilityMetricSchema,
   insertObservationSchema: () => insertObservationSchema,
@@ -45,14 +53,20 @@ __export(schema_exports, {
   insertPovStatementSchema: () => insertPovStatementSchema,
   insertProjectAnalyticsSchema: () => insertProjectAnalyticsSchema,
   insertProjectBackupSchema: () => insertProjectBackupSchema,
+  insertProjectCommentSchema: () => insertProjectCommentSchema,
+  insertProjectInviteSchema: () => insertProjectInviteSchema,
+  insertProjectMemberSchema: () => insertProjectMemberSchema,
   insertProjectSchema: () => insertProjectSchema,
   insertPrototypeSchema: () => insertPrototypeSchema,
   insertSubscriptionPlanSchema: () => insertSubscriptionPlanSchema,
+  insertSuccessCaseSchema: () => insertSuccessCaseSchema,
   insertTestPlanSchema: () => insertTestPlanSchema,
   insertTestResultSchema: () => insertTestResultSchema,
+  insertTestimonialSchema: () => insertTestimonialSchema,
   insertUserProgressSchema: () => insertUserProgressSchema,
   insertUserSchema: () => insertUserSchema,
   insertUserSubscriptionSchema: () => insertUserSubscriptionSchema,
+  insertVideoTutorialSchema: () => insertVideoTutorialSchema,
   interviews: () => interviews,
   lovabilityMetrics: () => lovabilityMetrics,
   observations: () => observations,
@@ -61,24 +75,87 @@ __export(schema_exports, {
   povStatements: () => povStatements,
   projectAnalytics: () => projectAnalytics,
   projectBackups: () => projectBackups,
+  projectComments: () => projectComments,
+  projectInvites: () => projectInvites,
+  projectMembers: () => projectMembers,
   projects: () => projects,
   prototypes: () => prototypes,
   subscriptionPlans: () => subscriptionPlans,
+  successCases: () => successCases,
   testPlans: () => testPlans,
   testResults: () => testResults,
+  testimonials: () => testimonials,
   updateProfileSchema: () => updateProfileSchema,
   userProgress: () => userProgress,
   userSubscriptions: () => userSubscriptions,
-  users: () => users
+  users: () => users,
+  videoTutorials: () => videoTutorials
 });
 import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, integer, real, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-var projects, empathyMaps, personas, interviews, observations, povStatements, hmwQuestions, ideas, prototypes, canvasDrawings, testPlans, testResults, userProgress, users, subscriptionPlans, userSubscriptions, articles, insertProjectSchema, insertEmpathyMapSchema, insertPersonaSchema, insertInterviewSchema, insertObservationSchema, insertPovStatementSchema, insertHmwQuestionSchema, insertIdeaSchema, insertPrototypeSchema, insertTestPlanSchema, insertTestResultSchema, insertUserProgressSchema, insertUserSchema, insertArticleSchema, insertSubscriptionPlanSchema, insertUserSubscriptionSchema, insertCanvasDrawingSchema, updateProfileSchema, phaseCards, benchmarks, benchmarkAssessments, insertBenchmarkSchema, insertBenchmarkAssessmentSchema, insertPhaseCardSchema, dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis, projectBackups, helpArticles, insertDvfAssessmentSchema, insertLovabilityMetricSchema, insertProjectAnalyticsSchema, insertCompetitiveAnalysisSchema, insertProjectBackupSchema, insertHelpArticleSchema;
+var industrySectors, successCases, aiGeneratedAssets, projects, empathyMaps, personas, interviews, observations, povStatements, hmwQuestions, ideas, prototypes, canvasDrawings, testPlans, testResults, userProgress, users, subscriptionPlans, userSubscriptions, articles, testimonials, videoTutorials, insertProjectSchema, insertEmpathyMapSchema, insertPersonaSchema, insertInterviewSchema, insertObservationSchema, insertPovStatementSchema, insertHmwQuestionSchema, insertIdeaSchema, insertPrototypeSchema, insertTestPlanSchema, insertTestResultSchema, insertUserProgressSchema, insertUserSchema, insertArticleSchema, insertTestimonialSchema, insertVideoTutorialSchema, insertSubscriptionPlanSchema, insertUserSubscriptionSchema, insertCanvasDrawingSchema, updateProfileSchema, phaseCards, benchmarks, benchmarkAssessments, insertBenchmarkSchema, insertBenchmarkAssessmentSchema, insertPhaseCardSchema, dvfAssessments, lovabilityMetrics, projectAnalytics, competitiveAnalysis, projectBackups, helpArticles, insertDvfAssessmentSchema, insertLovabilityMetricSchema, insertProjectAnalyticsSchema, insertCompetitiveAnalysisSchema, insertProjectBackupSchema, insertHelpArticleSchema, insertIndustrySectorSchema, insertSuccessCaseSchema, insertAiGeneratedAssetSchema, analyticsEvents, insertAnalyticsEventSchema, projectMembers, insertProjectMemberSchema, projectInvites, insertProjectInviteSchema, projectComments, insertProjectCommentSchema, doubleDiamondProjects, insertDoubleDiamondProjectSchema;
 var init_schema = __esm({
   "shared/schema.ts"() {
     "use strict";
+    industrySectors = pgTable("industry_sectors", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      name: text("name").notNull(),
+      // English name (canonical)
+      namePt: text("name_pt").notNull(),
+      // Portuguese name
+      nameEn: text("name_en"),
+      // English translation
+      nameEs: text("name_es"),
+      // Spanish translation
+      nameFr: text("name_fr"),
+      // French translation
+      description: text("description"),
+      icon: text("icon"),
+      // Lucide icon name
+      isActive: boolean("is_active").default(true),
+      order: integer("order").default(0),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    successCases = pgTable("success_cases", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      name: text("name").notNull(),
+      // Case name (e.g., "Airbnb")
+      company: text("company").notNull(),
+      // Company name
+      sectorId: varchar("sector_id").references(() => industrySectors.id),
+      descriptionPt: text("description_pt"),
+      descriptionEn: text("description_en"),
+      descriptionEs: text("description_es"),
+      descriptionFr: text("description_fr"),
+      logoUrl: text("logo_url"),
+      foundedYear: integer("founded_year"),
+      keyInnovation: text("key_innovation"),
+      // Main innovation/differentiator
+      businessModel: text("business_model"),
+      // 'marketplace', 'saas', 'freemium', etc.
+      isActive: boolean("is_active").default(true),
+      order: integer("order").default(0),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    aiGeneratedAssets = pgTable("ai_generated_assets", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+      assetType: text("asset_type").notNull(),
+      // 'logo', 'landing_page', 'social_media', 'persona', 'idea', 'business_model'
+      content: text("content"),
+      // JSON or HTML depending on type
+      metadata: jsonb("metadata"),
+      // Extra information
+      storageUrl: text("storage_url"),
+      // If image/file stored in object storage
+      generationCost: real("generation_cost"),
+      // Cost in credits/tokens
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
     projects = pgTable("projects", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
       userId: varchar("user_id").references(() => users.id).notNull(),
@@ -89,12 +166,22 @@ var init_schema = __esm({
       currentPhase: integer("current_phase").default(1),
       // 1-5 phases
       completionRate: real("completion_rate").default(0),
+      // AI Automation fields
+      sectorId: varchar("sector_id").references(() => industrySectors.id),
+      successCaseId: varchar("success_case_id").references(() => successCases.id),
+      userProblemDescription: text("user_problem_description"),
+      // User's initial problem description
+      aiGenerated: boolean("ai_generated").default(false),
+      // Was this project AI-generated?
+      generationTimestamp: timestamp("generation_timestamp"),
+      businessModelBase: jsonb("business_model_base"),
+      // AI-generated business model canvas
       createdAt: timestamp("created_at").default(sql`now()`),
       updatedAt: timestamp("updated_at").default(sql`now()`)
     });
     empathyMaps = pgTable("empathy_maps", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       title: text("title").notNull(),
       says: jsonb("says").default([]),
       // Array of strings
@@ -106,7 +193,7 @@ var init_schema = __esm({
     });
     personas = pgTable("personas", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       name: text("name").notNull(),
       age: integer("age"),
       occupation: text("occupation"),
@@ -122,7 +209,7 @@ var init_schema = __esm({
     });
     interviews = pgTable("interviews", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       participantName: text("participant_name").notNull(),
       date: timestamp("date").notNull(),
       duration: integer("duration"),
@@ -134,7 +221,7 @@ var init_schema = __esm({
     });
     observations = pgTable("observations", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       location: text("location").notNull(),
       context: text("context").notNull(),
       behavior: text("behavior").notNull(),
@@ -144,7 +231,7 @@ var init_schema = __esm({
     });
     povStatements = pgTable("pov_statements", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       user: text("user").notNull(),
       // user description
       need: text("need").notNull(),
@@ -159,7 +246,7 @@ var init_schema = __esm({
     });
     hmwQuestions = pgTable("hmw_questions", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       question: text("question").notNull(),
       context: text("context"),
       challenge: text("challenge"),
@@ -174,7 +261,7 @@ var init_schema = __esm({
     });
     ideas = pgTable("ideas", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       title: text("title").notNull(),
       description: text("description").notNull(),
       category: text("category"),
@@ -211,7 +298,7 @@ var init_schema = __esm({
     });
     prototypes = pgTable("prototypes", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       ideaId: varchar("idea_id").references(() => ideas.id),
       name: text("name").notNull(),
       type: text("type").notNull(),
@@ -228,7 +315,7 @@ var init_schema = __esm({
     });
     canvasDrawings = pgTable("canvas_drawings", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       title: text("title").notNull(),
       description: text("description"),
       phase: integer("phase").notNull(),
@@ -250,7 +337,7 @@ var init_schema = __esm({
     });
     testPlans = pgTable("test_plans", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       prototypeId: varchar("prototype_id").references(() => prototypes.id),
       name: text("name").notNull(),
       objective: text("objective").notNull(),
@@ -279,7 +366,7 @@ var init_schema = __esm({
     userProgress = pgTable("user_progress", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
       userId: text("user_id").notNull(),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       phase: integer("phase").notNull(),
       // 1-5
       completedTools: jsonb("completed_tools").default([]),
@@ -294,10 +381,16 @@ var init_schema = __esm({
       username: text("username").notNull().unique(),
       email: text("email").notNull().unique(),
       name: text("name").notNull(),
-      password: text("password").notNull(),
-      // hashed password
+      password: text("password"),
+      // hashed password - optional for OAuth users
       role: text("role").notNull().default("user"),
       // admin, user
+      // OAuth fields
+      provider: text("provider").default("local"),
+      // 'local', 'google'
+      googleId: text("google_id"),
+      // Google OAuth ID
+      // User profile fields
       company: text("company"),
       jobRole: text("job_role"),
       industry: text("industry"),
@@ -310,12 +403,15 @@ var init_schema = __esm({
       bio: text("bio"),
       profilePicture: text("profile_picture"),
       interests: jsonb("interests").default([]),
+      // Subscription fields
       stripeCustomerId: text("stripe_customer_id"),
       stripeSubscriptionId: text("stripe_subscription_id"),
       subscriptionPlanId: varchar("subscription_plan_id"),
       subscriptionStatus: text("subscription_status").default("active"),
       // active, canceled, expired, trialing
       subscriptionEndDate: timestamp("subscription_end_date"),
+      aiProjectsUsed: integer("ai_projects_used").default(0),
+      // Track AI-generated projects used
       createdAt: timestamp("created_at").default(sql`now()`)
     });
     subscriptionPlans = pgTable("subscription_plans", {
@@ -335,6 +431,8 @@ var init_schema = __esm({
       // null for unlimited
       maxUsersPerTeam: integer("max_users_per_team"),
       // null for unlimited
+      maxAiProjects: integer("max_ai_projects"),
+      // null for unlimited AI-generated projects
       includedUsers: integer("included_users"),
       // number of users included in base price (null if not applicable)
       pricePerAdditionalUser: integer("price_per_additional_user"),
@@ -378,14 +476,77 @@ var init_schema = __esm({
     articles = pgTable("articles", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
       title: text("title").notNull(),
+      // pt-BR (default)
       content: text("content").notNull(),
+      // pt-BR (default)
+      description: text("description"),
+      // English translations
+      titleEn: text("title_en"),
+      contentEn: text("content_en"),
+      descriptionEn: text("description_en"),
+      // Spanish translations
+      titleEs: text("title_es"),
+      contentEs: text("content_es"),
+      descriptionEs: text("description_es"),
+      // French translations
+      titleFr: text("title_fr"),
+      contentFr: text("content_fr"),
+      descriptionFr: text("description_fr"),
       category: text("category").notNull(),
       // empathize, define, ideate, prototype, test
       author: text("author").notNull(),
-      description: text("description"),
       tags: jsonb("tags").default([]),
       // Array of tags
       published: boolean("published").default(true),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    testimonials = pgTable("testimonials", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      name: text("name").notNull(),
+      role: text("role").notNull(),
+      company: text("company").notNull(),
+      // Testimonial text in different languages
+      testimonialPt: text("testimonial_pt").notNull(),
+      // Portuguese (default)
+      testimonialEn: text("testimonial_en"),
+      testimonialEs: text("testimonial_es"),
+      testimonialFr: text("testimonial_fr"),
+      avatarUrl: text("avatar_url"),
+      rating: integer("rating").default(5),
+      // 1-5 stars
+      order: integer("order").default(0),
+      // for display ordering
+      isActive: boolean("is_active").default(true),
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    videoTutorials = pgTable("video_tutorials", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      title: text("title").notNull(),
+      titleEn: text("title_en"),
+      titleEs: text("title_es"),
+      titleFr: text("title_fr"),
+      description: text("description"),
+      descriptionEn: text("description_en"),
+      descriptionEs: text("description_es"),
+      descriptionFr: text("description_fr"),
+      phase: text("phase").notNull(),
+      // 'overview', 'empathize', 'define', 'ideate', 'prototype', 'test'
+      duration: text("duration"),
+      // e.g., '3-4 min'
+      youtubeUrl: text("youtube_url"),
+      // URL do vídeo no YouTube
+      thumbnailUrl: text("thumbnail_url"),
+      keywords: text("keywords").array().default(sql`'{}'::text[]`),
+      // Array of SEO keywords
+      tags: text("tags").array().default(sql`'{}'::text[]`),
+      // User-facing category tags
+      scriptId: text("script_id"),
+      // Reference to script in markdown file
+      order: integer("order").default(0),
+      isActive: boolean("is_active").default(true),
+      viewCount: integer("view_count").default(0),
       createdAt: timestamp("created_at").default(sql`now()`),
       updatedAt: timestamp("updated_at").default(sql`now()`)
     });
@@ -454,6 +615,17 @@ var init_schema = __esm({
       createdAt: true,
       updatedAt: true
     });
+    insertTestimonialSchema = createInsertSchema(testimonials).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertVideoTutorialSchema = createInsertSchema(videoTutorials).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      viewCount: true
+    });
     insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
       id: true,
       createdAt: true
@@ -482,7 +654,7 @@ var init_schema = __esm({
     }).partial();
     phaseCards = pgTable("phase_cards", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       title: text("title").notNull(),
       description: text("description"),
       phase: integer("phase").notNull().default(1),
@@ -509,7 +681,7 @@ var init_schema = __esm({
     });
     benchmarks = pgTable("benchmarks", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       name: text("name").notNull(),
       description: text("description"),
       industry: text("industry").notNull(),
@@ -566,7 +738,7 @@ var init_schema = __esm({
     });
     dvfAssessments = pgTable("dvf_assessments", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       itemType: text("item_type").notNull(),
       // idea, prototype, solution, etc.
       itemId: varchar("item_id").notNull(),
@@ -615,7 +787,7 @@ var init_schema = __esm({
     });
     lovabilityMetrics = pgTable("lovability_metrics", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       itemType: text("item_type").notNull(),
       // idea, prototype, solution
       itemId: varchar("item_id").notNull(),
@@ -658,7 +830,7 @@ var init_schema = __esm({
     });
     projectAnalytics = pgTable("project_analytics", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       // Usage metrics
       totalTimeSpent: integer("total_time_spent").default(0),
       // minutes
@@ -716,7 +888,7 @@ var init_schema = __esm({
     });
     competitiveAnalysis = pgTable("competitive_analysis", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       // Competitor info
       competitorName: text("competitor_name").notNull(),
       // Miro, Figma, Notion, etc.
@@ -756,7 +928,7 @@ var init_schema = __esm({
     });
     projectBackups = pgTable("project_backups", {
       id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-      projectId: varchar("project_id").references(() => projects.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
       // Backup metadata
       backupType: text("backup_type").notNull(),
       // auto, manual
@@ -834,6 +1006,173 @@ var init_schema = __esm({
       viewCount: true,
       helpful: true
     });
+    insertIndustrySectorSchema = createInsertSchema(industrySectors).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertSuccessCaseSchema = createInsertSchema(successCases).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertAiGeneratedAssetSchema = createInsertSchema(aiGeneratedAssets).omit({
+      id: true,
+      createdAt: true
+    });
+    analyticsEvents = pgTable("analytics_events", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      eventType: text("event_type").notNull(),
+      // 'signup', 'login', 'project_created', 'ai_generation', 'export_pdf', etc.
+      userId: varchar("user_id").references(() => users.id),
+      projectId: varchar("project_id").references(() => projects.id),
+      metadata: jsonb("metadata"),
+      // Additional event data
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    insertAnalyticsEventSchema = createInsertSchema(analyticsEvents).omit({
+      id: true,
+      createdAt: true
+    });
+    projectMembers = pgTable("project_members", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+      userId: varchar("user_id").references(() => users.id).notNull(),
+      role: text("role").notNull().default("viewer"),
+      // 'owner', 'editor', 'viewer'
+      addedBy: varchar("added_by").references(() => users.id),
+      addedAt: timestamp("added_at").default(sql`now()`)
+    });
+    insertProjectMemberSchema = createInsertSchema(projectMembers).omit({
+      id: true,
+      addedAt: true
+    });
+    projectInvites = pgTable("project_invites", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+      email: text("email").notNull(),
+      role: text("role").notNull().default("viewer"),
+      // 'editor', 'viewer'
+      invitedBy: varchar("invited_by").references(() => users.id).notNull(),
+      status: text("status").notNull().default("pending"),
+      // 'pending', 'accepted', 'declined', 'expired'
+      token: text("token").notNull(),
+      // Unique invite token
+      expiresAt: timestamp("expires_at").notNull(),
+      respondedAt: timestamp("responded_at"),
+      createdAt: timestamp("created_at").default(sql`now()`)
+    });
+    insertProjectInviteSchema = createInsertSchema(projectInvites).omit({
+      id: true,
+      createdAt: true,
+      respondedAt: true
+    });
+    projectComments = pgTable("project_comments", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+      userId: varchar("user_id").references(() => users.id).notNull(),
+      entityType: text("entity_type").notNull(),
+      // 'persona', 'pov', 'idea', 'prototype', 'project'
+      entityId: varchar("entity_id"),
+      // ID of the specific entity being commented on
+      comment: text("comment").notNull(),
+      parentCommentId: varchar("parent_comment_id"),
+      // For threaded comments (no FK to avoid circular reference)
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    insertProjectCommentSchema = createInsertSchema(projectComments).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    doubleDiamondProjects = pgTable("double_diamond_projects", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").references(() => users.id).notNull(),
+      projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }),
+      name: text("name").notNull(),
+      description: text("description"),
+      // Initial Setup (Minimal User Input)
+      sectorId: varchar("sector_id").references(() => industrySectors.id),
+      successCaseId: varchar("success_case_id").references(() => successCases.id),
+      // Case to mirror (Airbnb, Uber, etc.)
+      customSuccessCase: text("custom_success_case"),
+      // User's custom success case (if not in list)
+      targetAudience: text("target_audience"),
+      // User's minimal description of audience
+      problemStatement: text("problem_statement"),
+      // User's initial problem description
+      // Phase 1: Discover (Divergence) - Diamond 1
+      discoverStatus: text("discover_status").default("pending"),
+      // pending, in_progress, completed
+      discoverPainPoints: jsonb("discover_pain_points"),
+      // AI-generated list of pain points [{text, validated}]
+      discoverInsights: jsonb("discover_insights"),
+      // AI-generated insights from sector/case
+      discoverUserNeeds: jsonb("discover_user_needs"),
+      // AI-generated user needs
+      discoverEmpathyMap: jsonb("discover_empathy_map"),
+      // Auto-generated empathy map {says, thinks, does, feels}
+      // Phase 2: Define (Convergence) - Diamond 1
+      defineStatus: text("define_status").default("pending"),
+      definePovStatements: jsonb("define_pov_statements"),
+      // AI-generated POV statements [{user, need, insight, selected}]
+      defineHmwQuestions: jsonb("define_hmw_questions"),
+      // AI-generated HMW questions [{question, selected}]
+      defineSelectedPov: text("define_selected_pov"),
+      // User-selected POV statement
+      defineSelectedHmw: text("define_selected_hmw"),
+      // User-selected HMW question
+      // Phase 3: Develop (Divergence) - Diamond 2
+      developStatus: text("develop_status").default("pending"),
+      developIdeas: jsonb("develop_ideas"),
+      // AI-generated ideas [{title, description, category, score}]
+      developCrossPollinatedIdeas: jsonb("develop_cross_pollinated_ideas"),
+      // AI cross-domain ideas
+      developSelectedIdeas: jsonb("develop_selected_ideas"),
+      // User-selected ideas for prototyping
+      // Phase 4: Deliver (Convergence) - Diamond 2
+      deliverStatus: text("deliver_status").default("pending"),
+      deliverMvpConcept: jsonb("deliver_mvp_concept"),
+      // AI-generated MVP concept
+      deliverLogoSuggestions: jsonb("deliver_logo_suggestions"),
+      // AI-generated logo ideas [{description, style}]
+      deliverLandingPage: jsonb("deliver_landing_page"),
+      // AI-generated landing page structure {headline, sections, cta}
+      deliverSocialMediaLines: jsonb("deliver_social_media_lines"),
+      // AI-generated social media copy
+      deliverTestPlan: jsonb("deliver_test_plan"),
+      // AI-generated basic test plan
+      // DFV Analysis (Desirability, Feasibility, Viability)
+      dfvDesirabilityScore: integer("dfv_desirability_score"),
+      // 0-100
+      dfvFeasibilityScore: integer("dfv_feasibility_score"),
+      // 0-100
+      dfvViabilityScore: integer("dfv_viability_score"),
+      // 0-100
+      dfvAnalysis: jsonb("dfv_analysis"),
+      // AI-generated analysis and recommendations
+      dfvFeedback: text("dfv_feedback"),
+      // AI-generated actionable feedback
+      // Progress and Completion
+      currentPhase: text("current_phase").default("discover"),
+      // discover, define, develop, deliver
+      completionPercentage: integer("completion_percentage").default(0),
+      isCompleted: boolean("is_completed").default(false),
+      // AI Generation Metadata
+      totalAiCost: real("total_ai_cost").default(0),
+      // Total cost in credits
+      generationCount: integer("generation_count").default(0),
+      // Number of AI calls made
+      createdAt: timestamp("created_at").default(sql`now()`),
+      updatedAt: timestamp("updated_at").default(sql`now()`)
+    });
+    insertDoubleDiamondProjectSchema = createInsertSchema(doubleDiamondProjects).omit({
+      id: true,
+      userId: true,
+      createdAt: true,
+      updatedAt: true
+    });
   }
 });
 
@@ -871,6 +1210,1384 @@ var init_db = __esm({
       // Recycle connection after 7500 uses
     });
     db = drizzle(pool, { schema: schema_exports });
+  }
+});
+
+// server/storage.ts
+import bcrypt from "bcrypt";
+import { eq as eq2, and, desc, sql as sql2 } from "drizzle-orm";
+async function initializeDefaultData() {
+  try {
+    const adminUser = await storage.getUserByUsername("dttools.app@gmail.com");
+    if (!adminUser) {
+      const hashedPassword = await bcrypt.hash("Gulex0519!@", 10);
+      await storage.createUser({
+        username: "dttools.app@gmail.com",
+        email: "dttools.app@gmail.com",
+        name: "DTTools Admin",
+        password: hashedPassword,
+        role: "admin",
+        company: "DTTools",
+        jobRole: "Administrator",
+        industry: "Design Thinking",
+        experience: "expert",
+        country: "Brasil",
+        state: "SP",
+        city: "S\xE3o Paulo"
+      });
+      console.log("\u2705 Admin user created successfully");
+    }
+    const existingPlans = await storage.getSubscriptionPlans();
+    if (existingPlans.length === 0) {
+      await storage.createSubscriptionPlan({
+        name: "Free",
+        displayName: "Plano Gratuito",
+        description: "Plan gratuito com recursos b\xE1sicos",
+        priceMonthly: 0,
+        priceYearly: 0,
+        features: ["3 projetos", "Ferramentas b\xE1sicas", "Suporte por email"],
+        maxProjects: 3,
+        isActive: true,
+        order: 1
+      });
+      await storage.createSubscriptionPlan({
+        name: "Pro",
+        displayName: "Plano Individual",
+        description: "Plan profissional com recursos avan\xE7ados",
+        priceMonthly: 4e3,
+        // R$ 40,00 in cents
+        priceYearly: 43200,
+        // R$ 432,00 in cents (10% discount)
+        features: ["Projetos ilimitados", "Todas as ferramentas", "An\xE1lise AI", "Suporte priorit\xE1rio"],
+        maxProjects: -1,
+        // unlimited
+        isActive: true,
+        order: 2
+      });
+      await storage.createSubscriptionPlan({
+        name: "Enterprise",
+        displayName: "Plano Enterprise",
+        description: "Plan empresarial com recursos completos (10 usu\xE1rios inclusos)",
+        priceMonthly: 29900,
+        // R$ 299,00 in cents
+        priceYearly: 322920,
+        // R$ 3.229,20 in cents (10% discount: 29900 * 12 * 0.9)
+        features: ["Tudo do Pro", "10 usu\xE1rios inclusos", "Usu\xE1rios adicionais: R$ 29,90/usu\xE1rio", "Time ilimitado", "Suporte dedicado", "Treinamentos"],
+        maxProjects: -1,
+        // unlimited
+        isActive: true,
+        order: 3
+      });
+      console.log("\u2705 Subscription plans created");
+    } else {
+      await db.update(subscriptionPlans).set({ order: 1 }).where(eq2(subscriptionPlans.name, "Free"));
+      await db.update(subscriptionPlans).set({ order: 2 }).where(eq2(subscriptionPlans.name, "Pro"));
+      await db.update(subscriptionPlans).set({ order: 3 }).where(eq2(subscriptionPlans.name, "Enterprise"));
+      console.log("\u2705 Subscription plan order updated");
+    }
+    const existingArticles = await storage.getArticles();
+    const dtToolsArticles = existingArticles.filter((a) => a.author === "DTTools");
+    if (dtToolsArticles.length === 0) {
+      const defaultArticles = [
+        {
+          title: "Introdu\xE7\xE3o ao Design Thinking",
+          slug: "introducao-design-thinking",
+          category: "foundations",
+          author: "DTTools",
+          description: "Aprenda os fundamentos do Design Thinking e como aplicar em seus projetos",
+          content: "# Introdu\xE7\xE3o ao Design Thinking\n\nDesign Thinking \xE9 uma abordagem centrada no ser humano para inova\xE7\xE3o...",
+          tags: ["fundamentos", "iniciante", "conceitos"],
+          readTime: 5,
+          featured: true,
+          published: true
+        },
+        {
+          title: "Como criar Mapas de Empatia eficazes",
+          slug: "mapas-empatia-eficazes",
+          category: "empathize",
+          author: "DTTools",
+          description: "Guia completo para criar Mapas de Empatia que revelam insights profundos sobre seus usu\xE1rios",
+          content: "# Mapas de Empatia\n\nMapas de Empatia s\xE3o ferramentas poderosas para entender seus usu\xE1rios...",
+          tags: ["empatizar", "ferramentas", "usu\xE1rios"],
+          readTime: 7,
+          featured: true,
+          published: true
+        },
+        {
+          title: "Definindo Problemas com POV Statements",
+          slug: "pov-statements-guia",
+          category: "define",
+          author: "DTTools",
+          description: "Aprenda a estruturar Point of View statements para definir problemas de forma clara",
+          content: "# POV Statements\n\nPoint of View statements ajudam a definir o problema certo...",
+          tags: ["definir", "problema", "framework"],
+          readTime: 6,
+          featured: false,
+          published: true
+        },
+        {
+          title: "T\xE9cnicas de Brainstorming para Idea\xE7\xE3o",
+          slug: "brainstorming-tecnicas",
+          category: "ideate",
+          author: "DTTools",
+          description: "Descubra t\xE9cnicas criativas de brainstorming para gerar ideias inovadoras",
+          content: "# Brainstorming Eficaz\n\nBrainstorming \xE9 mais do que simplesmente listar ideias...",
+          tags: ["idear", "criatividade", "t\xE9cnicas"],
+          readTime: 8,
+          featured: true,
+          published: true
+        },
+        {
+          title: "Prototipagem R\xE1pida: Do Papel ao Digital",
+          slug: "prototipagem-rapida",
+          category: "prototype",
+          author: "DTTools",
+          description: "Aprenda a criar prot\xF3tipos r\xE1pidos para validar suas ideias",
+          content: "# Prototipagem R\xE1pida\n\nProt\xF3tipos permitem testar ideias rapidamente...",
+          tags: ["prototipar", "valida\xE7\xE3o", "pr\xE1tica"],
+          readTime: 10,
+          featured: false,
+          published: true
+        },
+        {
+          title: "Testes com Usu\xE1rios: Melhores Pr\xE1ticas",
+          slug: "testes-usuarios-praticas",
+          category: "test",
+          author: "DTTools",
+          description: "Guia completo para conduzir testes de usabilidade e coletar feedback valioso",
+          content: "# Testes com Usu\xE1rios\n\nTestar com usu\xE1rios reais \xE9 essencial para validar solu\xE7\xF5es...",
+          tags: ["testar", "feedback", "valida\xE7\xE3o"],
+          readTime: 9,
+          featured: true,
+          published: true
+        }
+      ];
+      for (const article of defaultArticles) {
+        await storage.createArticle(article);
+      }
+      console.log("\u2705 Default articles created");
+    }
+    const existingHelpArticles = await storage.getHelpArticles();
+    if (existingHelpArticles.length === 0) {
+      const defaultHelpArticles = [
+        {
+          title: "Como come\xE7ar a usar o DTTools",
+          slug: "como-comecar",
+          category: "getting-started",
+          content: "# Como come\xE7ar\n\nBem-vindo ao DTTools! Este guia vai te ajudar a dar os primeiros passos...",
+          tags: ["iniciante", "tutorial", "primeiros-passos"],
+          keywords: ["come\xE7ar", "iniciar", "primeiro projeto"],
+          order: 1,
+          published: true
+        },
+        {
+          title: "Criando seu primeiro projeto",
+          slug: "primeiro-projeto",
+          category: "getting-started",
+          content: "# Seu Primeiro Projeto\n\nCriar um projeto no DTTools \xE9 simples e r\xE1pido...",
+          tags: ["projeto", "tutorial", "iniciante"],
+          keywords: ["criar projeto", "novo projeto"],
+          order: 2,
+          published: true
+        },
+        {
+          title: "Entendendo as 5 fases do Design Thinking",
+          slug: "cinco-fases",
+          category: "getting-started",
+          content: "# As 5 Fases\n\nDesign Thinking \xE9 dividido em 5 fases: Empatizar, Definir, Idear, Prototipar e Testar...",
+          tags: ["fases", "metodologia", "design thinking"],
+          keywords: ["fases", "empatizar", "definir", "idear", "prototipar", "testar"],
+          order: 3,
+          published: true
+        },
+        {
+          title: "Trabalhando em equipe",
+          slug: "trabalho-equipe",
+          category: "collaboration",
+          content: "# Colabora\xE7\xE3o\n\nO DTTools facilita o trabalho em equipe com ferramentas de colabora\xE7\xE3o...",
+          tags: ["equipe", "colabora\xE7\xE3o", "compartilhamento"],
+          keywords: ["equipe", "time", "colaborar", "compartilhar"],
+          order: 4,
+          published: true
+        },
+        {
+          title: "Exportando seus dados",
+          slug: "exportar-dados",
+          category: "features",
+          content: "# Exporta\xE7\xE3o\n\nVoc\xEA pode exportar seus projetos em PDF, CSV e outros formatos...",
+          tags: ["exportar", "pdf", "download"],
+          keywords: ["exportar", "download", "pdf", "csv"],
+          order: 5,
+          published: true
+        }
+      ];
+      for (const helpArticle of defaultHelpArticles) {
+        await storage.createHelpArticle(helpArticle);
+      }
+      console.log("\u2705 Default help articles created");
+    }
+  } catch (error) {
+    console.error("\u274C Error initializing default data:", error);
+  }
+}
+var DatabaseStorage, storage;
+var init_storage = __esm({
+  "server/storage.ts"() {
+    "use strict";
+    init_schema();
+    init_db();
+    DatabaseStorage = class {
+      // Projects
+      async getProjects(userId) {
+        return await db.select().from(projects).where(eq2(projects.userId, userId)).orderBy(desc(projects.createdAt));
+      }
+      async getAllProjects() {
+        return await db.select().from(projects).orderBy(desc(projects.createdAt));
+      }
+      async getProject(id, userId) {
+        const [project] = await db.select().from(projects).where(and(eq2(projects.id, id), eq2(projects.userId, userId)));
+        return project;
+      }
+      async createProject(project) {
+        const [newProject] = await db.insert(projects).values(project).returning();
+        return newProject;
+      }
+      async updateProject(id, userId, project) {
+        const [updatedProject] = await db.update(projects).set({ ...project, updatedAt: /* @__PURE__ */ new Date() }).where(and(eq2(projects.id, id), eq2(projects.userId, userId))).returning();
+        return updatedProject;
+      }
+      async deleteProject(id, userId) {
+        const deleteTable = async (tableName, deleteQuery) => {
+          try {
+            await deleteQuery();
+            console.log(`[DELETE PROJECT] \u2713 Deleted from ${tableName}`);
+          } catch (error) {
+            console.log(`[DELETE PROJECT] \u26A0 Skipping ${tableName} (error code ${error?.code}):`, error?.message || error);
+          }
+        };
+        await deleteTable("projectComments", () => db.delete(projectComments).where(eq2(projectComments.projectId, id)));
+        await deleteTable("projectInvites", () => db.delete(projectInvites).where(eq2(projectInvites.projectId, id)));
+        await deleteTable("projectMembers", () => db.delete(projectMembers).where(eq2(projectMembers.projectId, id)));
+        await deleteTable("analyticsEvents", () => db.delete(analyticsEvents).where(eq2(analyticsEvents.projectId, id)));
+        await deleteTable("aiGeneratedAssets", () => db.delete(aiGeneratedAssets).where(eq2(aiGeneratedAssets.projectId, id)));
+        await deleteTable("empathyMaps", () => db.delete(empathyMaps).where(eq2(empathyMaps.projectId, id)));
+        await deleteTable("personas", () => db.delete(personas).where(eq2(personas.projectId, id)));
+        await deleteTable("interviews", () => db.delete(interviews).where(eq2(interviews.projectId, id)));
+        await deleteTable("observations", () => db.delete(observations).where(eq2(observations.projectId, id)));
+        await deleteTable("povStatements", () => db.delete(povStatements).where(eq2(povStatements.projectId, id)));
+        await deleteTable("hmwQuestions", () => db.delete(hmwQuestions).where(eq2(hmwQuestions.projectId, id)));
+        await deleteTable("ideas", () => db.delete(ideas).where(eq2(ideas.projectId, id)));
+        await deleteTable("prototypes", () => db.delete(prototypes).where(eq2(prototypes.projectId, id)));
+        await deleteTable("testPlans", () => db.delete(testPlans).where(eq2(testPlans.projectId, id)));
+        await deleteTable("testResults", () => db.delete(testResults).where(eq2(testResults.projectId, id)));
+        await deleteTable("canvasDrawings", () => db.delete(canvasDrawings).where(eq2(canvasDrawings.projectId, id)));
+        await deleteTable("phaseCards", () => db.delete(phaseCards).where(eq2(phaseCards.projectId, id)));
+        await deleteTable("benchmarkAssessments", () => db.delete(benchmarkAssessments).where(eq2(benchmarkAssessments.projectId, id)));
+        await deleteTable("dvfAssessments", () => db.delete(dvfAssessments).where(eq2(dvfAssessments.projectId, id)));
+        await deleteTable("lovabilityMetrics", () => db.delete(lovabilityMetrics).where(eq2(lovabilityMetrics.projectId, id)));
+        await deleteTable("projectAnalytics", () => db.delete(projectAnalytics).where(eq2(projectAnalytics.projectId, id)));
+        await deleteTable("competitiveAnalysis", () => db.delete(competitiveAnalysis).where(eq2(competitiveAnalysis.projectId, id)));
+        await deleteTable("projectBackups", () => db.delete(projectBackups).where(eq2(projectBackups.projectId, id)));
+        await deleteTable("userProgress", () => db.delete(userProgress).where(eq2(userProgress.projectId, id)));
+        await deleteTable("benchmarks", () => db.delete(benchmarks).where(eq2(benchmarks.projectId, id)));
+        try {
+          const result = await db.delete(projects).where(and(eq2(projects.id, id), eq2(projects.userId, userId)));
+          const success = (result.rowCount || 0) > 0;
+          console.log(`[DELETE PROJECT] \u2713 Final project deletion result: ${success}, rowCount: ${result.rowCount}`);
+          return success;
+        } catch (error) {
+          console.error(`[DELETE PROJECT] \u2717 Final project deletion FAILED (error ${error?.code}):`, error?.message);
+          throw error;
+        }
+      }
+      // Users
+      async getUsers() {
+        return await db.select().from(users).orderBy(desc(users.createdAt));
+      }
+      async getUser(id) {
+        const [user] = await db.select().from(users).where(eq2(users.id, id));
+        return user;
+      }
+      async getUserById(id) {
+        return this.getUser(id);
+      }
+      async getUserByUsername(username) {
+        const [user] = await db.select().from(users).where(eq2(users.username, username));
+        return user;
+      }
+      async getUserByEmail(email) {
+        const [user] = await db.select().from(users).where(eq2(users.email, email));
+        return user;
+      }
+      async createUser(user) {
+        const [newUser] = await db.insert(users).values(user).returning();
+        return newUser;
+      }
+      async updateUser(id, user) {
+        const [updatedUser] = await db.update(users).set(user).where(eq2(users.id, id)).returning();
+        return updatedUser;
+      }
+      async deleteUser(id) {
+        try {
+          console.log(`[DELETE USER] Starting deletion for user ${id}`);
+          try {
+            console.log(`[DELETE USER] Step 1: Updating project memberships (addedBy \u2192 null)...`);
+            const updated = await db.update(projectMembers).set({ addedBy: null }).where(eq2(projectMembers.addedBy, id));
+            console.log(`[DELETE USER] \u2713 Updated ${updated.rowCount || 0} project memberships`);
+          } catch (e) {
+            console.log(`[DELETE USER] \u26A0 Skipping project_members update (table may not exist): ${e?.message}`);
+          }
+          try {
+            console.log(`[DELETE USER] Step 2: Deleting analytics events...`);
+            const deletedEvents = await db.delete(analyticsEvents).where(eq2(analyticsEvents.userId, id));
+            console.log(`[DELETE USER] \u2713 Deleted ${deletedEvents.rowCount || 0} analytics events`);
+          } catch (e) {
+            console.log(`[DELETE USER] \u26A0 Skipping analytics_events (table may not exist): ${e?.message}`);
+          }
+          try {
+            console.log(`[DELETE USER] Step 3: Deleting project comments...`);
+            const deletedComments = await db.delete(projectComments).where(eq2(projectComments.userId, id));
+            console.log(`[DELETE USER] \u2713 Deleted ${deletedComments.rowCount || 0} comments`);
+          } catch (e) {
+            console.log(`[DELETE USER] \u26A0 Skipping project_comments (table may not exist): ${e?.message}`);
+          }
+          try {
+            console.log(`[DELETE USER] Step 4: Deleting project invites (invitedBy)...`);
+            const deletedInvites = await db.delete(projectInvites).where(eq2(projectInvites.invitedBy, id));
+            console.log(`[DELETE USER] \u2713 Deleted ${deletedInvites.rowCount || 0} invites`);
+          } catch (e) {
+            console.log(`[DELETE USER] \u26A0 Skipping project_invites (table may not exist): ${e?.message}`);
+          }
+          try {
+            console.log(`[DELETE USER] Step 5: Deleting project memberships (userId)...`);
+            const deletedMembers = await db.delete(projectMembers).where(eq2(projectMembers.userId, id));
+            console.log(`[DELETE USER] \u2713 Deleted ${deletedMembers.rowCount || 0} memberships`);
+          } catch (e) {
+            console.log(`[DELETE USER] \u26A0 Skipping project_members (table may not exist): ${e?.message}`);
+          }
+          console.log(`[DELETE USER] Step 6: Deleting user subscriptions...`);
+          const deletedSubs = await db.delete(userSubscriptions).where(eq2(userSubscriptions.userId, id));
+          console.log(`[DELETE USER] \u2713 Deleted ${deletedSubs.rowCount || 0} subscriptions`);
+          console.log(`[DELETE USER] Step 7: Finding user's projects...`);
+          const userProjects = await db.select({ id: projects.id }).from(projects).where(eq2(projects.userId, id));
+          console.log(`[DELETE USER] \u2713 Found ${userProjects.length} projects`);
+          if (userProjects.length > 0) {
+            const projectIds = userProjects.map((p) => p.id);
+            console.log(`[DELETE USER] Step 8: Deleting all project-related data for ${projectIds.length} projects...`);
+            for (const projectId of projectIds) {
+              try {
+                await db.delete(aiGeneratedAssets).where(eq2(aiGeneratedAssets.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(analyticsEvents).where(eq2(analyticsEvents.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(projectComments).where(eq2(projectComments.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(projectInvites).where(eq2(projectInvites.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(projectMembers).where(eq2(projectMembers.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(empathyMaps).where(eq2(empathyMaps.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(personas).where(eq2(personas.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(interviews).where(eq2(interviews.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(observations).where(eq2(observations.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(povStatements).where(eq2(povStatements.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(hmwQuestions).where(eq2(hmwQuestions.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(ideas).where(eq2(ideas.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(prototypes).where(eq2(prototypes.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(testPlans).where(eq2(testPlans.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(testResults).where(eq2(testResults.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(canvasDrawings).where(eq2(canvasDrawings.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(phaseCards).where(eq2(phaseCards.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(benchmarkAssessments).where(eq2(benchmarkAssessments.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(dvfAssessments).where(eq2(dvfAssessments.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(lovabilityMetrics).where(eq2(lovabilityMetrics.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(projectAnalytics).where(eq2(projectAnalytics.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(competitiveAnalysis).where(eq2(competitiveAnalysis.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(projectBackups).where(eq2(projectBackups.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(userProgress).where(eq2(userProgress.projectId, projectId));
+              } catch (e) {
+              }
+              try {
+                await db.delete(benchmarks).where(eq2(benchmarks.projectId, projectId));
+              } catch (e) {
+              }
+            }
+            await db.delete(projects).where(eq2(projects.userId, id));
+            console.log(`[DELETE USER] \u2713 Deleted all projects and related data`);
+          }
+          console.log(`[DELETE USER] Step 9: Deleting user progress...`);
+          const deletedProgress = await db.delete(userProgress).where(eq2(userProgress.userId, id));
+          console.log(`[DELETE USER] \u2713 Deleted ${deletedProgress.rowCount || 0} progress records`);
+          console.log(`[DELETE USER] Step 10: FINAL - Deleting user from users table...`);
+          const result = await db.delete(users).where(eq2(users.id, id));
+          const success = (result.rowCount || 0) > 0;
+          console.log(`[DELETE USER] ${success ? "\u2705 SUCCESS" : "\u274C FAILED"}: User deletion ${success ? "completed" : "failed"} (rowCount: ${result.rowCount})`);
+          return success;
+        } catch (error) {
+          console.error(`[DELETE USER] \u274C EXCEPTION: Failed to delete user ${id}`);
+          console.error(`[DELETE USER] Error code: ${error?.code}`);
+          console.error(`[DELETE USER] Error message: ${error?.message}`);
+          console.error(`[DELETE USER] Error detail: ${error?.detail}`);
+          console.error(`[DELETE USER] Full error:`, error);
+          throw error;
+        }
+      }
+      // Articles
+      async getArticles() {
+        return await db.select().from(articles).orderBy(desc(articles.createdAt));
+      }
+      async getArticlesByCategory(category) {
+        return await db.select().from(articles).where(eq2(articles.category, category)).orderBy(desc(articles.createdAt));
+      }
+      async getArticle(id) {
+        const [article] = await db.select().from(articles).where(eq2(articles.id, id));
+        return article;
+      }
+      async createArticle(article) {
+        const [newArticle] = await db.insert(articles).values(article).returning();
+        return newArticle;
+      }
+      async updateArticle(id, article) {
+        const [updatedArticle] = await db.update(articles).set({ ...article, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(articles.id, id)).returning();
+        return updatedArticle;
+      }
+      async deleteArticle(id) {
+        const result = await db.delete(articles).where(eq2(articles.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Testimonials
+      async getTestimonials() {
+        return await db.select().from(testimonials).orderBy(testimonials.order, desc(testimonials.createdAt));
+      }
+      async getActiveTestimonials() {
+        return await db.select().from(testimonials).where(eq2(testimonials.isActive, true)).orderBy(testimonials.order, desc(testimonials.createdAt));
+      }
+      async getTestimonial(id) {
+        const [testimonial] = await db.select().from(testimonials).where(eq2(testimonials.id, id));
+        return testimonial;
+      }
+      async createTestimonial(testimonial) {
+        const [newTestimonial] = await db.insert(testimonials).values(testimonial).returning();
+        return newTestimonial;
+      }
+      async updateTestimonial(id, testimonial) {
+        const [updatedTestimonial] = await db.update(testimonials).set({ ...testimonial, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(testimonials.id, id)).returning();
+        return updatedTestimonial;
+      }
+      async deleteTestimonial(id) {
+        const result = await db.delete(testimonials).where(eq2(testimonials.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Phase 1: Empathize
+      async getEmpathyMaps(projectId) {
+        return await db.select().from(empathyMaps).where(eq2(empathyMaps.projectId, projectId)).orderBy(desc(empathyMaps.createdAt));
+      }
+      async createEmpathyMap(empathyMap) {
+        const [newMap] = await db.insert(empathyMaps).values(empathyMap).returning();
+        return newMap;
+      }
+      async updateEmpathyMap(id, empathyMap) {
+        const [updatedMap] = await db.update(empathyMaps).set({ ...empathyMap, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(empathyMaps.id, id)).returning();
+        return updatedMap;
+      }
+      async deleteEmpathyMap(id) {
+        const result = await db.delete(empathyMaps).where(eq2(empathyMaps.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      async getPersonas(projectId) {
+        return await db.select().from(personas).where(eq2(personas.projectId, projectId)).orderBy(desc(personas.createdAt));
+      }
+      async createPersona(persona) {
+        const [newPersona] = await db.insert(personas).values(persona).returning();
+        return newPersona;
+      }
+      async updatePersona(id, persona) {
+        const [updatedPersona] = await db.update(personas).set({ ...persona, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(personas.id, id)).returning();
+        return updatedPersona;
+      }
+      async deletePersona(id) {
+        const result = await db.delete(personas).where(eq2(personas.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      async getInterviews(projectId) {
+        return await db.select().from(interviews).where(eq2(interviews.projectId, projectId)).orderBy(desc(interviews.createdAt));
+      }
+      async createInterview(interview) {
+        const [newInterview] = await db.insert(interviews).values(interview).returning();
+        return newInterview;
+      }
+      async updateInterview(id, interview) {
+        const [updatedInterview] = await db.update(interviews).set(interview).where(eq2(interviews.id, id)).returning();
+        return updatedInterview;
+      }
+      async deleteInterview(id) {
+        const result = await db.delete(interviews).where(eq2(interviews.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      async getObservations(projectId) {
+        return await db.select().from(observations).where(eq2(observations.projectId, projectId)).orderBy(desc(observations.createdAt));
+      }
+      async createObservation(observation) {
+        const [newObservation] = await db.insert(observations).values(observation).returning();
+        return newObservation;
+      }
+      async updateObservation(id, observation) {
+        const [updatedObservation] = await db.update(observations).set(observation).where(eq2(observations.id, id)).returning();
+        return updatedObservation;
+      }
+      async deleteObservation(id) {
+        const result = await db.delete(observations).where(eq2(observations.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Phase 2: Define
+      async getPovStatements(projectId) {
+        return await db.select().from(povStatements).where(eq2(povStatements.projectId, projectId)).orderBy(desc(povStatements.createdAt));
+      }
+      async getPovStatement(id) {
+        const [statement] = await db.select().from(povStatements).where(eq2(povStatements.id, id));
+        return statement;
+      }
+      async createPovStatement(pov) {
+        const [newStatement] = await db.insert(povStatements).values(pov).returning();
+        return newStatement;
+      }
+      async updatePovStatement(id, pov) {
+        const [updatedStatement] = await db.update(povStatements).set(pov).where(eq2(povStatements.id, id)).returning();
+        return updatedStatement;
+      }
+      async deletePovStatement(id) {
+        const result = await db.delete(povStatements).where(eq2(povStatements.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      async getHmwQuestions(projectId) {
+        return await db.select().from(hmwQuestions).where(eq2(hmwQuestions.projectId, projectId)).orderBy(desc(hmwQuestions.createdAt));
+      }
+      async getHmwQuestion(id) {
+        const [question] = await db.select().from(hmwQuestions).where(eq2(hmwQuestions.id, id));
+        return question;
+      }
+      async createHmwQuestion(hmw) {
+        const [newQuestion] = await db.insert(hmwQuestions).values(hmw).returning();
+        return newQuestion;
+      }
+      async updateHmwQuestion(id, hmw) {
+        const [updatedQuestion] = await db.update(hmwQuestions).set(hmw).where(eq2(hmwQuestions.id, id)).returning();
+        return updatedQuestion;
+      }
+      async deleteHmwQuestion(id) {
+        const result = await db.delete(hmwQuestions).where(eq2(hmwQuestions.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Phase 3: Ideate
+      async getIdeas(projectId) {
+        return await db.select().from(ideas).where(eq2(ideas.projectId, projectId)).orderBy(desc(ideas.createdAt));
+      }
+      async createIdea(idea) {
+        const [newIdea] = await db.insert(ideas).values(idea).returning();
+        return newIdea;
+      }
+      async updateIdea(id, idea) {
+        const [updatedIdea] = await db.update(ideas).set(idea).where(eq2(ideas.id, id)).returning();
+        return updatedIdea;
+      }
+      async deleteIdea(id) {
+        const result = await db.delete(ideas).where(eq2(ideas.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Phase 4: Prototype
+      async getPrototypes(projectId) {
+        return await db.select().from(prototypes).where(eq2(prototypes.projectId, projectId)).orderBy(desc(prototypes.createdAt));
+      }
+      async createPrototype(prototype) {
+        const [newPrototype] = await db.insert(prototypes).values(prototype).returning();
+        return newPrototype;
+      }
+      async updatePrototype(id, prototype) {
+        const [updatedPrototype] = await db.update(prototypes).set(prototype).where(eq2(prototypes.id, id)).returning();
+        return updatedPrototype;
+      }
+      async deletePrototype(id) {
+        const result = await db.delete(prototypes).where(eq2(prototypes.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Phase 5: Test
+      async getTestPlans(projectId) {
+        return await db.select().from(testPlans).where(eq2(testPlans.projectId, projectId)).orderBy(desc(testPlans.createdAt));
+      }
+      async createTestPlan(testPlan) {
+        const [newPlan] = await db.insert(testPlans).values(testPlan).returning();
+        return newPlan;
+      }
+      async updateTestPlan(id, testPlan) {
+        const [updatedPlan] = await db.update(testPlans).set(testPlan).where(eq2(testPlans.id, id)).returning();
+        return updatedPlan;
+      }
+      async getTestResults(testPlanId) {
+        return await db.select().from(testResults).where(eq2(testResults.testPlanId, testPlanId)).orderBy(desc(testResults.createdAt));
+      }
+      async createTestResult(testResult) {
+        const [newResult] = await db.insert(testResults).values(testResult).returning();
+        return newResult;
+      }
+      // User Progress
+      async getUserProgress(userId, projectId) {
+        const [progress] = await db.select().from(userProgress).where(and(eq2(userProgress.userId, userId), eq2(userProgress.projectId, projectId)));
+        return progress;
+      }
+      async updateUserProgress(progress) {
+        const existing = await this.getUserProgress(progress.userId, progress.projectId);
+        if (existing) {
+          const [updated] = await db.update(userProgress).set({ ...progress, updatedAt: /* @__PURE__ */ new Date() }).where(and(eq2(userProgress.userId, progress.userId), eq2(userProgress.projectId, progress.projectId))).returning();
+          return updated;
+        } else {
+          const [created] = await db.insert(userProgress).values(progress).returning();
+          return created;
+        }
+      }
+      // Analytics
+      async getProjectStats(projectId, userId) {
+        const project = await this.getProject(projectId, userId);
+        return {
+          totalTools: 15,
+          // Total tools across all 5 phases
+          completedTools: 0,
+          // Would count actual completed tools
+          currentPhase: project?.currentPhase || 1,
+          completionRate: project?.completionRate || 0
+        };
+      }
+      // Canvas Drawings
+      async getCanvasDrawings(projectId) {
+        return await db.select().from(canvasDrawings).where(eq2(canvasDrawings.projectId, projectId)).orderBy(desc(canvasDrawings.createdAt));
+      }
+      async getCanvasDrawing(id) {
+        const [drawing] = await db.select().from(canvasDrawings).where(eq2(canvasDrawings.id, id));
+        return drawing;
+      }
+      async createCanvasDrawing(drawing) {
+        const [newDrawing] = await db.insert(canvasDrawings).values(drawing).returning();
+        return newDrawing;
+      }
+      async updateCanvasDrawing(id, drawing) {
+        const [updatedDrawing] = await db.update(canvasDrawings).set({ ...drawing, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(canvasDrawings.id, id)).returning();
+        return updatedDrawing;
+      }
+      async deleteCanvasDrawing(id) {
+        const result = await db.delete(canvasDrawings).where(eq2(canvasDrawings.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Phase Cards (Kanban)
+      async getPhaseCards(projectId) {
+        return await db.select().from(phaseCards).where(eq2(phaseCards.projectId, projectId)).orderBy(desc(phaseCards.createdAt));
+      }
+      async getPhaseCard(id) {
+        const [card] = await db.select().from(phaseCards).where(eq2(phaseCards.id, id));
+        return card;
+      }
+      async createPhaseCard(card) {
+        const [newCard] = await db.insert(phaseCards).values(card).returning();
+        return newCard;
+      }
+      async updatePhaseCard(id, card) {
+        const [updatedCard] = await db.update(phaseCards).set({ ...card, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(phaseCards.id, id)).returning();
+        return updatedCard;
+      }
+      async deletePhaseCard(id) {
+        const result = await db.delete(phaseCards).where(eq2(phaseCards.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Subscription Plans
+      async getSubscriptionPlans() {
+        return await db.select().from(subscriptionPlans).orderBy(subscriptionPlans.order);
+      }
+      async getSubscriptionPlan(id) {
+        const [plan] = await db.select().from(subscriptionPlans).where(eq2(subscriptionPlans.id, id));
+        return plan;
+      }
+      async getSubscriptionPlanByName(name) {
+        const [plan] = await db.select().from(subscriptionPlans).where(eq2(subscriptionPlans.name, name));
+        return plan;
+      }
+      async createSubscriptionPlan(plan) {
+        const [newPlan] = await db.insert(subscriptionPlans).values(plan).returning();
+        return newPlan;
+      }
+      async updateSubscriptionPlan(id, plan) {
+        const [updatedPlan] = await db.update(subscriptionPlans).set(plan).where(eq2(subscriptionPlans.id, id)).returning();
+        return updatedPlan;
+      }
+      async deleteSubscriptionPlan(id) {
+        const result = await db.delete(subscriptionPlans).where(eq2(subscriptionPlans.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // User Subscriptions
+      async getUserSubscriptions(userId) {
+        return await db.select().from(userSubscriptions).where(eq2(userSubscriptions.userId, userId)).orderBy(desc(userSubscriptions.createdAt));
+      }
+      async getUserActiveSubscription(userId) {
+        const [subscription] = await db.select().from(userSubscriptions).where(and(
+          eq2(userSubscriptions.userId, userId),
+          eq2(userSubscriptions.status, "active")
+        ));
+        return subscription;
+      }
+      async createUserSubscription(subscription) {
+        const [newSubscription] = await db.insert(userSubscriptions).values(subscription).returning();
+        return newSubscription;
+      }
+      async updateUserSubscription(id, subscription) {
+        const [updatedSubscription] = await db.update(userSubscriptions).set(subscription).where(eq2(userSubscriptions.id, id)).returning();
+        return updatedSubscription;
+      }
+      async cancelUserSubscription(id) {
+        const result = await db.update(userSubscriptions).set({ status: "cancelled" }).where(eq2(userSubscriptions.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Benchmarking
+      async getBenchmarks(projectId) {
+        return await db.select().from(benchmarks).where(eq2(benchmarks.projectId, projectId)).orderBy(desc(benchmarks.createdAt));
+      }
+      async getBenchmark(id) {
+        const [benchmark] = await db.select().from(benchmarks).where(eq2(benchmarks.id, id));
+        return benchmark;
+      }
+      async createBenchmark(benchmark) {
+        const [newBenchmark] = await db.insert(benchmarks).values(benchmark).returning();
+        return newBenchmark;
+      }
+      async updateBenchmark(id, benchmark) {
+        const [updatedBenchmark] = await db.update(benchmarks).set(benchmark).where(eq2(benchmarks.id, id)).returning();
+        return updatedBenchmark;
+      }
+      async deleteBenchmark(id) {
+        const result = await db.delete(benchmarks).where(eq2(benchmarks.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      async getBenchmarkAssessments(benchmarkId) {
+        return await db.select().from(benchmarkAssessments).where(eq2(benchmarkAssessments.benchmarkId, benchmarkId)).orderBy(desc(benchmarkAssessments.createdAt));
+      }
+      async createBenchmarkAssessment(assessment) {
+        const [newAssessment] = await db.insert(benchmarkAssessments).values(assessment).returning();
+        return newAssessment;
+      }
+      async updateBenchmarkAssessment(id, assessment) {
+        const [updatedAssessment] = await db.update(benchmarkAssessments).set(assessment).where(eq2(benchmarkAssessments.id, id)).returning();
+        return updatedAssessment;
+      }
+      async deleteBenchmarkAssessment(id) {
+        const result = await db.delete(benchmarkAssessments).where(eq2(benchmarkAssessments.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // DVF Assessment - Desirability, Feasibility, Viability
+      async getDvfAssessments(projectId) {
+        return await db.select().from(dvfAssessments).where(eq2(dvfAssessments.projectId, projectId)).orderBy(desc(dvfAssessments.createdAt));
+      }
+      async getDvfAssessment(id) {
+        const [assessment] = await db.select().from(dvfAssessments).where(eq2(dvfAssessments.id, id));
+        return assessment;
+      }
+      async createDvfAssessment(assessment) {
+        const [newAssessment] = await db.insert(dvfAssessments).values(assessment).returning();
+        return newAssessment;
+      }
+      async updateDvfAssessment(id, assessment) {
+        const [updatedAssessment] = await db.update(dvfAssessments).set({ ...assessment, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(dvfAssessments.id, id)).returning();
+        return updatedAssessment;
+      }
+      async deleteDvfAssessment(id) {
+        const result = await db.delete(dvfAssessments).where(eq2(dvfAssessments.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Lovability Metrics
+      async getLovabilityMetrics(projectId) {
+        return await db.select().from(lovabilityMetrics).where(eq2(lovabilityMetrics.projectId, projectId)).orderBy(desc(lovabilityMetrics.createdAt));
+      }
+      async getLovabilityMetric(id) {
+        const [metric] = await db.select().from(lovabilityMetrics).where(eq2(lovabilityMetrics.id, id));
+        return metric;
+      }
+      async createLovabilityMetric(metric) {
+        const [newMetric] = await db.insert(lovabilityMetrics).values(metric).returning();
+        return newMetric;
+      }
+      async updateLovabilityMetric(id, metric) {
+        const [updatedMetric] = await db.update(lovabilityMetrics).set({ ...metric, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(lovabilityMetrics.id, id)).returning();
+        return updatedMetric;
+      }
+      async deleteLovabilityMetric(id) {
+        const result = await db.delete(lovabilityMetrics).where(eq2(lovabilityMetrics.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Project Analytics
+      async getProjectAnalytics(projectId) {
+        const [analytics] = await db.select().from(projectAnalytics).where(eq2(projectAnalytics.projectId, projectId));
+        return analytics;
+      }
+      async createProjectAnalytics(analytics) {
+        const [newAnalytics] = await db.insert(projectAnalytics).values(analytics).returning();
+        return newAnalytics;
+      }
+      async updateProjectAnalytics(id, analytics) {
+        const [updatedAnalytics] = await db.update(projectAnalytics).set({ ...analytics, lastUpdated: /* @__PURE__ */ new Date() }).where(eq2(projectAnalytics.id, id)).returning();
+        return updatedAnalytics;
+      }
+      // Competitive Analysis
+      async getCompetitiveAnalyses(projectId) {
+        return await db.select().from(competitiveAnalysis).where(eq2(competitiveAnalysis.projectId, projectId)).orderBy(desc(competitiveAnalysis.createdAt));
+      }
+      async getCompetitiveAnalysis(id) {
+        const [analysis] = await db.select().from(competitiveAnalysis).where(eq2(competitiveAnalysis.id, id));
+        return analysis;
+      }
+      async createCompetitiveAnalysis(analysis) {
+        const [newAnalysis] = await db.insert(competitiveAnalysis).values(analysis).returning();
+        return newAnalysis;
+      }
+      async updateCompetitiveAnalysis(id, analysis) {
+        const [updatedAnalysis] = await db.update(competitiveAnalysis).set({ ...analysis, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(competitiveAnalysis.id, id)).returning();
+        return updatedAnalysis;
+      }
+      async deleteCompetitiveAnalysis(id) {
+        const result = await db.delete(competitiveAnalysis).where(eq2(competitiveAnalysis.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Project Backups
+      async createProjectBackup(projectId, userId, backupType, description) {
+        const project = await this.getProject(projectId, userId);
+        if (!project) {
+          throw new Error("Project not found");
+        }
+        const [
+          empathyMapsData,
+          personasData,
+          interviewsData,
+          observationsData,
+          povStatementsData,
+          hmwQuestionsData,
+          ideasData,
+          prototypesData,
+          testPlansData
+        ] = await Promise.all([
+          this.getEmpathyMaps(projectId),
+          this.getPersonas(projectId),
+          this.getInterviews(projectId),
+          this.getObservations(projectId),
+          this.getPovStatements(projectId),
+          this.getHmwQuestions(projectId),
+          this.getIdeas(projectId),
+          this.getPrototypes(projectId),
+          this.getTestPlans(projectId)
+        ]);
+        const projectSnapshot = {
+          project,
+          empathyMaps: empathyMapsData,
+          personas: personasData,
+          interviews: interviewsData,
+          observations: observationsData,
+          povStatements: povStatementsData,
+          hmwQuestions: hmwQuestionsData,
+          ideas: ideasData,
+          prototypes: prototypesData,
+          testPlans: testPlansData
+        };
+        const totalItems = empathyMapsData.length + personasData.length + interviewsData.length + observationsData.length + povStatementsData.length + hmwQuestionsData.length + ideasData.length + prototypesData.length + testPlansData.length;
+        const [backup] = await db.insert(projectBackups).values({
+          projectId,
+          backupType,
+          description,
+          projectSnapshot,
+          phaseSnapshot: project.currentPhase,
+          completionSnapshot: project.completionRate,
+          itemCount: totalItems
+        }).returning();
+        return backup;
+      }
+      async getProjectBackups(projectId) {
+        return await db.select().from(projectBackups).where(eq2(projectBackups.projectId, projectId)).orderBy(desc(projectBackups.createdAt));
+      }
+      async getProjectBackup(id) {
+        const [backup] = await db.select().from(projectBackups).where(eq2(projectBackups.id, id));
+        return backup;
+      }
+      async restoreProjectBackup(backupId) {
+        const backup = await this.getProjectBackup(backupId);
+        if (!backup || !backup.projectSnapshot) {
+          return false;
+        }
+        const snapshot = backup.projectSnapshot;
+        const projectId = backup.projectId;
+        await Promise.all([
+          db.delete(empathyMaps).where(eq2(empathyMaps.projectId, projectId)),
+          db.delete(personas).where(eq2(personas.projectId, projectId)),
+          db.delete(interviews).where(eq2(interviews.projectId, projectId)),
+          db.delete(observations).where(eq2(observations.projectId, projectId)),
+          db.delete(povStatements).where(eq2(povStatements.projectId, projectId)),
+          db.delete(hmwQuestions).where(eq2(hmwQuestions.projectId, projectId)),
+          db.delete(ideas).where(eq2(ideas.projectId, projectId)),
+          db.delete(prototypes).where(eq2(prototypes.projectId, projectId)),
+          db.delete(testPlans).where(eq2(testPlans.projectId, projectId))
+        ]);
+        const userId = snapshot.project.userId;
+        await this.updateProject(projectId, userId, {
+          name: snapshot.project.name,
+          description: snapshot.project.description,
+          status: snapshot.project.status,
+          currentPhase: snapshot.project.currentPhase,
+          completionRate: snapshot.project.completionRate
+        });
+        if (snapshot.empathyMaps?.length > 0) {
+          await db.insert(empathyMaps).values(
+            snapshot.empathyMaps.map((em) => {
+              const { id, createdAt, updatedAt, ...rest } = em;
+              return rest;
+            })
+          );
+        }
+        if (snapshot.personas?.length > 0) {
+          await db.insert(personas).values(
+            snapshot.personas.map((p) => {
+              const { id, createdAt, updatedAt, ...rest } = p;
+              return rest;
+            })
+          );
+        }
+        if (snapshot.interviews?.length > 0) {
+          await db.insert(interviews).values(
+            snapshot.interviews.map((i) => {
+              const { id, createdAt, ...rest } = i;
+              return rest;
+            })
+          );
+        }
+        if (snapshot.observations?.length > 0) {
+          await db.insert(observations).values(
+            snapshot.observations.map((o) => {
+              const { id, createdAt, ...rest } = o;
+              return rest;
+            })
+          );
+        }
+        if (snapshot.povStatements?.length > 0) {
+          await db.insert(povStatements).values(
+            snapshot.povStatements.map((p) => {
+              const { id, createdAt, ...rest } = p;
+              return rest;
+            })
+          );
+        }
+        if (snapshot.hmwQuestions?.length > 0) {
+          await db.insert(hmwQuestions).values(
+            snapshot.hmwQuestions.map((h) => {
+              const { id, createdAt, ...rest } = h;
+              return rest;
+            })
+          );
+        }
+        if (snapshot.ideas?.length > 0) {
+          await db.insert(ideas).values(
+            snapshot.ideas.map((idea) => {
+              const { id, createdAt, ...rest } = idea;
+              return rest;
+            })
+          );
+        }
+        if (snapshot.prototypes?.length > 0) {
+          await db.insert(prototypes).values(
+            snapshot.prototypes.map((p) => {
+              const { id, createdAt, ...rest } = p;
+              return rest;
+            })
+          );
+        }
+        if (snapshot.testPlans?.length > 0) {
+          await db.insert(testPlans).values(
+            snapshot.testPlans.map((t) => {
+              const { id, createdAt, ...rest } = t;
+              return rest;
+            })
+          );
+        }
+        return true;
+      }
+      async deleteProjectBackup(id) {
+        const result = await db.delete(projectBackups).where(eq2(projectBackups.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Help Articles
+      async getHelpArticles() {
+        return await db.select().from(helpArticles).orderBy(desc(helpArticles.order), desc(helpArticles.createdAt));
+      }
+      async getHelpArticleBySlug(slug) {
+        const [article] = await db.select().from(helpArticles).where(eq2(helpArticles.slug, slug));
+        return article;
+      }
+      async searchHelpArticles(searchTerm) {
+        const lowerSearch = searchTerm.toLowerCase();
+        const allArticles = await db.select().from(helpArticles);
+        return allArticles.filter((article) => {
+          const titleMatch = article.title.toLowerCase().includes(lowerSearch);
+          const contentMatch = article.content.toLowerCase().includes(lowerSearch);
+          const tagsMatch = article.tags && JSON.stringify(article.tags).toLowerCase().includes(lowerSearch);
+          const keywordsMatch = article.searchKeywords && JSON.stringify(article.searchKeywords).toLowerCase().includes(lowerSearch);
+          return titleMatch || contentMatch || tagsMatch || keywordsMatch;
+        });
+      }
+      async incrementHelpArticleViews(id) {
+        const [article] = await db.select().from(helpArticles).where(eq2(helpArticles.id, id));
+        if (!article) return void 0;
+        const [updated] = await db.update(helpArticles).set({ viewCount: (article.viewCount || 0) + 1 }).where(eq2(helpArticles.id, id)).returning();
+        return updated;
+      }
+      async incrementHelpArticleHelpful(id) {
+        const [article] = await db.select().from(helpArticles).where(eq2(helpArticles.id, id));
+        if (!article) return void 0;
+        const [updated] = await db.update(helpArticles).set({ helpful: (article.helpful || 0) + 1 }).where(eq2(helpArticles.id, id)).returning();
+        return updated;
+      }
+      async createHelpArticle(article) {
+        const [newArticle] = await db.insert(helpArticles).values(article).returning();
+        return newArticle;
+      }
+      async updateHelpArticle(id, article) {
+        const [updated] = await db.update(helpArticles).set({ ...article, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(helpArticles.id, id)).returning();
+        return updated;
+      }
+      async deleteHelpArticle(id) {
+        const result = await db.delete(helpArticles).where(eq2(helpArticles.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // AI Automation: Industry Sectors
+      async getIndustrySectors() {
+        return await db.select().from(industrySectors).orderBy(industrySectors.order, desc(industrySectors.createdAt));
+      }
+      async getActiveIndustrySectors() {
+        return await db.select().from(industrySectors).where(eq2(industrySectors.isActive, true)).orderBy(industrySectors.order, desc(industrySectors.createdAt));
+      }
+      async getIndustrySector(id) {
+        const [sector] = await db.select().from(industrySectors).where(eq2(industrySectors.id, id));
+        return sector;
+      }
+      async createIndustrySector(sector) {
+        const [newSector] = await db.insert(industrySectors).values(sector).returning();
+        return newSector;
+      }
+      async updateIndustrySector(id, sector) {
+        const [updated] = await db.update(industrySectors).set({ ...sector, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(industrySectors.id, id)).returning();
+        return updated;
+      }
+      async deleteIndustrySector(id) {
+        const result = await db.delete(industrySectors).where(eq2(industrySectors.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // AI Automation: Success Cases
+      async getSuccessCases() {
+        return await db.select().from(successCases).orderBy(successCases.order, desc(successCases.createdAt));
+      }
+      async getActiveSuccessCases() {
+        return await db.select().from(successCases).where(eq2(successCases.isActive, true)).orderBy(successCases.order, desc(successCases.createdAt));
+      }
+      async getSuccessCasesBySector(sectorId) {
+        return await db.select().from(successCases).where(and(eq2(successCases.sectorId, sectorId), eq2(successCases.isActive, true))).orderBy(successCases.order, desc(successCases.createdAt));
+      }
+      async getSuccessCase(id) {
+        const [successCase] = await db.select().from(successCases).where(eq2(successCases.id, id));
+        return successCase;
+      }
+      async createSuccessCase(caseData) {
+        const [newCase] = await db.insert(successCases).values(caseData).returning();
+        return newCase;
+      }
+      async updateSuccessCase(id, caseData) {
+        const [updated] = await db.update(successCases).set({ ...caseData, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(successCases.id, id)).returning();
+        return updated;
+      }
+      async deleteSuccessCase(id) {
+        const result = await db.delete(successCases).where(eq2(successCases.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // AI Automation: Generated Assets
+      async getAiGeneratedAssets(projectId) {
+        return await db.select().from(aiGeneratedAssets).where(eq2(aiGeneratedAssets.projectId, projectId)).orderBy(desc(aiGeneratedAssets.createdAt));
+      }
+      async getAiGeneratedAssetsByType(projectId, assetType) {
+        return await db.select().from(aiGeneratedAssets).where(and(
+          eq2(aiGeneratedAssets.projectId, projectId),
+          eq2(aiGeneratedAssets.assetType, assetType)
+        )).orderBy(desc(aiGeneratedAssets.createdAt));
+      }
+      async getAiGeneratedAsset(id) {
+        const [asset] = await db.select().from(aiGeneratedAssets).where(eq2(aiGeneratedAssets.id, id));
+        return asset;
+      }
+      async createAiGeneratedAsset(asset) {
+        const [newAsset] = await db.insert(aiGeneratedAssets).values(asset).returning();
+        return newAsset;
+      }
+      async updateAiGeneratedAsset(id, asset) {
+        const [updated] = await db.update(aiGeneratedAssets).set(asset).where(eq2(aiGeneratedAssets.id, id)).returning();
+        return updated;
+      }
+      async deleteAiGeneratedAsset(id) {
+        const result = await db.delete(aiGeneratedAssets).where(eq2(aiGeneratedAssets.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Analytics Events
+      async createAnalyticsEvent(event) {
+        const [newEvent] = await db.insert(analyticsEvents).values(event).returning();
+        return newEvent;
+      }
+      async getAnalyticsEvents(filters) {
+        let query = db.select().from(analyticsEvents);
+        const conditions = [];
+        if (filters?.eventType) conditions.push(eq2(analyticsEvents.eventType, filters.eventType));
+        if (filters?.userId) conditions.push(eq2(analyticsEvents.userId, filters.userId));
+        if (filters?.startDate) conditions.push(sql2`${analyticsEvents.createdAt} >= ${filters.startDate}`);
+        if (filters?.endDate) conditions.push(sql2`${analyticsEvents.createdAt} <= ${filters.endDate}`);
+        if (conditions.length > 0) {
+          query = query.where(and(...conditions));
+        }
+        return await query.orderBy(desc(analyticsEvents.createdAt));
+      }
+      async getAnalyticsSummary() {
+        const now = /* @__PURE__ */ new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const [totalUsersResult] = await db.select({ count: sql2`count(*)::int` }).from(users);
+        const [totalProjectsResult] = await db.select({ count: sql2`count(*)::int` }).from(projects);
+        const [totalAiGenerationsResult] = await db.select({ count: sql2`count(*)::int` }).from(projects).where(eq2(projects.aiGenerated, true));
+        const [newUsersThisMonthResult] = await db.select({ count: sql2`count(*)::int` }).from(users).where(sql2`${users.createdAt} >= ${firstDayOfMonth}`);
+        const [projectsThisMonthResult] = await db.select({ count: sql2`count(*)::int` }).from(projects).where(sql2`${projects.createdAt} >= ${firstDayOfMonth}`);
+        const [aiGenerationsThisMonthResult] = await db.select({ count: sql2`count(*)::int` }).from(projects).where(and(
+          eq2(projects.aiGenerated, true),
+          sql2`${projects.createdAt} >= ${firstDayOfMonth}`
+        ));
+        return {
+          totalUsers: totalUsersResult?.count || 0,
+          totalProjects: totalProjectsResult?.count || 0,
+          totalAiGenerations: totalAiGenerationsResult?.count || 0,
+          newUsersThisMonth: newUsersThisMonthResult?.count || 0,
+          projectsThisMonth: projectsThisMonthResult?.count || 0,
+          aiGenerationsThisMonth: aiGenerationsThisMonthResult?.count || 0
+        };
+      }
+      // Project Members (Teams)
+      async getProjectMembers(projectId) {
+        return await db.select().from(projectMembers).where(eq2(projectMembers.projectId, projectId)).orderBy(projectMembers.addedAt);
+      }
+      async getProjectMember(projectId, userId) {
+        const [member] = await db.select().from(projectMembers).where(and(
+          eq2(projectMembers.projectId, projectId),
+          eq2(projectMembers.userId, userId)
+        ));
+        return member;
+      }
+      async createProjectMember(member) {
+        const [newMember] = await db.insert(projectMembers).values(member).returning();
+        return newMember;
+      }
+      async updateProjectMemberRole(id, role) {
+        const [updated] = await db.update(projectMembers).set({ role }).where(eq2(projectMembers.id, id)).returning();
+        return updated;
+      }
+      async deleteProjectMember(id) {
+        const result = await db.delete(projectMembers).where(eq2(projectMembers.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      async getUserProjects(userId) {
+        const ownedProjects = await db.select({ id: projects.id }).from(projects).where(eq2(projects.userId, userId));
+        const memberProjects = await db.select({ projectId: projectMembers.projectId }).from(projectMembers).where(eq2(projectMembers.userId, userId));
+        const projectIds = [
+          ...ownedProjects.map((p) => p.id),
+          ...memberProjects.map((m) => m.projectId)
+        ];
+        return [...new Set(projectIds)];
+      }
+      // Project Invites
+      async getProjectInvites(projectId) {
+        return await db.select().from(projectInvites).where(eq2(projectInvites.projectId, projectId)).orderBy(desc(projectInvites.createdAt));
+      }
+      async getPendingInvitesByEmail(email) {
+        return await db.select().from(projectInvites).where(and(
+          eq2(projectInvites.email, email),
+          eq2(projectInvites.status, "pending")
+        )).orderBy(desc(projectInvites.createdAt));
+      }
+      async getProjectInviteByToken(token) {
+        const [invite] = await db.select().from(projectInvites).where(eq2(projectInvites.token, token));
+        return invite;
+      }
+      async createProjectInvite(invite) {
+        const [newInvite] = await db.insert(projectInvites).values(invite).returning();
+        return newInvite;
+      }
+      async updateProjectInvite(id, updates) {
+        const [updated] = await db.update(projectInvites).set(updates).where(eq2(projectInvites.id, id)).returning();
+        return updated;
+      }
+      async updateProjectInviteStatus(id, status, respondedAt) {
+        const [updated] = await db.update(projectInvites).set({ status, respondedAt: respondedAt || /* @__PURE__ */ new Date() }).where(eq2(projectInvites.id, id)).returning();
+        return updated;
+      }
+      async deleteProjectInvite(id) {
+        const result = await db.delete(projectInvites).where(eq2(projectInvites.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Project Comments
+      async getProjectComments(projectId) {
+        return await db.select().from(projectComments).where(eq2(projectComments.projectId, projectId)).orderBy(desc(projectComments.createdAt));
+      }
+      async getEntityComments(projectId, entityType, entityId) {
+        const conditions = [
+          eq2(projectComments.projectId, projectId),
+          eq2(projectComments.entityType, entityType)
+        ];
+        if (entityId) {
+          conditions.push(eq2(projectComments.entityId, entityId));
+        }
+        return await db.select().from(projectComments).where(and(...conditions)).orderBy(projectComments.createdAt);
+      }
+      async createProjectComment(comment) {
+        const [newComment] = await db.insert(projectComments).values(comment).returning();
+        return newComment;
+      }
+      async updateProjectComment(id, comment) {
+        const [updated] = await db.update(projectComments).set({ ...comment, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(projectComments.id, id)).returning();
+        return updated;
+      }
+      async deleteProjectComment(id) {
+        const result = await db.delete(projectComments).where(eq2(projectComments.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      // Video Tutorials
+      async getVideoTutorials() {
+        return await db.select().from(videoTutorials).where(eq2(videoTutorials.isActive, true)).orderBy(videoTutorials.order);
+      }
+      async getVideoTutorialsByPhase(phase) {
+        return await db.select().from(videoTutorials).where(and(eq2(videoTutorials.phase, phase), eq2(videoTutorials.isActive, true))).orderBy(videoTutorials.order);
+      }
+      async getVideoTutorial(id) {
+        const [video] = await db.select().from(videoTutorials).where(eq2(videoTutorials.id, id));
+        return video;
+      }
+      async createVideoTutorial(video) {
+        const [newVideo] = await db.insert(videoTutorials).values(video).returning();
+        return newVideo;
+      }
+      async updateVideoTutorial(id, video) {
+        const [updatedVideo] = await db.update(videoTutorials).set({ ...video, updatedAt: /* @__PURE__ */ new Date() }).where(eq2(videoTutorials.id, id)).returning();
+        return updatedVideo;
+      }
+      async deleteVideoTutorial(id) {
+        const result = await db.delete(videoTutorials).where(eq2(videoTutorials.id, id));
+        return (result.rowCount || 0) > 0;
+      }
+      async incrementVideoView(id) {
+        await db.update(videoTutorials).set({ viewCount: sql2`${videoTutorials.viewCount} + 1` }).where(eq2(videoTutorials.id, id));
+      }
+      // Double Diamond
+      async getDoubleDiamondProjects(userId) {
+        return await db.select().from(doubleDiamondProjects).where(eq2(doubleDiamondProjects.userId, userId)).orderBy(desc(doubleDiamondProjects.createdAt));
+      }
+      async getAllDoubleDiamondProjects() {
+        return await db.select().from(doubleDiamondProjects).orderBy(desc(doubleDiamondProjects.createdAt));
+      }
+      async getDoubleDiamondProject(id, userId) {
+        const [project] = await db.select().from(doubleDiamondProjects).where(and(
+          eq2(doubleDiamondProjects.id, id),
+          eq2(doubleDiamondProjects.userId, userId)
+        ));
+        return project;
+      }
+      async createDoubleDiamondProject(project) {
+        const [newProject] = await db.insert(doubleDiamondProjects).values(project).returning();
+        return newProject;
+      }
+      async updateDoubleDiamondProject(id, userId, updates) {
+        const [updated] = await db.update(doubleDiamondProjects).set({ ...updates, updatedAt: /* @__PURE__ */ new Date() }).where(and(
+          eq2(doubleDiamondProjects.id, id),
+          eq2(doubleDiamondProjects.userId, userId)
+        )).returning();
+        return updated;
+      }
+      async deleteDoubleDiamondProject(id, userId) {
+        const result = await db.delete(doubleDiamondProjects).where(and(
+          eq2(doubleDiamondProjects.id, id),
+          eq2(doubleDiamondProjects.userId, userId)
+        ));
+        return (result.rowCount || 0) > 0;
+      }
+      // Industry Sectors & Success Cases
+      async listIndustrySectors() {
+        return await db.select().from(industrySectors).orderBy(industrySectors.name);
+      }
+      async listSuccessCases() {
+        return await db.select().from(successCases).orderBy(successCases.company);
+      }
+    };
+    storage = new DatabaseStorage();
   }
 });
 
@@ -1134,6 +2851,1103 @@ Responda em portugu\xEAs brasileiro, sendo direto e orientado a resultados.`;
   }
 });
 
+// server/aiGenerationService.ts
+var aiGenerationService_exports = {};
+__export(aiGenerationService_exports, {
+  AIGenerationService: () => AIGenerationService,
+  aiGenerationService: () => aiGenerationService
+});
+import { GoogleGenAI as GoogleGenAI4 } from "@google/genai";
+var gemini, AIGenerationService, aiGenerationService;
+var init_aiGenerationService = __esm({
+  "server/aiGenerationService.ts"() {
+    "use strict";
+    init_storage();
+    gemini = new GoogleGenAI4({ apiKey: process.env.GEMINI_API_KEY || "" });
+    console.log("\u2705 AI Service initialized with Google Gemini 2.0 Flash (100% Google AI)");
+    AIGenerationService = class {
+      /**
+       * Helper function to clean JSON responses from Gemini
+       * Removes markdown code blocks and other formatting
+       */
+      cleanJSONResponse(text2) {
+        let cleaned = text2.trim();
+        cleaned = cleaned.replace(/^```(?:json)?\s*/i, "");
+        cleaned = cleaned.replace(/\s*```\s*$/, "");
+        return cleaned.trim();
+      }
+      /**
+       * Generate a complete business MVP based on sector, success case, and user problem
+       */
+      async generateCompleteMVP(userId, context) {
+        const startTime = Date.now();
+        console.log(`\u{1F916} Starting 100% Google AI MVP generation with Gemini 2.0 Flash for user ${userId}`);
+        let textGenerationCost = 0;
+        try {
+          const projectCore = await this.generateProjectCore(context);
+          textGenerationCost += 2e-3;
+          const logoUrl = await this.generateLogo(context, projectCore.name);
+          const personas2 = await this.generatePersonas(context, projectCore);
+          textGenerationCost += 2e-3;
+          const povStatements2 = await this.generatePOVStatements(context, personas2);
+          textGenerationCost += 15e-4;
+          const ideas2 = await this.generateIdeas(context, povStatements2);
+          textGenerationCost += 2e-3;
+          const landingPageContent = await this.generateLandingPage(context, projectCore);
+          textGenerationCost += 2e-3;
+          const socialMediaStrategy = await this.generateSocialMediaStrategy(context, projectCore);
+          textGenerationCost += 15e-4;
+          const businessModel = await this.generateBusinessModel(context, projectCore);
+          textGenerationCost += 2e-3;
+          const totalCost = textGenerationCost;
+          const duration = Date.now() - startTime;
+          console.log(`\u2705 100% Google AI MVP generation completed in ${duration}ms - Total cost: R$ ${totalCost.toFixed(4)} (Gemini 2.0 Flash only)`);
+          return {
+            project: {
+              name: projectCore.name,
+              description: projectCore.description,
+              sectorId: context.sector.id,
+              // Only include successCaseId if it's a valid database ID (not 'custom')
+              successCaseId: context.successCase.id !== "custom" ? context.successCase.id : void 0,
+              userProblemDescription: context.userProblemDescription,
+              aiGenerated: true,
+              businessModelBase: context.successCase.name
+            },
+            personas: personas2,
+            povStatements: povStatements2,
+            ideas: ideas2,
+            landingPageContent,
+            socialMediaStrategy,
+            businessModel,
+            logoUrl,
+            generationCosts: {
+              textGeneration: textGenerationCost,
+              imageGeneration: 0,
+              // No image generation cost (using free placeholder)
+              total: totalCost
+            }
+          };
+        } catch (error) {
+          console.error("\u274C Error generating MVP:", error);
+          throw new Error(`Failed to generate MVP: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+      }
+      /**
+       * Generate project core information (name, description, tagline)
+       */
+      async generateProjectCore(context) {
+        const customInspirationText = context.customInspiration ? `- Additional User Inspirations: ${context.customInspiration}
+` : "";
+        const prompt = `You are an expert business consultant and Design Thinking facilitator.
+
+Context:
+- Industry Sector: ${context.sector.namePt}
+- Success Case Inspiration: ${context.successCase.name} (${context.successCase.descriptionPt || context.successCase.descriptionEn || ""})
+${customInspirationText}- User Problem: ${context.userProblemDescription}
+
+Task: Generate a complete business project foundation inspired by the success case${context.customInspiration ? " and user-provided inspirations" : ""} but adapted to the user's specific problem.
+
+Return ONLY a valid JSON object with this structure:
+{
+  "name": "Concise, memorable project name (2-3 words)",
+  "tagline": "One-sentence value proposition",
+  "description": "2-paragraph description explaining the solution, target audience, and unique value proposition"
+}
+
+Language: ${context.language === "pt" ? "Portuguese (Brazil)" : context.language === "en" ? "English" : context.language === "es" ? "Spanish" : "French"}
+
+Be creative, professional, and market-ready. The name should be brandable and memorable.`;
+        const response = await gemini.models.generateContent({
+          model: "gemini-2.0-flash-001",
+          contents: prompt,
+          config: {
+            temperature: 0.8,
+            maxOutputTokens: 500
+          }
+        });
+        const content = response.text || "{}";
+        const cleanedContent = this.cleanJSONResponse(content);
+        try {
+          const parsed = JSON.parse(cleanedContent);
+          return {
+            name: parsed.name || "Unnamed Project",
+            description: parsed.description || "No description available",
+            tagline: parsed.tagline || ""
+          };
+        } catch (error) {
+          console.error("Failed to parse project core JSON:", content);
+          console.error("Cleaned content:", cleanedContent);
+          return {
+            name: "Unnamed Project",
+            description: "No description available",
+            tagline: ""
+          };
+        }
+      }
+      /**
+       * Generate placeholder logo using UI Avatars API
+       * This is a free service that creates professional-looking logos from initials
+       * Note: When Google Imagen 3 becomes available in the SDK, we can switch to AI-generated logos
+       */
+      async generateLogo(context, projectName) {
+        try {
+          if (!projectName || projectName.trim().length === 0) {
+            console.warn("\u26A0\uFE0F Empty project name, cannot generate logo");
+            return null;
+          }
+          const words = projectName.trim().split(" ").filter((w) => w.length > 0);
+          if (words.length === 0) {
+            console.warn("\u26A0\uFE0F No valid words in project name");
+            return null;
+          }
+          const initials = words.slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+          const logoText = initials.length > 0 ? initials : projectName.substring(0, 2).toUpperCase();
+          const sectorColors = {
+            "sector_tech": "6366f1",
+            // Indigo
+            "sector_ecommerce": "8b5cf6",
+            // Purple
+            "sector_health": "10b981",
+            // Green
+            "sector_education": "3b82f6",
+            // Blue
+            "sector_finance": "14b8a6",
+            // Teal
+            "sector_food": "f59e0b",
+            // Amber
+            "sector_entertainment": "ec4899",
+            // Pink
+            "sector_travel": "06b6d4"
+            // Cyan
+          };
+          const color = sectorColors[context.sector.id] || "6366f1";
+          const logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(logoText)}&size=512&background=${color}&color=fff&bold=true&format=png`;
+          console.log(`\u2705 Generated placeholder logo for "${projectName}" (${logoText}) - Color: #${color}`);
+          return logoUrl;
+        } catch (error) {
+          console.error("\u26A0\uFE0F Error generating placeholder logo:", error);
+          return null;
+        }
+      }
+      /**
+       * Generate 2-3 user personas based on the project
+       */
+      async generatePersonas(context, projectCore) {
+        const customInspirationText = context.customInspiration ? `Additional Inspirations: ${context.customInspiration}
+` : "";
+        const prompt = `You are a UX researcher creating user personas.
+
+Project: ${projectCore.name}
+Description: ${projectCore.description}
+Industry: ${context.sector.namePt}
+Inspiration: ${context.successCase.name}
+${customInspirationText}
+Task: Create 2-3 detailed user personas representing the target audience.
+
+Return ONLY a valid JSON array with this structure:
+[
+  {
+    "name": "Full name",
+    "age": 25-45,
+    "occupation": "Job title",
+    "bio": "2-sentence background and lifestyle",
+    "goals": "What they want to achieve (2 sentences)",
+    "frustrations": "Pain points and challenges (2 sentences)",
+    "behaviors": "Habits, preferences, tech-savviness (2 sentences)"
+  }
+]
+
+Language: ${context.language === "pt" ? "Portuguese (Brazil)" : "English"}`;
+        const response = await gemini.models.generateContent({
+          model: "gemini-2.0-flash-001",
+          contents: prompt,
+          config: {
+            temperature: 0.7,
+            maxOutputTokens: 800
+          }
+        });
+        const content = response.text || "[]";
+        const cleanedContent = this.cleanJSONResponse(content);
+        try {
+          const parsed = JSON.parse(cleanedContent);
+          return parsed.map((p) => ({
+            name: p.name,
+            age: p.age,
+            occupation: p.occupation,
+            bio: p.bio,
+            goals: p.goals,
+            frustrations: p.frustrations,
+            behaviors: p.behaviors,
+            projectId: ""
+            // Will be set after project creation
+          }));
+        } catch (error) {
+          console.error("Failed to parse personas JSON:", content);
+          console.error("Cleaned content:", cleanedContent);
+          return [];
+        }
+      }
+      /**
+       * Generate POV (Point of View) statements from personas
+       */
+      async generatePOVStatements(context, personas2) {
+        const personasText = personas2.map((p) => `${p.name} (${p.occupation}): Goals - ${p.goals}, Frustrations - ${p.frustrations}`).join("\n");
+        const prompt = `You are a Design Thinking facilitator creating POV statements.
+
+Personas:
+${personasText}
+
+Task: Create 2-3 POV statements using the format:
+"[User] needs [need] because [insight]"
+
+Return ONLY a valid JSON array:
+[
+  {
+    "user": "Persona name or type",
+    "need": "What they need",
+    "insight": "Why they need it (the deeper insight)"
+  }
+]
+
+Language: ${context.language === "pt" ? "Portuguese (Brazil)" : "English"}`;
+        const response = await gemini.models.generateContent({
+          model: "gemini-2.0-flash-001",
+          contents: prompt,
+          config: {
+            temperature: 0.7,
+            maxOutputTokens: 400
+          }
+        });
+        const content = response.text || "[]";
+        const cleanedContent = this.cleanJSONResponse(content);
+        try {
+          const parsed = JSON.parse(cleanedContent);
+          return parsed.map((pov) => ({
+            user: pov.user,
+            need: pov.need,
+            insight: pov.insight,
+            statement: `${pov.user} needs ${pov.need} because ${pov.insight}`,
+            // Complete POV statement
+            projectId: ""
+            // Will be set after project creation
+          }));
+        } catch (error) {
+          console.error("Failed to parse POV statements JSON:", content);
+          console.error("Cleaned content:", cleanedContent);
+          return [];
+        }
+      }
+      /**
+       * Generate initial ideas for solutions
+       */
+      async generateIdeas(context, povStatements2) {
+        const povText = povStatements2.map((p) => `${p.user} needs ${p.need} because ${p.insight}`).join("\n");
+        const prompt = `You are an innovation consultant in an ideation session.
+
+POV Statements:
+${povText}
+
+Success Case Inspiration: ${context.successCase.name}
+
+Task: Generate 5-7 innovative solution ideas that address these needs.
+
+Return ONLY a valid JSON array:
+[
+  {
+    "title": "Concise idea name",
+    "description": "2-3 sentence explanation of the idea and how it works",
+    "category": "feature" or "service" or "product"
+  }
+]
+
+Be creative and actionable. Mix quick wins with bold innovations.
+
+Language: ${context.language === "pt" ? "Portuguese (Brazil)" : "English"}`;
+        const response = await gemini.models.generateContent({
+          model: "gemini-2.0-flash-001",
+          contents: prompt,
+          config: {
+            temperature: 0.9,
+            maxOutputTokens: 800
+          }
+        });
+        const content = response.text || "[]";
+        const cleanedContent = this.cleanJSONResponse(content);
+        try {
+          const parsed = JSON.parse(cleanedContent);
+          return parsed.map((idea) => ({
+            title: idea.title,
+            description: idea.description,
+            category: idea.category || "feature",
+            projectId: ""
+            // Will be set after project creation
+          }));
+        } catch (error) {
+          console.error("Failed to parse ideas JSON:", content);
+          console.error("Cleaned content:", cleanedContent);
+          return [];
+        }
+      }
+      /**
+       * Generate landing page content
+       */
+      async generateLandingPage(context, projectCore) {
+        console.log(`\u{1F3A8} Generating Landing Page for: ${projectCore.name}`);
+        const customInspirationText = context.customInspiration ? `User References: ${context.customInspiration}
+` : "";
+        const prompt = `You are a conversion copywriter creating landing page content.
+
+Project: ${projectCore.name}
+Tagline: ${projectCore.tagline}
+Description: ${projectCore.description}
+${customInspirationText}
+Task: Create compelling landing page sections.
+
+Return ONLY a valid JSON object:
+{
+  "headline": "Powerful headline (6-10 words)",
+  "subheadline": "Supporting subheadline (15-20 words)",
+  "valueProposition": "Clear value prop paragraph (3-4 sentences)",
+  "features": ["Feature 1 with benefit", "Feature 2 with benefit", "Feature 3 with benefit"],
+  "ctaText": "Call-to-action button text"
+}
+
+Language: ${context.language === "pt" ? "Portuguese (Brazil)" : "English"}`;
+        const response = await gemini.models.generateContent({
+          model: "gemini-2.0-flash-001",
+          contents: prompt,
+          config: {
+            temperature: 0.8,
+            maxOutputTokens: 500
+          }
+        });
+        const content = response.text || "{}";
+        const cleanedContent = this.cleanJSONResponse(content);
+        console.log(`\u{1F3A8} Landing Page raw response (first 200 chars):`, content.substring(0, 200));
+        console.log(`\u{1F3A8} Landing Page cleaned (first 200 chars):`, cleanedContent.substring(0, 200));
+        try {
+          const parsed = JSON.parse(cleanedContent);
+          console.log(`\u2705 Landing Page parsed successfully:`, Object.keys(parsed));
+          return parsed;
+        } catch (error) {
+          console.error("\u274C Failed to parse landing page JSON:", content);
+          console.error("\u274C Cleaned content:", cleanedContent);
+          console.error("\u274C Error:", error);
+          return {
+            headline: "Welcome",
+            subheadline: "Your solution awaits",
+            valueProposition: "We provide value.",
+            features: [],
+            ctaText: "Get Started"
+          };
+        }
+      }
+      /**
+       * Generate social media strategy
+       */
+      async generateSocialMediaStrategy(context, projectCore) {
+        const prompt = `You are a social media strategist.
+
+Project: ${projectCore.name}
+Industry: ${context.sector.namePt}
+
+Task: Create social media launch strategy for 3 platforms.
+
+Return ONLY a valid JSON array:
+[
+  {
+    "platform": "Instagram/LinkedIn/TikTok/etc",
+    "contentIdeas": ["Post idea 1", "Post idea 2", "Post idea 3"],
+    "postingFrequency": "e.g., 3x per week"
+  }
+]
+
+Language: ${context.language === "pt" ? "Portuguese (Brazil)" : "English"}`;
+        const response = await gemini.models.generateContent({
+          model: "gemini-2.0-flash-001",
+          contents: prompt,
+          config: {
+            temperature: 0.7,
+            maxOutputTokens: 600
+          }
+        });
+        const content = response.text || "[]";
+        const cleanedContent = this.cleanJSONResponse(content);
+        try {
+          return JSON.parse(cleanedContent);
+        } catch (error) {
+          console.error("Failed to parse social media strategy JSON:", content);
+          console.error("Cleaned content:", cleanedContent);
+          return [];
+        }
+      }
+      /**
+       * Generate business model canvas
+       */
+      async generateBusinessModel(context, projectCore) {
+        console.log(`\u{1F4B0} Generating Business Model for: ${projectCore.name}`);
+        const customInspirationText = context.customInspiration ? `Additional References: ${context.customInspiration}
+` : "";
+        const prompt = `You are a business model consultant.
+
+Project: ${projectCore.name}
+Description: ${projectCore.description}
+Inspired by: ${context.successCase.name}
+${customInspirationText}
+Task: Create a simplified business model canvas.
+
+Return ONLY a valid JSON object:
+{
+  "revenueStreams": ["Revenue stream 1", "Revenue stream 2"],
+  "keyResources": ["Key resource 1", "Key resource 2", "Key resource 3"],
+  "keyActivities": ["Key activity 1", "Key activity 2", "Key activity 3"],
+  "costStructure": ["Cost item 1", "Cost item 2", "Cost item 3"]
+}
+
+Language: ${context.language === "pt" ? "Portuguese (Brazil)" : "English"}`;
+        const response = await gemini.models.generateContent({
+          model: "gemini-2.0-flash-001",
+          contents: prompt,
+          config: {
+            temperature: 0.7,
+            maxOutputTokens: 500
+          }
+        });
+        const content = response.text || "{}";
+        const cleanedContent = this.cleanJSONResponse(content);
+        console.log(`\u{1F4B0} Business Model raw response (first 200 chars):`, content.substring(0, 200));
+        console.log(`\u{1F4B0} Business Model cleaned (first 200 chars):`, cleanedContent.substring(0, 200));
+        try {
+          const parsed = JSON.parse(cleanedContent);
+          console.log(`\u2705 Business Model parsed successfully:`, Object.keys(parsed));
+          return parsed;
+        } catch (error) {
+          console.error("\u274C Failed to parse business model JSON:", content);
+          console.error("\u274C Cleaned content:", cleanedContent);
+          console.error("\u274C Error:", error);
+          return {
+            revenueStreams: [],
+            keyResources: [],
+            keyActivities: [],
+            costStructure: []
+          };
+        }
+      }
+      /**
+       * Save generated assets to database with cost tracking
+       */
+      async saveGeneratedAssets(projectId, generatedData) {
+        const assets = [];
+        console.log(`\u{1F4E6} Preparing to save AI assets for project ${projectId}`);
+        console.log(`\u{1F4E6} Landing Page Content:`, JSON.stringify(generatedData.landingPageContent).substring(0, 200));
+        console.log(`\u{1F4E6} Business Model:`, JSON.stringify(generatedData.businessModel).substring(0, 200));
+        console.log(`\u{1F4E6} Social Media Strategy:`, JSON.stringify(generatedData.socialMediaStrategy).substring(0, 200));
+        if (generatedData.logoUrl) {
+          assets.push({
+            projectId,
+            assetType: "logo",
+            content: JSON.stringify({ url: generatedData.logoUrl }),
+            generationCost: 0
+            // Free placeholder logo
+          });
+          console.log(`\u2705 Logo asset prepared`);
+        }
+        const assetCostShare = generatedData.generationCosts.textGeneration / 3;
+        const landingPageContent = JSON.stringify(generatedData.landingPageContent);
+        assets.push({
+          projectId,
+          assetType: "landing_page",
+          content: landingPageContent,
+          generationCost: assetCostShare
+        });
+        console.log(`\u2705 Landing Page asset prepared (${landingPageContent.length} chars)`);
+        const socialMediaContent = JSON.stringify(generatedData.socialMediaStrategy);
+        assets.push({
+          projectId,
+          assetType: "social_media",
+          content: socialMediaContent,
+          generationCost: assetCostShare
+        });
+        console.log(`\u2705 Social Media asset prepared (${socialMediaContent.length} chars)`);
+        const businessModelContent = JSON.stringify(generatedData.businessModel);
+        assets.push({
+          projectId,
+          assetType: "business_model",
+          content: businessModelContent,
+          generationCost: assetCostShare
+        });
+        console.log(`\u2705 Business Model asset prepared (${businessModelContent.length} chars)`);
+        console.log(`\u{1F4BE} Saving ${assets.length} assets to database...`);
+        for (const asset of assets) {
+          try {
+            const savedAsset = await storage.createAiGeneratedAsset(asset);
+            console.log(`\u2705 Saved asset type: ${asset.assetType} with ID: ${savedAsset.id}`);
+          } catch (error) {
+            console.error(`\u274C Failed to save asset type: ${asset.assetType}`, error);
+            throw error;
+          }
+        }
+        console.log(`\u{1F4BE} Successfully saved ${assets.length} AI-generated assets for project ${projectId}`);
+      }
+    };
+    aiGenerationService = new AIGenerationService();
+  }
+});
+
+// server/double-diamond-pdf.ts
+var double_diamond_pdf_exports = {};
+__export(double_diamond_pdf_exports, {
+  generateDoubleDiamondPDF: () => generateDoubleDiamondPDF
+});
+import { jsPDF as jsPDF2 } from "jspdf";
+async function generateDoubleDiamondPDF(project) {
+  const doc = new jsPDF2();
+  let yPos = 20;
+  const checkPageBreak = (requiredSpace) => {
+    if (yPos + requiredSpace > 270) {
+      doc.addPage();
+      yPos = 35;
+    }
+  };
+  const addWrappedText = (text2, x, y, maxWidth, fontSize = 12) => {
+    doc.setFontSize(fontSize);
+    const splitText = doc.splitTextToSize(text2, maxWidth);
+    doc.text(splitText, x, y);
+    return splitText.length * (fontSize * 0.4);
+  };
+  doc.setFontSize(28);
+  doc.setFont("helvetica", "bold");
+  doc.text("Double Diamond Framework", 105, 80, { align: "center" });
+  yPos = 100;
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "normal");
+  doc.text(project.name, 105, yPos, { align: "center" });
+  yPos += 20;
+  doc.setFontSize(12);
+  if (project.description) {
+    const descHeight = addWrappedText(project.description, 105 - 70, yPos, 140, 12);
+    yPos += descHeight + 20;
+  }
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Gerado em ${(/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR")}`, 105, yPos, { align: "center" });
+  doc.text("100% Automatizado com Google Gemini 2.0 Flash", 105, yPos + 8, { align: "center" });
+  doc.setTextColor(0, 0, 0);
+  doc.addPage();
+  yPos = 35;
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("1. Descobrir (Discover)", 20, yPos);
+  doc.setFont("helvetica", "normal");
+  yPos += 15;
+  if (project.discoverPainPoints && project.discoverPainPoints.length > 0) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Pain Points", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    project.discoverPainPoints.forEach((pain, idx) => {
+      checkPageBreak(15);
+      doc.setFontSize(11);
+      doc.text(`${idx + 1}.`, 20, yPos);
+      const painText = typeof pain === "string" ? pain : pain.text || pain;
+      const painHeight = addWrappedText(painText, 30, yPos, 160, 11);
+      yPos += Math.max(8, painHeight + 3);
+    });
+    yPos += 10;
+  }
+  if (project.discoverInsights && project.discoverInsights.length > 0) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Insights", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    project.discoverInsights.forEach((insight, idx) => {
+      checkPageBreak(15);
+      doc.setFontSize(11);
+      doc.text(`${idx + 1}.`, 20, yPos);
+      const insightText = typeof insight === "string" ? insight : insight.text || insight;
+      const insightHeight = addWrappedText(insightText, 30, yPos, 160, 11);
+      yPos += Math.max(8, insightHeight + 3);
+    });
+    yPos += 10;
+  }
+  if (project.discoverUserNeeds && project.discoverUserNeeds.length > 0) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Necessidades do Usu\xE1rio", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    project.discoverUserNeeds.forEach((need, idx) => {
+      checkPageBreak(15);
+      doc.setFontSize(11);
+      doc.text(`${idx + 1}.`, 20, yPos);
+      const needText = typeof need === "string" ? need : need.need || need;
+      const needHeight = addWrappedText(needText, 30, yPos, 160, 11);
+      yPos += Math.max(8, needHeight + 3);
+    });
+  }
+  doc.addPage();
+  yPos = 35;
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("2. Definir (Define)", 20, yPos);
+  doc.setFont("helvetica", "normal");
+  yPos += 15;
+  if (project.definePovStatements && project.definePovStatements.length > 0) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("POV Statements", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    project.definePovStatements.forEach((pov, idx) => {
+      checkPageBreak(25);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(`POV ${idx + 1}:`, 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 8;
+      doc.setFontSize(11);
+      const povHeight = addWrappedText(pov.fullStatement || pov, 25, yPos, 165, 11);
+      yPos += povHeight + 10;
+    });
+    yPos += 10;
+  }
+  if (project.defineHmwQuestions && project.defineHmwQuestions.length > 0) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("How Might We Questions", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    project.defineHmwQuestions.forEach((hmw, idx) => {
+      checkPageBreak(15);
+      doc.setFontSize(11);
+      doc.text(`${idx + 1}.`, 20, yPos);
+      const hmwText = hmw.question || hmw;
+      const hmwHeight = addWrappedText(hmwText, 30, yPos, 160, 11);
+      yPos += Math.max(8, hmwHeight + 3);
+    });
+  }
+  doc.addPage();
+  yPos = 35;
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("3. Desenvolver (Develop)", 20, yPos);
+  doc.setFont("helvetica", "normal");
+  yPos += 15;
+  if (project.developIdeas && project.developIdeas.length > 0) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Ideias Geradas", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    project.developIdeas.forEach((idea, idx) => {
+      checkPageBreak(30);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${idx + 1}. ${idea.title || idea}`, 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 8;
+      if (idea.description) {
+        doc.setFontSize(11);
+        const ideaHeight = addWrappedText(idea.description, 25, yPos, 165, 10);
+        yPos += ideaHeight + 5;
+      }
+      if (idea.category) {
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Categoria: ${idea.category}`, 25, yPos);
+        doc.setTextColor(0, 0, 0);
+        yPos += 6;
+      }
+      yPos += 8;
+    });
+  }
+  doc.addPage();
+  yPos = 35;
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("4. Entregar (Deliver)", 20, yPos);
+  doc.setFont("helvetica", "normal");
+  yPos += 15;
+  if (project.deliverMvpConcept) {
+    checkPageBreak(40);
+    const mvpConcept = project.deliverMvpConcept;
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Conceito do MVP", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    if (mvpConcept.name) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(mvpConcept.name, 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 10;
+    }
+    if (mvpConcept.description) {
+      doc.setFontSize(11);
+      const descHeight = addWrappedText(mvpConcept.description, 20, yPos, 170, 11);
+      yPos += descHeight + 15;
+    }
+    if (mvpConcept.coreFeatures && mvpConcept.coreFeatures.length > 0) {
+      checkPageBreak(30);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Recursos Principais:", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 8;
+      mvpConcept.coreFeatures.forEach((feature) => {
+        checkPageBreak(10);
+        doc.setFontSize(10);
+        doc.text("\u2022", 25, yPos);
+        const featureHeight = addWrappedText(feature, 32, yPos, 160, 10);
+        yPos += Math.max(7, featureHeight + 2);
+      });
+      yPos += 10;
+    }
+  }
+  if (project.deliverLogoSuggestions && project.deliverLogoSuggestions.length > 0) {
+    checkPageBreak(50);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Sugest\xF5es de Logo", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    project.deliverLogoSuggestions.forEach((logo, idx) => {
+      checkPageBreak(25);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Op\xE7\xE3o ${idx + 1}:`, 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 7;
+      if (logo.concept) {
+        const logoHeight = addWrappedText(logo.concept, 25, yPos, 165, 10);
+        yPos += logoHeight + 3;
+      }
+      if (logo.colors) {
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Cores: ${logo.colors}`, 25, yPos);
+        doc.setTextColor(0, 0, 0);
+        yPos += 6;
+      }
+      yPos += 8;
+    });
+  }
+  if (project.deliverLandingPage) {
+    doc.addPage();
+    yPos = 35;
+    const landingPage = project.deliverLandingPage;
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("Landing Page", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 15;
+    if (landingPage.headline) {
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      const headlineHeight = addWrappedText(landingPage.headline, 20, yPos, 170, 14);
+      doc.setFont("helvetica", "normal");
+      yPos += headlineHeight + 10;
+    }
+    if (landingPage.subheadline) {
+      doc.setFontSize(12);
+      const subHeight = addWrappedText(landingPage.subheadline, 20, yPos, 170, 12);
+      yPos += subHeight + 15;
+    }
+    if (landingPage.sections && landingPage.sections.length > 0) {
+      landingPage.sections.forEach((section) => {
+        checkPageBreak(25);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(section.title, 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(10);
+        const sectionHeight = addWrappedText(section.content, 25, yPos, 165, 10);
+        yPos += sectionHeight + 10;
+      });
+    }
+  }
+  doc.addPage();
+  yPos = 35;
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("5. An\xE1lise DFV", 20, yPos);
+  doc.setFont("helvetica", "normal");
+  yPos += 15;
+  if (project.dfvDesirabilityScore !== null && project.dfvDesirabilityScore !== void 0 || project.dfvFeasibilityScore !== null && project.dfvFeasibilityScore !== void 0 || project.dfvViabilityScore !== null && project.dfvViabilityScore !== void 0) {
+    checkPageBreak(50);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Pontua\xE7\xF5es DFV", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 15;
+    if (project.dfvDesirabilityScore !== null && project.dfvDesirabilityScore !== void 0) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Desirability (Desejabilidade):", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(18);
+      doc.setTextColor(30, 58, 138);
+      doc.text(`${project.dfvDesirabilityScore}/100`, 120, yPos);
+      doc.setTextColor(0, 0, 0);
+      yPos += 20;
+    }
+    if (project.dfvFeasibilityScore !== null && project.dfvFeasibilityScore !== void 0) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Feasibility (Viabilidade T\xE9cnica):", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(18);
+      doc.setTextColor(16, 185, 129);
+      doc.text(`${project.dfvFeasibilityScore}/100`, 120, yPos);
+      doc.setTextColor(0, 0, 0);
+      yPos += 20;
+    }
+    if (project.dfvViabilityScore !== null && project.dfvViabilityScore !== void 0) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Viability (Viabilidade de Neg\xF3cio):", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(18);
+      doc.setTextColor(139, 92, 246);
+      doc.text(`${project.dfvViabilityScore}/100`, 120, yPos);
+      doc.setTextColor(0, 0, 0);
+      yPos += 25;
+    }
+  }
+  if (project.dfvAnalysis) {
+    const dfvData = project.dfvAnalysis;
+    if (dfvData.desirability) {
+      checkPageBreak(50);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("An\xE1lise de Desirability (Desejabilidade)", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 10;
+      if (dfvData.desirability.strengths && Array.isArray(dfvData.desirability.strengths) && dfvData.desirability.strengths.length > 0) {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Pontos Fortes:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(11);
+        dfvData.desirability.strengths.forEach((strength) => {
+          checkPageBreak(10);
+          doc.text("\u2022", 25, yPos);
+          const strengthHeight = addWrappedText(strength, 32, yPos, 160, 11);
+          yPos += Math.max(7, strengthHeight + 2);
+        });
+        yPos += 5;
+      }
+      if (dfvData.desirability.concerns && Array.isArray(dfvData.desirability.concerns) && dfvData.desirability.concerns.length > 0) {
+        checkPageBreak(30);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Preocupa\xE7\xF5es:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(11);
+        dfvData.desirability.concerns.forEach((concern) => {
+          checkPageBreak(10);
+          doc.text("\u2022", 25, yPos);
+          const concernHeight = addWrappedText(concern, 32, yPos, 160, 11);
+          yPos += Math.max(7, concernHeight + 2);
+        });
+        yPos += 5;
+      }
+      if (dfvData.desirability.reasoning) {
+        checkPageBreak(20);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Racioc\xEDnio:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(11);
+        const reasoningHeight = addWrappedText(dfvData.desirability.reasoning, 20, yPos, 170, 11);
+        yPos += reasoningHeight + 15;
+      }
+    }
+    if (dfvData.feasibility) {
+      checkPageBreak(50);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("An\xE1lise de Feasibility (Viabilidade T\xE9cnica)", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 10;
+      if (dfvData.feasibility.strengths && Array.isArray(dfvData.feasibility.strengths) && dfvData.feasibility.strengths.length > 0) {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Pontos Fortes:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(11);
+        dfvData.feasibility.strengths.forEach((strength) => {
+          checkPageBreak(10);
+          doc.text("\u2022", 25, yPos);
+          const strengthHeight = addWrappedText(strength, 32, yPos, 160, 11);
+          yPos += Math.max(7, strengthHeight + 2);
+        });
+        yPos += 5;
+      }
+      if (dfvData.feasibility.concerns && Array.isArray(dfvData.feasibility.concerns) && dfvData.feasibility.concerns.length > 0) {
+        checkPageBreak(30);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Preocupa\xE7\xF5es:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(11);
+        dfvData.feasibility.concerns.forEach((concern) => {
+          checkPageBreak(10);
+          doc.text("\u2022", 25, yPos);
+          const concernHeight = addWrappedText(concern, 32, yPos, 160, 11);
+          yPos += Math.max(7, concernHeight + 2);
+        });
+        yPos += 5;
+      }
+      if (dfvData.feasibility.reasoning) {
+        checkPageBreak(20);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Racioc\xEDnio:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(11);
+        const reasoningHeight = addWrappedText(dfvData.feasibility.reasoning, 20, yPos, 170, 11);
+        yPos += reasoningHeight + 15;
+      }
+    }
+    if (dfvData.viability) {
+      checkPageBreak(50);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("An\xE1lise de Viability (Viabilidade de Neg\xF3cio)", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 10;
+      if (dfvData.viability.strengths && Array.isArray(dfvData.viability.strengths) && dfvData.viability.strengths.length > 0) {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Pontos Fortes:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(11);
+        dfvData.viability.strengths.forEach((strength) => {
+          checkPageBreak(10);
+          doc.text("\u2022", 25, yPos);
+          const strengthHeight = addWrappedText(strength, 32, yPos, 160, 11);
+          yPos += Math.max(7, strengthHeight + 2);
+        });
+        yPos += 5;
+      }
+      if (dfvData.viability.concerns && Array.isArray(dfvData.viability.concerns) && dfvData.viability.concerns.length > 0) {
+        checkPageBreak(30);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Preocupa\xE7\xF5es:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(11);
+        dfvData.viability.concerns.forEach((concern) => {
+          checkPageBreak(10);
+          doc.text("\u2022", 25, yPos);
+          const concernHeight = addWrappedText(concern, 32, yPos, 160, 11);
+          yPos += Math.max(7, concernHeight + 2);
+        });
+        yPos += 5;
+      }
+      if (dfvData.viability.reasoning) {
+        checkPageBreak(20);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Racioc\xEDnio:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        yPos += 8;
+        doc.setFontSize(11);
+        const reasoningHeight = addWrappedText(dfvData.viability.reasoning, 20, yPos, 170, 11);
+        yPos += reasoningHeight + 15;
+      }
+    }
+    if (dfvData.recommendations && Array.isArray(dfvData.recommendations) && dfvData.recommendations.length > 0) {
+      checkPageBreak(40);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Recomenda\xE7\xF5es", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 10;
+      doc.setFontSize(11);
+      dfvData.recommendations.forEach((rec, idx) => {
+        checkPageBreak(10);
+        doc.text(`${idx + 1}.`, 20, yPos);
+        const recHeight = addWrappedText(rec, 30, yPos, 160, 11);
+        yPos += Math.max(8, recHeight + 3);
+      });
+      yPos += 10;
+    }
+    if (dfvData.nextSteps && Array.isArray(dfvData.nextSteps) && dfvData.nextSteps.length > 0) {
+      checkPageBreak(40);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Pr\xF3ximos Passos", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 10;
+      doc.setFontSize(11);
+      dfvData.nextSteps.forEach((step, idx) => {
+        checkPageBreak(10);
+        doc.text(`${idx + 1}.`, 20, yPos);
+        const stepHeight = addWrappedText(step, 30, yPos, 160, 11);
+        yPos += Math.max(8, stepHeight + 3);
+      });
+    }
+  }
+  if (project.dfvFeedback) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Recomenda\xE7\xF5es", 20, yPos);
+    doc.setFont("helvetica", "normal");
+    yPos += 10;
+    doc.setFontSize(11);
+    const feedbackHeight = addWrappedText(project.dfvFeedback, 20, yPos, 170, 11);
+    yPos += feedbackHeight + 15;
+  }
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 58, 138);
+    doc.text("Design Thinking ", 20, 15);
+    doc.setTextColor(16, 185, 129);
+    doc.text("Tools", 72, 15);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(37, 99, 235);
+    doc.textWithLink("https://www.designthinkingtools.com", 105, 285, {
+      url: "https://www.designthinkingtools.com",
+      align: "center"
+    });
+    doc.setTextColor(107, 114, 128);
+    doc.text(`P\xE1gina ${i} de ${totalPages}`, 180, 285);
+    doc.setTextColor(0, 0, 0);
+  }
+  return Buffer.from(doc.output("arraybuffer"));
+}
+var init_double_diamond_pdf = __esm({
+  "server/double-diamond-pdf.ts"() {
+    "use strict";
+  }
+});
+
 // vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -1277,888 +4091,156 @@ import sharp from "sharp";
 import path from "path";
 import fs from "fs";
 
-// server/storage.ts
-init_schema();
+// server/passport-config.ts
 init_db();
-import bcrypt from "bcrypt";
-import { eq, and, desc } from "drizzle-orm";
-var DatabaseStorage = class {
-  // Projects
-  async getProjects(userId) {
-    return await db.select().from(projects).where(eq(projects.userId, userId)).orderBy(desc(projects.createdAt));
-  }
-  async getAllProjects() {
-    return await db.select().from(projects).orderBy(desc(projects.createdAt));
-  }
-  async getProject(id, userId) {
-    const [project] = await db.select().from(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
-    return project;
-  }
-  async createProject(project) {
-    const [newProject] = await db.insert(projects).values(project).returning();
-    return newProject;
-  }
-  async updateProject(id, userId, project) {
-    const [updatedProject] = await db.update(projects).set({ ...project, updatedAt: /* @__PURE__ */ new Date() }).where(and(eq(projects.id, id), eq(projects.userId, userId))).returning();
-    return updatedProject;
-  }
-  async deleteProject(id, userId) {
-    const result = await db.delete(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
-    return (result.rowCount || 0) > 0;
-  }
-  // Users
-  async getUsers() {
-    return await db.select().from(users).orderBy(desc(users.createdAt));
-  }
-  async getUser(id) {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
-  }
-  async getUserByUsername(username) {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
-  }
-  async getUserByEmail(email) {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
-  }
-  async createUser(user) {
-    const [newUser] = await db.insert(users).values(user).returning();
-    return newUser;
-  }
-  async updateUser(id, user) {
-    const [updatedUser] = await db.update(users).set(user).where(eq(users.id, id)).returning();
-    return updatedUser;
-  }
-  async deleteUser(id) {
-    const result = await db.delete(users).where(eq(users.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Articles
-  async getArticles() {
-    return await db.select().from(articles).orderBy(desc(articles.createdAt));
-  }
-  async getArticlesByCategory(category) {
-    return await db.select().from(articles).where(eq(articles.category, category)).orderBy(desc(articles.createdAt));
-  }
-  async getArticle(id) {
-    const [article] = await db.select().from(articles).where(eq(articles.id, id));
-    return article;
-  }
-  async createArticle(article) {
-    const [newArticle] = await db.insert(articles).values(article).returning();
-    return newArticle;
-  }
-  async updateArticle(id, article) {
-    const [updatedArticle] = await db.update(articles).set({ ...article, updatedAt: /* @__PURE__ */ new Date() }).where(eq(articles.id, id)).returning();
-    return updatedArticle;
-  }
-  async deleteArticle(id) {
-    const result = await db.delete(articles).where(eq(articles.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Phase 1: Empathize
-  async getEmpathyMaps(projectId) {
-    return await db.select().from(empathyMaps).where(eq(empathyMaps.projectId, projectId)).orderBy(desc(empathyMaps.createdAt));
-  }
-  async createEmpathyMap(empathyMap) {
-    const [newMap] = await db.insert(empathyMaps).values(empathyMap).returning();
-    return newMap;
-  }
-  async updateEmpathyMap(id, empathyMap) {
-    const [updatedMap] = await db.update(empathyMaps).set({ ...empathyMap, updatedAt: /* @__PURE__ */ new Date() }).where(eq(empathyMaps.id, id)).returning();
-    return updatedMap;
-  }
-  async deleteEmpathyMap(id) {
-    const result = await db.delete(empathyMaps).where(eq(empathyMaps.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  async getPersonas(projectId) {
-    return await db.select().from(personas).where(eq(personas.projectId, projectId)).orderBy(desc(personas.createdAt));
-  }
-  async createPersona(persona) {
-    const [newPersona] = await db.insert(personas).values(persona).returning();
-    return newPersona;
-  }
-  async updatePersona(id, persona) {
-    const [updatedPersona] = await db.update(personas).set({ ...persona, updatedAt: /* @__PURE__ */ new Date() }).where(eq(personas.id, id)).returning();
-    return updatedPersona;
-  }
-  async deletePersona(id) {
-    const result = await db.delete(personas).where(eq(personas.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  async getInterviews(projectId) {
-    return await db.select().from(interviews).where(eq(interviews.projectId, projectId)).orderBy(desc(interviews.createdAt));
-  }
-  async createInterview(interview) {
-    const [newInterview] = await db.insert(interviews).values(interview).returning();
-    return newInterview;
-  }
-  async updateInterview(id, interview) {
-    const [updatedInterview] = await db.update(interviews).set(interview).where(eq(interviews.id, id)).returning();
-    return updatedInterview;
-  }
-  async deleteInterview(id) {
-    const result = await db.delete(interviews).where(eq(interviews.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  async getObservations(projectId) {
-    return await db.select().from(observations).where(eq(observations.projectId, projectId)).orderBy(desc(observations.createdAt));
-  }
-  async createObservation(observation) {
-    const [newObservation] = await db.insert(observations).values(observation).returning();
-    return newObservation;
-  }
-  async updateObservation(id, observation) {
-    const [updatedObservation] = await db.update(observations).set(observation).where(eq(observations.id, id)).returning();
-    return updatedObservation;
-  }
-  async deleteObservation(id) {
-    const result = await db.delete(observations).where(eq(observations.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Phase 2: Define
-  async getPovStatements(projectId) {
-    return await db.select().from(povStatements).where(eq(povStatements.projectId, projectId)).orderBy(desc(povStatements.createdAt));
-  }
-  async getPovStatement(id) {
-    const [statement] = await db.select().from(povStatements).where(eq(povStatements.id, id));
-    return statement;
-  }
-  async createPovStatement(pov) {
-    const [newStatement] = await db.insert(povStatements).values(pov).returning();
-    return newStatement;
-  }
-  async updatePovStatement(id, pov) {
-    const [updatedStatement] = await db.update(povStatements).set(pov).where(eq(povStatements.id, id)).returning();
-    return updatedStatement;
-  }
-  async deletePovStatement(id) {
-    const result = await db.delete(povStatements).where(eq(povStatements.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  async getHmwQuestions(projectId) {
-    return await db.select().from(hmwQuestions).where(eq(hmwQuestions.projectId, projectId)).orderBy(desc(hmwQuestions.createdAt));
-  }
-  async getHmwQuestion(id) {
-    const [question] = await db.select().from(hmwQuestions).where(eq(hmwQuestions.id, id));
-    return question;
-  }
-  async createHmwQuestion(hmw) {
-    const [newQuestion] = await db.insert(hmwQuestions).values(hmw).returning();
-    return newQuestion;
-  }
-  async updateHmwQuestion(id, hmw) {
-    const [updatedQuestion] = await db.update(hmwQuestions).set(hmw).where(eq(hmwQuestions.id, id)).returning();
-    return updatedQuestion;
-  }
-  async deleteHmwQuestion(id) {
-    const result = await db.delete(hmwQuestions).where(eq(hmwQuestions.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Phase 3: Ideate
-  async getIdeas(projectId) {
-    return await db.select().from(ideas).where(eq(ideas.projectId, projectId)).orderBy(desc(ideas.createdAt));
-  }
-  async createIdea(idea) {
-    const [newIdea] = await db.insert(ideas).values(idea).returning();
-    return newIdea;
-  }
-  async updateIdea(id, idea) {
-    const [updatedIdea] = await db.update(ideas).set(idea).where(eq(ideas.id, id)).returning();
-    return updatedIdea;
-  }
-  async deleteIdea(id) {
-    const result = await db.delete(ideas).where(eq(ideas.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Phase 4: Prototype
-  async getPrototypes(projectId) {
-    return await db.select().from(prototypes).where(eq(prototypes.projectId, projectId)).orderBy(desc(prototypes.createdAt));
-  }
-  async createPrototype(prototype) {
-    const [newPrototype] = await db.insert(prototypes).values(prototype).returning();
-    return newPrototype;
-  }
-  async updatePrototype(id, prototype) {
-    const [updatedPrototype] = await db.update(prototypes).set(prototype).where(eq(prototypes.id, id)).returning();
-    return updatedPrototype;
-  }
-  async deletePrototype(id) {
-    const result = await db.delete(prototypes).where(eq(prototypes.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Phase 5: Test
-  async getTestPlans(projectId) {
-    return await db.select().from(testPlans).where(eq(testPlans.projectId, projectId)).orderBy(desc(testPlans.createdAt));
-  }
-  async createTestPlan(testPlan) {
-    const [newPlan] = await db.insert(testPlans).values(testPlan).returning();
-    return newPlan;
-  }
-  async updateTestPlan(id, testPlan) {
-    const [updatedPlan] = await db.update(testPlans).set(testPlan).where(eq(testPlans.id, id)).returning();
-    return updatedPlan;
-  }
-  async getTestResults(testPlanId) {
-    return await db.select().from(testResults).where(eq(testResults.testPlanId, testPlanId)).orderBy(desc(testResults.createdAt));
-  }
-  async createTestResult(testResult) {
-    const [newResult] = await db.insert(testResults).values(testResult).returning();
-    return newResult;
-  }
-  // User Progress
-  async getUserProgress(userId, projectId) {
-    const [progress] = await db.select().from(userProgress).where(and(eq(userProgress.userId, userId), eq(userProgress.projectId, projectId)));
-    return progress;
-  }
-  async updateUserProgress(progress) {
-    const existing = await this.getUserProgress(progress.userId, progress.projectId);
-    if (existing) {
-      const [updated] = await db.update(userProgress).set({ ...progress, updatedAt: /* @__PURE__ */ new Date() }).where(and(eq(userProgress.userId, progress.userId), eq(userProgress.projectId, progress.projectId))).returning();
-      return updated;
-    } else {
-      const [created] = await db.insert(userProgress).values(progress).returning();
-      return created;
-    }
-  }
-  // Analytics
-  async getProjectStats(projectId, userId) {
-    const project = await this.getProject(projectId, userId);
-    return {
-      totalTools: 15,
-      // Total tools across all 5 phases
-      completedTools: 0,
-      // Would count actual completed tools
-      currentPhase: project?.currentPhase || 1,
-      completionRate: project?.completionRate || 0
-    };
-  }
-  // Canvas Drawings
-  async getCanvasDrawings(projectId) {
-    return await db.select().from(canvasDrawings).where(eq(canvasDrawings.projectId, projectId)).orderBy(desc(canvasDrawings.createdAt));
-  }
-  async getCanvasDrawing(id) {
-    const [drawing] = await db.select().from(canvasDrawings).where(eq(canvasDrawings.id, id));
-    return drawing;
-  }
-  async createCanvasDrawing(drawing) {
-    const [newDrawing] = await db.insert(canvasDrawings).values(drawing).returning();
-    return newDrawing;
-  }
-  async updateCanvasDrawing(id, drawing) {
-    const [updatedDrawing] = await db.update(canvasDrawings).set({ ...drawing, updatedAt: /* @__PURE__ */ new Date() }).where(eq(canvasDrawings.id, id)).returning();
-    return updatedDrawing;
-  }
-  async deleteCanvasDrawing(id) {
-    const result = await db.delete(canvasDrawings).where(eq(canvasDrawings.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Phase Cards (Kanban)
-  async getPhaseCards(projectId) {
-    return await db.select().from(phaseCards).where(eq(phaseCards.projectId, projectId)).orderBy(desc(phaseCards.createdAt));
-  }
-  async getPhaseCard(id) {
-    const [card] = await db.select().from(phaseCards).where(eq(phaseCards.id, id));
-    return card;
-  }
-  async createPhaseCard(card) {
-    const [newCard] = await db.insert(phaseCards).values(card).returning();
-    return newCard;
-  }
-  async updatePhaseCard(id, card) {
-    const [updatedCard] = await db.update(phaseCards).set({ ...card, updatedAt: /* @__PURE__ */ new Date() }).where(eq(phaseCards.id, id)).returning();
-    return updatedCard;
-  }
-  async deletePhaseCard(id) {
-    const result = await db.delete(phaseCards).where(eq(phaseCards.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Subscription Plans
-  async getSubscriptionPlans() {
-    return await db.select().from(subscriptionPlans).orderBy(subscriptionPlans.order);
-  }
-  async getSubscriptionPlan(id) {
-    const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, id));
-    return plan;
-  }
-  async getSubscriptionPlanByName(name) {
-    const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.name, name));
-    return plan;
-  }
-  async createSubscriptionPlan(plan) {
-    const [newPlan] = await db.insert(subscriptionPlans).values(plan).returning();
-    return newPlan;
-  }
-  async updateSubscriptionPlan(id, plan) {
-    const [updatedPlan] = await db.update(subscriptionPlans).set(plan).where(eq(subscriptionPlans.id, id)).returning();
-    return updatedPlan;
-  }
-  async deleteSubscriptionPlan(id) {
-    const result = await db.delete(subscriptionPlans).where(eq(subscriptionPlans.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // User Subscriptions
-  async getUserSubscriptions(userId) {
-    return await db.select().from(userSubscriptions).where(eq(userSubscriptions.userId, userId)).orderBy(desc(userSubscriptions.createdAt));
-  }
-  async getUserActiveSubscription(userId) {
-    const [subscription] = await db.select().from(userSubscriptions).where(and(
-      eq(userSubscriptions.userId, userId),
-      eq(userSubscriptions.status, "active")
-    ));
-    return subscription;
-  }
-  async createUserSubscription(subscription) {
-    const [newSubscription] = await db.insert(userSubscriptions).values(subscription).returning();
-    return newSubscription;
-  }
-  async updateUserSubscription(id, subscription) {
-    const [updatedSubscription] = await db.update(userSubscriptions).set(subscription).where(eq(userSubscriptions.id, id)).returning();
-    return updatedSubscription;
-  }
-  async cancelUserSubscription(id) {
-    const result = await db.update(userSubscriptions).set({ status: "cancelled" }).where(eq(userSubscriptions.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Benchmarking
-  async getBenchmarks(projectId) {
-    return await db.select().from(benchmarks).where(eq(benchmarks.projectId, projectId)).orderBy(desc(benchmarks.createdAt));
-  }
-  async getBenchmark(id) {
-    const [benchmark] = await db.select().from(benchmarks).where(eq(benchmarks.id, id));
-    return benchmark;
-  }
-  async createBenchmark(benchmark) {
-    const [newBenchmark] = await db.insert(benchmarks).values(benchmark).returning();
-    return newBenchmark;
-  }
-  async updateBenchmark(id, benchmark) {
-    const [updatedBenchmark] = await db.update(benchmarks).set(benchmark).where(eq(benchmarks.id, id)).returning();
-    return updatedBenchmark;
-  }
-  async deleteBenchmark(id) {
-    const result = await db.delete(benchmarks).where(eq(benchmarks.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  async getBenchmarkAssessments(benchmarkId) {
-    return await db.select().from(benchmarkAssessments).where(eq(benchmarkAssessments.benchmarkId, benchmarkId)).orderBy(desc(benchmarkAssessments.createdAt));
-  }
-  async createBenchmarkAssessment(assessment) {
-    const [newAssessment] = await db.insert(benchmarkAssessments).values(assessment).returning();
-    return newAssessment;
-  }
-  async updateBenchmarkAssessment(id, assessment) {
-    const [updatedAssessment] = await db.update(benchmarkAssessments).set(assessment).where(eq(benchmarkAssessments.id, id)).returning();
-    return updatedAssessment;
-  }
-  async deleteBenchmarkAssessment(id) {
-    const result = await db.delete(benchmarkAssessments).where(eq(benchmarkAssessments.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // DVF Assessment - Desirability, Feasibility, Viability
-  async getDvfAssessments(projectId) {
-    return await db.select().from(dvfAssessments).where(eq(dvfAssessments.projectId, projectId)).orderBy(desc(dvfAssessments.createdAt));
-  }
-  async getDvfAssessment(id) {
-    const [assessment] = await db.select().from(dvfAssessments).where(eq(dvfAssessments.id, id));
-    return assessment;
-  }
-  async createDvfAssessment(assessment) {
-    const [newAssessment] = await db.insert(dvfAssessments).values(assessment).returning();
-    return newAssessment;
-  }
-  async updateDvfAssessment(id, assessment) {
-    const [updatedAssessment] = await db.update(dvfAssessments).set({ ...assessment, updatedAt: /* @__PURE__ */ new Date() }).where(eq(dvfAssessments.id, id)).returning();
-    return updatedAssessment;
-  }
-  async deleteDvfAssessment(id) {
-    const result = await db.delete(dvfAssessments).where(eq(dvfAssessments.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Lovability Metrics
-  async getLovabilityMetrics(projectId) {
-    return await db.select().from(lovabilityMetrics).where(eq(lovabilityMetrics.projectId, projectId)).orderBy(desc(lovabilityMetrics.createdAt));
-  }
-  async getLovabilityMetric(id) {
-    const [metric] = await db.select().from(lovabilityMetrics).where(eq(lovabilityMetrics.id, id));
-    return metric;
-  }
-  async createLovabilityMetric(metric) {
-    const [newMetric] = await db.insert(lovabilityMetrics).values(metric).returning();
-    return newMetric;
-  }
-  async updateLovabilityMetric(id, metric) {
-    const [updatedMetric] = await db.update(lovabilityMetrics).set({ ...metric, updatedAt: /* @__PURE__ */ new Date() }).where(eq(lovabilityMetrics.id, id)).returning();
-    return updatedMetric;
-  }
-  async deleteLovabilityMetric(id) {
-    const result = await db.delete(lovabilityMetrics).where(eq(lovabilityMetrics.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Project Analytics
-  async getProjectAnalytics(projectId) {
-    const [analytics] = await db.select().from(projectAnalytics).where(eq(projectAnalytics.projectId, projectId));
-    return analytics;
-  }
-  async createProjectAnalytics(analytics) {
-    const [newAnalytics] = await db.insert(projectAnalytics).values(analytics).returning();
-    return newAnalytics;
-  }
-  async updateProjectAnalytics(id, analytics) {
-    const [updatedAnalytics] = await db.update(projectAnalytics).set({ ...analytics, lastUpdated: /* @__PURE__ */ new Date() }).where(eq(projectAnalytics.id, id)).returning();
-    return updatedAnalytics;
-  }
-  // Competitive Analysis
-  async getCompetitiveAnalyses(projectId) {
-    return await db.select().from(competitiveAnalysis).where(eq(competitiveAnalysis.projectId, projectId)).orderBy(desc(competitiveAnalysis.createdAt));
-  }
-  async getCompetitiveAnalysis(id) {
-    const [analysis] = await db.select().from(competitiveAnalysis).where(eq(competitiveAnalysis.id, id));
-    return analysis;
-  }
-  async createCompetitiveAnalysis(analysis) {
-    const [newAnalysis] = await db.insert(competitiveAnalysis).values(analysis).returning();
-    return newAnalysis;
-  }
-  async updateCompetitiveAnalysis(id, analysis) {
-    const [updatedAnalysis] = await db.update(competitiveAnalysis).set({ ...analysis, updatedAt: /* @__PURE__ */ new Date() }).where(eq(competitiveAnalysis.id, id)).returning();
-    return updatedAnalysis;
-  }
-  async deleteCompetitiveAnalysis(id) {
-    const result = await db.delete(competitiveAnalysis).where(eq(competitiveAnalysis.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Project Backups
-  async createProjectBackup(projectId, userId, backupType, description) {
-    const project = await this.getProject(projectId, userId);
-    if (!project) {
-      throw new Error("Project not found");
-    }
-    const [
-      empathyMapsData,
-      personasData,
-      interviewsData,
-      observationsData,
-      povStatementsData,
-      hmwQuestionsData,
-      ideasData,
-      prototypesData,
-      testPlansData
-    ] = await Promise.all([
-      this.getEmpathyMaps(projectId),
-      this.getPersonas(projectId),
-      this.getInterviews(projectId),
-      this.getObservations(projectId),
-      this.getPovStatements(projectId),
-      this.getHmwQuestions(projectId),
-      this.getIdeas(projectId),
-      this.getPrototypes(projectId),
-      this.getTestPlans(projectId)
-    ]);
-    const projectSnapshot = {
-      project,
-      empathyMaps: empathyMapsData,
-      personas: personasData,
-      interviews: interviewsData,
-      observations: observationsData,
-      povStatements: povStatementsData,
-      hmwQuestions: hmwQuestionsData,
-      ideas: ideasData,
-      prototypes: prototypesData,
-      testPlans: testPlansData
-    };
-    const totalItems = empathyMapsData.length + personasData.length + interviewsData.length + observationsData.length + povStatementsData.length + hmwQuestionsData.length + ideasData.length + prototypesData.length + testPlansData.length;
-    const [backup] = await db.insert(projectBackups).values({
-      projectId,
-      backupType,
-      description,
-      projectSnapshot,
-      phaseSnapshot: project.currentPhase,
-      completionSnapshot: project.completionRate,
-      itemCount: totalItems
-    }).returning();
-    return backup;
-  }
-  async getProjectBackups(projectId) {
-    return await db.select().from(projectBackups).where(eq(projectBackups.projectId, projectId)).orderBy(desc(projectBackups.createdAt));
-  }
-  async getProjectBackup(id) {
-    const [backup] = await db.select().from(projectBackups).where(eq(projectBackups.id, id));
-    return backup;
-  }
-  async restoreProjectBackup(backupId) {
-    const backup = await this.getProjectBackup(backupId);
-    if (!backup || !backup.projectSnapshot) {
-      return false;
-    }
-    const snapshot = backup.projectSnapshot;
-    const projectId = backup.projectId;
-    await Promise.all([
-      db.delete(empathyMaps).where(eq(empathyMaps.projectId, projectId)),
-      db.delete(personas).where(eq(personas.projectId, projectId)),
-      db.delete(interviews).where(eq(interviews.projectId, projectId)),
-      db.delete(observations).where(eq(observations.projectId, projectId)),
-      db.delete(povStatements).where(eq(povStatements.projectId, projectId)),
-      db.delete(hmwQuestions).where(eq(hmwQuestions.projectId, projectId)),
-      db.delete(ideas).where(eq(ideas.projectId, projectId)),
-      db.delete(prototypes).where(eq(prototypes.projectId, projectId)),
-      db.delete(testPlans).where(eq(testPlans.projectId, projectId))
-    ]);
-    const userId = snapshot.project.userId;
-    await this.updateProject(projectId, userId, {
-      name: snapshot.project.name,
-      description: snapshot.project.description,
-      status: snapshot.project.status,
-      currentPhase: snapshot.project.currentPhase,
-      completionRate: snapshot.project.completionRate
-    });
-    if (snapshot.empathyMaps?.length > 0) {
-      await db.insert(empathyMaps).values(
-        snapshot.empathyMaps.map((em) => {
-          const { id, createdAt, updatedAt, ...rest } = em;
-          return rest;
-        })
-      );
-    }
-    if (snapshot.personas?.length > 0) {
-      await db.insert(personas).values(
-        snapshot.personas.map((p) => {
-          const { id, createdAt, updatedAt, ...rest } = p;
-          return rest;
-        })
-      );
-    }
-    if (snapshot.interviews?.length > 0) {
-      await db.insert(interviews).values(
-        snapshot.interviews.map((i) => {
-          const { id, createdAt, ...rest } = i;
-          return rest;
-        })
-      );
-    }
-    if (snapshot.observations?.length > 0) {
-      await db.insert(observations).values(
-        snapshot.observations.map((o) => {
-          const { id, createdAt, ...rest } = o;
-          return rest;
-        })
-      );
-    }
-    if (snapshot.povStatements?.length > 0) {
-      await db.insert(povStatements).values(
-        snapshot.povStatements.map((p) => {
-          const { id, createdAt, ...rest } = p;
-          return rest;
-        })
-      );
-    }
-    if (snapshot.hmwQuestions?.length > 0) {
-      await db.insert(hmwQuestions).values(
-        snapshot.hmwQuestions.map((h) => {
-          const { id, createdAt, ...rest } = h;
-          return rest;
-        })
-      );
-    }
-    if (snapshot.ideas?.length > 0) {
-      await db.insert(ideas).values(
-        snapshot.ideas.map((idea) => {
-          const { id, createdAt, ...rest } = idea;
-          return rest;
-        })
-      );
-    }
-    if (snapshot.prototypes?.length > 0) {
-      await db.insert(prototypes).values(
-        snapshot.prototypes.map((p) => {
-          const { id, createdAt, ...rest } = p;
-          return rest;
-        })
-      );
-    }
-    if (snapshot.testPlans?.length > 0) {
-      await db.insert(testPlans).values(
-        snapshot.testPlans.map((t) => {
-          const { id, createdAt, ...rest } = t;
-          return rest;
-        })
-      );
-    }
-    return true;
-  }
-  async deleteProjectBackup(id) {
-    const result = await db.delete(projectBackups).where(eq(projectBackups.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-  // Help Articles
-  async getHelpArticles() {
-    return await db.select().from(helpArticles).orderBy(desc(helpArticles.order), desc(helpArticles.createdAt));
-  }
-  async getHelpArticleBySlug(slug) {
-    const [article] = await db.select().from(helpArticles).where(eq(helpArticles.slug, slug));
-    return article;
-  }
-  async searchHelpArticles(searchTerm) {
-    const lowerSearch = searchTerm.toLowerCase();
-    const allArticles = await db.select().from(helpArticles);
-    return allArticles.filter((article) => {
-      const titleMatch = article.title.toLowerCase().includes(lowerSearch);
-      const contentMatch = article.content.toLowerCase().includes(lowerSearch);
-      const tagsMatch = article.tags && JSON.stringify(article.tags).toLowerCase().includes(lowerSearch);
-      const keywordsMatch = article.searchKeywords && JSON.stringify(article.searchKeywords).toLowerCase().includes(lowerSearch);
-      return titleMatch || contentMatch || tagsMatch || keywordsMatch;
-    });
-  }
-  async incrementHelpArticleViews(id) {
-    const [article] = await db.select().from(helpArticles).where(eq(helpArticles.id, id));
-    if (!article) return void 0;
-    const [updated] = await db.update(helpArticles).set({ viewCount: (article.viewCount || 0) + 1 }).where(eq(helpArticles.id, id)).returning();
-    return updated;
-  }
-  async incrementHelpArticleHelpful(id) {
-    const [article] = await db.select().from(helpArticles).where(eq(helpArticles.id, id));
-    if (!article) return void 0;
-    const [updated] = await db.update(helpArticles).set({ helpful: (article.helpful || 0) + 1 }).where(eq(helpArticles.id, id)).returning();
-    return updated;
-  }
-  async createHelpArticle(article) {
-    const [newArticle] = await db.insert(helpArticles).values(article).returning();
-    return newArticle;
-  }
-  async updateHelpArticle(id, article) {
-    const [updated] = await db.update(helpArticles).set({ ...article, updatedAt: /* @__PURE__ */ new Date() }).where(eq(helpArticles.id, id)).returning();
-    return updated;
-  }
-  async deleteHelpArticle(id) {
-    const result = await db.delete(helpArticles).where(eq(helpArticles.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-};
-var storage = new DatabaseStorage();
-async function initializeDefaultData() {
-  try {
-    const adminUser = await storage.getUserByUsername("dttools.app@gmail.com");
-    if (!adminUser) {
-      const hashedPassword = await bcrypt.hash("Gulex0519!@", 10);
-      await storage.createUser({
-        username: "dttools.app@gmail.com",
-        email: "dttools.app@gmail.com",
-        name: "DTTools Admin",
-        password: hashedPassword,
-        role: "admin",
-        company: "DTTools",
-        jobRole: "Administrator",
-        industry: "Design Thinking",
-        experience: "expert",
-        country: "Brasil",
-        state: "SP",
-        city: "S\xE3o Paulo"
-      });
-      console.log("\u2705 Admin user created successfully");
-    }
-    const existingPlans = await storage.getSubscriptionPlans();
-    if (existingPlans.length === 0) {
-      await storage.createSubscriptionPlan({
-        name: "Free",
-        displayName: "Plano Gratuito",
-        description: "Plan gratuito com recursos b\xE1sicos",
-        priceMonthly: 0,
-        priceYearly: 0,
-        features: ["3 projetos", "Ferramentas b\xE1sicas", "Suporte por email"],
-        maxProjects: 3,
-        isActive: true,
-        order: 1
-      });
-      await storage.createSubscriptionPlan({
-        name: "Pro",
-        displayName: "Plano Individual",
-        description: "Plan profissional com recursos avan\xE7ados",
-        priceMonthly: 4e3,
-        // R$ 40,00 in cents
-        priceYearly: 43200,
-        // R$ 432,00 in cents (10% discount)
-        features: ["Projetos ilimitados", "Todas as ferramentas", "An\xE1lise AI", "Suporte priorit\xE1rio"],
-        maxProjects: -1,
-        // unlimited
-        isActive: true,
-        order: 2
-      });
-      await storage.createSubscriptionPlan({
-        name: "Enterprise",
-        displayName: "Plano Enterprise",
-        description: "Plan empresarial com recursos completos (10 usu\xE1rios inclusos)",
-        priceMonthly: 29900,
-        // R$ 299,00 in cents
-        priceYearly: 322920,
-        // R$ 3.229,20 in cents (10% discount: 29900 * 12 * 0.9)
-        features: ["Tudo do Pro", "10 usu\xE1rios inclusos", "Usu\xE1rios adicionais: R$ 29,90/usu\xE1rio", "Time ilimitado", "Suporte dedicado", "Treinamentos"],
-        maxProjects: -1,
-        // unlimited
-        isActive: true,
-        order: 3
-      });
-      console.log("\u2705 Subscription plans created");
-    } else {
-      await db.update(subscriptionPlans).set({ order: 1 }).where(eq(subscriptionPlans.name, "Free"));
-      await db.update(subscriptionPlans).set({ order: 2 }).where(eq(subscriptionPlans.name, "Pro"));
-      await db.update(subscriptionPlans).set({ order: 3 }).where(eq(subscriptionPlans.name, "Enterprise"));
-      console.log("\u2705 Subscription plan order updated");
-    }
-    const existingArticles = await storage.getArticles();
-    const dtToolsArticles = existingArticles.filter((a) => a.author === "DTTools");
-    if (dtToolsArticles.length === 0) {
-      const defaultArticles = [
-        {
-          title: "Introdu\xE7\xE3o ao Design Thinking",
-          slug: "introducao-design-thinking",
-          category: "foundations",
-          author: "DTTools",
-          description: "Aprenda os fundamentos do Design Thinking e como aplicar em seus projetos",
-          content: "# Introdu\xE7\xE3o ao Design Thinking\n\nDesign Thinking \xE9 uma abordagem centrada no ser humano para inova\xE7\xE3o...",
-          tags: ["fundamentos", "iniciante", "conceitos"],
-          readTime: 5,
-          featured: true,
-          published: true
-        },
-        {
-          title: "Como criar Mapas de Empatia eficazes",
-          slug: "mapas-empatia-eficazes",
-          category: "empathize",
-          author: "DTTools",
-          description: "Guia completo para criar Mapas de Empatia que revelam insights profundos sobre seus usu\xE1rios",
-          content: "# Mapas de Empatia\n\nMapas de Empatia s\xE3o ferramentas poderosas para entender seus usu\xE1rios...",
-          tags: ["empatizar", "ferramentas", "usu\xE1rios"],
-          readTime: 7,
-          featured: true,
-          published: true
-        },
-        {
-          title: "Definindo Problemas com POV Statements",
-          slug: "pov-statements-guia",
-          category: "define",
-          author: "DTTools",
-          description: "Aprenda a estruturar Point of View statements para definir problemas de forma clara",
-          content: "# POV Statements\n\nPoint of View statements ajudam a definir o problema certo...",
-          tags: ["definir", "problema", "framework"],
-          readTime: 6,
-          featured: false,
-          published: true
-        },
-        {
-          title: "T\xE9cnicas de Brainstorming para Idea\xE7\xE3o",
-          slug: "brainstorming-tecnicas",
-          category: "ideate",
-          author: "DTTools",
-          description: "Descubra t\xE9cnicas criativas de brainstorming para gerar ideias inovadoras",
-          content: "# Brainstorming Eficaz\n\nBrainstorming \xE9 mais do que simplesmente listar ideias...",
-          tags: ["idear", "criatividade", "t\xE9cnicas"],
-          readTime: 8,
-          featured: true,
-          published: true
-        },
-        {
-          title: "Prototipagem R\xE1pida: Do Papel ao Digital",
-          slug: "prototipagem-rapida",
-          category: "prototype",
-          author: "DTTools",
-          description: "Aprenda a criar prot\xF3tipos r\xE1pidos para validar suas ideias",
-          content: "# Prototipagem R\xE1pida\n\nProt\xF3tipos permitem testar ideias rapidamente...",
-          tags: ["prototipar", "valida\xE7\xE3o", "pr\xE1tica"],
-          readTime: 10,
-          featured: false,
-          published: true
-        },
-        {
-          title: "Testes com Usu\xE1rios: Melhores Pr\xE1ticas",
-          slug: "testes-usuarios-praticas",
-          category: "test",
-          author: "DTTools",
-          description: "Guia completo para conduzir testes de usabilidade e coletar feedback valioso",
-          content: "# Testes com Usu\xE1rios\n\nTestar com usu\xE1rios reais \xE9 essencial para validar solu\xE7\xF5es...",
-          tags: ["testar", "feedback", "valida\xE7\xE3o"],
-          readTime: 9,
-          featured: true,
-          published: true
+init_schema();
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { eq } from "drizzle-orm";
+function setupPassport() {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID || "",
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || "/api/auth/google/callback"
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          const email = profile.emails?.[0]?.value;
+          const googleId = profile.id;
+          const displayName = profile.displayName || email?.split("@")[0] || "User";
+          const profilePicture = profile.photos?.[0]?.value;
+          if (!email) {
+            return done(new Error("No email found in Google profile"), void 0);
+          }
+          let [user] = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
+          if (user) {
+            return done(null, user);
+          }
+          [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+          if (user) {
+            const [updatedUser] = await db.update(users).set({
+              googleId,
+              provider: "google",
+              profilePicture: profilePicture || user.profilePicture
+            }).where(eq(users.id, user.id)).returning();
+            return done(null, updatedUser);
+          }
+          const allPlans = await db.select().from(subscriptionPlans);
+          const freePlan = allPlans.find((p) => p.name.toLowerCase() === "free");
+          if (!freePlan) {
+            console.error("\u274C [Passport Google] Free plan not found!");
+            console.error("Available plans:", allPlans.map((p) => p.name).join(", "));
+            return done(new Error("System configuration error"), void 0);
+          }
+          const username = email.split("@")[0] + "_" + Math.random().toString(36).substring(7);
+          const [newUser] = await db.insert(users).values({
+            email,
+            username,
+            name: displayName,
+            provider: "google",
+            googleId,
+            profilePicture,
+            password: null,
+            // No password for OAuth users
+            role: "user",
+            subscriptionPlanId: freePlan.id,
+            // Automatically assign Free plan
+            subscriptionStatus: "active"
+          }).returning();
+          console.log(`\u2705 [Passport Google] New user created with Free plan: ${newUser.email}`);
+          return done(null, newUser);
+        } catch (error) {
+          console.error("[Passport Google] Error:", error);
+          return done(error, void 0);
         }
-      ];
-      for (const article of defaultArticles) {
-        await storage.createArticle(article);
       }
-      console.log("\u2705 Default articles created");
-    }
-    const existingHelpArticles = await storage.getHelpArticles();
-    if (existingHelpArticles.length === 0) {
-      const defaultHelpArticles = [
-        {
-          title: "Como come\xE7ar a usar o DTTools",
-          slug: "como-comecar",
-          category: "getting-started",
-          content: "# Como come\xE7ar\n\nBem-vindo ao DTTools! Este guia vai te ajudar a dar os primeiros passos...",
-          tags: ["iniciante", "tutorial", "primeiros-passos"],
-          keywords: ["come\xE7ar", "iniciar", "primeiro projeto"],
-          order: 1,
-          published: true
-        },
-        {
-          title: "Criando seu primeiro projeto",
-          slug: "primeiro-projeto",
-          category: "getting-started",
-          content: "# Seu Primeiro Projeto\n\nCriar um projeto no DTTools \xE9 simples e r\xE1pido...",
-          tags: ["projeto", "tutorial", "iniciante"],
-          keywords: ["criar projeto", "novo projeto"],
-          order: 2,
-          published: true
-        },
-        {
-          title: "Entendendo as 5 fases do Design Thinking",
-          slug: "cinco-fases",
-          category: "getting-started",
-          content: "# As 5 Fases\n\nDesign Thinking \xE9 dividido em 5 fases: Empatizar, Definir, Idear, Prototipar e Testar...",
-          tags: ["fases", "metodologia", "design thinking"],
-          keywords: ["fases", "empatizar", "definir", "idear", "prototipar", "testar"],
-          order: 3,
-          published: true
-        },
-        {
-          title: "Trabalhando em equipe",
-          slug: "trabalho-equipe",
-          category: "collaboration",
-          content: "# Colabora\xE7\xE3o\n\nO DTTools facilita o trabalho em equipe com ferramentas de colabora\xE7\xE3o...",
-          tags: ["equipe", "colabora\xE7\xE3o", "compartilhamento"],
-          keywords: ["equipe", "time", "colaborar", "compartilhar"],
-          order: 4,
-          published: true
-        },
-        {
-          title: "Exportando seus dados",
-          slug: "exportar-dados",
-          category: "features",
-          content: "# Exporta\xE7\xE3o\n\nVoc\xEA pode exportar seus projetos em PDF, CSV e outros formatos...",
-          tags: ["exportar", "pdf", "download"],
-          keywords: ["exportar", "download", "pdf", "csv"],
-          order: 5,
-          published: true
-        }
-      ];
-      for (const helpArticle of defaultHelpArticles) {
-        await storage.createHelpArticle(helpArticle);
+    )
+  );
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+      if (!user) {
+        return done(new Error("User not found"), null);
       }
-      console.log("\u2705 Default help articles created");
+      done(null, user);
+    } catch (error) {
+      done(error, null);
     }
-  } catch (error) {
-    console.error("\u274C Error initializing default data:", error);
-  }
+  });
 }
+var passport_config_default = passport;
 
 // server/routes.ts
+init_storage();
 init_schema();
 import bcrypt2 from "bcrypt";
 import Stripe from "stripe";
-import { sql as sql2 } from "drizzle-orm";
+import { sql as sql3 } from "drizzle-orm";
 
 // server/subscriptionMiddleware.ts
+init_storage();
+async function loadUserSubscription(req, res, next) {
+  if (!req.user?.id) {
+    const freePlan = await storage.getSubscriptionPlanByName("free");
+    if (freePlan) {
+      req.subscription = {
+        plan: freePlan,
+        limits: {
+          maxProjects: freePlan.maxProjects,
+          maxPersonasPerProject: freePlan.maxPersonasPerProject,
+          maxUsersPerTeam: freePlan.maxUsersPerTeam,
+          aiChatLimit: freePlan.aiChatLimit,
+          libraryArticlesCount: freePlan.libraryArticlesCount,
+          canCollaborate: freePlan.hasCollaboration ?? false,
+          canExportPDF: Array.isArray(freePlan.exportFormats) ? freePlan.exportFormats.includes("pdf") : false,
+          canExportPNG: Array.isArray(freePlan.exportFormats) ? freePlan.exportFormats.includes("png") : false,
+          canExportCSV: Array.isArray(freePlan.exportFormats) ? freePlan.exportFormats.includes("csv") : false,
+          hasPermissionManagement: freePlan.hasPermissionManagement ?? false,
+          hasSharedWorkspace: freePlan.hasSharedWorkspace ?? false,
+          hasCommentsAndFeedback: freePlan.hasCommentsAndFeedback ?? false
+        }
+      };
+    }
+    return next();
+  }
+  try {
+    const userSubscription = await storage.getUserActiveSubscription(req.user.id);
+    let plan;
+    if (userSubscription) {
+      plan = await storage.getSubscriptionPlan(userSubscription.planId);
+    } else {
+      plan = await storage.getSubscriptionPlanByName("free");
+    }
+    if (plan) {
+      req.subscription = {
+        plan,
+        limits: {
+          maxProjects: plan.maxProjects,
+          maxPersonasPerProject: plan.maxPersonasPerProject,
+          maxUsersPerTeam: plan.maxUsersPerTeam,
+          aiChatLimit: plan.aiChatLimit,
+          libraryArticlesCount: plan.libraryArticlesCount,
+          canCollaborate: plan.hasCollaboration ?? false,
+          canExportPDF: Array.isArray(plan.exportFormats) ? plan.exportFormats.includes("pdf") : false,
+          canExportPNG: Array.isArray(plan.exportFormats) ? plan.exportFormats.includes("png") : false,
+          canExportCSV: Array.isArray(plan.exportFormats) ? plan.exportFormats.includes("csv") : false,
+          hasPermissionManagement: plan.hasPermissionManagement ?? false,
+          hasSharedWorkspace: plan.hasSharedWorkspace ?? false,
+          hasCommentsAndFeedback: plan.hasCommentsAndFeedback ?? false
+        }
+      };
+    }
+    next();
+  } catch (error) {
+    console.error("Error loading user subscription:", error);
+    next(error);
+  }
+}
 async function checkProjectLimit(req, res, next) {
   if (!req.user?.id || !req.subscription?.limits) {
     return next();
@@ -2272,24 +4354,155 @@ async function getSubscriptionInfo(req, res) {
   }
 }
 
-// server/aiService.ts
-import OpenAI from "openai";
-var openai = null;
-function initializeOpenAI() {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    console.warn("WARNING: OPENAI_API_KEY not found in environment variables. AI features will be disabled.");
-    console.warn("To enable AI features: Add OPENAI_API_KEY to Secrets panel and restart the application.");
-    return null;
-  }
+// server/middleware/checkAiProjectLimits.ts
+init_db();
+init_schema();
+import { eq as eq3 } from "drizzle-orm";
+async function checkAiProjectLimits(req, res, next) {
   try {
-    return new OpenAI({ apiKey });
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const user = await db.select().from(users).where(eq3(users.id, userId)).limit(1);
+    if (!user || user.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const userData = user[0];
+    if (userData.role === "admin") {
+      console.log(`\u2705 Admin user ${userId} bypassing AI project limits`);
+      return next();
+    }
+    if (!userData.subscriptionPlanId) {
+      return res.status(403).json({
+        error: "Voc\xEA precisa de um plano ativo para usar a gera\xE7\xE3o de projetos com IA.",
+        code: "NO_SUBSCRIPTION_PLAN",
+        currentUsage: userData.aiProjectsUsed || 0,
+        limit: null,
+        planName: "Nenhum",
+        upgradeUrl: "/pricing"
+      });
+    }
+    const plan = await db.select().from(subscriptionPlans).where(eq3(subscriptionPlans.id, userData.subscriptionPlanId)).limit(1);
+    if (!plan || plan.length === 0) {
+      return res.status(404).json({
+        error: "Plano de assinatura n\xE3o encontrado",
+        code: "PLAN_NOT_FOUND",
+        currentUsage: userData.aiProjectsUsed || 0,
+        limit: null,
+        planName: "Desconhecido",
+        upgradeUrl: "/pricing"
+      });
+    }
+    const planData = plan[0];
+    const currentUsage = userData.aiProjectsUsed || 0;
+    const limit = planData.maxAiProjects;
+    if (limit === null) {
+      return next();
+    }
+    if (currentUsage >= limit) {
+      return res.status(403).json({
+        error: `Voc\xEA atingiu o limite de ${limit} projeto${limit > 1 ? "s" : ""} AI gerado${limit > 1 ? "s" : ""} do plano ${planData.displayName}. Fa\xE7a upgrade para gerar mais projetos.`,
+        code: "AI_PROJECT_LIMIT_REACHED",
+        currentUsage,
+        limit,
+        planName: planData.displayName,
+        upgradeUrl: "/pricing"
+      });
+    }
+    next();
   } catch (error) {
-    console.error("ERROR: Failed to initialize OpenAI client:", error);
-    return null;
+    console.error("Error checking AI project limits:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 }
-openai = initializeOpenAI();
+async function incrementAiProjectsUsed(userId) {
+  try {
+    const user = await db.select().from(users).where(eq3(users.id, userId)).limit(1);
+    if (user && user.length > 0) {
+      const currentUsage = user[0].aiProjectsUsed || 0;
+      await db.update(users).set({ aiProjectsUsed: currentUsage + 1 }).where(eq3(users.id, userId));
+      console.log(`\u2705 Incremented AI projects used for user ${userId}: ${currentUsage} \u2192 ${currentUsage + 1}`);
+    }
+  } catch (error) {
+    console.error("Error incrementing AI projects used:", error);
+    throw error;
+  }
+}
+
+// server/middleware/checkDoubleDiamondLimit.ts
+init_storage();
+init_db();
+init_schema();
+import { eq as eq4 } from "drizzle-orm";
+var FREE_PLAN_DOUBLE_DIAMOND_LIMIT = 3;
+async function checkDoubleDiamondLimit(req, res, next) {
+  try {
+    const userId = req.session?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const user = await db.select().from(users).where(eq4(users.id, userId)).limit(1);
+    if (!user || user.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const userData = user[0];
+    if (userData.role === "admin") {
+      console.log(`\u2705 Admin user ${userId} bypassing Double Diamond limits`);
+      return next();
+    }
+    const userDoubleDiamondProjects = await storage.getDoubleDiamondProjects(userId);
+    const currentUsage = userDoubleDiamondProjects.length;
+    if (!userData.subscriptionPlanId) {
+      if (currentUsage >= FREE_PLAN_DOUBLE_DIAMOND_LIMIT) {
+        return res.status(403).json({
+          error: `Voc\xEA atingiu o limite de ${FREE_PLAN_DOUBLE_DIAMOND_LIMIT} projetos Double Diamond do plano gratuito. Fa\xE7a upgrade para criar projetos ilimitados.`,
+          code: "DOUBLE_DIAMOND_LIMIT_REACHED",
+          currentUsage,
+          limit: FREE_PLAN_DOUBLE_DIAMOND_LIMIT,
+          planName: "Gratuito",
+          upgradeUrl: "/pricing"
+        });
+      }
+      return next();
+    }
+    const plan = await db.select().from(subscriptionPlans).where(eq4(subscriptionPlans.id, userData.subscriptionPlanId)).limit(1);
+    if (!plan || plan.length === 0) {
+      if (currentUsage >= FREE_PLAN_DOUBLE_DIAMOND_LIMIT) {
+        return res.status(403).json({
+          error: `Voc\xEA atingiu o limite de ${FREE_PLAN_DOUBLE_DIAMOND_LIMIT} projetos Double Diamond. Fa\xE7a upgrade para criar projetos ilimitados.`,
+          code: "DOUBLE_DIAMOND_LIMIT_REACHED",
+          currentUsage,
+          limit: FREE_PLAN_DOUBLE_DIAMOND_LIMIT,
+          planName: "Gratuito",
+          upgradeUrl: "/pricing"
+        });
+      }
+      return next();
+    }
+    const planData = plan[0];
+    const isFreePlan = planData.name === "free" || planData.priceMonthly === 0;
+    if (isFreePlan) {
+      if (currentUsage >= FREE_PLAN_DOUBLE_DIAMOND_LIMIT) {
+        return res.status(403).json({
+          error: `Voc\xEA atingiu o limite de ${FREE_PLAN_DOUBLE_DIAMOND_LIMIT} projetos Double Diamond do plano ${planData.displayName}. Fa\xE7a upgrade para criar projetos ilimitados.`,
+          code: "DOUBLE_DIAMOND_LIMIT_REACHED",
+          currentUsage,
+          limit: FREE_PLAN_DOUBLE_DIAMOND_LIMIT,
+          planName: planData.displayName,
+          upgradeUrl: "/pricing"
+        });
+      }
+    }
+    next();
+  } catch (error) {
+    console.error("Error checking Double Diamond limit:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+// server/aiService.ts
+var openai = null;
 var DesignThinkingAI = class {
   getSystemPrompt(context) {
     const phaseGuides = {
@@ -2401,10 +4614,8 @@ Para funcionalidades avan\xE7adas de IA, configure a chave da API OpenAI nos Sec
       ];
       const response = await openai.chat.completions.create({
         model: "gpt-5",
-        // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: openaiMessages,
         max_tokens: 1e3
-        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
       return response.choices[0].message.content || "Desculpe, n\xE3o consegui gerar uma resposta. Tente novamente.";
     } catch (error) {
@@ -2424,14 +4635,12 @@ Para funcionalidades avan\xE7adas de IA, configure a chave da API OpenAI nos Sec
       const prompt = `Baseado no contexto de Design Thinking na fase ${context.currentPhase} e no t\xF3pico "${currentTopic}", gere 3 sugest\xF5es pr\xE1ticas e espec\xEDficas de pr\xF3ximos passos ou perguntas relevantes. Responda em formato JSON com um array de strings chamado "suggestions".`;
       const response = await openai.chat.completions.create({
         model: "gpt-5",
-        // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: [
           { role: "system", content: this.getSystemPrompt(context) },
           { role: "user", content: prompt }
         ],
         response_format: { type: "json_object" },
         max_tokens: 500
-        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
       const result = JSON.parse(response.choices[0].message.content || '{"suggestions": []}');
       return result.suggestions || [];
@@ -2463,14 +4672,12 @@ Para funcionalidades avan\xE7adas de IA, configure a chave da API OpenAI nos Sec
       }
       const response = await openai.chat.completions.create({
         model: "gpt-5",
-        // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: [
           { role: "system", content: this.getSystemPrompt({ currentPhase, userLevel: "intermediate" }) },
           { role: "user", content: prompt }
         ],
         response_format: { type: "json_object" },
         max_tokens: 800
-        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
       const result = JSON.parse(response.choices[0].message.content || '{"insights": [], "nextSteps": [], "completeness": 0}');
       return {
@@ -2548,7 +4755,6 @@ CRIT\xC9RIOS DE AN\xC1LISE:
 Seja espec\xEDfico, construtivo e ofere\xE7a insights acion\xE1veis. Responda em portugu\xEAs brasileiro.`;
       const response = await openai.chat.completions.create({
         model: "gpt-5",
-        // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
         messages: [
           {
             role: "system",
@@ -2558,7 +4764,6 @@ Seja espec\xEDfico, construtivo e ofere\xE7a insights acion\xE1veis. Responda em
         ],
         response_format: { type: "json_object" },
         max_tokens: 3e3
-        // Note: gpt-5 doesn't support temperature parameter, removed as per blueprint
       });
       const result = JSON.parse(response.choices[0].message.content || "{}");
       return {
@@ -2746,6 +4951,7 @@ var designThinkingAI = new DesignThinkingAI();
 init_geminiService();
 
 // server/pptxService.ts
+init_storage();
 import pptxgen from "pptxgenjs";
 import { jsPDF } from "jspdf";
 var PPTXService = class {
@@ -4159,6 +6365,456 @@ var PPTXService = class {
   }
 };
 
+// server/translation.ts
+import { GoogleGenAI as GoogleGenAI2 } from "@google/genai";
+var genAI = new GoogleGenAI2({
+  apiKey: process.env.GEMINI_API_KEY || ""
+});
+async function translateText(portugueseText, context = "content") {
+  if (!portugueseText || portugueseText.trim() === "") {
+    return { en: "", es: "", fr: "" };
+  }
+  const contextInstructions = {
+    title: "This is a title/heading. Keep it concise and impactful.",
+    description: "This is a brief description or summary. Keep it clear and engaging.",
+    content: "This is full content. Maintain formatting, tone, and all details."
+  };
+  const prompt = `You are a professional translator specializing in Design Thinking and business content.
+
+${contextInstructions[context]}
+
+Translate the following Portuguese text to English, Spanish, and French.
+Maintain the exact same tone, style, and formatting.
+For Design Thinking terms, use standard industry terminology.
+
+PORTUGUESE TEXT:
+${portugueseText}
+
+Return ONLY a JSON object with this exact structure (no markdown, no explanation):
+{
+  "en": "English translation here",
+  "es": "Spanish translation here",
+  "fr": "French translation here"
+}`;
+  try {
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
+    });
+    const text2 = response.text || "";
+    if (!text2) {
+      throw new Error("Empty response from AI");
+    }
+    const jsonMatch = text2.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid response format from AI");
+    }
+    const translations = JSON.parse(jsonMatch[0]);
+    return {
+      en: translations.en || "",
+      es: translations.es || "",
+      fr: translations.fr || ""
+    };
+  } catch (error) {
+    console.error("Translation error:", error);
+    return {
+      en: portugueseText,
+      es: portugueseText,
+      fr: portugueseText
+    };
+  }
+}
+async function translateArticle(article) {
+  const [titleTranslations, descTranslations, contentTranslations] = await Promise.all([
+    translateText(article.title, "title"),
+    translateText(article.description, "description"),
+    translateText(article.content, "content")
+  ]);
+  return {
+    titleEn: titleTranslations.en,
+    titleEs: titleTranslations.es,
+    titleFr: titleTranslations.fr,
+    descriptionEn: descTranslations.en,
+    descriptionEs: descTranslations.es,
+    descriptionFr: descTranslations.fr,
+    contentEn: contentTranslations.en,
+    contentEs: contentTranslations.es,
+    contentFr: contentTranslations.fr
+  };
+}
+async function translateVideo(video) {
+  const [titleTranslations, descTranslations] = await Promise.all([
+    translateText(video.title, "title"),
+    translateText(video.description, "description")
+  ]);
+  return {
+    titleEn: titleTranslations.en,
+    titleEs: titleTranslations.es,
+    titleFr: titleTranslations.fr,
+    descriptionEn: descTranslations.en,
+    descriptionEs: descTranslations.es,
+    descriptionFr: descTranslations.fr
+  };
+}
+async function translateTestimonial(testimonial) {
+  const translations = await translateText(testimonial.testimonialPt, "content");
+  return {
+    testimonialEn: translations.en,
+    testimonialEs: translations.es,
+    testimonialFr: translations.fr
+  };
+}
+
+// server/double-diamond-ai.ts
+import { GoogleGenAI as GoogleGenAI3 } from "@google/genai";
+var genAI2 = new GoogleGenAI3({
+  apiKey: process.env.GEMINI_API_KEY || ""
+});
+async function generateDiscoverPhase(input) {
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  const languageInstruction = isPortuguese ? "IMPORTANTE: Responda APENAS em PORTUGU\xCAS DO BRASIL. Todos os textos devem estar em portugu\xEAs." : isSpanish ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol." : isFrench ? "IMPORTANTE: Responda APENAS em FRANC\xCAS. Todos os textos devem estar em franc\xEAs." : "IMPORTANTE: Responda APENAS em INGL\xCAS. Todos os textos devem estar em ingl\xEAs.";
+  const prompt = `Voc\xEA \xE9 um especialista em Design Thinking conduzindo a fase DISCOVER do framework Double Diamond.
+
+${languageInstruction}
+
+CONTEXTO:
+- Setor: ${input.sector}
+- Case de Sucesso de Refer\xEAncia: ${input.successCase || "Nenhum"}
+- P\xFAblico-Alvo: ${input.targetAudience}
+- Declara\xE7\xE3o do Problema: ${input.problemStatement}
+
+Gere uma an\xE1lise de descoberta abrangente com:
+
+1. **Pain Points** (8-12 itens): Identifique problemas espec\xEDficos, frustra\xE7\xF5es e desafios que o p\xFAblico-alvo enfrenta
+   - Inclua categoria (operacional, emocional, financeiro, tecnol\xF3gico)
+   - Classifique severidade 1-5 (5 = cr\xEDtico)
+
+2. **Insights** (6-10 itens): Observa\xE7\xF5es-chave sobre comportamento do usu\xE1rio, tend\xEAncias de mercado ou padr\xF5es do setor
+   - Marque fonte: 'setor', 'case' ou 'persona'
+
+3. **Necessidades do Usu\xE1rio** (8-12 itens): Necessidades centrais que os usu\xE1rios est\xE3o tentando satisfazer
+   - Priorize 1-5 (5 = essencial)
+
+4. **Mapa de Empatia**: O que o usu\xE1rio Diz, Pensa, Faz e Sente (3-5 itens por quadrante)
+
+Retorne APENAS um objeto JSON (sem markdown):
+{
+  "painPoints": [{"text": "...", "category": "...", "severity": 3}],
+  "insights": [{"text": "...", "source": "sector"}],
+  "userNeeds": [{"need": "...", "priority": 4}],
+  "empathyMap": {
+    "says": ["..."],
+    "thinks": ["..."],
+    "does": ["..."],
+    "feels": ["..."]
+  }
+}`;
+  try {
+    const result = await genAI2.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
+    });
+    const text2 = result.text;
+    if (!text2) throw new Error("Empty AI response");
+    if (!text2) throw new Error("Empty AI response");
+    const jsonMatch = text2.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Invalid AI response format");
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Discover phase generation error:", error);
+    throw error;
+  }
+}
+async function generateDefinePhase(input) {
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  const languageInstruction = isPortuguese ? "IMPORTANTE: Responda APENAS em PORTUGU\xCAS DO BRASIL. Todos os textos devem estar em portugu\xEAs." : isSpanish ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol." : isFrench ? "IMPORTANTE: Responda APENAS em FRANC\xCAS. Todos os textos devem estar em franc\xEAs." : "IMPORTANTE: Responda APENAS em INGL\xCAS. Todos os textos devem estar em ingl\xEAs.";
+  const prompt = `Voc\xEA \xE9 um especialista em Design Thinking conduzindo a fase DEFINE do framework Double Diamond.
+
+${languageInstruction}
+
+Based on the DISCOVER phase findings, synthesize the problem:
+
+PAIN POINTS:
+${input.painPoints.map((p) => `- [${p.severity}/5] ${p.text}`).join("\n")}
+
+USER NEEDS:
+${input.userNeeds.map((n) => `- [${n.priority}/5] ${n.need}`).join("\n")}
+
+INSIGHTS:
+${input.insights.map((i) => `- ${i.text}`).join("\n")}
+
+Generate:
+
+1. **POV Statements** (3-5): Using formula: [User] needs [Need] because [Insight]
+   - Focus on the most critical pain points and needs
+   - Each POV should be specific and actionable
+
+2. **HMW Questions** (8-12): "How Might We..." questions that open up solution space
+   - Tag each with focus area: 'desirability', 'feasibility', or 'viability'
+   - Avoid too broad or too narrow questions
+   - Each HMW should be inspiring and solution-oriented
+
+Return ONLY a JSON object (no markdown):
+{
+  "povStatements": [{
+    "user": "busy professionals",
+    "need": "quick healthy meals",
+    "insight": "they have limited time but care about nutrition",
+    "fullStatement": "Busy professionals need quick healthy meals because they have limited time but care about nutrition"
+  }],
+  "hmwQuestions": [{
+    "question": "How might we make healthy eating as convenient as fast food?",
+    "focusArea": "desirability"
+  }]
+}`;
+  try {
+    const result = await genAI2.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
+    });
+    const text2 = result.text;
+    if (!text2) throw new Error("Empty AI response");
+    const jsonMatch = text2.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Invalid AI response format");
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Define phase generation error:", error);
+    throw error;
+  }
+}
+async function generateDevelopPhase(input) {
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  const languageInstruction = isPortuguese ? "IMPORTANTE: Responda APENAS em PORTUGU\xCAS DO BRASIL. Todos os textos devem estar em portugu\xEAs." : isSpanish ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol." : isFrench ? "IMPORTANTE: Responda APENAS em FRANC\xCAS. Todos os textos devem estar em franc\xEAs." : "IMPORTANTE: Responda APENAS em INGL\xCAS. Todos os textos devem estar em ingl\xEAs.";
+  const prompt = `Voc\xEA \xE9 um facilitador criativo de Design Thinking conduzindo a fase DEVELOP (Idea\xE7\xE3o).
+
+${languageInstruction}
+
+POV STATEMENT: ${input.selectedPov}
+HMW QUESTION: ${input.selectedHmw}
+SECTOR: ${input.sector}
+
+Generate a LARGE quantity of diverse ideas:
+
+1. **Regular Ideas** (15-20 ideas): Creative solutions to the HMW question
+   - Categories: digital product, physical product, service, platform, hybrid
+   - Rate innovation level 1-5 (1=incremental, 5=breakthrough)
+   - Be bold and imaginative
+
+2. **Cross-Pollinated Ideas** (5-8 ideas): Innovative solutions by combining concepts from different domains
+   - Example: Combine "ride-sharing" (Uber) + "subscription model" (Netflix) + "social gaming" (TikTok)
+   - Show which domains were combined
+   - Rate uniqueness 1-5
+
+Return ONLY a JSON object (no markdown):
+{
+  "ideas": [{
+    "title": "AI-Powered Meal Planner",
+    "description": "An app that creates personalized weekly meal plans based on dietary preferences, budget, and available time",
+    "category": "digital product",
+    "innovationLevel": 3
+  }],
+  "crossPollinatedIdeas": [{
+    "title": "Netflix for Meal Kits",
+    "description": "Subscription service that delivers ready-to-cook meal ingredients with recipe videos you can binge-watch",
+    "domains": ["subscription model", "meal delivery", "video streaming"],
+    "uniqueness": 4
+  }]
+}`;
+  try {
+    const result = await genAI2.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
+    });
+    const text2 = result.text;
+    if (!text2) throw new Error("Empty AI response");
+    const jsonMatch = text2.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Invalid AI response format");
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Develop phase generation error:", error);
+    throw error;
+  }
+}
+async function generateDeliverPhase(input) {
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  const languageInstruction = isPortuguese ? "IMPORTANTE: Responda APENAS em PORTUGU\xCAS DO BRASIL. Todos os textos devem estar em portugu\xEAs." : isSpanish ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol." : isFrench ? "IMPORTANTE: Responda APENAS em FRANC\xCAS. Todos os textos devem estar em franc\xEAs." : "IMPORTANTE: Responda APENAS em INGL\xCAS. Todos os textos devem estar em ingl\xEAs.";
+  const ideaDescriptions = input.selectedIdeas.map(
+    (idea) => `- ${idea.title}: ${idea.description}`
+  ).join("\n");
+  const prompt = `Voc\xEA \xE9 um especialista em Design Thinking conduzindo a fase DELIVER - criando um MVP funcional.
+
+${languageInstruction}
+
+POV: ${input.pov}
+SECTOR: ${input.sector}
+
+SELECTED IDEAS FOR MVP:
+${ideaDescriptions}
+
+Generate a complete MVP package:
+
+1. **MVP Concept**: Name, tagline, 3-5 core features, value proposition
+
+2. **Logo Suggestions** (3-4 options): Description, style, color palette, symbolism
+
+3. **Landing Page Structure**:
+   - Compelling headline and subheadline
+   - 4-5 sections (hero, problem, solution, features, testimonials/social proof)
+   - Final CTA (call to action)
+
+4. **Social Media Lines** (3-4 per platform):
+   - Twitter (concise, engaging)
+   - LinkedIn (professional, value-focused)
+   - Instagram (visual, aspirational)
+
+5. **Test Plan**: Objectives, target users, key metrics, test methods
+
+Return ONLY a JSON object (no markdown):
+{
+  "mvpConcept": {
+    "name": "QuickBite",
+    "tagline": "Healthy meals in minutes",
+    "coreFeatures": ["AI meal planning", "15-min recipes", "Nutrition tracking"],
+    "valueProposition": "..."
+  },
+  "logoSuggestions": [{
+    "description": "Modern fork and clock combined",
+    "style": "minimalist",
+    "colors": ["#2ECC71", "#34495E"],
+    "symbolism": "Speed meets nutrition"
+  }],
+  "landingPage": {
+    "headline": "...",
+    "subheadline": "...",
+    "sections": [{"title": "...", "content": "...", "cta": "..."}],
+    "finalCta": "Start Your Free Trial"
+  },
+  "socialMediaLines": {
+    "twitter": ["..."],
+    "linkedin": ["..."],
+    "instagram": ["..."]
+  },
+  "testPlan": {
+    "objectives": ["..."],
+    "targetUsers": "...",
+    "metrics": ["..."],
+    "testMethods": ["..."]
+  }
+}`;
+  try {
+    const result = await genAI2.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
+    });
+    const text2 = result.text;
+    if (!text2) throw new Error("Empty AI response");
+    const jsonMatch = text2.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Invalid AI response format");
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Deliver phase generation error:", error);
+    throw error;
+  }
+}
+async function analyzeDFV(input) {
+  const lang = input.language || "pt-BR";
+  const isPortuguese = lang.startsWith("pt");
+  const isSpanish = lang.startsWith("es");
+  const isFrench = lang.startsWith("fr");
+  const languageInstruction = isPortuguese ? "IMPORTANTE: Responda APENAS em PORTUGU\xCAS DO BRASIL. Todos os textos devem estar em portugu\xEAs." : isSpanish ? "IMPORTANTE: Responda APENAS em ESPANHOL. Todos os textos devem estar em espanhol." : isFrench ? "IMPORTANTE: Responda APENAS em FRANC\xCAS. Todos os textos devem estar em franc\xEAs." : "IMPORTANTE: Responda APENAS em INGL\xCAS. Todos os textos devem estar em ingl\xEAs.";
+  const prompt = `Voc\xEA \xE9 um estrategista de neg\xF3cios analisando um projeto de Design Thinking usando o framework DFV.
+
+${languageInstruction}
+
+POV: ${input.pov}
+MVP: ${JSON.stringify(input.mvpConcept, null, 2)}
+SETOR: ${input.sector}
+IDEIAS: ${JSON.stringify(input.selectedIdeas, null, 2)}
+
+Analise este projeto em tr\xEAs dimens\xF5es:
+
+1. **DESIRABILITY (Desejabilidade)** (0-100): Os usu\xE1rios querem isso?
+   - Resolve um problema real e validado?
+   - A proposta de valor \xE9 convincente?
+   - Os usu\xE1rios escolheriam isso ao inv\xE9s de alternativas?
+
+2. **FEASIBILITY (Viabilidade T\xE9cnica)** (0-100): Conseguimos construir isso?
+   - Complexidade t\xE9cnica
+   - Requisitos de recursos
+   - Tempo para mercado
+   - Capacidades da equipe
+
+3. **VIABILITY (Viabilidade de Neg\xF3cio)** (0-100): \xC9 um neg\xF3cio sustent\xE1vel?
+   - Potencial de receita
+   - Estrutura de custos
+   - Vantagem competitiva
+   - Tamanho do mercado
+
+Para cada dimens\xE3o, forne\xE7a:
+- Score (0-100)
+- Pontos Fortes (2-3 pontos)
+- Preocupa\xE7\xF5es (2-3 pontos)
+- Racioc\xEDnio (1-2 frases explicando o score)
+
+Depois forne\xE7a:
+- Avalia\xE7\xE3o geral (overall assessment)
+- Top 3-5 recomenda\xE7\xF5es
+- Pr\xF3ximos passos (priorizados)
+
+Retorne APENAS um objeto JSON (sem markdown):
+{
+  "desirabilityScore": 75,
+  "feasibilityScore": 60,
+  "viabilityScore": 80,
+  "analysis": {
+    "desirability": {
+      "strengths": ["Resolve problema validado", "Proposta de valor clara"],
+      "concerns": ["Mercado saturado", "Mudan\xE7a de comportamento do usu\xE1rio necess\xE1ria"],
+      "reasoning": "Forte fit produto-mercado baseado no POV, mas o cen\xE1rio competitivo est\xE1 lotado"
+    },
+    "feasibility": {
+      "strengths": ["Tecnologia dispon\xEDvel", "Equipe capacitada"],
+      "concerns": ["Complexidade de integra\xE7\xE3o", "Recursos necess\xE1rios"],
+      "reasoning": "Vi\xE1vel tecnicamente, mas requer investimento significativo em desenvolvimento"
+    },
+    "viability": {
+      "strengths": ["Bom potencial de receita", "Modelo de neg\xF3cio claro"],
+      "concerns": ["Custos iniciais altos", "Competi\xE7\xE3o intensa"],
+      "reasoning": "Neg\xF3cio vi\xE1vel com potencial de crescimento, mas precisa de capital inicial"
+    }
+  },
+  "overallAssessment": "Conceito promissor com forte viabilidade mas desafios moderados de viabilidade t\xE9cnica",
+  "recommendations": ["Come\xE7ar com MVP", "Validar com 20 usu\xE1rios", "Buscar investimento inicial"],
+  "nextSteps": ["Construir landing page", "Executar campanha pr\xE9-lan\xE7amento", "Montar equipe t\xE9cnica"]
+}`;
+  try {
+    const result = await genAI2.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: prompt
+    });
+    const text2 = result.text;
+    if (!text2) throw new Error("Empty AI response");
+    const jsonMatch = text2.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Invalid AI response format");
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("DFV analysis error:", error);
+    throw error;
+  }
+}
+
 // server/routes.ts
 var stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-08-27.basil"
@@ -4184,6 +6840,40 @@ function requireAdmin(req, res, next) {
   }
   req.user = req.session.user;
   next();
+}
+function requireProjectAccess(requiredRole = "viewer") {
+  return async (req, res, next) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    const projectId = req.params.projectId;
+    if (!projectId) {
+      return res.status(400).json({ error: "Project ID required" });
+    }
+    try {
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      const userId = req.session.userId;
+      if (project.userId === userId) {
+        return next();
+      }
+      const member = await storage.getProjectMember(projectId, userId);
+      if (!member) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      const roleHierarchy = { viewer: 1, editor: 2, owner: 3 };
+      const userLevel = roleHierarchy[member.role] || 0;
+      const requiredLevel = roleHierarchy[requiredRole];
+      if (userLevel < requiredLevel) {
+        return res.status(403).json({ error: "Insufficient permissions" });
+      }
+      next();
+    } catch (error) {
+      return res.status(500).json({ error: "Failed to check permissions" });
+    }
+  };
 }
 var storage_config = multer.memoryStorage();
 var upload = multer({
@@ -4230,10 +6920,146 @@ function recordProjectCreation(userId, projectName) {
   });
 }
 async function registerRoutes(app2) {
+  const expressModule = await import("express");
+  const expressRaw = expressModule.raw || expressModule.default && expressModule.default.raw;
+  if (!expressRaw) {
+    throw new Error("Failed to load express raw body parser");
+  }
+  app2.post(
+    "/api/stripe-webhook",
+    expressRaw({ type: "application/json" }),
+    async (req, res) => {
+      const sig = req.headers["stripe-signature"];
+      let event;
+      try {
+        event = stripe.webhooks.constructEvent(
+          req.body,
+          sig ?? "",
+          process.env.STRIPE_WEBHOOK_SECRET ?? ""
+        );
+      } catch (err) {
+        console.log("Webhook signature verification failed.", err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
+      try {
+        switch (event.type) {
+          case "checkout.session.completed": {
+            const session2 = event.data.object;
+            if (session2.metadata) {
+              const { userId, planId, billingPeriod } = session2.metadata;
+              await storage.createUserSubscription({
+                userId,
+                planId,
+                stripeSubscriptionId: session2.subscription,
+                status: "active",
+                billingPeriod,
+                currentPeriodStart: /* @__PURE__ */ new Date(),
+                currentPeriodEnd: new Date(
+                  Date.now() + (billingPeriod === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1e3
+                )
+              });
+              await storage.updateUser(userId, {
+                stripeSubscriptionId: session2.subscription,
+                subscriptionPlanId: planId,
+                subscriptionStatus: "active"
+              });
+              console.log(
+                `\u2705 Subscription activated for user ${userId}, plan ${planId}`
+              );
+            }
+            break;
+          }
+          case "customer.subscription.updated":
+          case "customer.subscription.deleted": {
+            const subscription = event.data.object;
+            const customer = await stripe.customers.retrieve(
+              subscription.customer
+            );
+            if (customer.metadata?.userId) {
+              const status = subscription.status === "active" ? "active" : subscription.status === "canceled" ? "canceled" : "expired";
+              await storage.updateUser(customer.metadata.userId, {
+                subscriptionStatus: status,
+                subscriptionEndDate: subscription.current_period_end ? new Date(subscription.current_period_end * 1e3) : null
+              });
+              const userSub = await storage.getUserActiveSubscription(
+                customer.metadata.userId
+              );
+              if (userSub) {
+                await storage.updateUserSubscription(userSub.id, {
+                  status,
+                  currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1e3) : null,
+                  cancelAtPeriodEnd: subscription.cancel_at_period_end
+                });
+              }
+              console.log(
+                `\u2705 Subscription ${status} for user ${customer.metadata.userId}`
+              );
+            }
+            break;
+          }
+          case "invoice.payment_succeeded": {
+            const invoice = event.data.object;
+            if (invoice.subscription) {
+              const sub = await stripe.subscriptions.retrieve(
+                invoice.subscription
+              );
+              const cust = await stripe.customers.retrieve(
+                sub.customer
+              );
+              if (cust.metadata?.userId) {
+                await storage.updateUser(cust.metadata.userId, {
+                  subscriptionStatus: "active"
+                });
+                const userSub = await storage.getUserActiveSubscription(
+                  cust.metadata.userId
+                );
+                if (userSub) {
+                  await storage.updateUserSubscription(userSub.id, {
+                    status: "active",
+                    currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1e3) : null
+                  });
+                }
+                console.log(
+                  `\u2705 Recurring payment succeeded for user ${cust.metadata.userId}`
+                );
+              }
+            }
+            break;
+          }
+          case "invoice.payment_failed": {
+            const failedInvoice = event.data.object;
+            if (failedInvoice.subscription) {
+              const sub = await stripe.subscriptions.retrieve(
+                failedInvoice.subscription
+              );
+              const cust = await stripe.customers.retrieve(
+                sub.customer
+              );
+              if (cust.metadata?.userId) {
+                await storage.updateUser(cust.metadata.userId, {
+                  subscriptionStatus: "expired"
+                });
+                console.log(
+                  `\u26A0\uFE0F Payment failed for user ${cust.metadata.userId}`
+                );
+              }
+            }
+            break;
+          }
+          default:
+            console.log(`Unhandled event type ${event.type}`);
+        }
+        res.json({ received: true });
+      } catch (error) {
+        console.error("Error processing webhook:", error);
+        res.status(500).json({ error: "Webhook processing failed" });
+      }
+    }
+  );
   app2.get("/api/health", async (_req, res) => {
     try {
       const db2 = (await Promise.resolve().then(() => (init_db(), db_exports))).db;
-      await db2.execute(sql2`SELECT 1`);
+      await db2.execute(sql3`SELECT 1`);
       res.json({
         status: "healthy",
         timestamp: (/* @__PURE__ */ new Date()).toISOString(),
@@ -4399,13 +7225,178 @@ async function registerRoutes(app2) {
   app2.delete("/api/projects/:id", requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId;
-      const success = await storage.deleteProject(req.params.id, userId);
+      const isAdmin = req.session.user?.role === "admin";
+      console.log("[DELETE PROJECT] Request:", {
+        projectId: req.params.id,
+        userId,
+        isAdmin,
+        userRole: req.session.user?.role
+      });
+      let success;
+      if (isAdmin) {
+        console.log("[DELETE PROJECT] Admin delete - fetching all projects");
+        const allProjects = await storage.getAllProjects();
+        const project = allProjects.find((p) => p.id === req.params.id);
+        console.log("[DELETE PROJECT] Project found:", {
+          found: !!project,
+          projectUserId: project?.userId
+        });
+        if (!project) {
+          console.log("[DELETE PROJECT] Project not found");
+          return res.status(404).json({ error: "Project not found" });
+        }
+        console.log("[DELETE PROJECT] Calling deleteProject with:", {
+          projectId: req.params.id,
+          projectUserId: project.userId
+        });
+        success = await storage.deleteProject(req.params.id, project.userId);
+        console.log("[DELETE PROJECT] Delete result:", success);
+      } else {
+        console.log("[DELETE PROJECT] Regular user delete");
+        success = await storage.deleteProject(req.params.id, userId);
+        console.log("[DELETE PROJECT] Delete result:", success);
+      }
       if (!success) {
+        console.log("[DELETE PROJECT] Delete failed - returning 404");
         return res.status(404).json({ error: "Project not found" });
+      }
+      console.log("[DELETE PROJECT] Delete successful");
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[DELETE PROJECT] Error:", error);
+      res.status(500).json({ error: "Failed to delete project" });
+    }
+  });
+  app2.get("/api/projects/:projectId/members", requireAuth, requireProjectAccess("viewer"), async (req, res) => {
+    try {
+      const members = await storage.getProjectMembers(req.params.projectId);
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch project members" });
+    }
+  });
+  app2.post("/api/projects/:projectId/members/invite", requireAuth, requireProjectAccess("owner"), async (req, res) => {
+    try {
+      const { email, role } = req.body;
+      const userId = req.session.userId;
+      const projectId = req.params.projectId;
+      if (!email || !role) {
+        return res.status(400).json({ error: "Email and role are required" });
+      }
+      if (!["editor", "viewer"].includes(role)) {
+        return res.status(400).json({ error: "Invalid role. Must be 'editor' or 'viewer'" });
+      }
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3);
+      const invite = await storage.createProjectInvite({
+        projectId,
+        email,
+        role,
+        invitedBy: userId,
+        token,
+        expiresAt
+      });
+      res.status(201).json(invite);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create invite" });
+    }
+  });
+  app2.delete("/api/projects/:projectId/members/:userId", requireAuth, requireProjectAccess("owner"), async (req, res) => {
+    try {
+      const success = await storage.deleteProjectMember(req.params.projectId, req.params.userId);
+      if (!success) {
+        return res.status(404).json({ error: "Member not found" });
       }
       res.json({ success: true });
     } catch (error) {
-      res.status(500).json({ error: "Failed to delete project" });
+      res.status(500).json({ error: "Failed to remove member" });
+    }
+  });
+  app2.patch("/api/projects/:projectId/members/:userId/role", requireAuth, requireProjectAccess("owner"), async (req, res) => {
+    try {
+      const { role } = req.body;
+      if (!role || !["editor", "viewer"].includes(role)) {
+        return res.status(400).json({ error: "Invalid role" });
+      }
+      const member = await storage.updateProjectMemberRole(req.params.projectId, req.params.userId, role);
+      if (!member) {
+        return res.status(404).json({ error: "Member not found" });
+      }
+      res.json(member);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update member role" });
+    }
+  });
+  app2.get("/api/invites", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      if (!user?.email) {
+        return res.status(400).json({ error: "User email not found" });
+      }
+      const invites = await storage.getProjectInvites(user.email);
+      res.json(invites);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch invites" });
+    }
+  });
+  app2.post("/api/invites/:token/accept", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      if (!user?.email) {
+        return res.status(400).json({ error: "User email not found" });
+      }
+      const invite = await storage.getProjectInviteByToken(req.params.token);
+      if (!invite) {
+        return res.status(404).json({ error: "Invite not found" });
+      }
+      if (invite.email !== user.email) {
+        return res.status(403).json({ error: "This invite is not for you" });
+      }
+      if (invite.status !== "pending") {
+        return res.status(400).json({ error: "Invite already processed" });
+      }
+      if (new Date(invite.expiresAt) < /* @__PURE__ */ new Date()) {
+        await storage.updateProjectInvite(invite.id, { status: "expired" });
+        return res.status(400).json({ error: "Invite has expired" });
+      }
+      await storage.createProjectMember({
+        projectId: invite.projectId,
+        userId,
+        role: invite.role,
+        invitedBy: invite.invitedBy
+      });
+      await storage.updateProjectInvite(invite.id, {
+        status: "accepted",
+        respondedAt: /* @__PURE__ */ new Date()
+      });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to accept invite" });
+    }
+  });
+  app2.post("/api/invites/:token/decline", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      if (!user?.email) {
+        return res.status(400).json({ error: "User email not found" });
+      }
+      const invite = await storage.getProjectInviteByToken(req.params.token);
+      if (!invite) {
+        return res.status(404).json({ error: "Invite not found" });
+      }
+      if (invite.email !== user.email) {
+        return res.status(403).json({ error: "This invite is not for you" });
+      }
+      await storage.updateProjectInvite(invite.id, {
+        status: "declined",
+        respondedAt: /* @__PURE__ */ new Date()
+      });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to decline invite" });
     }
   });
   app2.get("/api/projects/:projectId/empathy-maps", requireAuth, async (req, res) => {
@@ -4922,22 +7913,76 @@ async function registerRoutes(app2) {
   });
   app2.post("/api/articles", requireAdmin, async (req, res) => {
     try {
-      const validatedData = insertArticleSchema.parse(req.body);
+      let validatedData = insertArticleSchema.parse(req.body);
+      if (!validatedData.titleEn || !validatedData.contentEn) {
+        try {
+          const translations = await translateArticle({
+            title: validatedData.title,
+            description: validatedData.description || "",
+            content: validatedData.content
+          });
+          validatedData = {
+            ...validatedData,
+            titleEn: validatedData.titleEn || translations.titleEn,
+            descriptionEn: validatedData.descriptionEn || translations.descriptionEn,
+            contentEn: validatedData.contentEn || translations.contentEn,
+            titleEs: validatedData.titleEs || translations.titleEs,
+            descriptionEs: validatedData.descriptionEs || translations.descriptionEs,
+            contentEs: validatedData.contentEs || translations.contentEs,
+            titleFr: validatedData.titleFr || translations.titleFr,
+            descriptionFr: validatedData.descriptionFr || translations.descriptionFr,
+            contentFr: validatedData.contentFr || translations.contentFr
+          };
+        } catch (translationError) {
+          console.error("Auto-translation error (continuing without translation):", translationError);
+        }
+      }
       const article = await storage.createArticle(validatedData);
       res.status(201).json(article);
     } catch (error) {
+      console.error("Error creating article:", error);
       res.status(400).json({ error: "Invalid article data" });
     }
   });
   app2.put("/api/articles/:id", requireAdmin, async (req, res) => {
     try {
-      const validatedData = insertArticleSchema.partial().parse(req.body);
+      let validatedData = insertArticleSchema.partial().parse(req.body);
+      if (validatedData.title || validatedData.description || validatedData.content) {
+        const existingArticle = await storage.getArticle(req.params.id);
+        if (existingArticle) {
+          const needsTranslation = validatedData.title && !validatedData.titleEn || validatedData.description && !validatedData.descriptionEn || validatedData.content && !validatedData.contentEn;
+          if (needsTranslation) {
+            try {
+              const translations = await translateArticle({
+                title: validatedData.title || existingArticle.title,
+                description: validatedData.description || existingArticle.description || "",
+                content: validatedData.content || existingArticle.content
+              });
+              validatedData = {
+                ...validatedData,
+                titleEn: validatedData.titleEn || existingArticle.titleEn || translations.titleEn,
+                descriptionEn: validatedData.descriptionEn || existingArticle.descriptionEn || translations.descriptionEn,
+                contentEn: validatedData.contentEn || existingArticle.contentEn || translations.contentEn,
+                titleEs: validatedData.titleEs || existingArticle.titleEs || translations.titleEs,
+                descriptionEs: validatedData.descriptionEs || existingArticle.descriptionEs || translations.descriptionEs,
+                contentEs: validatedData.contentEs || existingArticle.contentEs || translations.contentEs,
+                titleFr: validatedData.titleFr || existingArticle.titleFr || translations.titleFr,
+                descriptionFr: validatedData.descriptionFr || existingArticle.descriptionFr || translations.descriptionFr,
+                contentFr: validatedData.contentFr || existingArticle.contentFr || translations.contentFr
+              };
+            } catch (translationError) {
+              console.error("Auto-translation error (continuing without translation):", translationError);
+            }
+          }
+        }
+      }
       const article = await storage.updateArticle(req.params.id, validatedData);
       if (!article) {
         return res.status(404).json({ error: "Article not found" });
       }
       res.json(article);
     } catch (error) {
+      console.error("Error updating article:", error);
       res.status(400).json({ error: "Invalid article data" });
     }
   });
@@ -4950,6 +7995,433 @@ async function registerRoutes(app2) {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete article" });
+    }
+  });
+  app2.post("/api/admin/translate/article", requireAdmin, async (req, res) => {
+    try {
+      const { title, description, content } = req.body;
+      if (!title || !description || !content) {
+        return res.status(400).json({ error: "Title, description, and content are required" });
+      }
+      const translations = await translateArticle({ title, description, content });
+      res.json(translations);
+    } catch (error) {
+      console.error("Translation error:", error);
+      res.status(500).json({ error: "Failed to translate article" });
+    }
+  });
+  app2.post("/api/admin/translate/video", requireAdmin, async (req, res) => {
+    try {
+      const { title, description } = req.body;
+      if (!title || !description) {
+        return res.status(400).json({ error: "Title and description are required" });
+      }
+      const translations = await translateVideo({ title, description });
+      res.json(translations);
+    } catch (error) {
+      console.error("Translation error:", error);
+      res.status(500).json({ error: "Failed to translate video" });
+    }
+  });
+  app2.post("/api/admin/translate/testimonial", requireAdmin, async (req, res) => {
+    try {
+      const { testimonialPt } = req.body;
+      if (!testimonialPt) {
+        return res.status(400).json({ error: "Portuguese testimonial text is required" });
+      }
+      const translations = await translateTestimonial({ testimonialPt });
+      res.json(translations);
+    } catch (error) {
+      console.error("Translation error:", error);
+      res.status(500).json({ error: "Failed to translate testimonial" });
+    }
+  });
+  app2.get("/api/testimonials", async (_req, res) => {
+    try {
+      const testimonials2 = await storage.getActiveTestimonials();
+      res.json(testimonials2);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch testimonials" });
+    }
+  });
+  app2.get("/api/admin/testimonials", requireAdmin, async (_req, res) => {
+    try {
+      const testimonials2 = await storage.getTestimonials();
+      res.json(testimonials2);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch testimonials" });
+    }
+  });
+  app2.get("/api/testimonials/:id", async (req, res) => {
+    try {
+      const testimonial = await storage.getTestimonial(req.params.id);
+      if (!testimonial || !testimonial.isActive) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      res.json(testimonial);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch testimonial" });
+    }
+  });
+  app2.post("/api/admin/testimonials", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertTestimonialSchema.parse(req.body);
+      const testimonial = await storage.createTestimonial(validatedData);
+      res.status(201).json(testimonial);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid testimonial data" });
+    }
+  });
+  app2.put("/api/admin/testimonials/:id", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertTestimonialSchema.partial().parse(req.body);
+      const testimonial = await storage.updateTestimonial(req.params.id, validatedData);
+      if (!testimonial) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      res.json(testimonial);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid testimonial data" });
+    }
+  });
+  app2.delete("/api/admin/testimonials/:id", requireAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteTestimonial(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete testimonial" });
+    }
+  });
+  app2.get("/api/video-tutorials", async (_req, res) => {
+    try {
+      const videos = await storage.getVideoTutorials();
+      res.json(videos);
+    } catch (error) {
+      console.error("[ERROR] /api/video-tutorials failed:", error);
+      res.status(500).json({ error: "Failed to fetch video tutorials" });
+    }
+  });
+  app2.get("/api/video-tutorials/phase/:phase", async (req, res) => {
+    try {
+      const videos = await storage.getVideoTutorialsByPhase(req.params.phase);
+      res.json(videos);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch video tutorials" });
+    }
+  });
+  app2.get("/api/video-tutorials/:id", async (req, res) => {
+    try {
+      const video = await storage.getVideoTutorial(req.params.id);
+      if (!video) {
+        return res.status(404).json({ error: "Video tutorial not found" });
+      }
+      res.json(video);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch video tutorial" });
+    }
+  });
+  app2.post("/api/video-tutorials/:id/view", async (req, res) => {
+    try {
+      await storage.incrementVideoView(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to increment view" });
+    }
+  });
+  app2.post("/api/admin/video-tutorials", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertVideoTutorialSchema.parse(req.body);
+      const video = await storage.createVideoTutorial(validatedData);
+      res.status(201).json(video);
+    } catch (error) {
+      console.error("Error creating video tutorial:", error);
+      res.status(400).json({ error: "Invalid video tutorial data" });
+    }
+  });
+  app2.put("/api/admin/video-tutorials/:id", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertVideoTutorialSchema.partial().parse(req.body);
+      const video = await storage.updateVideoTutorial(req.params.id, validatedData);
+      if (!video) {
+        return res.status(404).json({ error: "Video tutorial not found" });
+      }
+      res.json(video);
+    } catch (error) {
+      console.error("Error updating video tutorial:", error);
+      res.status(400).json({ error: "Invalid video tutorial data" });
+    }
+  });
+  app2.delete("/api/admin/video-tutorials/:id", requireAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteVideoTutorial(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Video tutorial not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete video tutorial" });
+    }
+  });
+  app2.get("/api/sectors", async (_req, res) => {
+    try {
+      const sectors = await storage.getActiveIndustrySectors();
+      res.json(sectors);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sectors" });
+    }
+  });
+  app2.get("/api/admin/sectors", requireAdmin, async (_req, res) => {
+    try {
+      const sectors = await storage.getIndustrySectors();
+      res.json(sectors);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sectors" });
+    }
+  });
+  app2.post("/api/admin/sectors", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertIndustrySectorSchema.parse(req.body);
+      const sector = await storage.createIndustrySector(validatedData);
+      res.status(201).json(sector);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid sector data" });
+    }
+  });
+  app2.put("/api/admin/sectors/:id", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertIndustrySectorSchema.partial().parse(req.body);
+      const sector = await storage.updateIndustrySector(req.params.id, validatedData);
+      if (!sector) {
+        return res.status(404).json({ error: "Sector not found" });
+      }
+      res.json(sector);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid sector data" });
+    }
+  });
+  app2.delete("/api/admin/sectors/:id", requireAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteIndustrySector(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Sector not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete sector" });
+    }
+  });
+  app2.get("/api/cases", async (_req, res) => {
+    try {
+      const cases = await storage.getActiveSuccessCases();
+      res.json(cases);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch success cases" });
+    }
+  });
+  app2.get("/api/cases/sector/:sectorId", async (req, res) => {
+    try {
+      const cases = await storage.getSuccessCasesBySector(req.params.sectorId);
+      res.json(cases);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch success cases" });
+    }
+  });
+  app2.get("/api/admin/cases", requireAdmin, async (_req, res) => {
+    try {
+      const cases = await storage.getSuccessCases();
+      res.json(cases);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch success cases" });
+    }
+  });
+  app2.post("/api/admin/cases", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertSuccessCaseSchema.parse(req.body);
+      const successCase = await storage.createSuccessCase(validatedData);
+      res.status(201).json(successCase);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid success case data" });
+    }
+  });
+  app2.put("/api/admin/cases/:id", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertSuccessCaseSchema.partial().parse(req.body);
+      const successCase = await storage.updateSuccessCase(req.params.id, validatedData);
+      if (!successCase) {
+        return res.status(404).json({ error: "Success case not found" });
+      }
+      res.json(successCase);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid success case data" });
+    }
+  });
+  app2.delete("/api/admin/cases/:id", requireAdmin, async (req, res) => {
+    try {
+      const success = await storage.deleteSuccessCase(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Success case not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete success case" });
+    }
+  });
+  app2.post("/api/ai/generate-project", requireAuth, loadUserSubscription, checkAiProjectLimits, async (req, res) => {
+    try {
+      const { sectorId, successCaseId, userProblemDescription, customInspiration, language = "pt" } = req.body;
+      if (!sectorId || !userProblemDescription) {
+        return res.status(400).json({ error: "Missing required fields: sectorId and userProblemDescription" });
+      }
+      if (userProblemDescription.length < 50 || userProblemDescription.length > 500) {
+        return res.status(400).json({ error: "Problem description must be between 50 and 500 characters" });
+      }
+      if (customInspiration && customInspiration.length > 300) {
+        return res.status(400).json({ error: "Custom inspiration must be under 300 characters" });
+      }
+      const sector = await storage.getIndustrySectors().then(
+        (sectors) => sectors.find((s) => s.id === sectorId)
+      );
+      if (!sector) {
+        return res.status(404).json({ error: "Sector not found" });
+      }
+      let successCase;
+      if (successCaseId && successCaseId.trim()) {
+        successCase = await storage.getSuccessCases().then(
+          (cases) => cases.find((c) => c.id === successCaseId)
+        );
+        if (!successCase) {
+          return res.status(404).json({ error: "Success case not found" });
+        }
+      } else {
+        successCase = {
+          id: "custom",
+          name: customInspiration || "Inspira\xE7\xE3o Personalizada",
+          company: "Custom",
+          sectorId,
+          descriptionPt: customInspiration || "Baseado em inspira\xE7\xF5es personalizadas do usu\xE1rio",
+          descriptionEn: customInspiration || "Based on user custom inspirations",
+          descriptionEs: customInspiration || "Basado en inspiraciones personalizadas del usuario",
+          descriptionFr: customInspiration || "Bas\xE9 sur des inspirations personnalis\xE9es de l'utilisateur",
+          industry: sector.namePt || "Custom",
+          businessModel: "Custom model based on user input",
+          targetAudience: "To be defined based on user needs",
+          keyFeatures: [],
+          successMetrics: "Custom metrics",
+          createdAt: /* @__PURE__ */ new Date()
+        };
+      }
+      const { aiGenerationService: aiGenerationService2 } = await Promise.resolve().then(() => (init_aiGenerationService(), aiGenerationService_exports));
+      const generatedMVP = await aiGenerationService2.generateCompleteMVP(
+        req.session.userId,
+        {
+          sector,
+          successCase,
+          userProblemDescription,
+          customInspiration,
+          language
+        }
+      );
+      const project = await storage.createProject({
+        ...generatedMVP.project,
+        userId: req.session.userId
+      });
+      for (const persona of generatedMVP.personas) {
+        await storage.createPersona({
+          ...persona,
+          projectId: project.id
+        });
+      }
+      for (const pov of generatedMVP.povStatements) {
+        await storage.createPovStatement({
+          ...pov,
+          projectId: project.id
+        });
+      }
+      for (const idea of generatedMVP.ideas) {
+        await storage.createIdea({
+          ...idea,
+          projectId: project.id
+        });
+      }
+      console.log(`\u{1F4E6} About to save AI-generated assets for project ${project.id}`);
+      try {
+        await aiGenerationService2.saveGeneratedAssets(project.id, generatedMVP);
+        console.log(`\u2705 AI-generated assets saved successfully for project ${project.id}`);
+      } catch (assetError) {
+        console.error(`\u274C CRITICAL: Failed to save AI-generated assets for project ${project.id}:`, assetError);
+        console.error(`\u274C Asset Error Stack:`, assetError instanceof Error ? assetError.stack : "No stack");
+      }
+      await storage.updateUserProgress({
+        userId: req.session.userId,
+        projectId: project.id,
+        // Link progress to the generated project
+        phase: 5,
+        // AI-generated MVP completes all 5 Design Thinking phases
+        projectsCompleted: 1,
+        totalPoints: 500,
+        // Award points for AI-generated project
+        badgesEarned: ["ai_pioneer"]
+      });
+      await incrementAiProjectsUsed(req.session.userId);
+      res.json({
+        project,
+        generationCosts: generatedMVP.generationCosts,
+        message: "MVP successfully generated"
+      });
+    } catch (error) {
+      console.error("\u274C [AI Generation Error] Full error:", error);
+      console.error("\u274C [AI Generation Error] Stack:", error instanceof Error ? error.stack : "No stack trace");
+      console.error("\u274C [AI Generation Error] Message:", error instanceof Error ? error.message : error);
+      res.status(500).json({
+        error: "Failed to generate project",
+        details: error instanceof Error ? error.message : "Unknown error",
+        stack: process.env.NODE_ENV === "development" ? error instanceof Error ? error.stack : void 0 : void 0
+      });
+    }
+  });
+  app2.get("/api/projects/:projectId/ai-assets", requireAuth, async (req, res) => {
+    try {
+      const isAdmin = req.session.user?.role === "admin";
+      let project;
+      if (isAdmin) {
+        const allProjects = await storage.getAllProjects();
+        project = allProjects.find((p) => p.id === req.params.projectId);
+      } else {
+        project = await storage.getProject(req.params.projectId, req.session.userId);
+      }
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      const assets = await storage.getAiGeneratedAssets(req.params.projectId);
+      res.json(assets);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch AI assets" });
+    }
+  });
+  app2.get("/api/projects/:projectId/ai-assets/:assetType", requireAuth, async (req, res) => {
+    try {
+      const isAdmin = req.session.user?.role === "admin";
+      let project;
+      if (isAdmin) {
+        const allProjects = await storage.getAllProjects();
+        project = allProjects.find((p) => p.id === req.params.projectId);
+      } else {
+        project = await storage.getProject(req.params.projectId, req.session.userId);
+      }
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      const assets = await storage.getAiGeneratedAssets(req.params.projectId);
+      const asset = assets.find((a) => a.assetType === req.params.assetType);
+      if (!asset) {
+        return res.status(404).json({ error: "Asset not found" });
+      }
+      res.json(asset);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch AI asset" });
     }
   });
   app2.post("/api/auth/login", async (req, res) => {
@@ -4999,6 +8471,13 @@ async function registerRoutes(app2) {
       }
       const username = email;
       const hashedPassword = await bcrypt2.hash(password, 10);
+      const allPlans = await storage.getSubscriptionPlans();
+      const freePlan = allPlans.find((p) => p.name.toLowerCase() === "free");
+      if (!freePlan) {
+        console.error("\u274C Free plan not found in database!");
+        console.error("Available plans:", allPlans.map((p) => p.name).join(", "));
+        return res.status(500).json({ error: "Erro de configura\xE7\xE3o do sistema. Contate o suporte." });
+      }
       const userData = {
         username,
         // Auto-generated from email
@@ -5007,10 +8486,30 @@ async function registerRoutes(app2) {
         // Display name provided by user
         password: hashedPassword,
         // Store hashed password
-        role: "user"
+        role: "user",
+        subscriptionPlanId: freePlan.id,
+        // Automatically assign Free plan
+        subscriptionStatus: "active"
       };
       const user = await storage.createUser(userData);
-      console.log("User created successfully:", user.email);
+      console.log(`\u2705 User created successfully with Free plan: ${user.email}`);
+      req.session.userId = user.id;
+      req.session.user = {
+        id: user.id,
+        username: user.username,
+        role: user.role || "user",
+        createdAt: user.createdAt || /* @__PURE__ */ new Date()
+      };
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error after signup:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
       const { password: _, ...userWithoutPassword } = user;
       res.status(201).json({ user: userWithoutPassword, message: "Conta criada com sucesso!" });
     } catch (error) {
@@ -5031,6 +8530,37 @@ async function registerRoutes(app2) {
       res.status(500).json({ error: "Logout failed" });
     }
   });
+  app2.get("/api/auth/google", passport_config_default.authenticate("google", {
+    scope: ["profile", "email"]
+  }));
+  app2.get(
+    "/api/auth/google/callback",
+    passport_config_default.authenticate("google", {
+      failureRedirect: "/login?error=oauth_failed",
+      failureMessage: true
+    }),
+    (req, res) => {
+      if (req.user) {
+        const user = req.user;
+        req.session.userId = user.id;
+        req.session.user = {
+          id: user.id,
+          username: user.username,
+          role: user.role || "user",
+          createdAt: user.createdAt || /* @__PURE__ */ new Date()
+        };
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return res.redirect("/login?error=session_failed");
+          }
+          res.redirect("/dashboard");
+        });
+      } else {
+        res.redirect("/login?error=no_user");
+      }
+    }
+  );
   app2.get("/api/auth/me", async (req, res) => {
     try {
       if (!req.session?.userId || !req.session?.user) {
@@ -5124,6 +8654,9 @@ async function registerRoutes(app2) {
       console.log("[Create User] Request body:", req.body);
       const validatedData = insertUserSchema.parse(req.body);
       console.log("[Create User] Validated data:", validatedData);
+      if (!validatedData.password) {
+        return res.status(400).json({ error: "Password is required" });
+      }
       const hashedPassword = await bcrypt2.hash(validatedData.password, 10);
       const userDataWithHashedPassword = {
         ...validatedData,
@@ -5156,13 +8689,30 @@ async function registerRoutes(app2) {
   });
   app2.delete("/api/users/:id", requireAdmin, async (req, res) => {
     try {
+      console.log(`[API DELETE USER] Starting deletion of user ${req.params.id}`);
       const success = await storage.deleteUser(req.params.id);
       if (!success) {
+        console.log(`[API DELETE USER] User not found: ${req.params.id}`);
         return res.status(404).json({ error: "User not found" });
       }
+      console.log(`[API DELETE USER] \u2705 Successfully deleted user ${req.params.id}`);
       res.json({ success: true });
     } catch (error) {
-      res.status(500).json({ error: "Failed to delete user" });
+      console.error(`[API DELETE USER] \u274C EXCEPTION:`, error);
+      console.error(`[API DELETE USER] Error code: ${error?.code}`);
+      console.error(`[API DELETE USER] Error message: ${error?.message}`);
+      console.error(`[API DELETE USER] Error stack:`, error?.stack);
+      res.status(500).json({
+        error: "Failed to delete user",
+        details: {
+          message: error?.message,
+          code: error?.code,
+          constraint: error?.constraint,
+          table: error?.table,
+          detail: error?.detail,
+          stack: error?.stack?.split("\n").slice(0, 5).join("\n")
+        }
+      });
     }
   });
   app2.get("/api/admin/stats", requireAdmin, async (_req, res) => {
@@ -5170,10 +8720,18 @@ async function registerRoutes(app2) {
       const users2 = await storage.getUsers();
       const projects2 = await storage.getAllProjects();
       const articles2 = await storage.getArticles();
+      const doubleDiamondProjects2 = await storage.getAllDoubleDiamondProjects();
+      const videos = await storage.getVideoTutorials();
+      const testimonials2 = await storage.getTestimonials();
+      const plans = await storage.getSubscriptionPlans();
       const stats = {
         totalUsers: users2.length,
         totalProjects: projects2.length,
         totalArticles: articles2.length,
+        totalDoubleDiamondProjects: doubleDiamondProjects2.length,
+        totalVideos: videos.length,
+        totalTestimonials: testimonials2.length,
+        totalPlans: plans.length,
         projectsByStatus: {
           in_progress: projects2.filter((p) => p.status === "in_progress").length,
           completed: projects2.filter((p) => p.status === "completed").length
@@ -5185,6 +8743,18 @@ async function registerRoutes(app2) {
           phase4: projects2.filter((p) => p.currentPhase === 4).length,
           phase5: projects2.filter((p) => p.currentPhase === 5).length
         },
+        doubleDiamondByPhase: {
+          discover: doubleDiamondProjects2.filter((p) => p.currentPhase === "discover").length,
+          define: doubleDiamondProjects2.filter((p) => p.currentPhase === "define").length,
+          develop: doubleDiamondProjects2.filter((p) => p.currentPhase === "develop").length,
+          deliver: doubleDiamondProjects2.filter((p) => p.currentPhase === "deliver").length,
+          dfv: doubleDiamondProjects2.filter((p) => p.currentPhase === "dfv").length
+        },
+        doubleDiamondByStatus: {
+          pending: doubleDiamondProjects2.filter((p) => p.discoverStatus === "pending").length,
+          in_progress: doubleDiamondProjects2.filter((p) => p.discoverStatus === "in_progress" || p.defineStatus === "in_progress" || p.developStatus === "in_progress" || p.deliverStatus === "in_progress").length,
+          completed: doubleDiamondProjects2.filter((p) => p.deliverStatus === "completed").length
+        },
         usersByRole: {
           admin: users2.filter((u) => u.role === "admin").length,
           user: users2.filter((u) => u.role === "user").length
@@ -5195,10 +8765,17 @@ async function registerRoutes(app2) {
           ideate: articles2.filter((a) => a.category === "ideate").length,
           prototype: articles2.filter((a) => a.category === "prototype").length,
           test: articles2.filter((a) => a.category === "test").length
+        },
+        articlesWithTranslations: {
+          withEnglish: articles2.filter((a) => a.titleEn && a.contentEn).length,
+          withSpanish: articles2.filter((a) => a.titleEs && a.contentEs).length,
+          withFrench: articles2.filter((a) => a.titleFr && a.contentFr).length,
+          fullyTranslated: articles2.filter((a) => a.titleEn && a.contentEn && a.titleEs && a.contentEs && a.titleFr && a.contentFr).length
         }
       };
       res.json(stats);
     } catch (error) {
+      console.error("Error fetching admin stats:", error);
       res.status(500).json({ error: "Failed to fetch admin stats" });
     }
   });
@@ -5208,6 +8785,28 @@ async function registerRoutes(app2) {
       res.json(projects2);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch projects" });
+    }
+  });
+  app2.get("/api/admin/analytics/summary", requireAdmin, async (_req, res) => {
+    try {
+      const summary = await storage.getAnalyticsSummary();
+      res.json(summary);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch analytics summary" });
+    }
+  });
+  app2.get("/api/admin/analytics/events", requireAdmin, async (req, res) => {
+    try {
+      const { eventType, userId, startDate, endDate } = req.query;
+      const filters = {};
+      if (eventType && typeof eventType === "string") filters.eventType = eventType;
+      if (userId && typeof userId === "string") filters.userId = userId;
+      if (startDate && typeof startDate === "string") filters.startDate = new Date(startDate);
+      if (endDate && typeof endDate === "string") filters.endDate = new Date(endDate);
+      const events = await storage.getAnalyticsEvents(filters);
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch analytics events" });
     }
   });
   app2.get("/api/subscription-plans", async (_req, res) => {
@@ -5334,69 +8933,6 @@ async function registerRoutes(app2) {
     } catch (error) {
       console.error("Error creating checkout session:", error);
       res.status(500).json({ error: "Failed to create checkout session" });
-    }
-  });
-  app2.post("/api/stripe-webhook", async (req, res) => {
-    if (!stripe) {
-      return res.status(503).json({ error: "Stripe not configured" });
-    }
-    const sig = req.headers["stripe-signature"];
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET || "");
-    } catch (err) {
-      console.log(`Webhook signature verification failed.`, err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-    try {
-      switch (event.type) {
-        case "checkout.session.completed":
-          const session2 = event.data.object;
-          if (session2.metadata) {
-            const { userId, planId, billingPeriod } = session2.metadata;
-            await storage.createUserSubscription({
-              userId,
-              planId,
-              stripeSubscriptionId: session2.subscription,
-              status: "active",
-              billingPeriod,
-              currentPeriodStart: /* @__PURE__ */ new Date(),
-              currentPeriodEnd: new Date(Date.now() + (billingPeriod === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1e3)
-            });
-            await storage.updateUser(userId, {
-              stripeSubscriptionId: session2.subscription,
-              subscriptionPlanId: planId,
-              subscriptionStatus: "active"
-            });
-          }
-          break;
-        case "customer.subscription.updated":
-        case "customer.subscription.deleted":
-          const subscription = event.data.object;
-          const customer = await stripe.customers.retrieve(subscription.customer);
-          if (customer.metadata?.userId) {
-            const status = subscription.status === "active" ? "active" : subscription.status === "canceled" ? "canceled" : "expired";
-            await storage.updateUser(customer.metadata.userId, {
-              subscriptionStatus: status,
-              subscriptionEndDate: subscription.current_period_end ? new Date(subscription.current_period_end * 1e3) : null
-            });
-            const userSub = await storage.getUserActiveSubscription(customer.metadata.userId);
-            if (userSub) {
-              await storage.updateUserSubscription(userSub.id, {
-                status,
-                currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1e3) : null,
-                cancelAtPeriodEnd: subscription.cancel_at_period_end
-              });
-            }
-          }
-          break;
-        default:
-          console.log(`Unhandled event type ${event.type}`);
-      }
-      res.json({ received: true });
-    } catch (error) {
-      console.error("Error processing webhook:", error);
-      res.status(500).json({ error: "Webhook processing failed" });
     }
   });
   app2.post("/api/cancel-subscription", requireAuth, async (req, res) => {
@@ -6514,11 +10050,364 @@ async function registerRoutes(app2) {
       res.status(500).json({ error: "Failed to create prenatal project" });
     }
   });
+  app2.get("/api/double-diamond", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const projects2 = await storage.getDoubleDiamondProjects(userId);
+      res.json(projects2);
+    } catch (error) {
+      console.error("Error fetching Double Diamond projects:", error);
+      res.status(500).json({ error: "Failed to fetch Double Diamond projects" });
+    }
+  });
+  app2.get("/api/double-diamond/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      res.json(project);
+    } catch (error) {
+      console.error("Error fetching Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to fetch Double Diamond project" });
+    }
+  });
+  app2.post("/api/double-diamond", requireAuth, checkDoubleDiamondLimit, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const validatedData = insertDoubleDiamondProjectSchema.parse(req.body);
+      const cleanedData = {
+        ...validatedData,
+        sectorId: validatedData.sectorId && validatedData.sectorId.trim() !== "" ? validatedData.sectorId : void 0,
+        successCaseId: validatedData.successCaseId && validatedData.successCaseId.trim() !== "" ? validatedData.successCaseId : void 0,
+        customSuccessCase: validatedData.customSuccessCase && validatedData.customSuccessCase.trim() !== "" ? validatedData.customSuccessCase : void 0,
+        description: validatedData.description && validatedData.description.trim() !== "" ? validatedData.description : void 0,
+        userId
+      };
+      const project = await storage.createDoubleDiamondProject(cleanedData);
+      res.status(201).json(project);
+    } catch (error) {
+      console.error("Error creating Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to create Double Diamond project" });
+    }
+  });
+  app2.patch("/api/double-diamond/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const updated = await storage.updateDoubleDiamondProject(
+        req.params.id,
+        userId,
+        req.body
+      );
+      if (!updated) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to update Double Diamond project" });
+    }
+  });
+  app2.delete("/api/double-diamond/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const success = await storage.deleteDoubleDiamondProject(req.params.id, userId);
+      if (!success) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to delete Double Diamond project" });
+    }
+  });
+  app2.post("/api/double-diamond/:id/generate/discover", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      let sectorName = req.body.sector || "General";
+      let caseName = req.body.successCase;
+      if (project.sectorId && !req.body.sector) {
+        const sector = await storage.getIndustrySector(project.sectorId);
+        if (sector) sectorName = sector.name;
+      }
+      if (project.successCaseId && !req.body.successCase) {
+        const successCase = await storage.getSuccessCase(project.successCaseId);
+        if (successCase) caseName = successCase.name;
+      }
+      const language = req.body.language || "pt-BR";
+      const result = await generateDiscoverPhase({
+        sector: sectorName,
+        successCase: caseName,
+        targetAudience: project.targetAudience || "",
+        problemStatement: project.problemStatement || "",
+        language
+      });
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
+        discoverPainPoints: result.painPoints,
+        discoverInsights: result.insights,
+        discoverUserNeeds: result.userNeeds,
+        discoverEmpathyMap: result.empathyMap,
+        discoverStatus: "completed",
+        currentPhase: "define",
+        completionPercentage: 25,
+        generationCount: (project.generationCount || 0) + 1
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating Discover phase:", error);
+      res.status(500).json({ error: "Failed to generate Discover phase" });
+    }
+  });
+  app2.post("/api/double-diamond/:id/generate/define", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      if (!project.discoverPainPoints || !project.discoverUserNeeds || !project.discoverInsights) {
+        return res.status(400).json({ error: "Discover phase must be completed first" });
+      }
+      const language = req.body.language || "pt-BR";
+      const result = await generateDefinePhase({
+        painPoints: project.discoverPainPoints,
+        userNeeds: project.discoverUserNeeds,
+        insights: project.discoverInsights,
+        language
+      });
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
+        definePovStatements: result.povStatements,
+        defineHmwQuestions: result.hmwQuestions,
+        defineSelectedPov: result.povStatements[0]?.fullStatement || "",
+        defineSelectedHmw: result.hmwQuestions[0]?.question || "",
+        defineStatus: "completed",
+        currentPhase: "develop",
+        completionPercentage: 50,
+        generationCount: (project.generationCount || 0) + 1
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating Define phase:", error);
+      res.status(500).json({ error: "Failed to generate Define phase" });
+    }
+  });
+  app2.post("/api/double-diamond/:id/generate/develop", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      if (!project.defineSelectedPov || !project.defineSelectedHmw) {
+        return res.status(400).json({ error: "Define phase must be completed and POV/HMW selected" });
+      }
+      let sectorName = "General";
+      if (project.sectorId) {
+        const sector = await storage.getIndustrySector(project.sectorId);
+        if (sector) sectorName = sector.name;
+      }
+      const language = req.body.language || "pt-BR";
+      const result = await generateDevelopPhase({
+        selectedPov: project.defineSelectedPov,
+        selectedHmw: project.defineSelectedHmw,
+        sector: sectorName,
+        language
+      });
+      const topIdeas = result.ideas.slice(0, 3);
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
+        developIdeas: result.ideas,
+        developCrossPollinatedIdeas: result.crossPollinatedIdeas,
+        developSelectedIdeas: topIdeas,
+        developStatus: "completed",
+        currentPhase: "deliver",
+        completionPercentage: 75,
+        generationCount: (project.generationCount || 0) + 1
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating Develop phase:", error);
+      res.status(500).json({ error: "Failed to generate Develop phase" });
+    }
+  });
+  app2.post("/api/double-diamond/:id/generate/deliver", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      let project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      if ((!project.developSelectedIdeas || project.developSelectedIdeas.length === 0) && project.developIdeas && project.developIdeas.length > 0) {
+        console.log(`[AUTO-FIX] Auto-selecting top 3 ideas for project ${project.id}`);
+        const topIdeas = project.developIdeas.slice(0, 3);
+        project = await storage.updateDoubleDiamondProject(project.id, userId, {
+          developSelectedIdeas: topIdeas
+        });
+      }
+      if (!project.developSelectedIdeas || project.developSelectedIdeas.length === 0) {
+        return res.status(400).json({ error: "Develop phase must be completed and ideas selected" });
+      }
+      let sectorName = "General";
+      if (project.sectorId) {
+        const sector = await storage.getIndustrySector(project.sectorId);
+        if (sector) sectorName = sector.name;
+      }
+      const language = req.body.language || "pt-BR";
+      const result = await generateDeliverPhase({
+        selectedIdeas: project.developSelectedIdeas,
+        pov: project.defineSelectedPov || "",
+        sector: sectorName,
+        language
+      });
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
+        deliverMvpConcept: result.mvpConcept,
+        deliverLogoSuggestions: result.logoSuggestions,
+        deliverLandingPage: result.landingPage,
+        deliverSocialMediaLines: result.socialMediaLines,
+        deliverTestPlan: result.testPlan,
+        deliverStatus: "completed",
+        completionPercentage: 100,
+        isCompleted: true,
+        generationCount: (project.generationCount || 0) + 1
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating Deliver phase:", error);
+      res.status(500).json({ error: "Failed to generate Deliver phase" });
+    }
+  });
+  app2.post("/api/double-diamond/:id/generate/dfv", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      if (!project.deliverMvpConcept) {
+        return res.status(400).json({ error: "Deliver phase must be completed first" });
+      }
+      let sectorName = "General";
+      if (project.sectorId) {
+        const sector = await storage.getIndustrySector(project.sectorId);
+        if (sector) sectorName = sector.name;
+      }
+      const language = req.body.language || "pt-BR";
+      const result = await analyzeDFV({
+        pov: project.defineSelectedPov || "",
+        mvpConcept: project.deliverMvpConcept,
+        sector: sectorName,
+        selectedIdeas: project.developSelectedIdeas || [],
+        language
+      });
+      const fullAnalysis = {
+        ...result.analysis,
+        recommendations: result.recommendations || [],
+        nextSteps: result.nextSteps || []
+      };
+      const updated = await storage.updateDoubleDiamondProject(project.id, userId, {
+        dfvDesirabilityScore: result.desirabilityScore,
+        dfvFeasibilityScore: result.feasibilityScore,
+        dfvViabilityScore: result.viabilityScore,
+        dfvAnalysis: fullAnalysis,
+        dfvFeedback: result.overallAssessment,
+        generationCount: (project.generationCount || 0) + 1
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error generating DFV analysis:", error);
+      res.status(500).json({ error: "Failed to generate DFV analysis" });
+    }
+  });
+  app2.get("/api/admin/double-diamond", requireAdmin, async (_req, res) => {
+    try {
+      const projects2 = await storage.getAllDoubleDiamondProjects();
+      res.json(projects2);
+    } catch (error) {
+      console.error("Error fetching all Double Diamond projects:", error);
+      res.status(500).json({ error: "Failed to fetch Double Diamond projects" });
+    }
+  });
+  app2.delete("/api/admin/double-diamond/:id", requireAdmin, async (req, res) => {
+    try {
+      const allProjects = await storage.getAllDoubleDiamondProjects();
+      const project = allProjects.find((p) => p.id === req.params.id);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      const success = await storage.deleteDoubleDiamondProject(req.params.id, project.userId);
+      if (!success) {
+        return res.status(404).json({ error: "Failed to delete project" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to delete Double Diamond project" });
+    }
+  });
+  app2.put("/api/admin/double-diamond/:id", requireAdmin, async (req, res) => {
+    try {
+      const allProjects = await storage.getAllDoubleDiamondProjects();
+      const project = allProjects.find((p) => p.id === req.params.id);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      const updates = req.body;
+      const updated = await storage.updateDoubleDiamondProject(req.params.id, project.userId, updates);
+      if (!updated) {
+        return res.status(404).json({ error: "Failed to update project" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating Double Diamond project:", error);
+      res.status(500).json({ error: "Failed to update Double Diamond project" });
+    }
+  });
+  app2.get("/api/industry-sectors", async (req, res) => {
+    try {
+      const sectors = await storage.listIndustrySectors();
+      res.json(sectors);
+    } catch (error) {
+      console.error("Error fetching industry sectors:", error);
+      res.status(500).json({ error: "Failed to fetch industry sectors" });
+    }
+  });
+  app2.get("/api/success-cases", async (req, res) => {
+    try {
+      const successCases2 = await storage.listSuccessCases();
+      res.json(successCases2);
+    } catch (error) {
+      console.error("Error fetching success cases:", error);
+      res.status(500).json({ error: "Failed to fetch success cases" });
+    }
+  });
+  app2.get("/api/double-diamond/:id/export/pdf", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Double Diamond project not found" });
+      }
+      const { generateDoubleDiamondPDF: generateDoubleDiamondPDF2 } = await Promise.resolve().then(() => (init_double_diamond_pdf(), double_diamond_pdf_exports));
+      const pdfBuffer = await generateDoubleDiamondPDF2(project);
+      const fileName = `${project.name.replace(/[^a-z0-9]/gi, "_")}_DoubleDiamond.pdf`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating Double Diamond PDF:", error);
+      res.status(500).json({ error: "Failed to generate PDF" });
+    }
+  });
   const httpServer = createServer(app2);
   return httpServer;
 }
 
 // server/index.ts
+init_storage();
 import fsSync from "fs";
 import path4 from "path";
 import { fileURLToPath } from "url";
@@ -6631,6 +10520,9 @@ app.use(session({
     // Lax for production, none for development
   }
 }));
+setupPassport();
+app.use(passport_config_default.initialize());
+app.use(passport_config_default.session());
 app.use("/uploads", express2.static("public/uploads"));
 app.use((req, res, next) => {
   const start = Date.now();
@@ -6673,6 +10565,42 @@ app.use((req, res, next) => {
         ALTER TABLE IF EXISTS subscription_plans 
         ADD COLUMN IF NOT EXISTS price_per_additional_user INTEGER;
       `);
+      await db2.execute(`
+        ALTER TABLE IF EXISTS users 
+        ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'local';
+      `);
+      await db2.execute(`
+        ALTER TABLE IF EXISTS users 
+        ADD COLUMN IF NOT EXISTS google_id TEXT;
+      `);
+      await db2.execute(`
+        ALTER TABLE IF EXISTS users 
+        ALTER COLUMN password DROP NOT NULL;
+      `);
+      await db2.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS title_en TEXT;
+      `);
+      await db2.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS title_es TEXT;
+      `);
+      await db2.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS title_fr TEXT;
+      `);
+      await db2.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS description_en TEXT;
+      `);
+      await db2.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS description_es TEXT;
+      `);
+      await db2.execute(`
+        ALTER TABLE IF EXISTS video_tutorials 
+        ADD COLUMN IF NOT EXISTS description_fr TEXT;
+      `);
       log2("\u2705 [STARTUP] Schema columns verified and ready");
     } catch (schemaError) {
       log2("\u26A0\uFE0F  [STARTUP] Schema verification skipped (table may not exist yet):", String(schemaError).substring(0, 100));
@@ -6682,36 +10610,41 @@ app.use((req, res, next) => {
   if (process.env.DATABASE_URL) {
     (async () => {
       let migrationCompleted = false;
-      try {
-        log2("\u{1F527} Running database migration in background...");
-        const migrationPromise = new Promise((resolve, reject) => {
-          const { spawn } = __require("child_process");
-          const migration = spawn("npm", ["run", "db:push"], {
-            stdio: "inherit"
-            // Inherit to avoid buffer issues
+      const isProduction2 = process.env.NODE_ENV === "production" || process.env.RENDER === "true";
+      if (!isProduction2) {
+        try {
+          log2("\u{1F527} Running database migration in background...");
+          const migrationPromise = new Promise((resolve, reject) => {
+            const { spawn } = __require("child_process");
+            const migration = spawn("npm", ["run", "db:push"], {
+              stdio: "inherit"
+              // Inherit to avoid buffer issues
+            });
+            const timeoutId = setTimeout(() => {
+              migration.kill("SIGTERM");
+              reject(new Error("Migration timeout after 90s"));
+            }, 9e4);
+            migration.on("close", (code) => {
+              clearTimeout(timeoutId);
+              if (code === 0) {
+                log2("\u2705 Database migration completed");
+                resolve();
+              } else {
+                reject(new Error(`Migration exited with code ${code}`));
+              }
+            });
+            migration.on("error", (error) => {
+              clearTimeout(timeoutId);
+              reject(error);
+            });
           });
-          const timeoutId = setTimeout(() => {
-            migration.kill("SIGTERM");
-            reject(new Error("Migration timeout after 90s"));
-          }, 9e4);
-          migration.on("close", (code) => {
-            clearTimeout(timeoutId);
-            if (code === 0) {
-              log2("\u2705 Database migration completed");
-              resolve();
-            } else {
-              reject(new Error(`Migration exited with code ${code}`));
-            }
-          });
-          migration.on("error", (error) => {
-            clearTimeout(timeoutId);
-            reject(error);
-          });
-        });
-        await migrationPromise;
-        migrationCompleted = true;
-      } catch (error) {
-        log2("\u26A0\uFE0F  Database migration error (may already be applied):", String(error).substring(0, 100));
+          await migrationPromise;
+          migrationCompleted = true;
+        } catch (error) {
+          log2("\u26A0\uFE0F  Database migration error (may already be applied):", String(error).substring(0, 100));
+        }
+      } else {
+        log2("\u23ED\uFE0F  Skipping db:push in production (schema should already be applied)");
       }
       try {
         await initializeDefaultData();

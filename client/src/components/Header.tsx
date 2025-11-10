@@ -9,7 +9,8 @@ import {
   MessageCircle,
   Menu,
   X,
-  Video
+  Video,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -103,6 +104,14 @@ export default function Header() {
                 </Button>
               </Link>
             )}
+            {isAuthenticated && (
+              <Link href="/double-diamond">
+                <Button variant="ghost" className="text-sm" data-testid="nav-double-diamond">
+                  <TrendingUp className="mr-1 h-4 w-4" />
+                  Double Diamond
+                </Button>
+              </Link>
+            )}
             <Link href="/pricing">
               <Button variant="ghost" className="text-sm" data-testid="nav-pricing">
                 <CreditCard className="mr-1 h-4 w-4" />
@@ -189,6 +198,14 @@ export default function Header() {
                     <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-dashboard" onClick={() => setIsMobileMenuOpen(false)}>
                       <BarChart3 className="mr-2 h-4 w-4" />
                       Dashboard
+                    </Button>
+                  </Link>
+                )}
+                {isAuthenticated && (
+                  <Link href="/double-diamond">
+                    <Button variant="ghost" className="w-full justify-start" data-testid="mobile-nav-double-diamond" onClick={() => setIsMobileMenuOpen(false)}>
+                      <TrendingUp className="mr-2 h-4 w-4" />
+                      Double Diamond
                     </Button>
                   </Link>
                 )}

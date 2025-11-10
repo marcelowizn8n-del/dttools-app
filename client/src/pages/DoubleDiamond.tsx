@@ -32,7 +32,7 @@ export default function DoubleDiamond() {
     queryKey: ["/api/double-diamond"],
   });
 
-  const { data: subscriptionInfo } = useQuery({
+  const { data: subscriptionInfo } = useQuery<any>({
     queryKey: ["/api/subscription-info"],
   });
 
