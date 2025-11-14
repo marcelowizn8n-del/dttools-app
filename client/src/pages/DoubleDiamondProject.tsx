@@ -59,27 +59,21 @@ export default function DoubleDiamondProject() {
     enabled: !!id
   });
 
-  // Set initial active tab based on project status (inside useEffect to avoid render loops)
+  // Set initial active tab - SIMPLIFIED to prevent render loops
   useEffect(() => {
-    if (!project?.id) return;
+    if (!project?.id || activeTab !== "discover") return; // Only set once
     
-    // Determine which tab to show based on completion status
-    let newTab = "discover";
-    if (project.discoverStatus === "completed") {
-      if (project.defineStatus !== "completed") {
-        newTab = "define";
-      } else if (project.developStatus !== "completed") {
-        newTab = "develop";
-      } else if (project.deliverStatus !== "completed") {
-        newTab = "deliver";
-      } else {
-        newTab = "dfv";
-      }
+    // Determine which tab to show
+    if (project.discoverStatus === "completed" && project.defineStatus !== "completed") {
+      setActiveTab("define");
+    } else if (project.defineStatus === "completed" && project.developStatus !== "completed") {
+      setActiveTab("develop");
+    } else if (project.developStatus === "completed" && project.deliverStatus !== "completed") {
+      setActiveTab("deliver");
+    } else if (project.deliverStatus === "completed") {
+      setActiveTab("dfv");
     }
-    
-    setActiveTab(newTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project?.id]); // Only run when project ID changes
+  }, [project?.id, project?.discoverStatus, project?.defineStatus, project?.developStatus, project?.deliverStatus, activeTab]);
 
   // Generate Discover Phase
   const generateDiscoverMutation = useMutation({
