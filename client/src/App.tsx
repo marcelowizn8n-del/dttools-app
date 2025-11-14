@@ -1,8 +1,8 @@
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 
-// Force new bundle hash - v1760549203
-const APP_VERSION = "1760549203";
+// Force new bundle hash - EMERGENCY FIX
+const APP_VERSION = "2025111419";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
