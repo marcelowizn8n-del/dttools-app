@@ -1,0 +1,164 @@
+═══════════════════════════════════════════════════════════════════
+  📥 GUIA: COMO BAIXAR OS DOCUMENTOS DE MIGRAÇÃO
+═══════════════════════════════════════════════════════════════════
+
+🎯 MÉTODO 1: ABRIR EXPLORER NO CURSOR (Recomendado)
+───────────────────────────────────────────────────────────────────
+
+1. Pressione uma destas teclas:
+   
+   Windows/Linux: Ctrl + Shift + E
+   Mac:           Cmd + Shift + E
+
+2. Ou clique no menu superior:
+   View → Explorer (ou Visualizar → Explorer)
+
+3. Ou procure o ícone de PASTA 📁 na barra lateral esquerda
+   (geralmente é o primeiro ícone no topo)
+
+4. Depois que o Explorer abrir, você verá:
+   
+   📁 workspace
+   ├── 📦 DTTools_Migracao_GCP_Docs.zip  ← BAIXE ESTE!
+   ├── 📦 docs_migracao_gcp.zip
+   ├── 📁 docs/
+   │   ├── 📄 AVALIACAO_PROJETO_ATUAL.md
+   │   ├── 📄 GOOGLE_CLOUD_MIGRATION_GUIDE.md
+   │   ├── 📄 RESUMO_EXECUTIVO_MIGRACAO.md
+   │   └── 📄 README_MIGRACAO_GCP.md
+   └── 📁 DTTools_Migracao_GCP_Docs/
+
+5. Clique com BOTÃO DIREITO no arquivo ZIP:
+   → Selecione "Download" ou "Reveal in Explorer/Finder"
+
+
+═══════════════════════════════════════════════════════════════════
+🎯 MÉTODO 2: VIA TERMINAL (Se o Explorer não funcionar)
+───────────────────────────────────────────────────────────────────
+
+1. No Cursor, abra o Terminal:
+   
+   Windows/Linux: Ctrl + `  (acento grave)
+   Mac:           Cmd + `
+
+2. Execute este comando para abrir a pasta no seu sistema:
+
+   ./ABRIR_PASTA_DOS_ARQUIVOS.sh
+
+3. Ou copie o ZIP para sua área de trabalho:
+
+   cp /workspace/DTTools_Migracao_GCP_Docs.zip ~/Desktop/
+
+4. Ou veja a localização exata:
+
+   pwd
+   ls -la *.zip
+
+
+═══════════════════════════════════════════════════════════════════
+🎯 MÉTODO 3: ABRIR PASTA MANUALMENTE NO SEU COMPUTADOR
+───────────────────────────────────────────────────────────────────
+
+Os arquivos JÁ ESTÃO no seu computador! Apenas encontre a pasta.
+
+1. Anote este caminho:
+   
+   /workspace
+
+2. Abra o explorador de arquivos do seu sistema:
+   
+   Windows: Windows Explorer (Win + E)
+   Mac:     Finder (Cmd + Space → "Finder")
+   Linux:   Gerenciador de Arquivos
+
+3. Cole o caminho na barra de endereço:
+   
+   /workspace
+
+4. Você verá os arquivos ZIP lá!
+
+
+═══════════════════════════════════════════════════════════════════
+🎯 MÉTODO 4: VIA GIT (Se o projeto está em repositório remoto)
+───────────────────────────────────────────────────────────────────
+
+Se o projeto está no GitHub/GitLab:
+
+1. Faça commit e push:
+   
+   git add docs/*.md
+   git commit -m "docs: Add Google Cloud migration documentation"
+   git push
+
+2. Acesse seu repositório no navegador:
+   
+   GitHub.com → seu-usuario/dttools-app → docs/
+
+3. Baixe os arquivos individualmente ou clone em outro lugar
+
+
+═══════════════════════════════════════════════════════════════════
+📦 ARQUIVOS DISPONÍVEIS
+───────────────────────────────────────────────────────────────────
+
+ZIP COMPLETO (Recomendado):
+✅ DTTools_Migracao_GCP_Docs.zip (32 KB)
+   Contém:
+   • AVALIACAO_PROJETO_ATUAL.md (43 KB)
+   • GOOGLE_CLOUD_MIGRATION_GUIDE.md (25 KB)
+   • RESUMO_EXECUTIVO_MIGRACAO.md (9.4 KB)
+   • README_MIGRACAO_GCP.md (8.4 KB)
+   • COMECE_AQUI.txt (guia de início rápido)
+
+Alternativa:
+✅ docs_migracao_gcp.zip (30 KB)
+   Apenas os 4 documentos MD (sem o guia)
+
+Arquivos Individuais:
+✅ docs/AVALIACAO_PROJETO_ATUAL.md
+✅ docs/GOOGLE_CLOUD_MIGRATION_GUIDE.md
+✅ docs/RESUMO_EXECUTIVO_MIGRACAO.md
+✅ docs/README_MIGRACAO_GCP.md
+
+
+═══════════════════════════════════════════════════════════════════
+❓ TROUBLESHOOTING
+───────────────────────────────────────────────────────────────────
+
+Problema: "Não consigo ver o Explorer"
+Solução: 
+  1. Pressione Ctrl+Shift+P (Cmd+Shift+P no Mac)
+  2. Digite: "View: Show Explorer"
+  3. Pressione Enter
+
+Problema: "Não encontro o arquivo ZIP"
+Solução:
+  1. Abra o Terminal no Cursor (Ctrl+`)
+  2. Execute: ls -la *.zip
+  3. Execute: pwd (mostra onde você está)
+
+Problema: "Não sei onde está /workspace"
+Solução:
+  1. No terminal do Cursor: pwd
+  2. Isso mostra o caminho completo
+  3. Abra esse caminho no seu explorador de arquivos
+
+
+═══════════════════════════════════════════════════════════════════
+📚 POR ONDE COMEÇAR DEPOIS DE BAIXAR?
+───────────────────────────────────────────────────────────────────
+
+1. Descompacte o ZIP
+2. Leia primeiro: COMECE_AQUI.txt
+3. Depois leia: RESUMO_EXECUTIVO_MIGRACAO.md (15 min)
+4. Se for desenvolvedor: AVALIACAO_PROJETO_ATUAL.md
+
+
+═══════════════════════════════════════════════════════════════════
+📞 PRECISA DE AJUDA?
+───────────────────────────────────────────────────────────────────
+
+Email: dttools.app@gmail.com
+Data: 14/11/2025
+
+═══════════════════════════════════════════════════════════════════
