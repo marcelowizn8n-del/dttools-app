@@ -206,6 +206,13 @@ export function ProtectedRoute({
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
+  // Redirect unauthenticated users
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation('/login');
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -215,8 +222,7 @@ export function ProtectedRoute({
   }
 
   if (!isAuthenticated) {
-    setLocation('/login');
-    return null;
+    return null; // Don't render while redirecting
   }
 
   if (adminOnly && !isAdmin) {
