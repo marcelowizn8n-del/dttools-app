@@ -204,7 +204,7 @@ export default function DoubleDiamond() {
             <Card 
               key={project.id} 
               className="hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => window.location.href = `/double-diamond/${project.id}`}
+              onClick={() => setLocation(`/double-diamond/${project.id}`)}
               data-testid={`card-double-diamond-${project.id}`}
             >
               <CardHeader>

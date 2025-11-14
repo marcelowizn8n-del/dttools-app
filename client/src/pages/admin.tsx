@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Plus, Edit, Trash2, Eye, Search, Filter, Users, BarChart3, FolderOpen, UserPlus, CreditCard, MessageSquare, Video, Diamond, Globe, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -689,6 +690,7 @@ function UserCreateDialog({
 
 // Projects Management Tab Component
 function ProjectsTab() {
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [phaseFilter, setPhaseFilter] = useState("all");
@@ -894,7 +896,7 @@ function ProjectsTab() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => window.location.href = `/projects/${project.id}`}
+                            onClick={() => setLocation(`/projects/${project.id}`)}
                             data-testid={`button-edit-${project.id}`}
                           >
                             <Edit className="h-3 w-3" />
@@ -946,6 +948,7 @@ function ProjectsTab() {
 
 // Double Diamond Management Tab Component
 function DoubleDiamondTab() {
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [phaseFilter, setPhaseFilter] = useState("all");
   const { toast } = useToast();
@@ -1159,7 +1162,7 @@ function DoubleDiamondTab() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => window.location.href = `/double-diamond/${project.id}`}
+                            onClick={() => setLocation(`/double-diamond/${project.id}`)}
                             data-testid={`button-edit-dd-${project.id}`}
                           >
                             <Edit className="h-3 w-3" />
