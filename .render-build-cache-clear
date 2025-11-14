@@ -1,0 +1,5 @@
+# Force Render to clear build cache
+# Timestamp: 2025-11-14T19:15:00Z
+# Reason: Fix CardFooter undefined error by forcing complete rebuild
+BUILD_VERSION=2.0.1
+CACHE_INVALIDATION=true
