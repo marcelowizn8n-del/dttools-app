@@ -295,6 +295,7 @@ const userFormSchema = z.object({
 });
 
 function UsersTab() {
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [isCreating, setIsCreating] = useState(false);
@@ -482,6 +483,16 @@ function UsersTab() {
                       <TableCell>{formatDate(user.createdAt)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setLocation(`/profile?userId=${user.id}`)}
+                            data-testid={`button-limits-${user.id}`}
+                          >
+                            <BarChart3 className="mr-1 h-3 w-3" />
+                            Limites
+                          </Button>
+
                           <Button
                             variant="outline"
                             size="sm"
