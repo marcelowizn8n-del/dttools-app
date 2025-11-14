@@ -30,6 +30,14 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "client/dist"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // Force cache invalidation with new naming pattern
+        entryFileNames: `assets/[name]-[hash]-v2.js`,
+        chunkFileNames: `assets/[name]-[hash]-v2.js`,
+        assetFileNames: `assets/[name]-[hash]-v2.[ext]`
+      }
+    }
   },
   server: {
     fs: {
