@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     branch: main
-    buildCommand: npm install && npm run build
+    buildCommand: rm -rf client/dist node_modules/.vite .cache && npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/auth/me
     envVars:
