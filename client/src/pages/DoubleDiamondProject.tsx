@@ -1,3 +1,4 @@
+// Force rebuild: v2.0.1 - Fixed infinite render loop
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";

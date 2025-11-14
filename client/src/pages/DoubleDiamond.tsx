@@ -1,3 +1,4 @@
+// Force rebuild: v2.0.1 - Fixed CardFooter import issue
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
