@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,7 +49,7 @@ export default function DoubleDiamondProject() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("discover");
   const { language } = useLanguage();
 
   // Fetch project
@@ -58,24 +58,23 @@ export default function DoubleDiamondProject() {
     enabled: !!id
   });
 
-  // Set initial active tab - always start with "discover" unless explicitly navigating
-  if (project && activeTab === null) {
-    // Force to "discover" if project is new or if discover phase is not completed
+  // Set initial active tab based on project status (inside useEffect to avoid render loops)
+  useEffect(() => {
+    if (!project) return;
+    
+    // Determine which tab to show based on completion status
     if (project.discoverStatus !== "completed") {
       setActiveTab("discover");
+    } else if (project.defineStatus !== "completed") {
+      setActiveTab("define");
+    } else if (project.developStatus !== "completed") {
+      setActiveTab("develop");
+    } else if (project.deliverStatus !== "completed") {
+      setActiveTab("deliver");
     } else {
-      // Otherwise, go to the first incomplete phase
-      if (project.defineStatus !== "completed") {
-        setActiveTab("define");
-      } else if (project.developStatus !== "completed") {
-        setActiveTab("develop");
-      } else if (project.deliverStatus !== "completed") {
-        setActiveTab("deliver");
-      } else {
-        setActiveTab("dfv");
-      }
+      setActiveTab("dfv");
     }
-  }
+  }, [project?.id, project?.discoverStatus, project?.defineStatus, project?.developStatus, project?.deliverStatus]);
 
   // Generate Discover Phase
   const generateDiscoverMutation = useMutation({
@@ -367,7 +366,7 @@ export default function DoubleDiamondProject() {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs value={activeTab || "discover"} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid grid-cols-5 w-full">
           <TabsTrigger value="discover" data-testid="tab-discover">Descobrir</TabsTrigger>
           <TabsTrigger value="define" data-testid="tab-define">Definir</TabsTrigger>
