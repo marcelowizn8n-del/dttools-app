@@ -4146,7 +4146,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/double-diamond/:id", requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId!;
-      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      const isAdmin = req.session.user?.role === "admin";
+      let project;
+
+      if (isAdmin) {
+        project = await storage.getAnyDoubleDiamondProject(req.params.id);
+      } else {
+        project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      }
+
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }

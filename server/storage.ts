@@ -911,18 +911,8 @@ export class DatabaseStorage implements IStorage {
   async updateUserProgress(progress: InsertUserProgress): Promise<UserProgress> {
     const existing = await this.getUserProgress(progress.userId, progress.projectId);
     if (existing) {
-      const updatedPoints = (existing.points || 0) + (progress.points || 0);
-      const existingBadges = (Array.isArray(existing.badges) ? existing.badges : []) as string[];
-      const newBadges = (Array.isArray(progress.badges) ? progress.badges : []) as string[];
-      const mergedBadges = [...new Set([...existingBadges, ...newBadges])];
-
       const [updated] = await db.update(userProgress)
-        .set({
-          ...progress,
-          points: updatedPoints,
-          badges: mergedBadges,
-          updatedAt: new Date(),
-        })
+        .set({ ...progress, updatedAt: new Date() })
         .where(and(eq(userProgress.userId, progress.userId), eq(userProgress.projectId, progress.projectId)))
         .returning();
       return updated;
@@ -1860,6 +1850,12 @@ export class DatabaseStorage implements IStorage {
         eq(doubleDiamondProjects.id, id),
         eq(doubleDiamondProjects.userId, userId)
       ));
+    return project;
+  }
+
+  async getAnyDoubleDiamondProject(id: string): Promise<DoubleDiamondProject | undefined> {
+    const [project] = await db.select().from(doubleDiamondProjects)
+      .where(eq(doubleDiamondProjects.id, id));
     return project;
   }
 

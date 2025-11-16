@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Plus, Sparkles, TrendingUp, CheckCircle2, Circle, AlertCircle, ArrowRight } from "lucide-react";
@@ -39,7 +39,7 @@ export default function DoubleDiamond() {
 
   // Check if user has reached the limit
   const currentUsage = projects.length;
-  const isFreeUser = !subscriptionInfo?.subscription || subscriptionInfo?.plan?.name === "free" || subscriptionInfo?.plan?.priceMonthly === 0;
+  const isFreeUser = !subscriptionInfo?.subscription || (subscriptionInfo?.plan && (subscriptionInfo.plan.name === "free" || subscriptionInfo.plan.priceMonthly === 0));
   const hasReachedLimit = isFreeUser && currentUsage >= FREE_PLAN_DOUBLE_DIAMOND_LIMIT;
   const remainingProjects = isFreeUser ? Math.max(0, FREE_PLAN_DOUBLE_DIAMOND_LIMIT - currentUsage) : null;
 
