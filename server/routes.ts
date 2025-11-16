@@ -112,7 +112,7 @@ async function requireAuth(req: Request, res: Response, next: NextFunction) {
         role: userWithoutPassword.role,
         createdAt: userWithoutPassword.createdAt || new Date()
     };
-
+    
     // Also update session user data to keep it in sync
     req.session.user = req.user;
 
@@ -137,11 +137,11 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
       });
       return res.status(401).json({ error: "Authentication failed: User not found" });
     }
-
+    
     if (user.role !== 'admin') {
       return res.status(403).json({ error: "Admin access required" });
     }
-
+    
     // Set fresh user data on the request object
     const { password: _, ...userWithoutPassword } = user;
     req.user = {
@@ -4201,7 +4201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         project = await storage.getDoubleDiamondProject(req.params.id, userId);
       }
-
+      
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }
