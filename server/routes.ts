@@ -87,32 +87,78 @@ declare module 'express-serve-static-core' {
 }
 
 // Authentication middleware
-function requireAuth(req: Request, res: Response, next: NextFunction) {
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (!req.session?.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  try {
+    const user = await storage.getUser(req.session.userId);
+    if (!user) {
+      // If user not found, destroy session and return error
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+        }
+      });
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    // Set fresh user data on request for easy access
+    const { password: _, ...userWithoutPassword } = user;
+    req.user = {
+        id: userWithoutPassword.id,
+        username: userWithoutPassword.username,
+        role: userWithoutPassword.role,
+        createdAt: userWithoutPassword.createdAt || new Date()
+    };
+
+    // Also update session user data to keep it in sync
+    req.session.user = req.user;
+
+    next();
+  } catch (error) {
+    console.error("Error in requireAuth middleware:", error);
+    return res.status(500).json({ error: "Internal server error during authentication" });
+  }
+}
+
+// Admin authorization middleware  
+async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.session?.userId) {
     return res.status(401).json({ error: "Authentication required" });
   }
   
-  // Set user data on request for easy access
-  if (req.session.user) {
-    req.user = req.session.user;
-  }
-  
-  next();
-}
+  try {
+    const user = await storage.getUser(req.session.userId);
+    if (!user) {
+      req.session.destroy((err) => {
+        if (err) console.error("Session destruction error:", err);
+      });
+      return res.status(401).json({ error: "Authentication failed: User not found" });
+    }
 
-// Admin authorization middleware  
-function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.session?.userId || !req.session?.user) {
-    return res.status(401).json({ error: "Authentication required" });
+    if (user.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // Set fresh user data on the request object
+    const { password: _, ...userWithoutPassword } = user;
+    req.user = {
+      id: userWithoutPassword.id,
+      username: userWithoutPassword.username,
+      role: userWithoutPassword.role,
+      createdAt: userWithoutPassword.createdAt || new Date(),
+    };
+
+    // Also update the session user object to keep it fresh
+    req.session.user = req.user;
+
+    next();
+  } catch (error) {
+    console.error("Error in requireAdmin:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-  
-  if (req.session.user.role !== 'admin') {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-  
-  // Set user data on request
-  req.user = req.session.user;
-  next();
 }
 
 // Project permission middleware
@@ -4145,8 +4191,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/double-diamond/:id - Busca um projeto Double Diamond específico
   app.get("/api/double-diamond/:id", requireAuth, async (req, res) => {
     try {
-      const userId = req.session.userId!;
-      const project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      // Use req.user populated by the new requireAuth middleware for reliable data
+      const userId = req.user!.id;
+      const isAdmin = req.user!.role === "admin";
+      let project;
+
+      if (isAdmin) {
+        project = await storage.getAnyDoubleDiamondProject(req.params.id);
+      } else {
+        project = await storage.getDoubleDiamondProject(req.params.id, userId);
+      }
+
       if (!project) {
         return res.status(404).json({ error: "Double Diamond project not found" });
       }

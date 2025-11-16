@@ -1853,6 +1853,12 @@ export class DatabaseStorage implements IStorage {
     return project;
   }
 
+  async getAnyDoubleDiamondProject(id: string): Promise<DoubleDiamondProject | undefined> {
+    const [project] = await db.select().from(doubleDiamondProjects)
+      .where(eq(doubleDiamondProjects.id, id));
+    return project;
+  }
+
   async createDoubleDiamondProject(project: InsertDoubleDiamondProject): Promise<DoubleDiamondProject> {
     const [newProject] = await db.insert(doubleDiamondProjects)
       .values(project)
